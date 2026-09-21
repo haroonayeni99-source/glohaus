@@ -4,7 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export function EmailAuthForm({ mode, redirectTo }: { mode: "sign-in" | "sign-up"; redirectTo: string }) {
+export function EmailAuthForm({
+  mode,
+  redirectTo,
+  audience = "customer",
+}: {
+  mode: "sign-in" | "sign-up";
+  redirectTo: string;
+  audience?: "customer" | "professional";
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -20,7 +28,21 @@ export function EmailAuthForm({ mode, redirectTo }: { mode: "sign-in" | "sign-up
     if (mode === "sign-up" && !result.data.session) { setError("Check your email to confirm your account, then return here to sign in."); setPending(false); return; }
     router.replace(redirectTo); router.refresh();
   }
+  const professional = audience === "professional";
+  const title = mode === "sign-in"
+    ? "Welcome back"
+    : professional
+      ? "Create your professional account"
+      : "Create your account";
+  const description = mode === "sign-in"
+    ? "Sign in to continue your GLOHAUS journey."
+    : professional
+      ? "Start building your GLOHAUS PRO storefront today."
+      : "Discover, save and book beauty that feels like you.";
   return <form action={submit} className="auth-email-form">
+    <p className="eyebrow">{professional ? "GLOHAUS PRO" : "GLOHAUS"}</p>
+    <h1>{title}</h1>
+    <p className="auth-email-intro">{description}</p>
     <label>Email<input name="email" type="email" autoComplete="email" required /></label>
     <label>Password<input name="password" type="password" autoComplete={mode === "sign-up" ? "new-password" : "current-password"} minLength={8} required /></label>
     {error && <p role="alert">{error}</p>}

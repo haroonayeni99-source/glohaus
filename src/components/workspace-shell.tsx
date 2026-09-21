@@ -246,7 +246,7 @@ export function WorkspaceShell({
           </div>
         </main>
         <footer className="workspace-footer">
-          glohaus. <span>Built around you.</span>
+          GLOHAUS <span>Built around you.</span>
         </footer>
       </div>
     </div>

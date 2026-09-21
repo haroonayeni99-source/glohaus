@@ -309,7 +309,7 @@ export function DiscoveryFeed({
             </p>
           </div>
           <Link className="button small" href="/sign-up">
-            Join glohaus
+            Join GLOHAUS
             <ArrowUpRight size={16} />
           </Link>
         </header>
@@ -455,7 +455,7 @@ export function DiscoveryFeed({
                     </div>
                     <div className="feed-caption">
                       <span className="editorial-author">
-                        <span>g.</span>glohaus inspiration{" "}
+                        <span>g.</span>GLOHAUS inspiration{" "}
                         <small>Editorial collection</small>
                       </span>
                       <h2>{post.title}</h2>
@@ -544,7 +544,7 @@ export function DiscoveryFeed({
               </h3>
               <p>
                 Products linked to services are part of the next chapter of
-                glohaus.
+                GLOHAUS.
               </p>
             </div>
             <div className="feed-controls">

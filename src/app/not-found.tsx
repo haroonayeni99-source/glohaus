@@ -6,7 +6,7 @@ export default function NotFound() {
       <h1>This page isn’t here.</h1>
       <p>Let’s take you back to somewhere familiar.</p>
       <Link className="button" href="/">
-        Back to glohaus
+        Back to GLOHAUS
       </Link>
     </main>
   );

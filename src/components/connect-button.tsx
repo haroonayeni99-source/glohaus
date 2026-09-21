@@ -24,7 +24,7 @@ export function ConnectButton() {
             const result = await response.json();
             if (!response.ok)
               throw new Error(
-                "Payment setup is not available yet. Please try again once Stripe is connected to glohaus.",
+                "Payment setup is not available yet. Please try again once Stripe is connected to GLOHAUS.",
               );
             window.location.href = result.url;
           } catch (error) {

@@ -7,7 +7,7 @@ const messages: Record<
   { title: string; text: string; href: string; label: string }
 > = {
   UNAVAILABLE: {
-    title: "Your glohaus account is nearly ready.",
+    title: "Your GLOHAUS account is nearly ready.",
     text: "You can keep exploring today. Secure sign-in will be available here as soon as account access is connected.",
     href: "/",
     label: "Keep discovering",
@@ -28,7 +28,7 @@ const messages: Record<
     title: "Your account is unavailable.",
     text: "Access to this account has been restricted. Your existing records remain protected.",
     href: "/",
-    label: "Back to glohaus",
+    label: "Back to GLOHAUS",
   },
   MFA_REQUIRED: {
     title: "One more layer of security.",
@@ -38,7 +38,7 @@ const messages: Record<
   },
   ONBOARDING_REQUIRED: {
     title: "Let’s make this your space.",
-    text: "Choose how you’ll use glohaus to finish creating your account.",
+    text: "Choose how you’ll use GLOHAUS to finish creating your account.",
     href: "/onboarding",
     label: "Set up my account",
   },

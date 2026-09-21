@@ -53,7 +53,7 @@ export function EnrolmentForm({
       <h1>
         What brings you
         <br />
-        to glohaus?
+        to GLOHAUS?
       </h1>
       <p>Choose your first workspace. You can add the other one later.</p>
       <fieldset disabled={pending}>

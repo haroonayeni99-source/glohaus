@@ -16,7 +16,7 @@ export default async function PostPage({
     return (
       <main className="catalog-page">
         <h1>This post is temporarily unavailable.</h1>
-        <Link href="/">Explore glohaus</Link>
+        <Link href="/">Explore GLOHAUS</Link>
       </main>
     );
   const post = await withIdentity(

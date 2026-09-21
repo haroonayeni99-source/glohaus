@@ -6,11 +6,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "glohaus — A home for your craft",
-    template: "%s · glohaus",
+    default: "GLOHAUS — Beauty, community and bookings",
+    template: "%s · GLOHAUS",
   },
   description:
-    "A personal space for independent beauty professionals and their customers.",
+    "Discover, book and get inspired by independent beauty professionals near you.",
   robots: { index: false, follow: false },
 };
 export default async function RootLayout({

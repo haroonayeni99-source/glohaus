@@ -28,7 +28,7 @@ export default async function Page({
     code = error instanceof AccessError ? error.code : "UNAVAILABLE";
   }
   return (
-    <AuthFrame>
+    <AuthFrame audience={intent === "professional" ? "professional" : "customer"}>
       {code ? (
         <AccessMessage code={code} />
       ) : (

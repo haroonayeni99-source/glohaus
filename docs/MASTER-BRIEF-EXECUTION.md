@@ -1,6 +1,6 @@
 # glohaus execution plan
 
-This is the working execution plan for the supplied social marketplace briefs. The product name remains **glohaus**. The supplied URBAN image is visual direction only; its branding and artwork are not reused. The first release remains a responsive web application, with the API and database structured for a later mobile client.
+This is the working execution plan for the supplied social marketplace briefs. The product name remains **GLOHAUS**. The supplied reference image is visual direction only; its branding and artwork are not reused. The first release remains a responsive web application, with the API and database structured for a later mobile client.
 
 ## Implemented foundation
 

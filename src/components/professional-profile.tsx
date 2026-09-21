@@ -160,7 +160,7 @@ export function ProfessionalProfile({
                     Contact on Instagram <ArrowUpRight size={16} />
                   </a>
                 ) : (
-                  <p>Choose a service and book through glohaus.</p>
+                  <p>Choose a service and book through GLOHAUS.</p>
                 )}
               </div>
             </div>

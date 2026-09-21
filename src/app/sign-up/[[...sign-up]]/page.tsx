@@ -16,9 +16,13 @@ export default async function Page({
       ? "/onboarding?intent=professional"
       : `/onboarding${safeTarget ? `?returnTo=${encodeURIComponent(safeTarget)}` : ""}`;
   return (
-    <AuthFrame>
+    <AuthFrame audience={intent === "professional" ? "professional" : "customer"}>
       {authConfigured() ? (
-        <EmailAuthForm mode="sign-up" redirectTo={target} />
+        <EmailAuthForm
+          mode="sign-up"
+          redirectTo={target}
+          audience={intent === "professional" ? "professional" : "customer"}
+        />
       ) : (
         <AccessMessage />
       )}

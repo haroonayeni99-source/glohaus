@@ -7,13 +7,14 @@ export const metadata = { title: "Sign in" };
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ returnTo?: string }>;
+  searchParams: Promise<{ returnTo?: string; intent?: string }>;
 }) {
-  const { returnTo } = await searchParams;
+  const { returnTo, intent } = await searchParams;
+  const audience = intent === "professional" ? "professional" : "customer";
   return (
-    <AuthFrame>
+    <AuthFrame audience={audience}>
       {authConfigured() ? (
-        <EmailAuthForm mode="sign-in" redirectTo={safeReturnTo(returnTo)} />
+        <EmailAuthForm mode="sign-in" redirectTo={safeReturnTo(returnTo)} audience={audience} />
       ) : (
         <AccessMessage />
       )}

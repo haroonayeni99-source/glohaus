@@ -36,7 +36,7 @@ export function CreamConcept() {
           <p className="eyebrow">CREAM VISUAL DIRECTION · GLOHAUS</p>
           <h1>Beauty that feels part of every day.</h1>
           <p>
-            An original cream-colour direction for the glohaus website and
+            An original cream-colour direction for the GLOHAUS website and
             future mobile app: scroll to discover, know who created the look,
             and book only when it feels right.
           </p>
@@ -50,7 +50,7 @@ export function CreamConcept() {
       </section>
       <nav className="cream-concept-nav" aria-label="Concept sections">
         <span className="cream-wordmark">
-          glohaus<span>.</span>
+          GLOHAUS
         </span>
         <div>
           <a href="#discover">
@@ -211,7 +211,7 @@ export function CreamConcept() {
           </p>
           <div className="cream-shop-placeholder">
             <ShoppingBag size={28} />
-            <strong>glohaus shop</strong>
+            <strong>GLOHAUS shop</strong>
             <span>Awaiting seller and commerce setup</span>
           </div>
         </article>
@@ -219,7 +219,7 @@ export function CreamConcept() {
       <section className="cream-concept-note">
         <p>
           This concept takes the reference’s content structure — discovery,
-          profile, post, booking and creator tools — while keeping the glohaus
+          profile, post, booking and creator tools — while keeping the GLOHAUS
           name, original layout, colours and interactions.
         </p>
       </section>

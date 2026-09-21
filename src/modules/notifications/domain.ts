@@ -23,7 +23,7 @@ export function notificationEmail(notification: Notification, origin: string) {
     timeZone: "Europe/London",
   }).format(new Date(notification.starts_at));
   return {
-    subject: `glohaus · ${headings[notification.kind]}`,
-    text: `${headings[notification.kind]}.\n\n${notification.service_name} with ${notification.professional_name}\n${when} (London time)\n\n${notification.kind === "cancellation" ? "Any deposit refund is handled separately under the booking policy. Check your appointment for the latest status.\n\n" : ""}View your appointment securely: ${base.origin}/account/bookings/${encodeURIComponent(notification.booking_id)}\n\nThe glohaus team`,
+    subject: `GLOHAUS · ${headings[notification.kind]}`,
+    text: `${headings[notification.kind]}.\n\n${notification.service_name} with ${notification.professional_name}\n${when} (London time)\n\n${notification.kind === "cancellation" ? "Any deposit refund is handled separately under the booking policy. Check your appointment for the latest status.\n\n" : ""}View your appointment securely: ${base.origin}/account/bookings/${encodeURIComponent(notification.booking_id)}\n\nThe GLOHAUS team`,
   };
 }

@@ -95,7 +95,7 @@ export function ProfessionalEditor({
               defaultValue={initial.slug}
             />
             <small>
-              glohaus / p / your-name · lowercase letters, numbers and hyphens
+              GLOHAUS / p / your-name · lowercase letters, numbers and hyphens
             </small>
           </label>
           <label>
@@ -168,7 +168,7 @@ export function ProfessionalEditor({
               name="contactPreference"
               defaultValue={initial.contactPreference ?? "booking"}
             >
-              <option value="booking">Book through glohaus</option>
+              <option value="booking">Book through GLOHAUS</option>
               <option value="email">Business email</option>
               <option value="phone">Business phone</option>
               <option value="instagram">Instagram</option>

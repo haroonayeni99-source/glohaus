@@ -27,7 +27,7 @@ export function AuthGate({
         <p className="eyebrow">ONE QUICK STEP</p>
         <h2 id="auth-gate-title">Ready to book?</h2>
         <p>
-          Create a free glohaus account to confirm this appointment. Your
+          Create a free GLOHAUS account to confirm this appointment. Your
           service, date and time will stay selected.
         </p>
         <Link className="button full-width" href={`/sign-up?${suffix}`}>

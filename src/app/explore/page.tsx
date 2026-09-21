@@ -66,7 +66,7 @@ export default async function Explore({
             </h2>
             <p>
               {unavailable
-                ? "Professional discovery opens once our live directory is connected. You can still explore the glohaus inspiration feed."
+                ? "Professional discovery opens once our live directory is connected. You can still explore the GLOHAUS inspiration feed."
                 : "Try another city or category, or come back as more independent professionals join."}
             </p>
             <Link className="text-link" href="/">

@@ -770,10 +770,14 @@ svg {
   flex-direction: column;
   justify-content: space-between;
   gap: 75px;
+  position: relative;
+  overflow: hidden;
 }
 .auth-story > div {
   padding-bottom: 50px;
 }
+.auth-story-copy,
+.auth-benefits { position: relative; z-index: 1; }
 .auth-story h2 {
   font-family: var(--font-serif);
   font-size: clamp(2.8rem, 4.5vw, 5rem);
@@ -790,7 +794,28 @@ svg {
 }
 .auth-story > .eyebrow {
   color: #d3b3b9;
+  position: relative;
+  z-index: 1;
 }
+.auth-benefits { display: grid; gap: 0.7rem; margin-top: -2rem; }
+.auth-benefits span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: fit-content;
+  padding: 0.48rem 0.7rem;
+  color: #f7eceb;
+  border: 1px solid rgba(247, 236, 235, 0.22);
+  border-radius: 999px;
+  background: rgba(21, 9, 13, 0.18);
+  font-size: 0.78rem;
+}
+.auth-benefits svg { color: var(--pink); }
+.auth-orbit { position: absolute; right: -4rem; bottom: 5rem; width: 19rem; height: 19rem; opacity: 0.78; pointer-events: none; }
+.auth-orbit-ring { position: absolute; inset: 0; border: 1px solid rgba(247, 236, 235, 0.24); border-radius: 50%; box-shadow: inset 0 0 0 2rem rgba(229, 119, 151, 0.08); }
+.auth-orbit-dot { position: absolute; width: 1.25rem; height: 1.25rem; border-radius: 50%; background: var(--pink); box-shadow: 0 0 0 0.45rem rgba(229, 119, 151, 0.14); }
+.auth-orbit-dot-one { top: 1.75rem; right: 3.8rem; }
+.auth-orbit-dot-two { bottom: 2.9rem; left: 1.1rem; width: 0.75rem; height: 0.75rem; }
 .auth-main {
   padding: 38px 40px 25px;
   display: flex;

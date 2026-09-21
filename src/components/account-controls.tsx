@@ -1,5 +1,7 @@
 "use client";
-import { UserButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 export function AccountControls() {
-  return <UserButton />;
+  const router = useRouter();
+  return <button className="text-link" onClick={async () => { await createClient().auth.signOut(); router.replace("/"); router.refresh(); }}>Sign out</button>;
 }

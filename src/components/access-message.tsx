@@ -7,10 +7,10 @@ const messages: Record<
   { title: string; text: string; href: string; label: string }
 > = {
   UNAVAILABLE: {
-    title: "A little preparation, then you’re in.",
-    text: "Account access isn’t available yet. Please come back once setup is complete.",
+    title: "Your glohaus account is nearly ready.",
+    text: "You can keep exploring today. Secure sign-in will be available here as soon as account access is connected.",
     href: "/",
-    label: "Back to glohaus",
+    label: "Keep discovering",
   },
   UNAUTHENTICATED: {
     title: "Your space is just a sign-in away.",

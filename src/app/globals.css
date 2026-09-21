@@ -1742,6 +1742,22 @@ svg {
 .discovery-top h1 em {
   color: var(--plum);
 }
+.discovery-trust {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.75rem;
+  color: #726962;
+  font-size: 0.75rem;
+}
+.discovery-trust::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-right: 0.45rem;
+  border-radius: 50%;
+  background: #7d9c7a;
+  box-shadow: 0 0 0 0.22rem rgba(125, 156, 122, 0.12);
+}
 .discovery-tabs {
   display: flex;
   gap: 8px;

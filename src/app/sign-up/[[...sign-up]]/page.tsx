@@ -1,8 +1,8 @@
-import { SignUp } from "@clerk/nextjs";
 import { authConfigured } from "@/lib/config";
 import { AuthFrame } from "@/components/auth-frame";
 import { AccessMessage } from "@/components/access-message";
 import { safeReturnTo } from "@/lib/return-to";
+import { EmailAuthForm } from "@/components/email-auth-form";
 export const metadata = { title: "Create your account" };
 export default async function Page({
   searchParams,
@@ -18,7 +18,7 @@ export default async function Page({
   return (
     <AuthFrame>
       {authConfigured() ? (
-        <SignUp routing="path" path="/sign-up" forceRedirectUrl={target} />
+        <EmailAuthForm mode="sign-up" redirectTo={target} />
       ) : (
         <AccessMessage />
       )}

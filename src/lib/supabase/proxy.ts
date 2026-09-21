@@ -10,6 +10,13 @@ export async function updateSession(request: NextRequest) {
       setAll: (items) => { items.forEach(({ name, value }) => request.cookies.set(name, value)); response = NextResponse.next({ request }); items.forEach(({ name, value, options }) => response.cookies.set(name, value, options)); },
     },
   });
-  await supabase.auth.getClaims();
+  // A public route must remain available if the provider is temporarily
+  // unreachable or its public configuration is invalid. Protected handlers
+  // verify claims again and reject the request server-side.
+  try {
+    await supabase.auth.getClaims();
+  } catch {
+    return NextResponse.next({ request });
+  }
   return response;
 }

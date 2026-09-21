@@ -1,17 +1,10 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
-import {
-  NextResponse,
-  type NextRequest,
-  type NextFetchEvent,
-} from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { authConfigured } from "@/lib/config";
+import { updateSession } from "@/lib/supabase/proxy";
 
-export default function proxy(request: NextRequest, event: NextFetchEvent) {
-  // Public pages can render before configuration; every private page/API also checks auth.
+export default async function proxy(request: NextRequest) {
   if (!authConfigured()) return NextResponse.next();
-  return clerkMiddleware({
-    authorizedParties: [new URL(process.env.NEXT_PUBLIC_APP_URL!).origin],
-  })(request, event);
+  return updateSession(request);
 }
 export const config = {
   matcher: [

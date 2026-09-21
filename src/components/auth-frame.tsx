@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Brand } from "./brand";
-import { CalendarDays, Heart, ShieldCheck, Sparkles, TrendingUp } from "lucide-react";
+import { ArrowUpRight, CalendarDays, Heart, ShieldCheck, Sparkles, TrendingUp } from "lucide-react";
 
 type AuthAudience = "customer" | "professional";
 
@@ -75,6 +75,11 @@ export function AuthFrame({
         <Link className="back-link" href="/">
           ← Back to GLOHAUS
         </Link>
+        {audience === "professional" && (
+          <Link className="auth-preview-link" href="/professional-preview">
+            See a GLOHAUS PRO page preview <ArrowUpRight size={15} aria-hidden />
+          </Link>
+        )}
         <div className="auth-body">{children}</div>
         <p className="auth-footer">
           {audience === "professional"

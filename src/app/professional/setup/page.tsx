@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { Check, Circle } from "lucide-react";
+import { ArrowUpRight, Check, Circle } from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
 import { PublicHeader } from "@/components/public-header";
@@ -97,6 +97,9 @@ export default async function ProfessionalSetup() {
           You control what becomes public. Complete the essentials, then share
           your work when you are ready.
         </p>
+        <Link className="text-link setup-preview-link" href="/professional-preview">
+          See a GLOHAUS PRO page preview <ArrowUpRight size={17} aria-hidden />
+        </Link>
         <section className="setup-progress" aria-label="Setup progress">
           <div>
             <span className="eyebrow">YOUR PAGE PROGRESS</span>

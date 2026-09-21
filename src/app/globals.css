@@ -945,6 +945,16 @@ svg {
 .back-link:hover {
   color: var(--plum);
 }
+.auth-preview-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 8px 0 -30px auto;
+  color: var(--plum);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+.auth-preview-link:hover { color: var(--ink); }
 .auth-body {
   flex: 1;
   display: flex;
@@ -1006,6 +1016,262 @@ svg {
 :root[data-theme="night"] .auth-email-form { background: #241e20; border-color: var(--line); }
 :root[data-theme="night"] .auth-email-form label { color: var(--ink); }
 :root[data-theme="night"] .auth-layout-professional .auth-main { background: var(--paper); }
+
+/* Public GLOHAUS PRO storefront preview. It is intentionally labelled as an
+   example so it cannot be mistaken for a bookable professional profile. */
+.professional-preview {
+  padding: clamp(28px, 5vw, 76px) clamp(18px, 5vw, 76px) 80px;
+  background: #f8f5f3;
+  color: #161415;
+}
+.professional-preview-hero,
+.professional-preview-stage {
+  max-width: 1240px;
+  margin: auto;
+}
+.professional-preview-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: clamp(32px, 7vw, 100px);
+  align-items: end;
+  margin-bottom: 38px;
+}
+.professional-preview .eyebrow { color: #a92f60; }
+.professional-preview-hero h1 {
+  max-width: 760px;
+  margin: 12px 0 18px;
+  font: 800 clamp(2.7rem, 6vw, 5.7rem)/0.95 "Manrope", Arial, sans-serif;
+  letter-spacing: -0.085em;
+}
+.professional-preview-hero h1 em { color: #cf4e7b; font-style: normal; }
+.professional-preview-hero > div > p:not(.eyebrow) {
+  max-width: 600px;
+  color: #5f5759;
+  font-size: 1rem;
+}
+.professional-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: center;
+  margin-top: 26px;
+}
+.professional-preview-checklist {
+  display: grid;
+  gap: 12px;
+  padding: 23px;
+  border: 1px solid #e1d6d8;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 18px 38px rgba(57, 31, 42, 0.07);
+}
+.professional-preview-checklist p {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: #4c4547;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+.professional-preview-checklist svg { color: #cf4e7b; margin-top: 2px; }
+.professional-preview-stage {
+  overflow: hidden;
+  border: 1px solid #e4d7da;
+  border-radius: 30px;
+  background: #fff;
+  box-shadow: 0 28px 70px rgba(57, 31, 42, 0.12);
+}
+.professional-preview-banner {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px clamp(18px, 3vw, 36px);
+  background: #151214;
+  color: #ffe6ef;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+.professional-preview-profile {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: center;
+  padding: clamp(25px, 4vw, 48px) clamp(20px, 4vw, 52px);
+  border-bottom: 1px solid #eee5e6;
+}
+.professional-preview-avatar {
+  width: 106px;
+  height: 106px;
+  display: grid;
+  place-items: center;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #f9c4d6, #9f214d 76%);
+  box-shadow: 0 0 0 1px #e5cdd4;
+  color: #fff;
+  font: 800 3.2rem/1 "Manrope", Arial, sans-serif;
+}
+.professional-preview-profile h2,
+.professional-preview-section h2,
+.professional-preview-booking h2 {
+  font: 800 clamp(1.55rem, 3vw, 2.4rem)/1 "Manrope", Arial, sans-serif;
+  letter-spacing: -0.065em;
+}
+.professional-preview-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+  color: #655c5f;
+  font-size: 0.84rem;
+}
+.professional-preview-meta > span { width: 4px; height: 4px; border-radius: 50%; background: #cb7290; }
+.professional-preview-meta svg { color: #d44877; }
+.professional-preview-meta small { font-size: inherit; }
+.professional-preview-bio { max-width: 650px; margin-top: 14px; color: #514a4c; }
+.professional-preview-book { white-space: nowrap; gap: 9px; }
+.professional-preview-nav {
+  display: flex;
+  gap: 25px;
+  overflow-x: auto;
+  padding: 15px clamp(20px, 4vw, 52px);
+  border-bottom: 1px solid #eee5e6;
+  color: #4e4648;
+  font-size: 0.83rem;
+  font-weight: 750;
+}
+.professional-preview-nav a:first-child { color: #cb3970; }
+.professional-preview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 325px;
+  gap: clamp(24px, 4vw, 56px);
+  padding: clamp(26px, 5vw, 56px);
+}
+.professional-preview-main { min-width: 0; }
+.professional-preview-section + .professional-preview-section { margin-top: 56px; }
+.professional-preview-section-title { display: flex; justify-content: space-between; gap: 20px; align-items: start; }
+.professional-preview-section h2 { margin-top: 8px; }
+.professional-preview-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 9px;
+  border-radius: 99px;
+  background: #fcecf2;
+  color: #a92f60;
+  font-size: 0.71rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+.professional-preview-gallery {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr 0.8fr;
+  gap: 10px;
+  margin-top: 22px;
+}
+.professional-preview-gallery img {
+  width: 100%;
+  height: clamp(190px, 28vw, 365px);
+  border-radius: 17px;
+  object-fit: cover;
+}
+.professional-preview-gallery img:nth-child(2) { margin-top: 26px; }
+.professional-preview-gallery img:nth-child(3) { margin-top: 9px; }
+.professional-preview-services { margin-top: 22px; border-top: 1px solid #ece3e5; }
+.professional-preview-services article {
+  display: grid;
+  grid-template-columns: 1fr auto 35px;
+  gap: 18px;
+  align-items: center;
+  padding: 18px 0;
+  border-bottom: 1px solid #ece3e5;
+}
+.professional-preview-services h3 { font-size: 0.98rem; font-weight: 750; }
+.professional-preview-services p { display: flex; align-items: center; gap: 6px; margin-top: 3px; color: #796f72; font-size: 0.78rem; }
+.professional-preview-services strong { font-size: 1rem; }
+.professional-preview-services a { display: grid; place-items: center; width: 35px; height: 35px; border: 1px solid #dcd0d2; border-radius: 50%; color: #a92f60; }
+.professional-preview-review blockquote {
+  margin: 20px 0 0;
+  padding: 22px;
+  border-radius: 17px;
+  background: #fbf5f5;
+  color: #40383a;
+  font-size: 1.02rem;
+  font-style: italic;
+}
+.professional-preview-review footer { margin-top: 13px; color: #8a777b; font-size: 0.75rem; font-style: normal; }
+.professional-preview-booking {
+  align-self: start;
+  position: sticky;
+  top: 24px;
+  padding: 23px;
+  border: 1px solid #e4d5d8;
+  border-radius: 20px;
+  background: #fffafa;
+}
+.professional-preview-booking h2 { margin: 9px 0 12px; font-size: 1.65rem; }
+.professional-preview-booking > p:not(.eyebrow) { color: #665b5e; font-size: 0.87rem; }
+.professional-preview-date-row,
+.professional-preview-time-grid { display: grid; gap: 7px; margin-top: 20px; }
+.professional-preview-date-row { grid-template-columns: repeat(4, 1fr); }
+.professional-preview-date-row span,
+.professional-preview-time-grid span {
+  padding: 8px 4px;
+  border: 1px solid #e5d9db;
+  border-radius: 9px;
+  color: #756a6d;
+  font-size: 0.68rem;
+  text-align: center;
+}
+.professional-preview-date-row b { display: block; color: #2d282a; font-size: 0.92rem; }
+.professional-preview-date-row .selected,
+.professional-preview-time-grid .selected { border-color: #d44877; background: #fde8f0; color: #9d2553; font-weight: 800; }
+.professional-preview-time-grid { grid-template-columns: repeat(2, 1fr); }
+.professional-preview-booking .button { margin-top: 20px; gap: 8px; }
+.professional-preview-booking small { display: block; margin-top: 10px; color: #8a7b7e; font-size: 0.72rem; text-align: center; }
+.setup-preview-link { margin: 18px 0 2px; }
+:root[data-theme="night"] .professional-preview { background: #171415; color: var(--ink); }
+:root[data-theme="night"] .professional-preview-stage,
+:root[data-theme="night"] .professional-preview-checklist,
+:root[data-theme="night"] .professional-preview-booking { background: #241e20; border-color: var(--line); }
+:root[data-theme="night"] .professional-preview-profile,
+:root[data-theme="night"] .professional-preview-nav,
+:root[data-theme="night"] .professional-preview-services,
+:root[data-theme="night"] .professional-preview-services article { border-color: var(--line); }
+:root[data-theme="night"] .professional-preview-hero > div > p:not(.eyebrow),
+:root[data-theme="night"] .professional-preview-checklist p,
+:root[data-theme="night"] .professional-preview-meta,
+:root[data-theme="night"] .professional-preview-bio,
+:root[data-theme="night"] .professional-preview-booking > p:not(.eyebrow) { color: var(--muted); }
+:root[data-theme="night"] .professional-preview-review blockquote { background: #302527; color: var(--ink); }
+@media (max-width: 860px) {
+  .professional-preview-hero,
+  .professional-preview-grid { grid-template-columns: 1fr; }
+  .professional-preview-checklist { max-width: 620px; }
+  .professional-preview-booking { position: static; }
+}
+@media (max-width: 620px) {
+  .professional-preview { padding: 22px 14px 58px; }
+  .professional-preview-stage { border-radius: 21px; }
+  .professional-preview-banner { align-items: start; flex-direction: column; font-size: 0.57rem; }
+  .professional-preview-profile { grid-template-columns: 74px 1fr; gap: 15px; }
+  .professional-preview-avatar { width: 72px; height: 72px; font-size: 2.2rem; }
+  .professional-preview-book { grid-column: 1 / -1; width: 100%; }
+  .professional-preview-meta { font-size: 0.75rem; }
+  .professional-preview-bio { font-size: 0.88rem; }
+  .professional-preview-nav { gap: 19px; font-size: 0.76rem; }
+  .professional-preview-grid { padding: 25px 18px; }
+  .professional-preview-section + .professional-preview-section { margin-top: 38px; }
+  .professional-preview-gallery { gap: 7px; }
+  .professional-preview-gallery img { height: 175px; border-radius: 11px; }
+  .professional-preview-gallery img:nth-child(2) { margin-top: 16px; }
+  .professional-preview-services article { grid-template-columns: 1fr auto 30px; gap: 8px; }
+  .professional-preview-services h3 { font-size: 0.86rem; }
+  .professional-preview-actions .button { width: 100%; }
+  .auth-preview-link { margin-bottom: -18px; }
+}
 .access-card {
   max-width: 430px;
 }

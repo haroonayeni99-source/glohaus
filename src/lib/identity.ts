@@ -1,38 +1,20 @@
 import "server-only";
-import { auth, clerkClient } from "@clerk/nextjs/server";
 import { AccessError, type Identity } from "@/modules/accounts/domain";
 import { authConfigured } from "./config";
+import { createClient } from "@/lib/supabase/server";
 
 export async function getIdentity(): Promise<Identity> {
   if (!authConfigured()) throw new AccessError("UNAVAILABLE", 503);
-  const session = await auth({ acceptsToken: "session_token" });
-  if (!session.userId || !session.sessionId)
-    throw new AccessError("UNAUTHENTICATED", 401);
-  const client = await clerkClient();
-  // Live checks close the gap between session-token expiry and provider revocation.
-  const [liveSession, user] = await Promise.all([
-    client.sessions.getSession(session.sessionId),
-    client.users.getUser(session.userId),
-  ]);
-  if (
-    liveSession.status !== "active" ||
-    liveSession.userId !== session.userId ||
-    user.banned ||
-    user.locked
-  ) {
-    throw new AccessError("UNAUTHENTICATED", 401);
-  }
-  const email = user.emailAddresses.find(
-    (item) => item.id === user.primaryEmailAddressId,
-  );
-  if (!email || email.verification?.status !== "verified")
-    throw new AccessError("FORBIDDEN", 403);
-  const fva = session.sessionClaims?.fva;
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  const authId = typeof claims?.sub === "string" ? claims.sub : null;
+  const email = typeof claims?.email === "string" ? claims.email : null;
+  if (error || !authId || !email) throw new AccessError("UNAUTHENTICATED", 401);
   return {
-    authId: session.userId,
-    email: email.emailAddress,
-    displayName: (user.firstName?.trim() || "Your account").slice(0, 120),
-    secondFactorAge:
-      Array.isArray(fva) && typeof fva[1] === "number" ? fva[1] : null,
+    authId,
+    email,
+    displayName: email.split("@")[0]?.slice(0, 120) || "Your account",
+    secondFactorAge: null,
   };
 }

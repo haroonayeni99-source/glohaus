@@ -1,4 +1,3 @@
-import { UserProfile } from "@clerk/nextjs";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getIdentity } from "@/lib/identity";
@@ -28,7 +27,7 @@ export default async function Page() {
         ← My workspace
       </Link>
       <h1>Account & security</h1>
-      <UserProfile routing="path" path="/security" />
+      <p>Your account is secured through Supabase Auth. You can update your password from the sign-in screen.</p>
       <Link className="text-link" href="/onboarding">
         Add another workspace →
       </Link>

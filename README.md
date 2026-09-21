@@ -52,3 +52,5 @@ The Playwright suite currently targets missing-credentials behavior on port 3000
 - scripts: migration runner and audited admin bootstrap.
 
 The existing beauty-platform directory name preserves the local preview path; the product and package name are glohaus.
+
+<!-- Vercel deployment trigger -->

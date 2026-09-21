@@ -1,8 +1,6 @@
 import { PlatformLabelsProvider } from "@/components/platform-labels";
 import { publicLabels } from "@/modules/platform/repository";
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
-import { authConfigured } from "@/lib/config";
 import { ThemeToggle } from "@/components/theme-toggle";
 import "./globals.css";
 
@@ -35,25 +33,7 @@ export default async function RootLayout({
     <html lang="en">
       <body>
         <ThemeToggle />
-        {authConfigured() ? (
-          <ClerkProvider
-            signInUrl="/sign-in"
-            signUpUrl="/sign-up"
-            signInFallbackRedirectUrl="/workspace"
-            signUpFallbackRedirectUrl="/onboarding"
-            appearance={{
-              variables: {
-                colorPrimary: "#752d43",
-                borderRadius: "0.8rem",
-                fontFamily: "Arial, sans-serif",
-              },
-            }}
-          >
-            {content}
-          </ClerkProvider>
-        ) : (
-          content
-        )}
+        {content}
       </body>
     </html>
   );

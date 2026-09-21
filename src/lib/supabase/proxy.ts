@@ -4,16 +4,16 @@ import { publicSupabaseKey } from "@/lib/config";
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
-  const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, publicSupabaseKey()!, {
-    cookies: {
-      getAll: () => request.cookies.getAll(),
-      setAll: (items) => { items.forEach(({ name, value }) => request.cookies.set(name, value)); response = NextResponse.next({ request }); items.forEach(({ name, value, options }) => response.cookies.set(name, value, options)); },
-    },
-  });
   // A public route must remain available if the provider is temporarily
   // unreachable or its public configuration is invalid. Protected handlers
   // verify claims again and reject the request server-side.
   try {
+    const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, publicSupabaseKey()!, {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll: (items) => { items.forEach(({ name, value }) => request.cookies.set(name, value)); response = NextResponse.next({ request }); items.forEach(({ name, value, options }) => response.cookies.set(name, value, options)); },
+      },
+    });
     await supabase.auth.getClaims();
   } catch {
     return NextResponse.next({ request });

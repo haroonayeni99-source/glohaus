@@ -3,6 +3,7 @@ import { publicLabels } from "@/modules/platform/repository";
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { authConfigured } from "@/lib/config";
+import { ThemeToggle } from "@/components/theme-toggle";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -33,6 +34,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
+        <ThemeToggle />
         {authConfigured() ? (
           <ClerkProvider
             signInUrl="/sign-in"

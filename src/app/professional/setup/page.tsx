@@ -79,6 +79,7 @@ export default async function ProfessionalSetup() {
     ],
   ] as const;
   const complete = steps.filter((step) => step[3]).length;
+  const progressPercent = Math.round((complete / steps.length) * 100);
   return (
     <>
       <PublicHeader />
@@ -96,12 +97,31 @@ export default async function ProfessionalSetup() {
           You control what becomes public. Complete the essentials, then share
           your work when you are ready.
         </p>
+        <section className="setup-progress" aria-label="Setup progress">
+          <div>
+            <span className="eyebrow">YOUR PAGE PROGRESS</span>
+            <strong>{progressPercent}% ready to share</strong>
+          </div>
+          <progress value={complete} max={steps.length}>
+            {progressPercent}%
+          </progress>
+          <p>
+            Complete the first four steps to create a confident public booking
+            page. You can return to this checklist whenever you need to.
+          </p>
+        </section>
         <section
-          className="service-edit-list"
+          className="service-edit-list setup-steps"
           aria-label="Professional setup steps"
         >
           {steps.map(([title, text, href, done], index) => (
-            <article key={title} className="service-edit-row">
+            <article
+              key={title}
+              className={`service-edit-row setup-step ${done ? "is-complete" : ""}`}
+            >
+              <span className="setup-step-number" aria-hidden>
+                {done ? <Check size={17} /> : String(index + 1).padStart(2, "0")}
+              </span>
               <div>
                 <p className="eyebrow">STEP {index + 1}</p>
                 <h2>{title}</h2>

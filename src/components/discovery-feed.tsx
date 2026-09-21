@@ -304,6 +304,9 @@ export function DiscoveryFeed({
             <h1>
               A little scroll. <em>A lot of inspiration.</em>
             </h1>
+            <p className="discovery-trust">
+              Browse freely. Book when you’re ready.
+            </p>
           </div>
           <Link className="button small" href="/sign-up">
             Join glohaus

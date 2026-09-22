@@ -29,7 +29,11 @@ BEGIN
   END IF;
   RETURN actor;
 END $$;
+-- PostgreSQL requires the receiving owner to have CREATE on the schema during
+-- an ownership transfer. This is removed immediately after the transfer.
+GRANT CREATE ON SCHEMA beauty TO beauty_admin_ops;
 ALTER FUNCTION beauty.require_owner() OWNER TO beauty_admin_ops;
+REVOKE CREATE ON SCHEMA beauty FROM beauty_admin_ops;
 REVOKE ALL ON FUNCTION beauty.require_owner() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION beauty.require_owner() TO beauty_admin_ops;
 
@@ -333,13 +337,15 @@ BEGIN
   RETURN result_id;
 END $$;
 
-GRANT CREATE ON SCHEMA beauty TO beauty_financial_worker;
+-- Both restricted function owners need temporary schema CREATE permission for
+-- the ownership transfers below; neither retains it at runtime.
+GRANT CREATE ON SCHEMA beauty TO beauty_financial_worker,beauty_admin_ops;
 ALTER FUNCTION beauty.ensure_financial_accounts(uuid) OWNER TO beauty_financial_worker;
 ALTER FUNCTION beauty.record_financial_ledger(text,text,text,uuid,uuid,jsonb,jsonb) OWNER TO beauty_financial_worker;
 ALTER FUNCTION beauty.my_wallet_overview() OWNER TO beauty_financial_worker;
 ALTER FUNCTION beauty.acknowledge_professional_tax(text) OWNER TO beauty_financial_worker;
 ALTER FUNCTION beauty.set_financial_fee_rule(text,text,text,integer,integer,integer,integer,integer,text,text) OWNER TO beauty_admin_ops;
-REVOKE CREATE ON SCHEMA beauty FROM beauty_financial_worker;
+REVOKE CREATE ON SCHEMA beauty FROM beauty_financial_worker,beauty_admin_ops;
 REVOKE ALL ON FUNCTION beauty.ensure_financial_accounts(uuid),beauty.record_financial_ledger(text,text,text,uuid,uuid,jsonb,jsonb),beauty.my_wallet_overview(),beauty.acknowledge_professional_tax(text),beauty.set_financial_fee_rule(text,text,text,integer,integer,integer,integer,integer,text,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION beauty.record_financial_ledger(text,text,text,uuid,uuid,jsonb,jsonb) TO beauty_payment_worker;
 GRANT EXECUTE ON FUNCTION beauty.my_wallet_overview(),beauty.acknowledge_professional_tax(text) TO beauty_app;

@@ -1,5 +1,8 @@
 -- Admin operations use narrowly scoped, audited functions; the web login is never a member of this role.
 CREATE ROLE beauty_admin_ops NOLOGIN NOSUPERUSER NOBYPASSRLS;
+-- Required only for the Supabase postgres migration owner to transfer the
+-- narrowly scoped SECURITY DEFINER functions below.
+GRANT beauty_admin_ops TO postgres;
 GRANT USAGE ON SCHEMA beauty TO beauty_admin_ops;
 GRANT EXECUTE ON FUNCTION beauty.auth_id() TO beauty_admin_ops;
 GRANT SELECT ON beauty.users,beauty.user_roles,beauty.professional_profiles,beauty.posts TO beauty_admin_ops;

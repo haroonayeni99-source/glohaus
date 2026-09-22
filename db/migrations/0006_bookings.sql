@@ -1,4 +1,7 @@
 CREATE ROLE beauty_booking_ops NOLOGIN NOSUPERUSER NOBYPASSRLS;
+-- Required only for the Supabase postgres migration owner to transfer the
+-- booking-operation functions below.
+GRANT beauty_booking_ops TO postgres;
 CREATE ROLE beauty_payment_worker NOLOGIN NOSUPERUSER NOBYPASSRLS;
 GRANT USAGE ON SCHEMA beauty TO beauty_booking_ops,beauty_payment_worker;
 GRANT EXECUTE ON FUNCTION beauty.auth_id() TO beauty_booking_ops;

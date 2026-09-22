@@ -1,5 +1,8 @@
 -- Public projections have a deliberately restricted, non-owner database role.
 CREATE ROLE beauty_catalog NOLOGIN NOSUPERUSER NOBYPASSRLS;
+-- PostgreSQL requires the migration owner to be able to SET ROLE before a
+-- view can be transferred to this restricted, no-login owner.
+GRANT beauty_catalog TO postgres;
 GRANT USAGE ON SCHEMA beauty TO beauty_catalog;
 ALTER TABLE beauty.professional_profiles
   ADD COLUMN slug text UNIQUE CHECK (slug ~ '^[a-z0-9][a-z0-9-]{2,59}$'),

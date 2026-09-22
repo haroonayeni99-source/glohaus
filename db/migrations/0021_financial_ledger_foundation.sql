@@ -5,6 +5,9 @@ DO $$ BEGIN
     CREATE ROLE beauty_financial_worker NOLOGIN NOSUPERUSER NOBYPASSRLS;
   END IF;
 END $$;
+-- Required only for the Supabase postgres migration owner to transfer the
+-- restricted financial functions below.
+GRANT beauty_financial_worker TO postgres;
 GRANT USAGE ON SCHEMA beauty TO beauty_financial_worker;
 GRANT EXECUTE ON FUNCTION beauty.auth_id() TO beauty_financial_worker;
 

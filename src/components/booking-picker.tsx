@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { money, type Service } from "@/modules/professionals/domain";
 import { AuthGate } from "./auth-gate";
+import { PaymentSummary } from "./payment-summary";
 export function BookingPicker({
   services,
   ready,
@@ -86,7 +88,7 @@ export function BookingPicker({
   }, [date, initialSelection, serviceId]);
   return (
     <section className="booking-widget">
-      <p className="eyebrow">YOUR NEXT BEAUTY MOMENT</p>
+      <p className="eyebrow">BOOK APPOINTMENT</p>
       <h2>Make time for you.</h2>
       <label>
         Choose a service
@@ -105,6 +107,27 @@ export function BookingPicker({
           ))}
         </select>
       </label>
+      {service && (
+        <div className="booking-service-preview">
+          {service.asset_id ? (
+            <Image
+              src={`/api/media/${service.asset_id}`}
+              alt={service.image_alt || service.name}
+              width={96}
+              height={96}
+              unoptimized
+            />
+          ) : (
+            <span aria-hidden>{service.name.slice(0, 1)}</span>
+          )}
+          <div>
+            <strong>{service.name}</strong>
+            <small>
+              {money(service.price_pence)} · {service.duration_minutes} minutes
+            </small>
+          </div>
+        </div>
+      )}
       <label>
         Date
         <input
@@ -143,17 +166,10 @@ export function BookingPicker({
         ))}
       </div>
       {service && (
-        <div className="booking-price">
-          <span>
-            Deposit today<strong>{money(service.deposit_pence)}</strong>
-          </span>
-          <span>
-            Remaining at appointment
-            <strong>
-              {money(service.price_pence - service.deposit_pence)}
-            </strong>
-          </span>
-        </div>
+        <PaymentSummary
+          servicePricePence={service.price_pence}
+          depositPence={service.deposit_pence}
+        />
       )}
       <details className="booking-policy">
         <summary>Cancellation & deposit policy</summary>

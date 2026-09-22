@@ -2,6 +2,7 @@ import { z } from "zod";
 import { withAccount } from "@/lib/api-account";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
+import { isRequiredDepositWithinLimit } from "@/modules/bookings/deposit-policy";
 import { stripe, paymentReady } from "@/modules/payments/stripe";
 const schema = z
   .object({
@@ -40,6 +41,23 @@ export async function POST(request: Request) {
         throw new AccessError("UNAVAILABLE", 503);
       return reservation;
     });
+    // Re-read the immutable snapshot inside the authenticated customer scope
+    // before a checkout session is created. This is deliberately separate from
+    // form validation and the database trigger, so a forged client request
+    // cannot pay an excessive professional-required deposit.
+    const depositWithinLimit = await withAccount("customer", async (db) => {
+      const row = (
+        await db.query<{ price_pence: number; deposit_pence: number }>(
+          "SELECT price_pence,deposit_pence FROM beauty.bookings WHERE id=$1",
+          [booking.id],
+        )
+      ).rows[0];
+      return Boolean(
+        row &&
+          isRequiredDepositWithinLimit(row.price_pence, row.deposit_pence),
+      );
+    });
+    if (!depositWithinLimit) throw new AccessError("UNAVAILABLE", 503);
     if (booking.status === "confirmed")
       return json({ url: `/account/bookings/${booking.id}` });
     const origin = new URL(process.env.NEXT_PUBLIC_APP_URL!).origin;

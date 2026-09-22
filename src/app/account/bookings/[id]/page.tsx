@@ -10,6 +10,7 @@ import { withIdentity } from "@/lib/db";
 import { PublicHeader } from "@/components/public-header";
 import { AccessMessage } from "@/components/access-message";
 import { BookingActions } from "@/components/booking-actions";
+import { BookingConfirmation } from "@/components/booking-confirmation";
 import { bookingById } from "@/modules/bookings/repository";
 import { money } from "@/modules/professionals/domain";
 export default async function Booking({
@@ -74,6 +75,17 @@ export default async function Booking({
         <p className="lead">
           {b.service_name} with {b.professional_name}
         </p>
+        {b.status === "confirmed" && !data.professional ? (
+          <BookingConfirmation
+            bookingId={b.id}
+            serviceName={b.service_name}
+            professionalName={b.professional_name}
+            startsAt={new Date(b.starts_at).toISOString()}
+            endsAt={new Date(b.ends_at).toISOString()}
+            depositPence={b.captured_pence}
+            remainingPence={b.price_pence - b.captured_pence + b.refunded_pence}
+          />
+        ) : (
         <section className="editor-form">
           <h2>
             {new Intl.DateTimeFormat("en-GB", {
@@ -115,6 +127,7 @@ export default async function Booking({
             </p>
           )}
         </section>
+        )}
         {!data.professional &&
           b.status === "completed" &&
           !data.hasReview &&

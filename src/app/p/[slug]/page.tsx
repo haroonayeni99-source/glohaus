@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { PublicHeader } from "@/components/public-header";
 import { ProfessionalProfile } from "@/components/professional-profile";
 import { BookingPicker } from "@/components/booking-picker";
+import { BottomNavigation } from "@/components/bottom-navigation";
 import { withIdentity } from "@/lib/db";
 import { publicProfile } from "@/modules/professionals/repository";
 import { paymentReady } from "@/modules/payments/stripe";
@@ -92,6 +93,7 @@ export default async function Profile({
           />
         }
       />
+      <BottomNavigation active="search" />
     </>
   );
 }

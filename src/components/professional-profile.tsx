@@ -239,8 +239,16 @@ export function ProfessionalProfile({
                   </div>
                   <div className="profile-service-price">
                     <strong>{money(service.price_pence)}</strong>
-                    <a className="text-link" href="#booking">
-                      Availability <ArrowUpRight size={14} />
+                    <span className="service-deposit-note">
+                      {service.deposit_pence
+                        ? `${money(service.deposit_pence)} deposit`
+                        : "No deposit"}
+                    </span>
+                    <a
+                      className="profile-service-book"
+                      href={`?bookService=${encodeURIComponent(service.id)}#booking`}
+                    >
+                      Book <ArrowUpRight size={14} />
                     </a>
                   </div>
                 </article>

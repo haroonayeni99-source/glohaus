@@ -9,6 +9,10 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { enrolAccount, type SqlClient } from "@/modules/accounts/repository";
 import { profileSchema, serviceSchema } from "@/modules/professionals/domain";
 import {
+  depositLimitMessage,
+  maximumRequiredDepositPence,
+} from "@/modules/bookings/deposit-policy";
+import {
   deactivateService,
   updateProfile,
   saveService,
@@ -202,6 +206,31 @@ it("validates money in integer pence and sensible duration", () => {
   expect(
     serviceSchema.safeParse({ ...service, durationMinutes: 16 }).success,
   ).toBe(false);
+});
+
+it("enforces GLOHAUS's 40% deposit maximum in the shared service policy", () => {
+  expect(maximumRequiredDepositPence(5000)).toBe(2000);
+  expect(
+    serviceSchema.safeParse({ ...service, pricePence: 5000, depositPence: 2000 })
+      .success,
+  ).toBe(true);
+  const invalid = serviceSchema.safeParse({
+    ...service,
+    pricePence: 5000,
+    depositPence: 2001,
+  });
+  expect(invalid.success).toBe(false);
+  if (!invalid.success)
+    expect(invalid.error.issues[0].message).toBe(depositLimitMessage(5000));
+});
+
+it("does not allow a direct service write to bypass the deposit policy", async () => {
+  await expect(
+    db.query(
+      "INSERT INTO beauty.services(professional_id,name,duration_minutes,price_pence,deposit_pence) VALUES($1,'Invalid deposit',60,5000,2001)",
+      [ownerId],
+    ),
+  ).rejects.toThrow(/service_required_deposit_maximum|check constraint/i);
 });
 
 describe.sequential("public directory pagination", () => {

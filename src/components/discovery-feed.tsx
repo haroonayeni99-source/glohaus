@@ -15,6 +15,7 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpRight,
+  Bell,
   Bookmark,
   Compass,
   Search,
@@ -24,6 +25,7 @@ import {
   X,
 } from "lucide-react";
 import { Brand } from "./brand";
+import { BottomNavigation } from "./bottom-navigation";
 import type { PublicPost } from "@/modules/posts/domain";
 import { categories } from "@/modules/professionals/domain";
 import { inspiration } from "@/modules/discovery/inspiration";
@@ -251,7 +253,7 @@ export function DiscoveryFeed({
     <div className="discover-app">
       <aside className="discovery-sidebar">
         <Brand />
-        <p className="discovery-tagline">Find your next inspiration.</p>
+        <p className="discovery-tagline">Beauty. Book. Shop. Belong.</p>
         <nav aria-label="Main navigation">
           <button
             className={
@@ -299,19 +301,35 @@ export function DiscoveryFeed({
       </aside>
       <main id="main" className="discovery-main">
         <header className="discovery-top">
-          <div>
-            <p className="eyebrow">THE BEAUTY OF DISCOVERY</p>
+          <div className="discovery-mobile-brand">
+            <Brand />
+          </div>
+          <div className="discovery-heading">
+            <p className="eyebrow">BEAUTY. BOOK. SHOP. BELONG.</p>
             <h1>
-              A little scroll. <em>A lot of inspiration.</em>
+              Discover beauty, <em>your way.</em>
             </h1>
             <p className="discovery-trust">
               Browse freely. Book when you’re ready.
             </p>
           </div>
-          <Link className="button small" href="/sign-up">
-            Join GLOHAUS
-            <ArrowUpRight size={16} />
-          </Link>
+          <div className="discovery-top-actions">
+            <Link className="discovery-search-bar" href="/explore">
+              <Search size={17} aria-hidden />
+              <span>Search services, professionals...</span>
+            </Link>
+            <Link
+              className="discovery-notifications"
+              href="/workspace"
+              aria-label="Your notifications"
+            >
+              <Bell size={19} aria-hidden />
+            </Link>
+            <Link className="button small discovery-join" href="/sign-up">
+              Join GLOHAUS
+              <ArrowUpRight size={16} />
+            </Link>
+          </div>
         </header>
         <div className="discovery-tabs" aria-label="Filter inspiration">
           {["For you", ...categories, "Tutorials"].map((item) => (
@@ -597,24 +615,7 @@ export function DiscoveryFeed({
           </div>
         )}
       </main>
-      <nav className="mobile-discovery-nav" aria-label="Mobile navigation">
-        <button onClick={() => filter("For you")}>
-          <Compass size={21} />
-          Discover
-        </button>
-        <Link href="/explore">
-          <Search size={21} />
-          {labels.Professionals}
-        </Link>
-        <button onClick={() => filter("Saved")}>
-          <Bookmark size={21} />
-          Saved
-        </button>
-        <Link href="/workspace">
-          <UserRound size={21} />
-          Your space
-        </Link>
-      </nav>
+      <BottomNavigation active="home" />
     </div>
   );
 }

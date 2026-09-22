@@ -3,6 +3,8 @@ import { useLabels } from "./platform-labels";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { DepositSelector } from "./deposit-selector";
+import { maximumRequiredDepositPence } from "@/modules/bookings/deposit-policy";
 import {
   categories,
   money,
@@ -25,6 +27,8 @@ export function ProfessionalEditor({
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
+  const [servicePricePence, setServicePricePence] = useState(0);
+  const [depositPence, setDepositPence] = useState(0);
   async function send(url: string, body: unknown, method: string) {
     setBusy(true);
     setNotice("");
@@ -258,10 +262,18 @@ export function ProfessionalEditor({
                 {money(service.price_pence)} · {money(service.deposit_pence)}{" "}
                 deposit
               </p>
+              {service.deposit_pence >
+                maximumRequiredDepositPence(service.price_pence) && (
+                <p className="deposit-limit-error">
+                  This service needs a deposit update before it can be booked.
+                </p>
+              )}
             </div>
             <button
               onClick={() => {
                 setEditing(service);
+                setServicePricePence(service.price_pence);
+                setDepositPence(service.deposit_pence);
                 setNotice("Edit the service using the form below.");
               }}
             >
@@ -283,7 +295,11 @@ export function ProfessionalEditor({
                     );
                     if (!response.ok)
                       throw new Error("Could not deactivate service.");
-                    if (editing?.id === service.id) setEditing(null);
+                    if (editing?.id === service.id) {
+                      setEditing(null);
+                      setServicePricePence(0);
+                      setDepositPence(0);
+                    }
                     setNotice(
                       "Service deactivated. Existing bookings are preserved.",
                     );
@@ -315,7 +331,7 @@ export function ProfessionalEditor({
             description: data.get("description"),
             durationMinutes: Number(data.get("durationMinutes")),
             pricePence: Math.round(Number(data.get("price")) * 100),
-            depositPence: Math.round(Number(data.get("deposit")) * 100),
+            depositPence,
             active: data.get("active") === "true",
             assetId: data.get("assetId") || null,
           });
@@ -332,6 +348,8 @@ export function ProfessionalEditor({
           ) {
             setEditing(null);
             form.reset();
+            setServicePricePence(0);
+            setDepositPence(0);
           }
         }}
       >
@@ -393,17 +411,11 @@ export function ProfessionalEditor({
               step="0.01"
               required
               defaultValue={editing ? editing.price_pence / 100 : undefined}
-            />
-          </label>
-          <label>
-            Deposit (£)
-            <input
-              name="deposit"
-              type="number"
-              min={0}
-              step="0.01"
-              required
-              defaultValue={editing ? editing.deposit_pence / 100 : 0}
+              onChange={(event) =>
+                setServicePricePence(
+                  Math.round((Number(event.target.value) || 0) * 100),
+                )
+              }
             />
           </label>
           <label>
@@ -417,6 +429,12 @@ export function ProfessionalEditor({
             </select>
           </label>
         </div>
+        <DepositSelector
+          key={editing?.id || "new"}
+          pricePence={servicePricePence}
+          initialDepositPence={editing?.deposit_pence || 0}
+          onChange={setDepositPence}
+        />
         <div className="editor-actions">
           <button className="button" disabled={busy}>
             {editing ? "Save service" : "Add service"}
@@ -425,7 +443,11 @@ export function ProfessionalEditor({
             <button
               type="button"
               className="text-link"
-              onClick={() => setEditing(null)}
+              onClick={() => {
+                setEditing(null);
+                setServicePricePence(0);
+                setDepositPence(0);
+              }}
             >
               Cancel editing
             </button>

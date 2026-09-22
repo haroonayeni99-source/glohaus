@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isRequiredDepositWithinLimit } from "./deposit-policy";
 // Money is always integer pence. These policies do not authorize payment/refund execution.
 const pence = z.number().int().min(0).max(1000000);
 export const bookingSnapshotSchema = z
@@ -16,9 +17,14 @@ export const bookingSnapshotSchema = z
     cancellationPolicyVersion: z.string().min(1).max(50),
   })
   .strict()
-  .refine((value) => value.depositPence <= value.pricePence, {
-    message: "Deposit exceeds price",
-  });
+  .refine(
+    (value) =>
+      isRequiredDepositWithinLimit(value.pricePence, value.depositPence),
+    {
+      message: "Deposit exceeds GLOHAUS's 40% maximum.",
+      path: ["depositPence"],
+    },
+  );
 export type BookingSnapshot = z.infer<typeof bookingSnapshotSchema>;
 export type BookingStatus =
   | "payment_pending"

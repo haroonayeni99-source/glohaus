@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ProfessionalCard } from "@/components/professional-card";
 import { Search, ArrowUpRight, Sparkles } from "lucide-react";
 import { PublicHeader } from "@/components/public-header";
+import { BottomNavigation } from "@/components/bottom-navigation";
 import { withIdentity } from "@/lib/db";
 import { discoveryOptions } from "@/modules/professionals/discovery";
 import { discoveryPage } from "@/modules/professionals/repository";
@@ -97,6 +98,7 @@ export default async function Explore({
           )}
         </nav>
       </main>
+      <BottomNavigation active="search" />
     </>
   );
 }

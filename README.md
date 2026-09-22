@@ -14,7 +14,11 @@ A responsive beauty discovery and appointment platform for England, using GBP an
 
 The financial foundation uses a balanced, append-only ledger with configurable fee policies, wallet buckets and owner-only financial configuration. It does not store card details or enable customer charges, transfers or payouts until the payment provider, KYC, policies and production setup have been completed.
 
-The home page has a browse-first, vertically scrolling inspiration feed. Professionals can publish written design/tutorial posts and portfolio photos linked to their services. The initial public preview contains clearly labelled editorial inspiration rather than fictional professionals or reviews. Video uploads and the requested product marketplace remain unfinished.
+## Required deposit policy
+
+GLOHAUS enforces a strict maximum professional-required deposit of **40% of the service price**. It is validated in the professional service form, server-side request schema, immutable booking snapshot, checkout preparation and the database. Fixed and percentage deposits are both subject to the same cap. If a service price changes, the professional must bring its deposit back within the new maximum before the changed service can be saved or booked. Any GLOHAUS booking fee is separate, must come from a server-authorised quote and does not count toward the 40% cap.
+
+The home page has a browse-first, vertically scrolling inspiration feed. Professionals can publish written design/tutorial posts and portfolio photos linked to their services. The initial public preview contains clearly labelled editorial inspiration rather than fictional professionals or reviews. The Shop route and navigation are in place, but product inventory, delivery tracking and marketplace checkout remain unavailable until their authorised data and payment workflows are ready.
 
 ## Run locally
 
@@ -39,7 +43,7 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-The latest local unit/database run passes **215 tests across 18 files**. These cover account isolation, role restrictions, public visibility, booking transitions, availability across daylight-saving changes, deposit/refund rules, review eligibility, notifications, image handling, financial quote calculations and ledger isolation. PGlite exercises SQL policies locally; it does not replace independent-connection concurrency tests against the actual managed PostgreSQL deployment.
+The test suite covers account isolation, role restrictions, public visibility, booking transitions, availability across daylight-saving changes, the 40% required-deposit cap, refund rules, review eligibility, notifications, image handling, financial quote calculations and ledger isolation. PGlite exercises SQL policies locally; it does not replace independent-connection concurrency tests against the actual managed PostgreSQL deployment.
 
 The Playwright suite currently targets missing-credentials behavior on port 3000. Authenticated provider journeys still need staging credentials and end-to-end tests. Public preview interactions have also been checked through the browser. See the status document for launch gates.
 

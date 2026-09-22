@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  depositLimitMessage,
+  isRequiredDepositWithinLimit,
+} from "@/modules/bookings/deposit-policy";
 export const categories = [
   "Hair",
   "Nails",
@@ -101,9 +105,13 @@ export const serviceSchema = z
     assetId: z.uuid().nullable().optional(),
   })
   .strict()
-  .refine((value) => value.depositPence <= value.pricePence, {
-    message: "Deposit cannot exceed the service price",
-    path: ["depositPence"],
+  .superRefine((value, context) => {
+    if (!isRequiredDepositWithinLimit(value.pricePence, value.depositPence))
+      context.addIssue({
+        code: "custom",
+        path: ["depositPence"],
+        message: depositLimitMessage(value.pricePence),
+      });
   });
 export type ProfileInput = z.infer<typeof profileSchema>;
 export type ServiceInput = z.infer<typeof serviceSchema>;

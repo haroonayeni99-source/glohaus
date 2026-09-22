@@ -118,6 +118,19 @@ describe.sequential("booking transactions and verified deposits", () => {
     booking = result.rows[0].data.id;
     expect(result.rows[0].data.depositPence).toBe(1500);
   });
+  it("rejects an excessive deposit at the immutable booking boundary", async () => {
+    const customerId = (
+      await db.query<{ id: string }>(
+        "SELECT id FROM beauty.users WHERE auth_id='bob'",
+      )
+    ).rows[0].id;
+    await expect(
+      db.query(
+        "INSERT INTO beauty.bookings(professional_id,customer_id,service_id,service_name,customer_name,professional_name,starts_at,ends_at,duration_minutes,price_pence,deposit_pence,status,hold_expires_at) VALUES($1,$2,$3,'Manicure','bob','The Studio',now()+interval '20 days',now()+interval '20 days 1 hour',60,4500,1801,'confirmed',now())",
+        [professional, customerId, service],
+      ),
+    ).rejects.toThrow("MAXIMUM_DEPOSIT_EXCEEDED");
+  });
   it("only the booking customer can retrieve its checkout reference", async () => {
     await asUser("alice", (sql) =>
       sql.query("SELECT beauty.attach_checkout($1,'cs_test')", [booking]),

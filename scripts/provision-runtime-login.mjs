@@ -47,7 +47,9 @@ try {
 
   await db.query("SET LOCAL password_encryption = 'scram-sha-256'");
   // PostgreSQL does not allow a bind parameter in ALTER ROLE ... PASSWORD.
-  // format(%L) quotes it server-side; this script never prints the generated SQL.
+  // This changes LOGIN and the password only; it never alters SUPERUSER,
+  // BYPASSRLS or any other managed-role attribute. format(%L) quotes it
+  // server-side and this script never prints the generated SQL.
   const passwordStatement = await db.query(
     "SELECT format('ALTER ROLE %I LOGIN PASSWORD %L', $1, $2) AS statement",
     [role, password],

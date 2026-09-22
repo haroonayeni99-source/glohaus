@@ -8,7 +8,7 @@ Create a Supabase project, configure Auth with verified email, and add the appro
 
 Keep the privileged operator connection on the migration machine only as `MIGRATION_DATABASE_URL`. Run `pnpm db:migrate`. Migrations 0001–0025 create the account, catalogue, booking, review, content, finance, deposit-cap, notification and runtime-access foundations. Applied migrations are checksum-checked; append migrations rather than editing deployed ones.
 
-Migration `0025_runtime_login_role.sql` creates the inert `glohaus_runtime` role. It is `NOLOGIN`, `NOINHERIT`, `NOSUPERUSER`, `NOBYPASSRLS`, has no direct grants or object ownership, and belongs only to `beauty_app`. Do not edit this applied migration or give the web login any operator-role memberships.
+Migration `0025_runtime_login_role.sql` creates the inert `glohaus_runtime` role. It is `NOLOGIN`, `NOINHERIT`, and receives PostgreSQL's safe defaults of `NOSUPERUSER` and `NOBYPASSRLS`; the migration verifies those values without attempting Supabase-unsupported superuser-attribute changes. It has no direct grants or object ownership, and belongs only to `beauty_app`. Do not edit this applied migration or give the web login any operator-role memberships.
 
 On a trusted operator machine, apply the reviewed migration, then provision or rotate the login password without placing it in source control or shell history:
 

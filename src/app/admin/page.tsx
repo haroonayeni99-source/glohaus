@@ -35,8 +35,10 @@ export default async function Page() {
             </h1>
             <p className="lead">Every management action is authorised on the server and recorded in the audit trail.</p>
           </section>
-          <section id="professionals" className="admin-workspace-section">
+          <section id="settings" className="admin-workspace-section">
+            <p className="eyebrow">PLATFORM LANGUAGE</p>
             <h2>Platform labels</h2>
+            <p className="lead">Set the professional title and the category language that customers see across GLOHAUS.</p>
             <AdminLabelEditor initial={labels} />
           </section>
           {owner && (

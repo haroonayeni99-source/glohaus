@@ -4981,3 +4981,56 @@ svg {
   .pro-quick-actions a { min-height: 74px; padding: 12px; }
   .admin-workspace .analytics-grid { grid-template-columns: 1fr; }
 }
+
+/* Connected management details shared by the owner and professional tools. */
+.admin-section-intro {
+  max-width: 760px;
+  margin: -5px 0 14px;
+  color: #bbacb2;
+  font-size: .79rem;
+  line-height: 1.6;
+}
+.admin-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #293f32;
+  color: #aaf0c4;
+  font-size: .64rem;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+.admin-status-suspended,
+.admin-status-removed { background: #52212f; color: #ffb8c9; }
+.pro-management-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 22px 0;
+  padding: 13px 15px;
+  border: 1px solid rgb(255 255 255 / 11%);
+  border-radius: 13px;
+  background: linear-gradient(100deg, #211b1e, #161415);
+}
+.pro-preview-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #ff9bc4;
+  border-radius: 8px;
+  color: #ffb4d0;
+  font-size: .72rem;
+  font-weight: 800;
+}
+.pro-preview-button:hover { background: #ff91bb; color: #24171e; }
+.pro-management-actions > span { color: #b7aaaf; font-size: .72rem; line-height: 1.45; }
+@media (max-width: 640px) {
+  .pro-management-actions { align-items: stretch; flex-direction: column; gap: 9px; }
+  .pro-preview-button { width: 100%; }
+}

@@ -24,8 +24,9 @@ const sections = [
   ["Reviews", "reviews", MessageSquareWarning],
   ["Staff & admins", "staff", ShieldCheck],
   ["Audit log", "audit", BarChart3],
+  ["Settings", "settings", Settings],
 ] as const;
-const pendingSections = [["Verification", BadgeCheck], ["Analytics", BarChart3], ["Notifications", MessageSquareWarning], ["Settings", Settings]] as const;
+const pendingSections = [["Verification", BadgeCheck], ["Analytics", BarChart3], ["Notifications", MessageSquareWarning]] as const;
 
 export function AdminNavigation({ account }: { account: Account }) {
   const owner = account.roles.includes("owner");

@@ -77,6 +77,26 @@ export default async function EditProfile() {
         <p className="pro-page-lead">
           Introduce yourself and make your service menu easy to explore.
         </p>
+        <div className="pro-management-actions">
+          <Link
+            className="pro-preview-button"
+            href={
+              data.profile.publication_status === "published" && data.profile.slug
+                ? `/p/${data.profile.slug}`
+                : "/professional-preview"
+            }
+            target={data.profile.publication_status === "published" && data.profile.slug ? "_blank" : undefined}
+          >
+            {data.profile.publication_status === "published" && data.profile.slug
+              ? "Preview your live page ↗"
+              : "See the GLOHAUS PRO page layout ↗"}
+          </Link>
+          <span>
+            {data.profile.publication_status === "published"
+              ? "Your public changes are visible to customers."
+              : "Publish your page when the profile, a service and availability are ready."}
+          </span>
+        </div>
         <section className="pro-editor-surface">
           <ProfilePhotoEditor
             photo={data.photo}

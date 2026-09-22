@@ -172,6 +172,47 @@ export function AdminManager({ data }: { data: AdminOverview }) {
           </tbody>
         </table>
       </div>
+      <h2 id="professionals" className="admin-section-title">Professional management</h2>
+      <p className="admin-section-intro">
+        These are the accounts currently authorised to manage a GLOHAUS PRO business. Status changes use the same audited server-side action as account management.
+      </p>
+      <div className="admin-table-wrap">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Professional</th>
+              <th>Email</th>
+              <th>Access</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.users
+              .filter((user) => user.roles.includes("professional"))
+              .map((user) => (
+                <tr key={user.id}>
+                  <td>{user.display_name}</td>
+                  <td>{user.email}</td>
+                  <td>GLOHAUS PRO</td>
+                  <td><span className={`admin-status admin-status-${user.status}`}>{user.status}</span></td>
+                  <td>
+                    <button
+                      onClick={() =>
+                        setSelection({ type: "user", id: user.id, name: user.display_name })
+                      }
+                    >
+                      Manage
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            {!data.users.some((user) => user.roles.includes("professional")) && (
+              <tr><td colSpan={5}>No professional accounts have been created yet.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
       <h2 id="bookings" className="admin-section-title">Booking overview</h2>
       <div className="service-edit-list">
         {data.bookings?.map((booking) => (

@@ -2,10 +2,10 @@ export const dynamic = "force-dynamic";
 
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
-import { PublicHeader } from "@/components/public-header";
 import { AccessMessage } from "@/components/access-message";
 import { BookingList } from "@/components/booking-list";
 import { BookingNavigation } from "@/components/booking-navigation";
+import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { bookingListOptions } from "@/modules/bookings/listing";
 import { bookingPage } from "@/modules/bookings/repository";
 import { money } from "@/modules/professionals/domain";
@@ -37,14 +37,16 @@ export default async function Bookings({
     ).rows[0],
   }));
   return (
-    <>
-      <PublicHeader />
-      <main id="main" className="catalog-page">
-        <p className="eyebrow">YOUR APPOINTMENTS & DEPOSITS</p>
-        <h1>
-          Your business, <em>at a glance.</em>
-        </h1>
-        <div className="analytics-grid">
+    <div className="pro-app">
+      <ProfessionalNavigation active="bookings" displayName={account.displayName} />
+      <main id="main" className="pro-main pro-list-page">
+        <p className="pro-kicker">YOUR APPOINTMENTS</p>
+        <h1>Keep your booking week in view.</h1>
+        <p className="pro-page-lead">
+          Each status comes from the protected appointment record. Deposits are
+          shown here after payment verification.
+        </p>
+        <div className="pro-stat-grid pro-booking-summary">
           <article>
             <strong>{money(data.totals.captured)}</strong>
             <span>Deposits captured</span>
@@ -60,18 +62,17 @@ export default async function Bookings({
             <span>Net deposits before Stripe fees</span>
           </article>
         </div>
-        <p className="lead">
-          Payout timing and processing fees are shown in your Stripe account.
-        </p>
-        <BookingNavigation
-          view={options.view}
-          base="/professional/bookings"
-          after={Boolean(options.after)}
-          next={data.page.next}
-        >
-          <BookingList bookings={data.page.bookings} professional />
-        </BookingNavigation>
+        <section className="pro-panel pro-bookings-list-panel">
+          <BookingNavigation
+            view={options.view}
+            base="/professional/bookings"
+            after={Boolean(options.after)}
+            next={data.page.next}
+          >
+            <BookingList bookings={data.page.bookings} professional />
+          </BookingNavigation>
+        </section>
       </main>
-    </>
+    </div>
   );
 }

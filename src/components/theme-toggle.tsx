@@ -1,7 +1,7 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 const storageKey = "glohaus-theme";
 
@@ -9,25 +9,40 @@ function applyTheme(theme: "light" | "night") {
   document.documentElement.dataset.theme = theme;
 }
 
+function readTheme(): "light" | "night" {
+  const saved = window.localStorage.getItem(storageKey);
+  return saved === "night" ||
+    (saved !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches)
+    ? "night"
+    : "light";
+}
+
+function subscribeToTheme(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  window.addEventListener("glohaus-theme-change", onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener("glohaus-theme-change", onStoreChange);
+  };
+}
+
+const serverTheme = () => "light" as const;
+
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "night">("light");
+  const theme = useSyncExternalStore(
+    subscribeToTheme,
+    readTheme,
+    serverTheme,
+  );
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(storageKey);
-    const next =
-      saved === "night" ||
-      (saved !== "light" &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches)
-        ? "night"
-        : "light";
-    setTheme(next);
-    applyTheme(next);
-  }, []);
+    applyTheme(theme);
+  }, [theme]);
 
   function toggle() {
     const next = theme === "night" ? "light" : "night";
-    setTheme(next);
     window.localStorage.setItem(storageKey, next);
+    window.dispatchEvent(new Event("glohaus-theme-change"));
     applyTheme(next);
   }
 

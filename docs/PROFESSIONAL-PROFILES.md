@@ -20,13 +20,13 @@ Server validation bounds fields, rejects forged owner properties, requires the c
 
 Apply migration 0013_professional_details.sql with the operator migration connection using `pnpm db:migrate`. Existing profile values are preserved; new fields default to empty and contact preference defaults to booking. Profile photo storage is additive. Do not deploy the updated profile queries before this migration.
 
-Clerk, managed PostgreSQL and private Blob credentials are still required for live creation/editing/uploads. Follow SETUP.md. No production providers were provisioned by this task.
+Supabase Auth, managed PostgreSQL and private Blob credentials are still required for live creation/editing/uploads. Follow SETUP.md. No production providers were provisioned by this task.
 
 ## Verification
 
 `tests/profile-workflow.test.ts` runs the actual profile, photo, service, opening-hour and media route handlers with PostgreSQL policies in PGlite. Only external identity/database transport and Blob storage are replaced with test adapters; account authorization, request validation, SQL, image conversion and public projection logic run normally. It tests draft creation, photo upload, owner-only reads, publication, edits, selected contact disclosure, service/hour publication, foreign IDs, invalid URLs, duplicate slugs, malformed images, photo replacement/deletion, hiding and suspension.
 
-Other tests cover image limits/metadata and review moderation/eligibility. These checks do not establish that a live Clerk application or Blob store is configured correctly. Final staging checks must use two real professionals and a customer, including uploading, editing, hiding and viewing from an anonymous browser.
+Other tests cover image limits/metadata and review moderation/eligibility. These checks do not establish that a live Supabase Auth application or Blob store is configured correctly. Final staging checks must use two real professionals and a customer, including uploading, editing, hiding and viewing from an anonymous browser.
 
 For repeatable visual checks without adding fictional professionals to the application:
 
@@ -43,4 +43,4 @@ Mobile checks at 390px verify layout, image loading, section navigation and Book
 
 The availability editor now offers Whole days or Specific hours. Whole-day ranges include the final date; timed ranges end at the exact chosen time and can run overnight. Both use Europe/London rather than the browser timezone. Missing or repeated clock-change times are rejected with guidance to choose another time. Existing confirmed appointments and active checkout holds prevent overlapping blocks. A block may end exactly when an appointment starts. Labels remain owner-only through the existing row-level security.
 
-The API accepts optional `startTime` and `endTime` values together in HH:mm format alongside the existing dates and label. Old whole-day requests remain compatible; no database migration is needed. Unit and database tests cover conversion, invalid times, booking boundaries and cross-account access. Live authenticated browser testing still requires the documented Clerk/database setup.
+The API accepts optional `startTime` and `endTime` values together in HH:mm format alongside the existing dates and label. Old whole-day requests remain compatible; no database migration is needed. Unit and database tests cover conversion, invalid times, booking boundaries and cross-account access. Live authenticated browser testing still requires the documented Supabase Auth/database setup.

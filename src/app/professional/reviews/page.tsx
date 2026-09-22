@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
-import { PublicHeader } from "@/components/public-header";
 import { AccessMessage } from "@/components/access-message";
+import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { professionalReviews } from "@/modules/reviews/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your reviews" };
@@ -20,17 +20,13 @@ export default async function Reviews() {
     professionalReviews(db, account.professionalId!),
   );
   return (
-    <>
-      <PublicHeader />
-      <main id="main" className="catalog-page">
-        <Link className="back-link" href="/professional">
-          ← Your workspace
-        </Link>
-        <p className="eyebrow">FEEDBACK FROM REAL APPOINTMENTS</p>
-        <h1>
-          Your work, <em>in their words.</em>
-        </h1>
-        <div className="analytics-grid">
+    <div className="pro-app">
+      <ProfessionalNavigation active="more" displayName={account.displayName} />
+      <main id="main" className="pro-main pro-list-page">
+        <Link className="pro-back-link" href="/professional">← Dashboard</Link>
+        <p className="pro-kicker">FEEDBACK FROM REAL APPOINTMENTS</p>
+        <h1>Your work, in their words.</h1>
+        <div className="pro-stat-grid pro-review-summary">
           <article>
             <strong>
               {totals.average === null
@@ -44,19 +40,20 @@ export default async function Reviews() {
             <span>Visible appointment reviews</span>
           </article>
         </div>
-        <p className="lead">
+        <p className="pro-page-lead">
           Only customers with completed appointments can leave a review. Reviews
           hidden by moderation do not appear on your public profile.
         </p>
         {reviews.length ? (
-          reviews.map((review) => (
-            <article className="review-card" key={review.id}>
-              <div className="panel-title">
+          <section className="pro-review-list">
+            {reviews.map((review) => (
+              <article key={review.id}>
+              <div className="pro-panel-title">
                 <strong>
                   <Star size={16} aria-hidden /> {review.rating}/5 ·{" "}
                   {review.public_name}
                 </strong>
-                <span className="muted-badge">
+                <span className="pro-status pro-status-confirmed">
                   {review.moderation_status === "visible"
                     ? "Visible"
                     : "Hidden by moderation"}
@@ -72,28 +69,24 @@ export default async function Reviews() {
                   }).format(new Date(review.created_at))}
                 </small>
               </p>
-              <Link
-                className="text-link"
-                href={`/account/bookings/${review.booking_id}`}
-              >
-                View appointment →
-              </Link>
+              <Link href={`/account/bookings/${review.booking_id}`}>View appointment →</Link>
             </article>
-          ))
+            ))}
+          </section>
         ) : (
-          <section className="catalog-empty">
+          <section className="pro-empty-state pro-large-empty">
             <Star size={32} aria-hidden />
             <h2>Your first review starts with a great appointment.</h2>
             <p>
               After a completed visit, your customer can share their experience.
               Their feedback will appear here.
             </p>
-            <Link className="text-link" href="/professional/bookings">
+            <Link href="/professional/bookings">
               View appointments →
             </Link>
           </section>
         )}
       </main>
-    </>
+    </div>
   );
 }

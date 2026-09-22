@@ -5,7 +5,7 @@ This is the working execution plan for the supplied social marketplace briefs. T
 ## Implemented foundation
 
 - Guest-accessible discovery feed, search, public profiles, portfolios, service menus, prices, reviews and availability.
-- Clerk-ready account identity, PostgreSQL-backed customer/professional/admin roles, RLS and recent-MFA admin checks.
+- Supabase Auth-ready account identity, PostgreSQL-backed customer/professional/admin roles, RLS and recent-MFA admin checks.
 - Professional profile, services, portfolio, posts/tutorials, availability, booking holds, cancellation/refund decisions and reviews.
 - Stripe Connect-ready deposit checkout, verified webhook handling and refunds. No payment provider is configured yet.
 - Feed scroll snapping, account-backed community likes/saves, share URLs and safe booking return-to-auth continuation.
@@ -20,7 +20,7 @@ This is the working execution plan for the supplied social marketplace briefs. T
 5. **Discovery improvements** — filters for price/rating/availability, grid/list mode and map provider selected after location/privacy decisions are settled.
 6. **Dashboard and admin operations** — calendars, customers, richer earnings/reconciliation, verification queue and analytics events.
 7. **Commerce marketplace** — separate product/order/seller/fulfilment system only after seller-of-record, shipping, returns and payment-provider configuration are decided.
-8. **Provider activation and release checks** — Clerk, PostgreSQL, Stripe, Blob and Resend configuration; real browser journeys, provider webhooks, concurrency and security testing.
+8. **Provider activation and release checks** — Supabase Auth, PostgreSQL, Stripe, Blob and Resend configuration; real browser journeys, provider webhooks, concurrency and security testing.
 
 ## Non-negotiable security rules
 
@@ -32,4 +32,4 @@ This is the working execution plan for the supplied social marketplace briefs. T
 
 ## Current external-service gates
 
-No Clerk, PostgreSQL, Stripe, Blob or Resend resources have been provisioned. Provider-dependent functionality is implemented around environment variables, but cannot be live-tested or released until these services are configured.
+No Supabase Auth, PostgreSQL, Stripe, Blob or Resend resources have been provisioned. Provider-dependent functionality is implemented around environment variables, but cannot be live-tested or released until these services are configured.

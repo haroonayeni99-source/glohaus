@@ -41,7 +41,7 @@ export async function findAccount(
     : null;
 }
 
-// Caller owns the transaction; its identity context comes from verified Clerk auth.
+// Caller owns the transaction; its identity context comes from verified auth.
 export async function enrolAccount(
   db: SqlClient,
   identity: Identity,

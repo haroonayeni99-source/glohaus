@@ -4,7 +4,7 @@
 
 **Status:** proposal for review, 14 September 2026. This document designs the complete MVP; it does not mean these features have been implemented.
 
-The existing code contains the Next.js account foundation, Clerk integration, account/role migration, protected workspace shells, and account security tests. Clerk and PostgreSQL have not been provisioned. Booking, payments, portfolio, discovery, reviews, notifications, admin management, and production deployment remain future work.
+The existing code contains the Next.js account foundation, Supabase Auth integration, account/role migration, protected workspace shells, public discovery, profiles, booking, reviews, notification inboxes and protected financial foundations. Provider configuration and live end-to-end validation remain release gates.
 
 ## Scope and assumptions
 
@@ -44,7 +44,7 @@ Use a **modular monolith**: one repository and deployment, with independently or
 flowchart LR
   Web[Responsive web] --> API[Versioned API / server services]
   Future[Future mobile client] -.-> API
-  Clerk[Clerk identity] --> API
+  Auth[Supabase Auth identity] --> API
   API --> Authz[Authorization and response filtering]
   Authz --> Domain[Account / profile / booking / payment modules]
   Domain --> DB[(PostgreSQL with RLS)]
@@ -66,7 +66,7 @@ Use UUID primary keys, `timestamptz` timestamps, explicit foreign keys, and chec
 
 | Entity                         | Principal fields and ownership                                                                                   | Relationships and constraints                                                                                |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `users`                        | `id`, unique `auth_id`, private email/name, `status`, timestamps                                                 | One identity per Clerk subject; active/suspended/removed. Existing.                                          |
+| `users`                        | `id`, unique `auth_id`, private email/name, `status`, timestamps                                                 | One identity per Supabase Auth subject; active/suspended/removed. Existing.                                          |
 | `user_roles`                   | `user_id`, `role`                                                                                                | Composite primary key; customer/professional/admin. Existing.                                                |
 | `customer_profiles`            | `user_id`, optional private contact preferences                                                                  | One-to-one with user. Existing skeleton.                                                                     |
 | `professional_profiles`        | `id`, unique `user_id`, unique slug, business name, bio, locality, timezone, publication status                  | One owner; draft/published/hidden. Existing skeleton; public fields proposed.                                |
@@ -120,9 +120,9 @@ Index foreign keys and actual list patterns: professional/start time, customer/s
 
 ## 4. Authentication and authorisation structure
 
-**Clerk authenticates identity. glohaus authorizes actions.** Use Clerk-managed registration, verified email, login, recovery, and MFA. Store its immutable subject as `users.auth_id`; email is never an ownership key. Never trust a role, user ID, professional ID, or price simply because the browser submitted it.
+**Supabase Auth authenticates identity. GLOHAUS authorizes actions.** Use Supabase Auth-managed registration, verified email, login, recovery, and MFA. Store its immutable subject as `users.auth_id`; email is never an ownership key. Never trust a role, user ID, professional ID, or price simply because the browser submitted it.
 
-Every private request performs: verified session → active provider identity → database account status → required role → record ownership/relationship → allowed fields/action. Current account code also checks live Clerk session status; keep it fail-closed, monitor provider latency/rate limits, and avoid cross-request permission caches. A future short-lived session cache would require a documented revocation strategy before adoption.
+Every private request performs: verified session → active provider identity → database account status → required role → record ownership/relationship → allowed fields/action. Current account code verifies Supabase Auth claims server-side; keep it fail-closed, monitor provider latency/rate limits, and avoid cross-request permission caches. A future short-lived session cache would require a documented revocation strategy before adoption.
 
 Two independent layers protect records:
 
@@ -306,10 +306,9 @@ Specify OpenAPI contracts as routes are added, with bounded inputs, safe respons
 | Variable                                                                                             | Scope and purpose                                               | When needed                   |
 | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ----------------------------- |
 | `NEXT_PUBLIC_APP_URL`                                                                                | Public canonical origin, redirect and origin validation         | Existing foundation           |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`                                                                  | Public Clerk application identifier                             | Existing foundation           |
-| `CLERK_SECRET_KEY`                                                                                   | Server-only Clerk API access                                    | Existing foundation           |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL`, `NEXT_PUBLIC_CLERK_SIGN_UP_URL`                                     | Public sign-in/sign-up paths                                    | Existing foundation           |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL`, `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL` | Public workspace/onboarding paths                               | Existing foundation           |
+| `NEXT_PUBLIC_SUPABASE_URL`                                                                           | Supabase project URL used by browser and SSR clients                    | Existing foundation           |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`                                                               | Public Supabase Auth application key                                    | Existing foundation           |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`                                                                      | Optional compatibility name for the public key                          | Conditional                   |
 | `DATABASE_URL`                                                                                       | Server-only non-owner runtime connection, TLS/pooling           | Existing foundation           |
 | `MIGRATION_DATABASE_URL`                                                                             | Privileged operator/migration connection; **never web runtime** | Migrations/admin bootstrap    |
 | `PAYMENT_WORKER_DATABASE_URL`, `NOTIFICATION_WORKER_DATABASE_URL`                                    | Scoped job credentials; isolated worker runtime/config          | Payment/automation milestones |
@@ -321,11 +320,11 @@ Specify OpenAPI contracts as routes are added, with bounded inputs, safe respons
 
 Hosted Checkout redirects do not require a browser Stripe SDK or publishable key. Add one only if the integration changes to embedded checkout. No OpenAI/AI API keys or subscription price IDs are required for the MVP.
 
-Launch currency, timezone, cancellation policies, reminder offsets, and deposit rules are validated business configuration/profile fields, not secrets. Public env values are bundled at build time: rebuild when they change. Keep placeholders in `.env.example`; actual values go in ignored `.env.local` or provider secret settings. Validate required capabilities at startup/CI and fail closed when absent. Use independent Clerk, database, payment, storage, and email resources for test/staging/production.
+Launch currency, timezone, cancellation policies, reminder offsets, and deposit rules are validated business configuration/profile fields, not secrets. Public env values are bundled at build time: rebuild when they change. Keep placeholders in `.env.example`; actual values go in ignored `.env.local` or provider secret settings. Validate required capabilities at startup/CI and fail closed when absent. Use independent Supabase Auth, database, payment, storage, and email resources for test/staging/production.
 
 ## 14. Testing strategy
 
-Run relevant tests after each feature; fix failures before advancing. Current local suite: 164 passing business, route-workflow, HTTP-boundary and PGlite/PostgreSQL policy tests. Browser tests and CI configuration are written but were not previously run end-to-end. Real Clerk/provider/hosted database integration is not yet verified.
+Run relevant tests after each feature; fix failures before advancing. Current local suite: 164 passing business, route-workflow, HTTP-boundary and PGlite/PostgreSQL policy tests. Browser tests and CI configuration are written but were not previously run end-to-end. Real Supabase Auth/provider/hosted database integration is not yet verified.
 
 | Layer             | Required tests                                                                                                                                                                                         |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -343,7 +342,7 @@ Use two customers, two professionals, an admin, and suspended/removed identities
 
 ## 15. Deployment strategy
 
-**Target:** Vercel for Next.js; managed PostgreSQL (Neon is a suitable candidate if its selected plan supports required roles/extensions); Clerk identity; Stripe Connect; private R2 storage; Resend email. Final regions and plan choices require launch-country and operating-budget decisions. No services are provisioned by this document.
+**Target:** Vercel for Next.js; managed PostgreSQL (Neon is a suitable candidate if its selected plan supports required roles/extensions); Supabase Auth identity; Stripe Connect; private R2 storage; Resend email. Final regions and plan choices require launch-country and operating-budget decisions. No services are provisioned by this document.
 
 Development runs locally. Staging uses isolated non-production services and Stripe test mode, is access-protected, and cannot send real appointment emails. Production uses its own domain, credentials, migration history, webhook endpoints, and customer records. Only a narrow signed-webhook path may be reachable through staging protection for provider testing; never remove protection globally for convenience.
 
@@ -352,7 +351,7 @@ Deployment order:
 1. Provision providers and a dedicated database; choose matching regions and retention/backups. Verify `btree_gist`, least-privilege roles, TLS and connection pooling.
 2. Apply migrations once using the operator connection with checksum checks and an advisory deployment lock. Never run migrations from browser requests or independently in every server instance.
 3. Create non-owner runtime/job roles and supply only their allowed credentials. Keep the migration connection off Vercel runtime.
-4. Configure Clerk origin/redirects, email verification, admin MFA, and separate staging/production identities.
+4. Configure Supabase Auth origin/redirects, email verification, admin MFA, and separate staging/production identities.
 5. Run lint, TypeScript, domain/RLS/integration/browser tests and production build in CI; review migration SQL.
 6. Deploy staging; test the complete external identity → database flow before claiming working accounts. Add storage/payments/notifications only at their milestones.
 7. Configure provider callbacks, signing secrets and scheduling; confirm signed events and reconciliation. Validate actual notification scheduling capability on the selected hosting plan.

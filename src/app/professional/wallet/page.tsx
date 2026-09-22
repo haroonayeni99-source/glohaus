@@ -2,10 +2,10 @@ import Link from "next/link";
 import { ArrowUpRight, CircleAlert, ShieldCheck, WalletCards } from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
-import { PublicHeader } from "@/components/public-header";
 import { AccessMessage } from "@/components/access-message";
 import { professionalWallet } from "@/modules/finance/repository";
 import { money } from "@/modules/professionals/domain";
+import { ProfessionalNavigation } from "@/components/professional-navigation";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "GLOHAUS Wallet" };
@@ -22,23 +22,18 @@ export default async function ProfessionalWalletPage() {
   const wallet = await withIdentity(result.account.authId, professionalWallet);
   const restricted = wallet.withdrawalsBlocked || wallet.instantPayoutBlocked;
   return (
-    <>
-      <PublicHeader />
-      <main id="main" className="catalog-page">
-        <Link className="back-link" href="/professional">
-          ← Your workspace
-        </Link>
-        <p className="eyebrow">GLOHAUS WALLET</p>
-        <h1>
-          Money, <em>made clear.</em>
-        </h1>
-        <p className="lead">
+    <div className="pro-app">
+      <ProfessionalNavigation active="wallet" displayName={result.account.displayName} />
+      <main id="main" className="pro-main pro-list-page">
+        <p className="pro-kicker">GLOHAUS WALLET</p>
+        <h1>Money, made clear.</h1>
+        <p className="pro-page-lead">
           Your balance is calculated from protected transaction records. Pending
           money becomes available only after the relevant booking or dispute
           protection period.
         </p>
 
-        <section className="analytics-grid" aria-label="Wallet balances">
+        <section className="pro-stat-grid pro-wallet-balances" aria-label="Wallet balances">
           <article>
             <strong>{money(wallet.availablePence)}</strong>
             <span>Available to withdraw</span>
@@ -66,7 +61,7 @@ export default async function ProfessionalWalletPage() {
         </section>
 
         {restricted && (
-          <section className="form-notice" role="status">
+          <section className="pro-finance-notice" role="status">
             <CircleAlert size={18} aria-hidden />
             <span>
               Financial controls are currently restricting one or more payout
@@ -75,9 +70,9 @@ export default async function ProfessionalWalletPage() {
           </section>
         )}
 
-        <section className="welcome-panel wallet-explainer">
+        <section className="pro-panel pro-wallet-explainer">
           <div>
-            <span className="pill">
+            <span className="pro-finance-pill">
               <ShieldCheck size={14} aria-hidden /> Protected release
             </span>
             <h2>How money moves</h2>
@@ -88,15 +83,15 @@ export default async function ProfessionalWalletPage() {
               hold funds while they are reviewed.
             </p>
           </div>
-          <WalletCards className="welcome-symbol" aria-hidden />
+          <WalletCards className="pro-wallet-symbol" aria-hidden />
         </section>
 
-        <section className="empty-panel wallet-tax-panel">
-          <div className="panel-title">
+        <section className="pro-panel pro-tax-panel">
+          <div className="pro-panel-title">
             <h2>Tax Centre</h2>
-            <span className="muted-badge">Earnings records</span>
+            <span className="pro-status pro-status-confirmed">Earnings records</span>
           </div>
-          <div className="empty-content">
+          <div className="pro-tax-copy">
             <h3>Your records, in one place.</h3>
             <p>
               GLOHAUS will provide earnings summaries and transaction records.
@@ -109,12 +104,12 @@ export default async function ProfessionalWalletPage() {
               GLOHAUS publishes the applicable terms and payment-provider
               onboarding is complete.
             </p>
-            <Link className="text-link" href="/professional/bookings">
+            <Link href="/professional/bookings">
               View appointments <ArrowUpRight size={18} aria-hidden />
             </Link>
           </div>
         </section>
       </main>
-    </>
+    </div>
   );
 }

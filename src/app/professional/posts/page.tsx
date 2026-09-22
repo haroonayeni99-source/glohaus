@@ -4,7 +4,7 @@ import Link from "next/link";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
 import { AccessMessage } from "@/components/access-message";
-import { PublicHeader } from "@/components/public-header";
+import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { PostEditor } from "@/components/post-editor";
 import type { OwnPost } from "@/modules/posts/domain";
 import type { Service } from "@/modules/professionals/domain";
@@ -38,18 +38,14 @@ export default async function Posts() {
     ).rows,
   }));
   return (
-    <>
-      <PublicHeader />
-      <main id="main" className="catalog-page">
-        <Link className="back-link" href="/professional">
-          ← Your workspace
-        </Link>
-        <p className="eyebrow">YOUR VOICE. YOUR CRAFT.</p>
-        <h1>
-          Let your work <em>be discovered.</em>
-        </h1>
-        <PostEditor {...data} />
+    <div className="pro-app">
+      <ProfessionalNavigation active="more" displayName={account.displayName} />
+      <main id="main" className="pro-main pro-management-page">
+        <Link className="pro-back-link" href="/professional">← Dashboard</Link>
+        <p className="pro-kicker">YOUR VOICE. YOUR CRAFT.</p>
+        <h1>Let your work be discovered.</h1>
+        <section className="pro-editor-surface"><PostEditor {...data} /></section>
       </main>
-    </>
+    </div>
   );
 }

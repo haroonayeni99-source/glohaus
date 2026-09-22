@@ -20,4 +20,4 @@ Apply migration `0017_service_images.sql` before using the updated app. Existing
 
 ## Verification
 
-Tests cover create/edit/reactivate/deactivate through authenticated routes, other-owner rejection, service validation, owned-image association, public image hiding, retained service records and rejection of inactive bookings. Real authenticated browser/upload verification still requires Clerk, PostgreSQL and Blob provisioning; local workflow tests substitute identity and storage providers.
+Tests cover create/edit/reactivate/deactivate through authenticated routes, other-owner rejection, service validation, owned-image association, public image hiding, retained service records and rejection of inactive bookings. Real authenticated browser/upload verification still requires Supabase Auth, PostgreSQL and Blob provisioning; local workflow tests substitute identity and storage providers.

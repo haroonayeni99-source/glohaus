@@ -320,7 +320,7 @@ export function DiscoveryFeed({
             </Link>
             <Link
               className="discovery-notifications"
-              href="/workspace"
+              href="/notifications"
               aria-label="Your notifications"
             >
               <Bell size={19} aria-hidden />

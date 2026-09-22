@@ -19,7 +19,7 @@ export function GlohausHeader({
           <Search size={17} aria-hidden />
           <span>Search beauty</span>
         </Link>
-        <Link className="glohaus-notification-link" href="/workspace" aria-label="Your GLOHAUS notifications">
+        <Link className="glohaus-notification-link" href="/notifications" aria-label="Your GLOHAUS notifications">
           <Bell size={19} aria-hidden />
         </Link>
         <Link className="glohaus-sign-in" href="/sign-in">

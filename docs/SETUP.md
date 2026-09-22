@@ -2,11 +2,11 @@
 
 Use separate development/staging and production resources. Keep every secret in environment variables. The .env.example file is the complete inventory of variables currently consumed by the application; do not commit .env.local.
 
-## 1. Clerk and PostgreSQL
+## 1. Supabase Auth and PostgreSQL
 
-Create a development Clerk application, enable verified email and second-factor authentication, and configure the application origin and sign-in/sign-up URLs. Set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY. Admin users need recent second-factor verification, not simply MFA enrollment.
+Create a Supabase project, configure Auth with verified email, and add the approved development and production redirect URLs. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in the matching Vercel environment. The browser uses only this public key; database and provider credentials stay server-side. Admin users need recent second-factor verification, not simply MFA enrollment.
 
-Create PostgreSQL and keep the privileged operator connection on the migration machine only as MIGRATION_DATABASE_URL. Run `pnpm db:migrate`. Migrations 0001–0016 create accounts, profiles/services, posts, admin operations, availability, bookings/payments, reviews, notifications, portfolio, post images, refunds the minimum positive GBP deposit, extended profiles/photos, zero-deposit booking independence and booking-list and discovery-order indexes. Applied migrations are checksum-checked; append migrations rather than editing deployed ones.
+Keep the privileged operator connection on the migration machine only as `MIGRATION_DATABASE_URL`. Run `pnpm db:migrate`. Migrations 0001–0023 create the account, catalogue, booking, review, content, finance, deposit-cap and private in-app-notification foundations. Applied migrations are checksum-checked; append migrations rather than editing deployed ones.
 
 Have the database administrator create two distinct runtime logins, both NOSUPERUSER and NOBYPASSRLS, without application table ownership or membership in any owner role:
 
@@ -49,16 +49,18 @@ Reference: [Resend idempotency](https://resend.com/docs/dashboard/emails/idempot
 
 ## 5. Vercel release process
 
-1. Import outputs/beauty-platform as the project root. Use the pinned pnpm version and a supported Node.js version satisfying package.json.
+1. Use the repository root (`.`) as the Vercel project root. Use the pinned pnpm version and Node.js 22.x.
 2. Create isolated preview/staging resources; never point untrusted preview branches at production credentials.
-3. Configure runtime variables from .env.example, excluding MIGRATION_DATABASE_URL. NEXT_PUBLIC_APP_URL must equal the canonical HTTPS deployment origin. Configure Clerk and Stripe URLs for that environment.
+3. Configure runtime variables from .env.example, excluding MIGRATION_DATABASE_URL. NEXT_PUBLIC_APP_URL must equal the canonical HTTPS deployment origin. Configure Supabase Auth and Stripe URLs for that environment.
 4. Run lint, typecheck, tests and build in CI. Apply reviewed migrations separately with the operator credential, then deploy compatible application code.
 5. Run real provider end-to-end and cross-account security checks, including independent-connection booking contention. Verify webhook signatures, duplicate handling and notification delivery.
 6. Enable the scheduler only after verifying its authenticated endpoint and email sender. Configure database backups, restore testing, restricted operational access and redacted error/queue monitoring.
 7. Promote only after the launch gates in IMPLEMENTATION-STATUS.md are resolved. Roll back code only when compatible with the migrated schema; use forward corrective migrations rather than destructive rollback.
 
-No deployment has been performed. The local preview remains useful without these credentials, while private and payment actions stay unavailable.
+The live deployment remains safe without provider credentials: private and payment actions fail closed until their corresponding setup is complete.
 
 Service images additionally require migration `0017_service_images.sql`; the migration runner applies pending migrations in order. Existing services receive no image by default. See [service management](SERVICE-MANAGEMENT.md).
 
-Apply migrations `0018_post_engagement.sql` and `0019_platform_labels.sql` for private likes/saves and admin-editable display names. They introduce no new environment variables. Admin label editing uses the existing fresh-MFA requirement. Guest preferences use local browser storage; account-backed community preferences require Clerk and PostgreSQL.
+Apply migrations `0018_post_engagement.sql` and `0019_platform_labels.sql` for private likes/saves and admin-editable display names. They introduce no new environment variables. Admin label editing uses the existing fresh-MFA requirement. Guest preferences use local browser storage; account-backed community preferences require Supabase Auth and PostgreSQL.
+
+Apply `0023_in_app_notifications.sql` before relying on the in-app notification page. It adds owner-scoped inbox records and booking-state triggers; it does not enable email, SMS or push delivery.

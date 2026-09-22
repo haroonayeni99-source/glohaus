@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
-import { PublicHeader } from "@/components/public-header";
+import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { AccessMessage } from "@/components/access-message";
 import {
   PortfolioEditor,
@@ -29,22 +29,20 @@ export default async function Portfolio() {
       ).rows,
   );
   return (
-    <>
-      <PublicHeader />
-      <main id="main" className="catalog-page">
-        <Link href="/professional" className="back-link">
-          ← Your workspace
-        </Link>
-        <p className="eyebrow">A LITTLE OF WHAT YOU DO BEST</p>
-        <h1>
-          Your portfolio, <em>your signature.</em>
-        </h1>
-        <p className="lead">
+    <div className="pro-app">
+      <ProfessionalNavigation active="more" displayName={account.displayName} />
+      <main id="main" className="pro-main pro-management-page">
+        <Link href="/professional" className="pro-back-link">← Dashboard</Link>
+        <p className="pro-kicker">A LITTLE OF WHAT YOU DO BEST</p>
+        <h1>Your portfolio, your signature.</h1>
+        <p className="pro-page-lead">
           Uploaded images stay private until you publish them. Your professional
           profile must also be published.
         </p>
-        <PortfolioEditor assets={assets} />
+        <section className="pro-editor-surface">
+          <PortfolioEditor assets={assets} />
+        </section>
       </main>
-    </>
+    </div>
   );
 }

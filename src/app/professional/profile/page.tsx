@@ -7,7 +7,7 @@ import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
 import { AccessMessage } from "@/components/access-message";
 import { ProfessionalEditor } from "@/components/professional-editor";
-import { PublicHeader } from "@/components/public-header";
+import { ProfessionalNavigation } from "@/components/professional-navigation";
 import type { ProfileInput, Service } from "@/modules/professionals/domain";
 export default async function EditProfile() {
   const result = await pageAccount("professional");
@@ -68,51 +68,49 @@ export default async function EditProfile() {
       </div>
     );
   return (
-    <>
-      <PublicHeader />
-      <main id="main" className="catalog-page">
-        <Link className="back-link" href="/professional">
-          ← Your workspace
-        </Link>
-        <p className="eyebrow">YOUR PROFESSIONAL PAGE</p>
-        <h1>
-          A home for <em>your craft.</em>
-        </h1>
-        <p className="lead">
+    <div className="pro-app">
+      <ProfessionalNavigation active="more" displayName={account.displayName} />
+      <main id="main" className="pro-main pro-management-page">
+        <Link className="pro-back-link" href="/professional">← Dashboard</Link>
+        <p className="pro-kicker">YOUR PROFESSIONAL PAGE</p>
+        <h1>Build your digital beauty storefront.</h1>
+        <p className="pro-page-lead">
           Introduce yourself and make your service menu easy to explore.
         </p>
-        <ProfilePhotoEditor
-          photo={data.photo}
-          published={data.profile.publication_status === "published"}
-        />
-        <div className="profile-editor-links">
-          <Link href="/professional/availability">
-            Edit opening hours & time off →
-          </Link>
-          <Link href="/professional/portfolio">Manage portfolio →</Link>
-        </div>
-        <ProfessionalEditor
-          initial={{
-            businessDescription: data.profile.business_description,
-            locationDetails: data.profile.location_details,
-            contactPreference: data.profile.contact_preference,
-            contactEmail: data.profile.contact_email,
-            contactPhone: data.profile.contact_phone,
-            instagramUrl: data.profile.instagram_url,
-            tiktokUrl: data.profile.tiktok_url,
-            websiteUrl: data.profile.website_url,
-            slug: data.profile.slug || "",
-            businessName: data.profile.business_name,
-            bio: data.profile.bio,
-            city: data.profile.city,
-            category: data.profile.category,
-            publicationStatus: data.profile.publication_status,
-          }}
-          services={data.services}
-          assets={data.assets}
-        />
-        <ConnectButton />
+        <section className="pro-editor-surface">
+          <ProfilePhotoEditor
+            photo={data.photo}
+            published={data.profile.publication_status === "published"}
+          />
+          <div className="profile-editor-links">
+            <Link href="/professional/availability">
+              Edit opening hours & time off →
+            </Link>
+            <Link href="/professional/portfolio">Manage portfolio →</Link>
+          </div>
+          <ProfessionalEditor
+            initial={{
+              businessDescription: data.profile.business_description,
+              locationDetails: data.profile.location_details,
+              contactPreference: data.profile.contact_preference,
+              contactEmail: data.profile.contact_email,
+              contactPhone: data.profile.contact_phone,
+              instagramUrl: data.profile.instagram_url,
+              tiktokUrl: data.profile.tiktok_url,
+              websiteUrl: data.profile.website_url,
+              slug: data.profile.slug || "",
+              businessName: data.profile.business_name,
+              bio: data.profile.bio,
+              city: data.profile.city,
+              category: data.profile.category,
+              publicationStatus: data.profile.publication_status,
+            }}
+            services={data.services}
+            assets={data.assets}
+          />
+          <ConnectButton />
+        </section>
       </main>
-    </>
+    </div>
   );
 }

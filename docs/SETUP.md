@@ -6,9 +6,39 @@ Use separate development/staging and production resources. Keep every secret in 
 
 Create a Supabase project, configure Auth with verified email, and add the approved development and production redirect URLs. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in the matching Vercel environment. The browser uses only this public key; database and provider credentials stay server-side. Admin users need recent second-factor verification, not simply MFA enrollment.
 
-Keep the privileged operator connection on the migration machine only as `MIGRATION_DATABASE_URL`. Run `pnpm db:migrate`. Migrations 0001–0023 create the account, catalogue, booking, review, content, finance, deposit-cap and private in-app-notification foundations. Applied migrations are checksum-checked; append migrations rather than editing deployed ones.
+Keep the privileged operator connection on the migration machine only as `MIGRATION_DATABASE_URL`. Run `pnpm db:migrate`. Migrations 0001–0025 create the account, catalogue, booking, review, content, finance, deposit-cap, notification and runtime-access foundations. Applied migrations are checksum-checked; append migrations rather than editing deployed ones.
 
-Have the database administrator create two distinct runtime logins, both NOSUPERUSER and NOBYPASSRLS, without application table ownership or membership in any owner role:
+Migration `0025_runtime_login_role.sql` creates the inert `glohaus_runtime` role. It is `NOLOGIN`, `NOINHERIT`, `NOSUPERUSER`, `NOBYPASSRLS`, has no direct grants or object ownership, and belongs only to `beauty_app`. Do not edit this applied migration or give the web login any operator-role memberships.
+
+On a trusted operator machine, apply the reviewed migration, then provision or rotate the login password without placing it in source control or shell history:
+
+```sh
+cd /path/to/glohaus
+read -rs 'GLOHAUS_RUNTIME_DATABASE_PASSWORD?Glohaus runtime password: '; export GLOHAUS_RUNTIME_DATABASE_PASSWORD
+pnpm db:migrate
+pnpm runtime:provision
+unset GLOHAUS_RUNTIME_DATABASE_PASSWORD
+```
+
+Generate the password with a password manager or a cryptographically secure generator; use at least 32 characters. Re-run `pnpm runtime:provision` with a newly entered password to rotate it. The script does not print the password or the generated SQL.
+
+For Vercel, use Supabase **Shared pooler, transaction mode** (port `6543`), which is the appropriate pooler for serverless functions. Copy the exact pooler host from Supabase **Connect**, then build the secret URL without printing it:
+
+```sh
+read -r 'GLOHAUS_POOLER_HOST?Supabase transaction-pooler host: '; export GLOHAUS_POOLER_HOST
+export GLOHAUS_SUPABASE_PROJECT_REF=tyycrmmczsgnowditnii
+read -rs 'GLOHAUS_RUNTIME_DATABASE_PASSWORD?Glohaus runtime password: '; export GLOHAUS_RUNTIME_DATABASE_PASSWORD
+pnpm runtime:connection-url | pbcopy
+unset GLOHAUS_RUNTIME_DATABASE_PASSWORD GLOHAUS_POOLER_HOST GLOHAUS_SUPABASE_PROJECT_REF
+```
+
+Paste the clipboard value into Vercel as the **Production** `DATABASE_URL` server-side environment variable, then redeploy. The generated username is `glohaus_runtime.tyycrmmczsgnowditnii`; the URL includes `sslmode=require`. Do not create a `NEXT_PUBLIC_DATABASE_URL`, and never place `MIGRATION_DATABASE_URL` in Vercel.
+
+The application uses `BEGIN` → `SET LOCAL ROLE beauty_app` → `COMMIT/ROLLBACK`; `NOINHERIT` ensures the runtime login has no ambient application privileges outside that guarded boundary. `pg.Pool` is deliberately capped at three connections, and shared transaction pooling safely resets the transaction-local role and identity context between requests.
+
+Keep any payment worker separate. It must not share the web runtime credential.
+
+The distinct runtime logins must remain NOSUPERUSER and NOBYPASSRLS, without application table ownership or membership in any owner role:
 
 - DATABASE_URL: membership in beauty_app only.
 - PAYMENT_DATABASE_URL: membership in beauty_payment_worker only.

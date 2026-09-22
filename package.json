@@ -17,6 +17,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.mjs",
+    "runtime:provision": "node --env-file-if-exists=.env.local scripts/provision-runtime-login.mjs",
+    "runtime:connection-url": "node --env-file-if-exists=.env.local scripts/runtime-connection-url.mjs",
     "admin:grant": "node --env-file-if-exists=.env.local scripts/grant-admin.mjs",
     "owner:grant": "node --env-file-if-exists=.env.local scripts/grant-owner.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"

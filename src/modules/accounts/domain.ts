@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export type Role = "customer" | "professional" | "admin";
+export type Role = "customer" | "professional" | "staff" | "admin" | "owner";
 export type AccountStatus = "active" | "suspended" | "removed";
 export type Account = {
   id: string;
@@ -48,7 +48,11 @@ export function authorize(
     throw new AccessError("FORBIDDEN", 403);
   if (account.status !== "active")
     throw new AccessError("ACCOUNT_INACTIVE", 403);
-  if (role && !account.roles.includes(role))
+  const hasRequiredRole =
+    !role ||
+    account.roles.includes(role) ||
+    (role === "admin" && account.roles.includes("owner"));
+  if (!hasRequiredRole)
     throw new AccessError("FORBIDDEN", 403);
   if (
     role === "admin" &&
@@ -74,8 +78,9 @@ export function authorizeProfessional(
 }
 
 export function workspacePath(account: Account): string {
+  if (account.roles.includes("owner") || account.roles.includes("admin"))
+    return "/admin";
   if (account.roles.includes("professional")) return "/professional";
   if (account.roles.includes("customer")) return "/account";
-  if (account.roles.includes("admin")) return "/admin";
   return "/onboarding";
 }

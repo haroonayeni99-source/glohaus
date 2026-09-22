@@ -23,7 +23,7 @@ export async function withIdentity<T>(
     await db.query("BEGIN");
     // Refuse owner/bypass credentials, even if an operator misconfigures DATABASE_URL.
     const { rows } =
-      await db.query(`SELECT r.rolsuper OR r.rolbypassrls OR EXISTS (SELECT 1 FROM pg_roles privileged WHERE privileged.rolname IN ('beauty_booking_ops','beauty_admin_ops','beauty_payment_worker') AND pg_has_role(current_user,privileged.oid,'MEMBER')) OR EXISTS (
+      await db.query(`SELECT r.rolsuper OR r.rolbypassrls OR EXISTS (SELECT 1 FROM pg_roles privileged WHERE privileged.rolname IN ('beauty_booking_ops','beauty_admin_ops','beauty_payment_worker','beauty_financial_worker') AND pg_has_role(current_user,privileged.oid,'MEMBER')) OR EXISTS (
       SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
       WHERE n.nspname = 'beauty' AND c.relkind = 'r' AND pg_has_role(current_user, c.relowner, 'MEMBER')
     ) AS unsafe FROM pg_roles r WHERE r.rolname = current_user`);

@@ -6,6 +6,7 @@ import {
   Users,
   CalendarDays,
   Sparkles,
+  WalletCards,
 } from "lucide-react";
 import { Brand } from "./brand";
 import { AccountControls } from "./account-controls";
@@ -14,7 +15,9 @@ import type { Account, Role } from "@/modules/accounts/domain";
 const roles: Record<Role, { title: string; path: string }> = {
   customer: { title: "Customer", path: "/account" },
   professional: { title: "Professional", path: "/professional" },
+  staff: { title: "Staff", path: "/admin" },
   admin: { title: "Admin", path: "/admin" },
+  owner: { title: "Owner", path: "/admin" },
 };
 
 export function WorkspaceShell({
@@ -25,7 +28,7 @@ export function WorkspaceShell({
   role: Role;
 }) {
   const isPro = role === "professional";
-  const isAdmin = role === "admin";
+  const isAdmin = role === "admin" || role === "owner" || role === "staff";
   return (
     <div className="workspace">
       <aside className="sidebar">
@@ -76,6 +79,12 @@ export function WorkspaceShell({
             <Link className="nav-item" href="/professional/reviews">
               <Sparkles size={19} aria-hidden />
               Reviews
+            </Link>
+          )}
+          {isPro && (
+            <Link className="nav-item" href="/professional/wallet">
+              <WalletCards size={19} aria-hidden />
+              GLOHAUS Wallet
             </Link>
           )}
           {!isAdmin && (

@@ -51,7 +51,7 @@ try {
   // BYPASSRLS or any other managed-role attribute. format(%L) quotes it
   // server-side and this script never prints the generated SQL.
   const passwordStatement = await db.query(
-    "SELECT format('ALTER ROLE %I LOGIN PASSWORD %L', $1, $2) AS statement",
+    "SELECT format('ALTER ROLE %I LOGIN PASSWORD %L', $1::text, $2::text) AS statement",
     [role, password],
   );
   await db.query(passwordStatement.rows[0].statement);

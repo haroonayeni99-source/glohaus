@@ -58,3 +58,7 @@ The Playwright suite currently targets missing-credentials behavior on port 3000
 - scripts: migration runner and audited admin/owner bootstrap.
 
 The existing beauty-platform directory name preserves the local preview path; the product and package name are glohaus.
+
+## Deployment source
+
+Production releases are sourced from the `main` branch of the GLOHAUS repository.

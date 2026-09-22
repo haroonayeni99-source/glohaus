@@ -18,10 +18,10 @@
     "test:e2e": "playwright test",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.mjs",
     "admin:grant": "node --env-file-if-exists=.env.local scripts/grant-admin.mjs",
+    "owner:grant": "node --env-file-if-exists=.env.local scripts/grant-owner.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
-    "@clerk/nextjs": "^7.0.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.116.0",
     "@vercel/blob": "^2.8.0",

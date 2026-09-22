@@ -71,6 +71,14 @@ describe("authorization", () => {
         "admin",
       ).id,
     ).toBe("a"));
+  it("allows the single owner through the protected admin route with recent MFA", () =>
+    expect(
+      authorize(
+        { ...account, roles: ["owner"] },
+        { ...identity, secondFactorAge: 0 },
+        "admin",
+      ).id,
+    ).toBe("a"));
   it("prevents cross-professional access", () =>
     expect(() =>
       authorizeProfessional(

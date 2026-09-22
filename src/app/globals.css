@@ -4643,3 +4643,39 @@ svg {
   .pro-wallet-explainer { align-items: start; }
   .pro-wallet-symbol { width: 38px; height: 38px; }
 }
+
+/* Private owner and administrator console. Values inside this layout are
+   rendered from protected server queries; empty states remain explicit. */
+.admin-workspace { width: min(1440px, 100%); min-height: calc(100vh - 76px); margin: 0 auto; display: grid; grid-template-columns: 245px minmax(0, 1fr); background: #fbf8f9; }
+.admin-navigation { position: sticky; top: 0; align-self: start; min-height: calc(100vh - 76px); padding: 28px 18px; display: flex; flex-direction: column; background: #181416; color: #fff; }
+.admin-navigation-brand { display: inline-flex; align-items: center; gap: 9px; color: #ff9cbd; font-weight: 850; letter-spacing: .06em; font-size: .78rem; }
+.admin-navigation-identity { margin: 30px 9px 22px; font-size: .85rem; font-weight: 700; }
+.admin-navigation-identity small { display: block; margin-top: 5px; color: #aaa0a4; font-size: .67rem; font-weight: 600; }
+.admin-navigation nav { display: grid; gap: 3px; }
+.admin-navigation nav a,.admin-navigation-bottom > a,.admin-navigation-bottom button { padding: 10px 11px; border-radius: 9px; color: #d9d1d5; font-size: .76rem; font-weight: 700; text-align: left; }
+.admin-navigation-pending { display: flex; align-items: center; justify-content: space-between; padding: 10px 11px; color: #766c70; font-size: .76rem; font-weight: 700; cursor: not-allowed; }
+.admin-navigation-pending small { font-size: .55rem; font-weight: 650; }
+.admin-navigation nav a:hover { background: #ffffff12; color: #fff; }
+.admin-navigation-bottom { margin-top: auto; padding-top: 24px; display: grid; gap: 2px; }
+.admin-navigation-bottom button { width: max-content; }
+.admin-workspace-content { min-width: 0; padding: clamp(28px, 5vw, 68px); }
+.admin-workspace-heading { margin-bottom: 38px; }
+.admin-workspace-heading h1 { max-width: 600px; margin: 7px 0 11px; font-size: clamp(2.2rem, 5vw, 4rem); }
+.admin-workspace-section { margin: 36px 0; padding: 24px; border: 1px solid #eadde1; border-radius: 20px; background: #fff; }
+.admin-workspace-section > h2 { margin: 0 0 9px; font-size: 1.25rem; }
+.permission-checklist { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 18px; margin: 20px 0; padding: 16px; border: 1px solid #ead9e0; border-radius: 13px; }
+.permission-checklist legend { padding: 0 5px; font-size: .78rem; font-weight: 800; }
+.permission-checklist label { display: flex !important; flex-direction: row !important; align-items: center; gap: 7px; margin: 0 !important; color: #4f4147; font-size: .76rem; }
+.permission-checklist input { accent-color: var(--plum); }
+.admin-report-metrics { margin: 13px 0 20px; }
+
+@media (max-width: 880px) {
+  .admin-workspace { display: block; min-height: auto; }
+  .admin-navigation { position: static; min-height: auto; padding: 17px; }
+  .admin-navigation-identity { margin: 16px 3px 11px; }
+  .admin-navigation nav { display: flex; overflow-x: auto; padding-bottom: 4px; }
+  .admin-navigation nav a { white-space: nowrap; }
+  .admin-navigation-bottom { display: none; }
+  .admin-workspace-content { padding: 24px 16px 92px; }
+  .permission-checklist { grid-template-columns: 1fr; }
+}

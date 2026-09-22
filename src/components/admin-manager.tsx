@@ -7,7 +7,7 @@ export function AdminManager({ data }: { data: AdminOverview }) {
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [selection, setSelection] = useState<{
-    type: "user" | "post" | "review" | "appeal";
+    type: "user" | "post" | "review" | "appeal" | "report";
     id: string;
     name: string;
   } | null>(null);
@@ -92,6 +92,8 @@ export function AdminManager({ data }: { data: AdminOverview }) {
                 ? ["approved", "rejected"]
                 : selection.type === "user"
                   ? ["suspended", "active", "removed"]
+                  : selection.type === "report"
+                    ? ["under_review", "resolved", "dismissed"]
                   : ["hidden", "visible"]
               ).map((status) => (
                 <option key={status}>{status}</option>
@@ -129,7 +131,7 @@ export function AdminManager({ data }: { data: AdminOverview }) {
           </div>
         </form>
       )}
-      <h2 className="admin-section-title">Accounts</h2>
+      <h2 id="users" className="admin-section-title">Accounts</h2>
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>
@@ -170,7 +172,7 @@ export function AdminManager({ data }: { data: AdminOverview }) {
           </tbody>
         </table>
       </div>
-      <h2 className="admin-section-title">Booking overview</h2>
+      <h2 id="bookings" className="admin-section-title">Booking overview</h2>
       <div className="service-edit-list">
         {data.bookings?.map((booking) => (
           <article className="service-edit-row" key={booking.id}>
@@ -189,7 +191,7 @@ export function AdminManager({ data }: { data: AdminOverview }) {
           </article>
         ))}
       </div>
-      <h2 className="admin-section-title">Review moderation</h2>
+      <h2 id="reviews" className="admin-section-title">Review moderation</h2>
       <h2 className="admin-section-title">Refund appeals</h2>
       <div className="service-edit-list">
         {data.appeals?.map((appeal) => (
@@ -246,7 +248,34 @@ export function AdminManager({ data }: { data: AdminOverview }) {
           </article>
         ))}
       </div>
-      <h2 className="admin-section-title">Content moderation</h2>
+      <h2 id="reports" className="admin-section-title">Safety reports</h2>
+      {data.safety ? (
+        <>
+          <div className="analytics-grid admin-report-metrics">
+            <article><strong>{data.safety.counts.open}</strong><span>Open reports</span></article>
+            <article><strong>{data.safety.counts.underReview}</strong><span>Under review</span></article>
+            <article><strong>{data.safety.counts.resolved}</strong><span>Resolved</span></article>
+          </div>
+          <div className="service-edit-list">
+            {data.safety.reports.map((report) => (
+              <article className="service-edit-row" key={report.id}>
+                <div>
+                  <h3>{report.category} · {report.target_type}</h3>
+                  <p>{report.description}</p>
+                  <small>{report.reporter_name} · {report.status}</small>
+                </div>
+                {!["resolved", "dismissed"].includes(report.status) && (
+                  <button onClick={() => setSelection({ type: "report", id: report.id, name: `${report.category} report` })}>Review</button>
+                )}
+              </article>
+            ))}
+            {!data.safety.reports.length && <p className="lead">No safety reports need review.</p>}
+          </div>
+        </>
+      ) : (
+        <p className="lead">The safety report queue will appear after the owner-controls database migration is applied.</p>
+      )}
+      <h2 id="content" className="admin-section-title">Content moderation</h2>
       <div className="service-edit-list">
         {data.posts.map((post) => (
           <article className="service-edit-row" key={post.id}>

@@ -27,6 +27,14 @@ const schema = z.discriminatedUnion("type", [
       reason: z.string().trim().min(5).max(500),
     })
     .strict(),
+  z
+    .object({
+      type: z.literal("report"),
+      id: z.uuid(),
+      status: z.enum(["under_review", "resolved", "dismissed"]),
+      reason: z.string().trim().min(5).max(500),
+    })
+    .strict(),
 ]);
 export async function POST(request: Request) {
   try {
@@ -40,6 +48,8 @@ export async function POST(request: Request) {
           ? "SELECT beauty.admin_set_user_status($1,$2,$3)"
           : input.type === "review"
             ? "SELECT beauty.admin_moderate_review($1,$2,$3)"
+            : input.type === "report"
+              ? "SELECT beauty.admin_resolve_safety_report($1,$2,$3)"
             : "SELECT beauty.admin_moderate_post($1,$2,$3)",
         [input.id, input.status, input.reason],
       ),

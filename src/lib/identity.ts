@@ -2,6 +2,7 @@ import "server-only";
 import { AccessError, type Identity } from "@/modules/accounts/domain";
 import { authConfigured } from "./config";
 import { createClient } from "@/lib/supabase/server";
+import { verifiedSecondFactorAge } from "./auth-assurance";
 
 export async function getIdentity(): Promise<Identity> {
   if (!authConfigured()) throw new AccessError("UNAVAILABLE", 503);
@@ -15,6 +16,10 @@ export async function getIdentity(): Promise<Identity> {
     authId,
     email,
     displayName: email.split("@")[0]?.slice(0, 120) || "Your account",
-    secondFactorAge: null,
+    // getClaims() has verified the signature before these assurance details are
+    // considered. A missing or stale MFA timestamp fails closed in authorize().
+    secondFactorAge: verifiedSecondFactorAge(
+      (claims ?? {}) as Record<string, unknown>,
+    ),
   };
 }

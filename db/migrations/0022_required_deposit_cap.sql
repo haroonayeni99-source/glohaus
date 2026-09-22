@@ -25,5 +25,9 @@ CREATE TRIGGER booking_required_deposit_cap
   BEFORE INSERT OR UPDATE OF price_pence, deposit_pence ON beauty.bookings
   FOR EACH ROW EXECUTE FUNCTION beauty.enforce_required_deposit_cap();
 
+-- The restricted function owner needs CREATE on the schema only while
+-- PostgreSQL transfers ownership of this trigger function.
+GRANT CREATE ON SCHEMA beauty TO beauty_booking_ops;
 ALTER FUNCTION beauty.enforce_required_deposit_cap() OWNER TO beauty_booking_ops;
+REVOKE CREATE ON SCHEMA beauty FROM beauty_booking_ops;
 REVOKE ALL ON FUNCTION beauty.enforce_required_deposit_cap() FROM PUBLIC;

@@ -6,6 +6,7 @@ import {
   CircleDollarSign,
   Clock3,
   Eye,
+  ImagePlus,
   Plus,
   Star,
   UserRoundCheck,
@@ -105,6 +106,25 @@ export function ProfessionalDashboard({
                 : "No reviews yet"}
             </span>
           </article>
+        </section>
+
+        <section className="pro-quick-actions" aria-label="Professional quick actions">
+          <Link href="/professional/bookings">
+            <CalendarDays size={18} aria-hidden />
+            <span><strong>Bookings</strong><small>See your upcoming week</small></span>
+          </Link>
+          <Link href="/professional/profile">
+            <Plus size={18} aria-hidden />
+            <span><strong>Manage services</strong><small>Update your menu and pricing</small></span>
+          </Link>
+          <Link href="/professional/availability">
+            <Clock3 size={18} aria-hidden />
+            <span><strong>Availability</strong><small>Set hours and time off</small></span>
+          </Link>
+          <Link href="/professional/posts">
+            <ImagePlus size={18} aria-hidden />
+            <span><strong>Create a post</strong><small>Share a look or tutorial</small></span>
+          </Link>
         </section>
 
         <section className="pro-dashboard-grid">

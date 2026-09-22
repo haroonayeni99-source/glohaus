@@ -12,7 +12,7 @@ export function GlohausHeader({
     <header className="glohaus-header">
       <Brand pro={professional} inverse />
       <p className="glohaus-header-tagline">
-        {professional ? "WORK • GROW • BELONG" : "BEAUTY. BOOK. SHOP. BELONG."}
+        {professional ? "WORK • GROW • BELONG" : "LOOK GOOD • FEEL GOOD • BELONG"}
       </p>
       <nav aria-label="Main navigation">
         <Link className="glohaus-search-link" href="/explore">

@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { ProfessionalCard } from "@/components/professional-card";
-import { Search, ArrowUpRight, Sparkles } from "lucide-react";
+import { Search, ArrowUpRight, MapPin, Sparkles } from "lucide-react";
 import { PublicHeader } from "@/components/public-header";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { withIdentity } from "@/lib/db";
 import { discoveryOptions } from "@/modules/professionals/discovery";
 import { discoveryPage } from "@/modules/professionals/repository";
 import type { PublicProfessional } from "@/modules/professionals/domain";
+import { categories } from "@/modules/professionals/domain";
 export const dynamic = "force-dynamic";
 export default async function Explore({
   searchParams,
@@ -51,6 +52,27 @@ export default async function Explore({
           />
           <button className="button small">Search</button>
         </form>
+        <nav className="explore-category-bar" aria-label="Beauty categories">
+          <span className="explore-category-location">
+            <MapPin size={15} aria-hidden /> England
+          </span>
+          {categories.map((category) => (
+            <Link
+              key={category}
+              className={q.toLowerCase() === category.toLowerCase() ? "active" : undefined}
+              href={`/explore?q=${encodeURIComponent(category)}`}
+            >
+              {category}
+            </Link>
+          ))}
+        </nav>
+        <div className="explore-results-heading">
+          <div>
+            <p className="eyebrow">DISCOVER LOCAL TALENT</p>
+            <h2>{q ? `Results for “${q}”` : "Trending near you"}</h2>
+          </div>
+          <span>{professionals.length ? `${professionals.length} profiles` : "Fresh looks, new talent"}</span>
+        </div>
         {professionals.length ? (
           <div className="professional-grid">
             {professionals.map((pro) => (

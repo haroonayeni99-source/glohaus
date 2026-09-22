@@ -253,7 +253,7 @@ export function DiscoveryFeed({
     <div className="discover-app">
       <aside className="discovery-sidebar">
         <Brand />
-        <p className="discovery-tagline">Beauty. Book. Shop. Belong.</p>
+        <p className="discovery-tagline">Look good. Feel good. Belong.</p>
         <nav aria-label="Main navigation">
           <button
             className={
@@ -305,9 +305,9 @@ export function DiscoveryFeed({
             <Brand />
           </div>
           <div className="discovery-heading">
-            <p className="eyebrow">BEAUTY. BOOK. SHOP. BELONG.</p>
+            <p className="eyebrow">DISCOVER. BOOK. GET INSPIRED.</p>
             <h1>
-              Discover beauty, <em>your way.</em>
+              Real beauty. Real people. <em>Real results.</em>
             </h1>
             <p className="discovery-trust">
               Browse freely. Book when you’re ready.

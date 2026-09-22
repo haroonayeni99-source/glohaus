@@ -3,7 +3,6 @@ import { publicLabels } from "@/modules/platform/repository";
 import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
 import { AccessMessage } from "@/components/access-message";
-import { PublicHeader } from "@/components/public-header";
 import { AdminManager } from "@/components/admin-manager";
 import { AdminNavigation } from "@/components/admin-navigation";
 import { OwnerControls } from "@/components/owner-controls";
@@ -26,9 +25,7 @@ export default async function Page() {
       : Promise.resolve(null),
   ]);
   return (
-    <>
-      <PublicHeader />
-      <main id="main" className="admin-workspace">
+    <main id="main" className="admin-workspace">
         <AdminNavigation account={result.account} />
         <div className="admin-workspace-content">
           <section id="overview" className="admin-workspace-heading">
@@ -68,7 +65,6 @@ export default async function Page() {
             </section>
           )}
         </div>
-      </main>
-    </>
+    </main>
   );
 }

@@ -3,6 +3,7 @@ import {
   CalendarDays,
   LayoutDashboard,
   MoreHorizontal,
+  Plus,
   UsersRound,
   WalletCards,
 } from "lucide-react";
@@ -34,6 +35,10 @@ export function ProfessionalNavigation({
           <span>PROFESSIONAL DASHBOARD</span>
         </div>
         <div className="pro-header-account">
+          <Link className="pro-create-post" href="/professional/posts">
+            <Plus size={15} aria-hidden />
+            Create post
+          </Link>
           <span className="pro-account-initial" aria-hidden>
             {displayName.slice(0, 1).toUpperCase()}
           </span>

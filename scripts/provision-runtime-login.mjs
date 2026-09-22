@@ -20,6 +20,9 @@ try {
   await db.query("BEGIN");
   await db.query("SELECT pg_advisory_xact_lock(74201837)");
 
+  // pg_roles is a readable catalog view, not an application row to lock.
+  // FOR UPDATE requires extra catalog permissions; the advisory lock above
+  // serializes cooperating provisioning runs without locking system catalogs.
   const { rows } = await db.query(
     `SELECT rolname, rolsuper, rolbypassrls, rolcanlogin, rolinherit,
       pg_has_role($1, 'beauty_app', 'MEMBER') AS app_member,
@@ -30,7 +33,7 @@ try {
           'beauty_payment_worker','beauty_financial_worker'
         ) AND pg_has_role($1, privileged.oid, 'MEMBER')
       ) AS privileged_member
-    FROM pg_roles WHERE rolname = $1 FOR UPDATE`,
+    FROM pg_roles WHERE rolname = $1`,
     [role],
   );
   const runtime = rows[0];

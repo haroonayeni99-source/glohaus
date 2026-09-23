@@ -56,7 +56,7 @@ export default async function ProfessionalSetup() {
     [
       "Services and prices",
       "Create your bookable menu, durations and deposits.",
-      "/professional/profile#services",
+      "/professional/services",
       progress.services > 0,
     ],
     [

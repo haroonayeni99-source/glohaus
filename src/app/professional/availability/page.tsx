@@ -5,8 +5,8 @@ import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { AccessMessage } from "@/components/access-message";
-import { AvailabilityEditor } from "@/components/availability-editor";
-import { TimeOffEditor } from "@/components/time-off-editor";
+import { AvailabilityCalendar } from "@/components/availability-calendar";
+import { calendarDate } from "@/modules/availability/calendar";
 import type { TimeOff, Rule } from "@/modules/availability/domain";
 export default async function Availability() {
   const result = await pageAccount("professional");
@@ -45,9 +45,8 @@ export default async function Availability() {
         <p className="pro-kicker">MAKE SPACE FOR YOUR CLIENTS</p>
         <h1>Your week, your way.</h1>
         <section className="pro-editor-surface">
-          <AvailabilityEditor initial={rules} />
-          <TimeOffEditor
-            initial={blocks.map((block) => ({
+          <AvailabilityCalendar rules={rules} today={calendarDate(new Date())}
+            blocks={blocks.map((block) => ({
               ...block,
               startsAt: new Date(block.startsAt).toISOString(),
               endsAt: new Date(block.endsAt).toISOString(),

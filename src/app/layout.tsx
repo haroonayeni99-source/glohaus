@@ -3,6 +3,7 @@ import { publicLabels } from "@/modules/platform/repository";
 import type { Metadata } from "next";
 import { ThemeToggle } from "@/components/theme-toggle";
 import "./globals.css";
+import "./ui-upgrades.css";
 
 export const metadata: Metadata = {
   title: {

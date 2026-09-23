@@ -4,6 +4,7 @@ import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
 import { PublicHeader } from "@/components/public-header";
 import { AccessMessage } from "@/components/access-message";
+import { BottomNavigation } from "@/components/bottom-navigation";
 import { BookingList } from "@/components/booking-list";
 import { BookingNavigation } from "@/components/booking-navigation";
 import { bookingListOptions } from "@/modules/bookings/listing";
@@ -42,6 +43,7 @@ export default async function History({
           <BookingList bookings={bookings.bookings} />
         </BookingNavigation>
       </main>
+      <BottomNavigation active="bookings" />
     </>
   );
 }

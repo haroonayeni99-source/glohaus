@@ -106,9 +106,11 @@ export default async function EditProfile() {
             <Link href="/professional/availability">
               Edit opening hours & time off →
             </Link>
+            <Link href="/professional/services">Manage services & prices →</Link>
             <Link href="/professional/portfolio">Manage portfolio →</Link>
           </div>
           <ProfessionalEditor
+            section="profile"
             initial={{
               businessDescription: data.profile.business_description,
               locationDetails: data.profile.location_details,

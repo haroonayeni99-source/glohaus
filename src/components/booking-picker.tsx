@@ -1,18 +1,55 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import { ArrowLeft, CalendarDays, CircleHelp, LockKeyhole } from "lucide-react";
 import { money, type Service } from "@/modules/professionals/domain";
 import { AuthGate } from "./auth-gate";
 import { PaymentSummary } from "./payment-summary";
+
+function londonDateString(value = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(value);
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value || "";
+  return get("year") + "-" + get("month") + "-" + get("day");
+}
+
+function dateChoices(start: string) {
+  const [year, month, day] = start.split("-").map(Number);
+  const base = Date.UTC(year, month - 1, day);
+  return Array.from({ length: 5 }, (_, offset) => {
+    const value = new Date(base + offset * 86400000);
+    const iso = value.toISOString().slice(0, 10);
+    return {
+      iso,
+      weekday: new Intl.DateTimeFormat("en-GB", {
+        weekday: "short",
+        timeZone: "UTC",
+      }).format(value),
+      day: new Intl.DateTimeFormat("en-GB", {
+        day: "2-digit",
+        timeZone: "UTC",
+      }).format(value),
+    };
+  });
+}
+
 export function BookingPicker({
   services,
   ready,
   returnPath,
+  professionalName,
   initialSelection,
 }: {
   services: Service[];
   ready: boolean;
   returnPath: string;
+  professionalName: string;
   initialSelection?: { serviceId?: string; date?: string; startsAt?: string };
 }) {
   const validInitialService = services.some(
@@ -20,244 +57,398 @@ export function BookingPicker({
   )
     ? initialSelection?.serviceId
     : undefined;
+
+  const initialDate = /^\d{4}-\d{2}-\d{2}$/.test(initialSelection?.date || "")
+    ? initialSelection!.date!
+    : "";
+
   const [serviceId, setServiceId] = useState(
     validInitialService || services[0]?.id || "",
   );
-  const [date, setDate] = useState(
-    /^\d{4}-\d{2}-\d{2}$/.test(initialSelection?.date || "")
-      ? initialSelection!.date!
-      : "",
-  );
+  const [date, setDate] = useState(initialDate);
   const [slots, setSlots] = useState<string[]>([]);
-  const [selected, setSelected] = useState("");
+  const [selected, setSelected] = useState(
+    initialDate && initialSelection?.startsAt ? initialSelection.startsAt : "",
+  );
   const [notice, setNotice] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [needsAccount, setNeedsAccount] = useState(false);
-  const service = services.find((s) => s.id === serviceId);
-  async function loadSlots(preferredStart?: string) {
-    setBusy(true);
-    setNotice("");
-    setSelected("");
-    setSlots([]);
-    try {
-      const response = await fetch(
-        `/api/v1/availability?serviceId=${encodeURIComponent(serviceId)}&date=${encodeURIComponent(date)}`,
-      );
-      const data = await response.json();
-      if (!response.ok) throw new Error("Availability could not be loaded.");
-      setSlots(data.slots);
-      if (preferredStart && data.slots.includes(preferredStart))
-        setSelected(preferredStart);
-      if (!data.slots.length)
-        setNotice("No appointments on this date. Try another day.");
-    } catch (error) {
-      setNotice(
-        error instanceof Error ? error.message : "Could not load times.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
+  const [step, setStep] = useState<"appointment" | "summary">("appointment");
+
+  const service = services.find((item) => item.id === serviceId);
+  const today = useMemo(() => londonDateString(), []);
+  const quickDates = useMemo(() => dateChoices(today), [today]);
+
   useEffect(() => {
-    if (
-      !date ||
-      !initialSelection?.startsAt ||
-      initialSelection.serviceId !== serviceId ||
-      initialSelection.date !== date
-    )
+    if (!date || !serviceId) {
+      setSlots([]);
+      setSelected("");
       return;
+    }
+
     const controller = new AbortController();
-    async function restoreAvailability() {
+    setLoadingSlots(true);
+    setNotice("");
+
+    async function load() {
       try {
         const response = await fetch(
-          `/api/v1/availability?serviceId=${encodeURIComponent(serviceId)}&date=${encodeURIComponent(date)}`,
+          "/api/v1/availability?serviceId=" +
+            encodeURIComponent(serviceId) +
+            "&date=" +
+            encodeURIComponent(date),
           { signal: controller.signal },
         );
         const data = await response.json();
-        if (!response.ok || controller.signal.aborted) return;
+        if (!response.ok) throw new Error("Availability could not be loaded.");
+        if (controller.signal.aborted) return;
         setSlots(data.slots);
-        if (data.slots.includes(initialSelection!.startsAt!))
-          setSelected(initialSelection!.startsAt!);
-      } catch {
-        // The standard availability control keeps a visible retry path.
+        setSelected((current) =>
+          current && data.slots.includes(current) ? current : "",
+        );
+        if (!data.slots.length)
+          setNotice("No appointments on this date. Try another day.");
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setSlots([]);
+        setSelected("");
+        setNotice(
+          error instanceof Error ? error.message : "Could not load times.",
+        );
+      } finally {
+        if (!controller.signal.aborted) setLoadingSlots(false);
       }
     }
-    void restoreAvailability();
+
+    void load();
     return () => controller.abort();
-  }, [date, initialSelection, serviceId]);
-  return (
-    <section className="booking-widget">
-      <p className="eyebrow">BOOK APPOINTMENT</p>
-      <h2>Make time for you.</h2>
-      <label>
-        Choose a service
-        <select
-          value={serviceId}
-          onChange={(event) => {
-            setServiceId(event.target.value);
-            setSlots([]);
-            setSelected("");
-          }}
-        >
-          {services.map((service) => (
-            <option key={service.id} value={service.id}>
-              {service.name} · {money(service.price_pence)}
-            </option>
-          ))}
-        </select>
-      </label>
-      {service && (
-        <div className="booking-service-preview">
-          {service.asset_id ? (
-            <Image
-              src={`/api/media/${service.asset_id}`}
-              alt={service.image_alt || service.name}
-              width={96}
-              height={96}
-              unoptimized
-            />
-          ) : (
-            <span aria-hidden>{service.name.slice(0, 1)}</span>
-          )}
-          <div>
-            <strong>{service.name}</strong>
-            <small>
-              {money(service.price_pence)} · {service.duration_minutes} minutes
-            </small>
-          </div>
-        </div>
-      )}
-      <label>
-        Date
-        <input
-          type="date"
-          value={date}
-          onChange={(event) => {
-            setDate(event.target.value);
-            setSlots([]);
-            setSelected("");
-          }}
-        />
-      </label>
-      <button
-        className="button small"
-        type="button"
-        disabled={!date || busy}
-        onClick={() => void loadSlots()}
-      >
-        See available times
-      </button>
-      <div className="booking-times">
-        {slots.map((slot) => (
-          <button
-            key={slot}
-            className={selected === slot ? "selected" : ""}
-            aria-pressed={selected === slot}
-            onClick={() => setSelected(slot)}
-          >
-            {new Intl.DateTimeFormat("en-GB", {
-              timeZone: "Europe/London",
-              hour: "2-digit",
-              minute: "2-digit",
-              timeZoneName: "short",
-            }).format(new Date(slot))}
-          </button>
-        ))}
-      </div>
-      {service && (
-        <PaymentSummary
-          servicePricePence={service.price_pence}
-          depositPence={service.deposit_pence}
-        />
-      )}
-      <details className="booking-policy">
-        <summary>Cancellation & deposit policy</summary>
-        <p>
-          Cancel at least 24 hours before your appointment for a full deposit
-          refund. Within 24 hours, reasonable circumstances are reviewed
-          individually by the professional, who decides any partial or full
-          refund. Without an accepted reason, no discretionary refund is
-          offered. Your statutory rights still apply. Professional cancellations
-          receive a full deposit refund.
-        </p>
-      </details>
-      <label className="policy-check">
-        <input
-          type="checkbox"
-          checked={accepted}
-          onChange={(event) => setAccepted(event.target.checked)}
-        />
-        I have read and accept the deposit and cancellation policy.
-      </label>
-      <button
-        className="button full-width"
-        disabled={
-          (!ready && service?.deposit_pence !== 0) ||
-          !selected ||
-          !accepted ||
-          busy
+  }, [date, serviceId]);
+
+  const selectedDateLabel = date
+    ? new Intl.DateTimeFormat("en-GB", {
+        dateStyle: "full",
+        timeZone: "UTC",
+      }).format(new Date(date + "T12:00:00Z"))
+    : "";
+
+  const selectedTimeLabel = selected
+    ? new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Europe/London",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date(selected))
+    : "";
+
+  async function submitBooking() {
+    if (!service || !selected || !accepted) return;
+    setSubmitting(true);
+    setNotice("");
+    try {
+      const response = await fetch("/api/v1/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          serviceId,
+          startsAt: selected,
+          acceptPolicy: true,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        if (
+          response.status === 401 ||
+          result.error?.code === "ONBOARDING_REQUIRED"
+        ) {
+          setNeedsAccount(true);
+          setSubmitting(false);
+          return;
         }
-        onClick={async () => {
-          setBusy(true);
-          try {
-            const response = await fetch("/api/v1/bookings", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                serviceId,
-                startsAt: selected,
-                acceptPolicy: true,
-              }),
-            });
-            const result = await response.json();
-            if (!response.ok) {
-              if (
-                response.status === 401 ||
-                result.error?.code === "ONBOARDING_REQUIRED"
-              ) {
-                setNeedsAccount(true);
-                setBusy(false);
-                return;
-              }
-              throw new Error(
-                result.error?.code === "SLOT_TAKEN"
-                  ? "That time has just been taken. Please choose another."
-                  : "Booking is unavailable right now. Please try again.",
-              );
+        throw new Error(
+          result.error?.code === "SLOT_TAKEN"
+            ? "That time has just been taken. Please choose another."
+            : "Booking is unavailable right now. Please try again.",
+        );
+      }
+      window.location.href = result.url;
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Could not book.");
+      setSubmitting(false);
+    }
+  }
+
+  if (!service) return null;
+
+  return (
+    <section className="booking-widget booking-journey">
+      {step === "appointment" ? (
+        <>
+          <div className="booking-journey-heading">
+            <p className="eyebrow">BOOK YOUR APPOINTMENT</p>
+            <h2>Choose your service and time.</h2>
+          </div>
+
+          <label className="booking-service-select">
+            Service
+            <select
+              value={serviceId}
+              onChange={(event) => {
+                setServiceId(event.target.value);
+                setSelected("");
+                setStep("appointment");
+              }}
+            >
+              {services.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name} · {money(item.price_pence)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="booking-service-preview booking-service-reference">
+            {service.asset_id ? (
+              <Image
+                src={"/api/media/" + service.asset_id}
+                alt={service.image_alt || service.name}
+                width={96}
+                height={96}
+                unoptimized
+              />
+            ) : (
+              <span aria-hidden>{service.name.slice(0, 1)}</span>
+            )}
+            <div>
+              <strong>{service.name}</strong>
+              <small>{professionalName}</small>
+              <small>
+                {money(service.price_pence)} · {service.duration_minutes} min
+              </small>
+            </div>
+          </div>
+
+          <fieldset className="booking-date-section">
+            <legend>Select Date</legend>
+            <div className="booking-date-strip">
+              {quickDates.map((item) => (
+                <button
+                  type="button"
+                  key={item.iso}
+                  className={date === item.iso ? "selected" : ""}
+                  aria-pressed={date === item.iso}
+                  onClick={() => {
+                    setDate(item.iso);
+                    setSelected("");
+                  }}
+                >
+                  <span>{item.weekday}</span>
+                  <strong>{item.day}</strong>
+                </button>
+              ))}
+            </div>
+            <label className="booking-custom-date">
+              <CalendarDays size={16} aria-hidden />
+              Another date
+              <input
+                type="date"
+                min={today}
+                value={date}
+                onChange={(event) => {
+                  setDate(event.target.value);
+                  setSelected("");
+                }}
+              />
+            </label>
+          </fieldset>
+
+          <fieldset className="booking-time-section">
+            <legend>Select Time</legend>
+            {loadingSlots ? (
+              <p className="booking-help">Checking availability…</p>
+            ) : date && slots.length ? (
+              <div className="booking-times">
+                {slots.map((slot) => (
+                  <button
+                    type="button"
+                    key={slot}
+                    className={selected === slot ? "selected" : ""}
+                    aria-pressed={selected === slot}
+                    onClick={() => setSelected(slot)}
+                  >
+                    {new Intl.DateTimeFormat("en-GB", {
+                      timeZone: "Europe/London",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }).format(new Date(slot))}
+                  </button>
+                ))}
+              </div>
+            ) : !date ? (
+              <p className="booking-help">Choose a date to see available times.</p>
+            ) : null}
+          </fieldset>
+
+          <div className="booking-deposit-callout">
+            <CircleHelp size={18} aria-hidden />
+            <div>
+              <strong>
+                {service.deposit_pence
+                  ? "Deposit required · " + money(service.deposit_pence)
+                  : "No deposit required"}
+              </strong>
+              <span>
+                {service.deposit_pence
+                  ? "This secures the appointment. The remaining " +
+                    money(service.price_pence - service.deposit_pence) +
+                    " is due for the service."
+                  : "You can confirm this appointment without an online payment."}
+              </span>
+              <small>
+                Professional-required deposits can never exceed 40% of the
+                service price.
+              </small>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="button full-width booking-continue"
+            disabled={!selected || loadingSlots}
+            onClick={() => {
+              setAccepted(false);
+              setNotice("");
+              setStep("summary");
+            }}
+          >
+            Continue
+          </button>
+          {notice && (
+            <p className="form-notice" role="status">
+              {notice}
+            </p>
+          )}
+        </>
+      ) : (
+        <>
+          <button
+            type="button"
+            className="booking-back"
+            onClick={() => {
+              setStep("appointment");
+              setNotice("");
+            }}
+          >
+            <ArrowLeft size={17} aria-hidden /> Back to appointment
+          </button>
+          <div className="booking-journey-heading">
+            <p className="eyebrow">PAYMENT SUMMARY</p>
+            <h2>Review before you confirm.</h2>
+          </div>
+
+          <div className="booking-service-preview booking-service-reference">
+            {service.asset_id ? (
+              <Image
+                src={"/api/media/" + service.asset_id}
+                alt={service.image_alt || service.name}
+                width={96}
+                height={96}
+                unoptimized
+              />
+            ) : (
+              <span aria-hidden>{service.name.slice(0, 1)}</span>
+            )}
+            <div>
+              <strong>{service.name}</strong>
+              <small>{professionalName}</small>
+              <small>
+                {selectedDateLabel} · {selectedTimeLabel}
+              </small>
+            </div>
+          </div>
+
+          <PaymentSummary
+            servicePricePence={service.price_pence}
+            depositPence={service.deposit_pence}
+          />
+
+          <details className="booking-policy" open>
+            <summary>Cancellation & no-show policy</summary>
+            <p>
+              Cancel at least 24 hours before your appointment for a full
+              deposit refund. Within 24 hours, reasonable circumstances are
+              reviewed individually by the professional. Professional
+              cancellations receive a full deposit refund. Your statutory
+              rights still apply.
+            </p>
+          </details>
+
+          <label className="policy-check">
+            <input
+              type="checkbox"
+              checked={accepted}
+              onChange={(event) => setAccepted(event.target.checked)}
+            />
+            <span>
+              I agree to the cancellation and no-show policy and confirm the
+              appointment details above.
+            </span>
+          </label>
+
+          <button
+            className="button full-width booking-pay-button"
+            type="button"
+            disabled={
+              (!ready && service.deposit_pence !== 0) ||
+              !accepted ||
+              submitting
             }
-            window.location.href = result.url;
-          } catch (error) {
-            setNotice(
-              error instanceof Error ? error.message : "Could not book.",
-            );
-            setBusy(false);
-          }
-        }}
-      >
-        {service?.deposit_pence
-          ? "Continue to secure deposit"
-          : "Confirm appointment"}
-      </button>
-      {!ready && service?.deposit_pence !== 0 && (
-        <p className="booking-help">
-          Online booking opens once secure payments are connected.
-        </p>
+            onClick={() => void submitBooking()}
+          >
+            {submitting
+              ? "Confirming…"
+              : service.deposit_pence
+                ? "Continue to secure " + money(service.deposit_pence)
+                : "Confirm appointment"}
+          </button>
+
+          {service.deposit_pence > 0 ? (
+            <p className="booking-secure-note">
+              <LockKeyhole size={14} aria-hidden />
+              Card details are handled securely by Stripe.
+            </p>
+          ) : (
+            <p className="booking-secure-note">
+              No online payment is required for this appointment.
+            </p>
+          )}
+
+          {!ready && service.deposit_pence !== 0 && (
+            <p className="form-notice">
+              Secure online payment is not connected yet, so paid-deposit
+              bookings remain disabled.
+            </p>
+          )}
+
+          {notice && (
+            <p className="form-notice" role="status">
+              {notice}
+            </p>
+          )}
+        </>
       )}
-      {notice && (
-        <p className="form-notice" role="status">
-          {notice}
-        </p>
-      )}
-      <p className="booking-help">
-        Times shown in London time.{" "}
-        {service?.deposit_pence === 0
-          ? "No deposit is required. Pay the service price at your appointment."
-          : "Card details are handled by Stripe."}
-      </p>
+
       {needsAccount && (
         <AuthGate
-          returnTo={`${returnPath}?${new URLSearchParams({ bookService: serviceId, bookDate: date, bookTime: selected })}`}
+          returnTo={
+            returnPath +
+            "?" +
+            new URLSearchParams({
+              bookService: serviceId,
+              bookDate: date,
+              bookTime: selected,
+            }).toString()
+          }
           onClose={() => setNeedsAccount(false)}
         />
       )}

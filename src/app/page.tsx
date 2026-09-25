@@ -7,6 +7,9 @@ import { savedPosts, viewerEngagement } from "@/modules/engagement/repository";
 import type { PublicPost } from "@/modules/posts/domain";
 import type { EngagementMap } from "@/modules/engagement/domain";
 import { z } from "zod";
+import { DesktopCustomerHome } from "@/components/desktop-customer-home";
+import { discoveryPage } from "@/modules/professionals/repository";
+import type { PublicProfessional } from "@/modules/professionals/domain";
 export const dynamic = "force-dynamic";
 export default async function Home({
   searchParams,
@@ -32,6 +35,8 @@ export default async function Home({
     viewer: "",
     next: null,
   };
+  let desktopProfessionals: PublicProfessional[] = [];
+  let desktopViewer = { signedIn: false, displayName: "" };
   if (process.env.DATABASE_URL) {
     let authId = "";
     try {
@@ -41,6 +46,7 @@ export default async function Home({
       data = await withIdentity(authId, async (db) => {
         const account = authId ? await findAccount(db, authId) : null;
         const accountMode = account?.status === "active";
+        desktopViewer = { signedIn: Boolean(accountMode), displayName: account?.displayName || "" };
         const pageData =
           !postId.success && !savedView ? await publicPostPage(db) : null;
         const rows = postId.success
@@ -72,7 +78,13 @@ export default async function Home({
       console.error("Public feed unavailable");
     }
   }
+  if (process.env.DATABASE_URL) {
+    try { desktopProfessionals = (await withIdentity("", (db) => discoveryPage(db, ""))).professionals; } catch {}
+  }
   return (
+    <>
+    <DesktopCustomerHome professionals={desktopProfessionals} signedIn={desktopViewer.signedIn} displayName={desktopViewer.displayName} />
+    <div className="mobile-existing-home">
     <DiscoveryFeed
       key={`${data.posts[0]?.id || ""}:${data.next || ""}:${data.viewer}:${savedView}:${page}:${postId.success ? postId.data : ""}:${JSON.stringify(data.initialEngagement)}`}
       publishedPosts={data.posts}
@@ -84,5 +96,7 @@ export default async function Home({
       hasMoreSaved={data.hasMore}
       hideEditorial={postId.success}
     />
+    </div>
+    </>
   );
 }

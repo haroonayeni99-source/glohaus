@@ -238,7 +238,7 @@ export function AdminManager({ data }: { data: AdminOverview }) {
                     id: pro.id,
                     verification: form.get("verification"),
                     standing: form.get("standing"),
-                    restrictedUntil: form.get("restrictedUntil") || null,
+                    restrictedUntil: form.get("restrictedUntil") ? new Date(String(form.get("restrictedUntil"))).toISOString() : null,
                     reason: form.get("reason"),
                   }),
                 });

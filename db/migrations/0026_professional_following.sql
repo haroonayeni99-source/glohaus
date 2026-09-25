@@ -1,6 +1,7 @@
 -- GLOHAUS professional following foundation.
--- Customers can follow published professionals. Follower identities remain private:
--- beauty_app can only see the current customer's own follow rows.
+-- Follower rows are private. beauty_app can only read/delete its own rows and
+-- can create a row only when the current actor is an active customer and the
+-- target is an active, published professional.
 CREATE TABLE beauty.professional_follows (
   customer_id uuid NOT NULL REFERENCES beauty.users(id) ON DELETE CASCADE,
   professional_id uuid NOT NULL REFERENCES beauty.professional_profiles(id) ON DELETE CASCADE,
@@ -13,56 +14,52 @@ CREATE INDEX professional_follows_professional_created
 ALTER TABLE beauty.professional_follows ENABLE ROW LEVEL SECURITY;
 ALTER TABLE beauty.professional_follows FORCE ROW LEVEL SECURITY;
 
-GRANT SELECT ON beauty.professional_follows TO beauty_app;
-GRANT INSERT (customer_id, professional_id) ON beauty.professional_follows TO beauty_app;
-GRANT DELETE ON beauty.professional_follows TO beauty_app;
+-- These predicates run as the restricted catalog owner so RLS on account
+-- tables cannot accidentally make a valid follow fail, while callers receive
+-- only booleans rather than account/role rows.
+CREATE FUNCTION beauty.can_manage_follow(target_customer uuid, target_professional uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM beauty.users u
+    JOIN beauty.user_roles r ON r.user_id = u.id
+    WHERE u.id = target_customer
+      AND u.auth_id = beauty.auth_id()
+      AND u.status = 'active'
+      AND r.role = 'customer'
+  )
+  AND EXISTS (
+    SELECT 1
+    FROM beauty.professional_profiles p
+    JOIN beauty.users u ON u.id = p.user_id
+    WHERE p.id = target_professional
+      AND p.publication_status = 'published'
+      AND u.status = 'active'
+      AND p.user_id <> target_customer
+  )
+$$;
 
-CREATE POLICY follow_self_read ON beauty.professional_follows
-  FOR SELECT TO beauty_app
-  USING (
-    customer_id IN (
-      SELECT u.id
-      FROM beauty.users u
-      WHERE u.auth_id = beauty.auth_id() AND u.status = 'active'
-    )
-  );
+CREATE FUNCTION beauty.owns_follow(target_customer uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM beauty.users u
+    WHERE u.id = target_customer
+      AND u.auth_id = beauty.auth_id()
+      AND u.status = 'active'
+  )
+$$;
 
-CREATE POLICY follow_self_create ON beauty.professional_follows
-  FOR INSERT TO beauty_app
-  WITH CHECK (
-    customer_id IN (
-      SELECT r.user_id
-      FROM beauty.user_roles r
-      WHERE r.role = 'customer'
-    )
-    AND customer_id IN (
-      SELECT u.id
-      FROM beauty.users u
-      WHERE u.auth_id = beauty.auth_id() AND u.status = 'active'
-    )
-    AND professional_id IN (
-      SELECT p.id
-      FROM beauty.professional_profiles p
-      WHERE p.publication_status = 'published'
-        AND p.user_id <> customer_id
-        AND p.user_id IN (
-          SELECT u.id FROM beauty.users u WHERE u.status = 'active'
-        )
-    )
-  );
-
-CREATE POLICY follow_self_delete ON beauty.professional_follows
-  FOR DELETE TO beauty_app
-  USING (
-    customer_id IN (
-      SELECT u.id
-      FROM beauty.users u
-      WHERE u.auth_id = beauty.auth_id() AND u.status = 'active'
-    )
-  );
-
--- Aggregate counts are exposed through a SECURITY DEFINER function so callers
--- never receive another customer's follow row or identity.
 CREATE FUNCTION beauty.professional_follower_count(target uuid)
 RETURNS integer
 LANGUAGE sql
@@ -80,7 +77,30 @@ AS $$
 $$;
 
 GRANT CREATE ON SCHEMA beauty TO beauty_catalog;
+ALTER FUNCTION beauty.can_manage_follow(uuid,uuid) OWNER TO beauty_catalog;
+ALTER FUNCTION beauty.owns_follow(uuid) OWNER TO beauty_catalog;
 ALTER FUNCTION beauty.professional_follower_count(uuid) OWNER TO beauty_catalog;
 REVOKE CREATE ON SCHEMA beauty FROM beauty_catalog;
+
+REVOKE ALL ON FUNCTION beauty.can_manage_follow(uuid,uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION beauty.owns_follow(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION beauty.professional_follower_count(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION beauty.can_manage_follow(uuid,uuid) TO beauty_app;
+GRANT EXECUTE ON FUNCTION beauty.owns_follow(uuid) TO beauty_app;
 GRANT EXECUTE ON FUNCTION beauty.professional_follower_count(uuid) TO beauty_app;
+
+GRANT SELECT ON beauty.professional_follows TO beauty_app;
+GRANT INSERT (customer_id, professional_id) ON beauty.professional_follows TO beauty_app;
+GRANT DELETE ON beauty.professional_follows TO beauty_app;
+
+CREATE POLICY follow_self_read ON beauty.professional_follows
+  FOR SELECT TO beauty_app
+  USING (beauty.owns_follow(customer_id));
+
+CREATE POLICY follow_self_create ON beauty.professional_follows
+  FOR INSERT TO beauty_app
+  WITH CHECK (beauty.can_manage_follow(customer_id, professional_id));
+
+CREATE POLICY follow_self_delete ON beauty.professional_follows
+  FOR DELETE TO beauty_app
+  USING (beauty.owns_follow(customer_id));

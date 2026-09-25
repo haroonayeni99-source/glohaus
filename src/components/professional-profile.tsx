@@ -1,4 +1,5 @@
 import { PlatformLabel } from "./platform-labels";
+import { FollowProfessionalButton } from "./follow-professional-button";
 import Image from "next/image";
 import {
   MapPin,
@@ -28,6 +29,7 @@ export type ProfilePresentation = {
   rating: number | null;
   reviewCount: number;
   booking: ReactNode;
+  follow: { following: boolean; followerCount: number; signedIn: boolean };
 };
 export function ProfessionalProfile({
   professional: p,
@@ -39,6 +41,7 @@ export function ProfessionalProfile({
   rating,
   reviewCount,
   booking,
+  follow,
 }: ProfilePresentation) {
   const safeHref = (value: string) => {
     try {
@@ -109,6 +112,12 @@ export function ProfessionalProfile({
             </a>
           </div>
           <p className="professional-bio">{p.bio}</p>
+          <FollowProfessionalButton
+            professionalId={p.id}
+            initialFollowing={follow.following}
+            initialFollowerCount={follow.followerCount}
+            signedIn={follow.signedIn}
+          />
         </div>
         <a className="button professional-book-button" href="#booking">
           Book an appointment <ArrowUpRight size={18} aria-hidden />

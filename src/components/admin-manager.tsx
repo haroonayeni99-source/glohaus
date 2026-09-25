@@ -131,7 +131,7 @@ export function AdminManager({ data }: { data: AdminOverview }) {
           </div>
         </form>
       )}
-      <h2 id="users" className="admin-section-title">Accounts</h2>
+      <h2 id="users" className="admin-section-title">App Users</h2>
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>

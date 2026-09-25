@@ -4,9 +4,12 @@ import {
   BarChart3,
   BookOpenCheck,
   CalendarDays,
+  CreditCard,
   FileWarning,
   LayoutDashboard,
   MessageSquareWarning,
+  PackageCheck,
+  Radio,
   Settings,
   ShieldCheck,
   UsersRound,
@@ -14,22 +17,32 @@ import {
 import { AccountControls } from "@/components/account-controls";
 import type { Account } from "@/modules/accounts/domain";
 
-const sections = [
+const coreSections = [
   ["Overview", "overview", LayoutDashboard],
-  ["Users", "users", UsersRound],
+  ["App Users", "users", UsersRound],
   ["Professionals", "professionals", BadgeCheck],
   ["Bookings", "bookings", CalendarDays],
-  ["Reports", "reports", FileWarning],
+  ["LIVE", "live-access", Radio],
   ["Content", "content", BookOpenCheck],
+  ["Reports", "reports", FileWarning],
   ["Reviews", "reviews", MessageSquareWarning],
-  ["Staff & admins", "staff", ShieldCheck],
-  ["Audit log", "audit", BarChart3],
   ["Settings", "settings", Settings],
 ] as const;
-const pendingSections = [["Verification", BadgeCheck], ["Analytics", BarChart3], ["Notifications", MessageSquareWarning]] as const;
+
+const ownerSections = [
+  ["Staff & Admins", "staff", ShieldCheck],
+  ["Audit Log", "audit", BarChart3],
+] as const;
+
+const pendingSections = [
+  ["Payments", CreditCard],
+  ["Orders", PackageCheck],
+  ["Analytics", BarChart3],
+] as const;
 
 export function AdminNavigation({ account }: { account: Account }) {
   const owner = account.roles.includes("owner");
+  const sections = owner ? [...coreSections, ...ownerSections] : coreSections;
   return (
     <aside className="admin-navigation" aria-label="Administration navigation">
       <Link className="admin-navigation-brand" href="/admin">
@@ -38,7 +51,7 @@ export function AdminNavigation({ account }: { account: Account }) {
       </Link>
       <p className="admin-navigation-identity">
         {account.displayName}
-        <small>{owner ? "Owner" : "Administrator"}</small>
+        <small>{owner ? "Owner · Super Admin" : "Administrator"}</small>
       </p>
       <nav>
         {sections.map(([label, id, Icon]) => (
@@ -50,7 +63,7 @@ export function AdminNavigation({ account }: { account: Account }) {
         {pendingSections.map(([label, Icon]) => (
           <span className="admin-navigation-pending" key={label} aria-disabled="true">
             <Icon size={16} aria-hidden />
-            {label}<small>Not connected</small>
+            {label}<small>Roadmap</small>
           </span>
         ))}
       </nav>

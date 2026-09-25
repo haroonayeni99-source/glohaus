@@ -43,10 +43,10 @@ export default async function Home({
       authId = (await getIdentity()).authId;
     } catch {}
     try {
-      data = await withIdentity(authId, async (db) => {
+      const homeResult = await withIdentity(authId, async (db) => {
         const account = authId ? await findAccount(db, authId) : null;
         const accountMode = account?.status === "active";
-        desktopViewer = { signedIn: Boolean(accountMode), displayName: account?.displayName || "" };
+        const viewer = { signedIn: Boolean(accountMode), displayName: account?.displayName || "" };
         const pageData =
           !postId.success && !savedView ? await publicPostPage(db) : null;
         const rows = postId.success

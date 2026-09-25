@@ -1,6 +1,6 @@
 import { getIdentity } from "@/lib/identity";
 import { withIdentity } from "@/lib/db";
-import { enrolAccount, findAccount } from "@/modules/accounts/repository";
+import { enrolAccount, ensureCustomerAccount } from "@/modules/accounts/repository";
 import { AccessError, enrolmentSchema, workspacePath } from "@/modules/accounts/domain";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 
@@ -26,11 +26,9 @@ export async function PUT(request: Request) {
   try {
     assertSameOrigin(request);
     const identity = await getIdentity();
-    const account = await withIdentity(identity.authId, async (db) => {
-      const existing = await findAccount(db, identity.authId);
-      if (existing) return existing;
-      return enrolAccount(db, identity, "customer");
-    });
+    const account = await withIdentity(identity.authId, (db) =>
+      ensureCustomerAccount(db, identity),
+    );
     return json({ redirectTo: workspacePath(account) });
   } catch (error) {
     return apiError(error);

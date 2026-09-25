@@ -5204,3 +5204,180 @@ svg {
   font-size: .62rem;
   opacity: .62;
 }
+
+
+/* Reference-matched mobile customer Home. */
+.mobile-customer-home {
+  min-height: 100vh;
+  padding-bottom: 74px;
+  background: #0c0c0d;
+  color: #fff;
+}
+.mobile-home-main {
+  min-height: calc(100vh - 74px);
+  background: #0c0c0d;
+}
+.mobile-home-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 18px 10px;
+}
+.mobile-home-brand {
+  display: grid;
+  gap: 2px;
+}
+.mobile-home-brand .brand {
+  width: max-content;
+  color: #ff9fbd;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.75rem;
+  letter-spacing: -.04em;
+  text-decoration: none;
+}
+.mobile-home-brand .brand-crown {
+  color: #ff9fbd;
+}
+.mobile-home-brand > span {
+  color: #f4eef0;
+  font-size: .68rem;
+  letter-spacing: .01em;
+}
+.mobile-home-bell {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  color: #fff;
+  text-decoration: none;
+}
+.mobile-home-search {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  margin: 4px 16px 12px;
+  padding: 0 13px;
+  border-radius: 9px;
+  background: #fff;
+  color: #171417;
+}
+.mobile-home-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #171417;
+  font-size: 16px;
+}
+.mobile-home-search input::placeholder {
+  color: #746e72;
+  font-size: .78rem;
+}
+.mobile-home-categories {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  padding: 0 13px 14px;
+}
+.mobile-home-categories a {
+  min-width: 0;
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+}
+.mobile-home-categories a > span {
+  position: relative;
+  display: block;
+  width: min(13.5vw, 62px);
+  height: min(13.5vw, 62px);
+  margin: 0 auto 6px;
+  overflow: hidden;
+  border: 2px solid #ef9db9;
+  border-radius: 50%;
+  background: #2a2024;
+}
+.mobile-home-categories img {
+  object-fit: cover;
+}
+.mobile-home-categories strong {
+  display: block;
+  overflow: hidden;
+  font-size: .62rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mobile-home-hero {
+  position: relative;
+  min-height: 490px;
+  margin: 0 10px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #3c282d;
+}
+.mobile-home-hero > img {
+  object-fit: cover;
+  object-position: 52% 42%;
+}
+.mobile-home-hero-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgb(10 8 9 / 5%) 25%, rgb(10 8 9 / 35%) 58%, rgb(10 8 9 / 88%) 100%),
+    linear-gradient(90deg, rgb(10 8 9 / 35%), transparent 58%);
+}
+.mobile-home-hero-copy {
+  position: absolute;
+  z-index: 2;
+  right: 14px;
+  bottom: 20px;
+  left: 14px;
+}
+.mobile-home-hero-copy h1 {
+  max-width: 240px;
+  margin: 0 0 18px;
+  color: #fff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.75rem, 8vw, 2.55rem);
+  font-weight: 500;
+  line-height: .96;
+  letter-spacing: -.045em;
+  text-shadow: 0 2px 12px rgb(0 0 0 / 25%);
+}
+.mobile-home-glow {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: linear-gradient(90deg, #ff7ca9, #f6a2b9);
+  color: #211217;
+  font-size: .9rem;
+  font-weight: 850;
+  text-decoration: none;
+}
+.mobile-home-discover-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 16px 14px;
+  padding: 12px 2px;
+  color: #f6c1d2;
+  font-size: .72rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+@media (min-width: 1100px) {
+  .mobile-customer-home { display: none; }
+}
+@media (max-width: 380px) {
+  .mobile-home-header { padding-right: 14px; padding-left: 14px; }
+  .mobile-home-search { margin-right: 12px; margin-left: 12px; }
+  .mobile-home-categories { padding-right: 9px; padding-left: 9px; gap: 3px; }
+  .mobile-home-hero { min-height: 430px; margin-right: 8px; margin-left: 8px; }
+}

@@ -3,21 +3,26 @@
 import Link from "next/link";
 import {
   CalendarDays,
+  Compass,
   Home,
-  Search,
-  ShoppingBag,
+  MessageSquare,
   UserRound,
 } from "lucide-react";
 
 const items = [
   { id: "home", href: "/", label: "Home", icon: Home },
-  { id: "search", href: "/explore", label: "Search", icon: Search },
+  { id: "discover", href: "/discover", label: "Discover", icon: Compass },
   { id: "bookings", href: "/account/bookings", label: "Bookings", icon: CalendarDays },
-  { id: "shop", href: "/shop", label: "Shop", icon: ShoppingBag },
+  { id: "messages", href: "/messages", label: "Messages", icon: MessageSquare },
   { id: "profile", href: "/workspace", label: "Profile", icon: UserRound },
 ] as const;
 
-export function BottomNavigation({ active }: { active?: (typeof items)[number]["id"] }) {
+type ActiveItem =
+  | (typeof items)[number]["id"]
+  | "search"
+  | "shop";
+
+export function BottomNavigation({ active }: { active?: ActiveItem }) {
   return (
     <nav className="glohaus-bottom-nav" aria-label="Mobile navigation">
       {items.map((item) => {

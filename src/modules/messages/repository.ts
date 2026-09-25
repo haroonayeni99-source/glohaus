@@ -2,32 +2,7 @@ import "server-only";
 
 import type { SqlClient } from "@/modules/accounts/repository";
 import { encodeMessageCursor, type MessageCursor } from "./pagination";
-
-export type ConversationSummary = {
-  id: string;
-  customer_name: string;
-  professional_name: string;
-  participant_role: "customer" | "professional";
-  last_message_at: Date;
-  last_message_body: string | null;
-  last_message_sender_role: "customer" | "professional" | null;
-  unread_count: number;
-};
-
-export type ConversationMessage = {
-  id: string;
-  booking_id: string | null;
-  sender_role: "customer" | "professional";
-  body: string;
-  created_at: Date;
-};
-
-export type ConversationDetails = {
-  id: string;
-  customer_name: string;
-  professional_name: string;
-  participant_role: "customer" | "professional";
-};
+import type { ConversationDetails, ConversationMessage, ConversationSummary } from "./domain";
 
 export async function conversationInbox(
   db: SqlClient,

@@ -83,9 +83,9 @@ export function BookingConfirmation({
         <button type="button" onClick={addToCalendar}>
           <CalendarPlus size={17} aria-hidden /> Add to calendar
         </button>
-        <button type="button" disabled title="Messaging will be available when conversations are enabled.">
+        <Link href={`/messages?booking=${bookingId}`}>
           <MessageCircle size={17} aria-hidden /> Message professional
-        </button>
+        </Link>
         <Link href={`/account/bookings/${bookingId}`}>
           View booking <ArrowRight size={17} aria-hidden />
         </Link>

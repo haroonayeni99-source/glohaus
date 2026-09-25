@@ -12,7 +12,8 @@ test("public entry works on mobile and desktop", async ({ page }, testInfo) => {
     await expect(
       page.getByRole("heading", { name: "Recommended professionals" }),
     ).toBeVisible();
-    await expect(page.locator('a[href="/messages"], a[href="/wallet"], a[href="/glohaus-plus"]')).toHaveCount(0);
+    await expect(page.locator('a[href="/messages"]:visible').first()).toBeVisible();
+    await expect(page.locator('a[href="/wallet"], a[href="/glohaus-plus"]')).toHaveCount(0);
     await expect(page.getByText("Coming soon", { exact: true }).first()).toBeVisible();
   } else {
     await expect(
@@ -50,6 +51,7 @@ test("private routes fail closed without credentials", async ({
     "/admin",
     "/onboarding",
     "/security",
+    "/messages",
   ]) {
     await page.goto(route);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
@@ -105,7 +107,9 @@ test("dedicated Discover route behaves like a full-screen mobile feed", async ({
   expect(metrics.scrollSnapType).toContain("y");
   expect(Math.abs(metrics.height - metrics.viewport)).toBeLessThanOrEqual(4);
 
-  await expect(page.locator('.glohaus-bottom-nav [aria-current="page"]')).toHaveCount(0);
+  await expect(
+    page.locator('.glohaus-bottom-nav [aria-current="page"]'),
+  ).toHaveText("Discover");
 
   const firstShare = page.getByRole("button", { name: /^Share / }).first();
   await firstShare.click();

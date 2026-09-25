@@ -5,6 +5,7 @@ import { AccessError } from "@/modules/accounts/domain";
 export type AdminOverview = {
   counts: { users: number; active: number; suspended: number };
   professionals: number;
+  professionalTrust?: { id:string; user_id:string; business_name:string; verification_status:string; standing_status:string; live_restricted_until:string|null }[];
   users: {
     id: string;
     display_name: string;
@@ -131,7 +132,13 @@ export async function adminOverview() {
     } catch {
       safety = null;
     }
-    return { ...base, ...extra, safety };
+    let professionalTrust: NonNullable<AdminOverview["professionalTrust"]> = [];
+    try {
+      professionalTrust = (await db.query<NonNullable<AdminOverview["professionalTrust"]>[number]>(
+        "SELECT p.id,p.user_id,p.business_name,coalesce(t.verification_status,'unverified') verification_status,coalesce(t.standing_status,'good') standing_status,t.live_restricted_until::text FROM beauty.professional_profiles p LEFT JOIN beauty.professional_trust_status t ON t.professional_id=p.id ORDER BY p.business_name,p.id LIMIT 100"
+      )).rows;
+    } catch { professionalTrust = []; }
+    return { ...base, ...extra, safety, professionalTrust };
   });
 }
 

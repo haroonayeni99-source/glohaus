@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Star,
   Store,
+  Users,
 } from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
@@ -29,6 +30,12 @@ const links = [
     "Past visits, reviews and rebooking",
     "/account/bookings?view=history",
     CalendarDays,
+  ],
+  [
+    "Following",
+    "Professionals you want to keep up with",
+    "/account/following",
+    Users,
   ],
   [
     "Saved looks",

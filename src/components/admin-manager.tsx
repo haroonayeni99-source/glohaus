@@ -213,6 +213,56 @@ export function AdminManager({ data }: { data: AdminOverview }) {
           </tbody>
         </table>
       </div>
+      <h2 id="live-access" className="admin-section-title">Professional verification & LIVE access</h2>
+      <p className="admin-section-intro">
+        Verification and LIVE restrictions are server-controlled and every change requires a reason for the audit log.
+      </p>
+      <div className="service-edit-list">
+        {data.professionalTrust?.map((pro) => (
+          <article className="service-edit-row" key={pro.id}>
+            <div>
+              <h3>{pro.business_name}</h3>
+              <p>Verification: {pro.verification_status} · Standing: {pro.standing_status}</p>
+              <small>{pro.live_restricted_until ? `LIVE restricted until ${new Date(pro.live_restricted_until).toLocaleString("en-GB")}` : "No timed LIVE restriction"}</small>
+            </div>
+            <form onSubmit={async (event) => {
+              event.preventDefault();
+              const form = new FormData(event.currentTarget);
+              setBusy(true);
+              try {
+                const response = await fetch("/api/v1/admin/manage", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    type: "professionalTrust",
+                    id: pro.id,
+                    verification: form.get("verification"),
+                    standing: form.get("standing"),
+                    restrictedUntil: form.get("restrictedUntil") ? new Date(String(form.get("restrictedUntil"))).toISOString() : null,
+                    reason: form.get("reason"),
+                  }),
+                });
+                if (!response.ok) throw new Error("LIVE access decision was not saved.");
+                setNotice("Professional verification/LIVE decision saved and audited.");
+                router.refresh();
+              } catch (error) {
+                setNotice(error instanceof Error ? error.message : "Could not save.");
+              } finally { setBusy(false); }
+            }}>
+              <select name="verification" defaultValue={pro.verification_status} aria-label={`Verification for ${pro.business_name}`}>
+                {["unverified","pending","verified","rejected"].map(value => <option key={value}>{value}</option>)}
+              </select>
+              <select name="standing" defaultValue={pro.standing_status} aria-label={`Standing for ${pro.business_name}`}>
+                <option value="good">good</option><option value="restricted">restricted</option>
+              </select>
+              <input name="restrictedUntil" type="datetime-local" aria-label={`LIVE restriction end for ${pro.business_name}`} />
+              <input name="reason" required minLength={5} maxLength={500} placeholder="Reason for decision" aria-label={`Decision reason for ${pro.business_name}`} />
+              <button disabled={busy}>Save LIVE access</button>
+            </form>
+          </article>
+        ))}
+        {!data.professionalTrust?.length && <p className="lead">Professional verification controls will appear after the LIVE eligibility migration is available.</p>}
+      </div>
       <h2 id="bookings" className="admin-section-title">Booking overview</h2>
       <div className="service-edit-list">
         {data.bookings?.map((booking) => (

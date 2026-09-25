@@ -2,6 +2,7 @@ import "server-only";
 import type { SqlClient } from "@/modules/accounts/repository";
 import { bookingPage, type BookingRecord } from "@/modules/bookings/repository";
 import { professionalWallet, type WalletOverview } from "@/modules/finance/repository";
+import { liveEligibility, type LiveEligibility } from "@/modules/live/repository";
 
 export type ProfessionalDashboard = {
   profile: {
@@ -15,9 +16,12 @@ export type ProfessionalDashboard = {
     activeServices: number;
     reviewCount: number;
     rating: number | null;
+    followerCount: number;
+    completedBookings: number;
   };
   upcoming: BookingRecord[];
   wallet: WalletOverview | null;
+  live: LiveEligibility | null;
 };
 
 /**
@@ -44,6 +48,8 @@ export async function professionalDashboard(
         new_bookings: number;
         upcoming_appointments: number;
         active_services: number;
+        follower_count: number;
+        completed_bookings: number;
       }>(
         `SELECT
           (SELECT count(*)::integer FROM beauty.bookings b
@@ -55,7 +61,11 @@ export async function professionalDashboard(
               AND b.ends_at > now()
               AND (b.status='confirmed' OR (b.status='payment_pending' AND b.hold_expires_at > now()))) AS upcoming_appointments,
           (SELECT count(*)::integer FROM beauty.services s
-            WHERE s.professional_id=$1 AND s.active) AS active_services`,
+            WHERE s.professional_id=$1 AND s.active) AS active_services,
+          (SELECT count(*)::integer FROM beauty.professional_follows f
+            WHERE f.professional_id=$1) AS follower_count,
+          (SELECT count(*)::integer FROM beauty.bookings b
+            WHERE b.professional_id=$1 AND b.status='completed') AS completed_bookings`,
         [professionalId],
       ),
       db.query<{ count: number; rating: number | null }>(
@@ -79,10 +89,16 @@ export async function professionalDashboard(
   // was not readable. This keeps an accidental foreign profile ID from
   // returning the current professional's financial summary alongside it.
   const wallet = profile ? await professionalWallet(db) : null;
+  let live: LiveEligibility | null = null;
+  if (profile) {
+    try { live = await liveEligibility(db, professionalId); } catch { live = null; }
+  }
   const stats = statsResult.rows[0] ?? {
     new_bookings: 0,
     upcoming_appointments: 0,
     active_services: 0,
+    follower_count: 0,
+    completed_bookings: 0,
   };
   const reviews = reviewResult.rows[0] ?? { count: 0, rating: null };
   return {
@@ -99,9 +115,12 @@ export async function professionalDashboard(
       activeServices: stats.active_services,
       reviewCount: reviews.count,
       rating: reviews.rating,
+      followerCount: stats.follower_count,
+      completedBookings: stats.completed_bookings,
     },
     upcoming: bookings.bookings.slice(0, 5),
     wallet: wallet ?? null,
+    live,
   };
 }
 

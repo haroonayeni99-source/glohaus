@@ -10,6 +10,9 @@ import {
   Plus,
   Star,
   UserRoundCheck,
+  Users,
+  Radio,
+  LockKeyhole,
 } from "lucide-react";
 import type { Account } from "@/modules/accounts/domain";
 import type { ProfessionalDashboard as DashboardData } from "@/modules/dashboard/repository";
@@ -106,6 +109,35 @@ export function ProfessionalDashboard({
                 : "No reviews yet"}
             </span>
           </article>
+        </section>
+
+        <section className="pro-live-card" aria-label="GLOHAUS Live eligibility">
+          <div className="pro-panel-title">
+            <div>
+              <p className="pro-kicker">GLOHAUS LIVE</p>
+              <h2>Build your community. Unlock LIVE.</h2>
+            </div>
+            <Radio size={24} aria-hidden />
+          </div>
+          <p>LIVE is earned by established GLOHAUS professionals. Keep bringing genuine clients into your community and completing bookings through GLOHAUS.</p>
+          <div className="pro-live-requirements">
+            <div>
+              <span><Users size={17} aria-hidden /> Followers</span>
+              <strong>{data.live?.followers ?? data.stats.followerCount} / {data.live?.followersRequired ?? 500}</strong>
+              <progress max={500} value={Math.min(data.live?.followers ?? data.stats.followerCount, data.live?.followersRequired ?? 500)} />
+            </div>
+            <div>
+              <span><CalendarDays size={17} aria-hidden /> Completed bookings</span>
+              <strong>{data.live?.completedBookings ?? data.stats.completedBookings} / {data.live?.completedBookingsRequired ?? 10}</strong>
+              <progress max={10} value={Math.min(data.live?.completedBookings ?? data.stats.completedBookings, data.live?.completedBookingsRequired ?? 10)} />
+            </div>
+          </div>
+          <button className="pro-dark-button pro-live-locked" type="button" disabled>
+            <LockKeyhole size={16} aria-hidden /> {data.live?.eligible ? "LIVE eligible — streaming setup coming next" : "LIVE locked"}
+          </button>
+          <small>
+            Verification: {data.live?.verified ? "complete" : "required"} · Account standing: {data.live?.goodStanding ? "good" : "restricted"} · Moderation: {data.live?.seriousModerationRestriction ? "restriction active" : "clear"}
+          </small>
         </section>
 
         <section className="pro-quick-actions" aria-label="Professional quick actions">

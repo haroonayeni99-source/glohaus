@@ -14,7 +14,7 @@ export default async function Page({
   const target =
     intent === "professional"
       ? "/onboarding?intent=professional"
-      : `/onboarding${safeTarget ? `?returnTo=${encodeURIComponent(safeTarget)}` : ""}`;
+      : safeTarget || "/account";
   return (
     <AuthFrame audience={intent === "professional" ? "professional" : "customer"}>
       {authConfigured() ? (

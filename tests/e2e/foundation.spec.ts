@@ -1,24 +1,36 @@
 import { expect, test } from "@playwright/test";
 
-test("public entry works on mobile and desktop", async ({ page }) => {
+test("public entry works on mobile and desktop", async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "A little scroll.",
-  );
-  await expect(
-    page.getByRole("heading", { name: "It’s all in the details." }),
-  ).toBeVisible();
+
+  if (testInfo.project.name === "desktop") {
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "Good afternoon",
+    );
+    await expect(
+      page.getByRole("heading", { name: "Recommended professionals" }),
+    ).toBeVisible();
+  } else {
+    await expect(
+      page.getByText("DISCOVER. BOOK. GET INSPIRED.", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByLabel("Beauty inspiration feed. Scroll to see the next post."),
+    ).toBeVisible();
+  }
+
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
+
   await page.goto("/sign-up?intent=professional");
   await expect(page).toHaveURL(/sign-up\?intent=professional/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "A little preparation",
+    "Your GLOHAUS account is nearly ready.",
   );
   expect(errors).toEqual([]);
 });
@@ -37,7 +49,7 @@ test("private routes fail closed without credentials", async ({
   ]) {
     await page.goto(route);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "A little preparation",
+      "Your GLOHAUS account is nearly ready.",
     );
     await expect(
       page.getByText("Account created", { exact: true }),
@@ -51,13 +63,20 @@ test("private routes fail closed without credentials", async ({
   }
 });
 
-test("missing pages offer a working route home", async ({ page }) => {
+test("missing pages offer a working route home", async ({ page }, testInfo) => {
   await page.goto("/does-not-exist");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "This page isn’t here",
   );
   await page.getByRole("link", { name: "Back to glohaus" }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "A little scroll",
-  );
+
+  if (testInfo.project.name === "desktop") {
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "Good afternoon",
+    );
+  } else {
+    await expect(
+      page.getByText("DISCOVER. BOOK. GET INSPIRED.", { exact: true }),
+    ).toBeVisible();
+  }
 });

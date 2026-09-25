@@ -41,6 +41,15 @@ export async function findAccount(
     : null;
 }
 
+export async function ensureCustomerAccount(
+  db: SqlClient,
+  identity: Identity,
+): Promise<Account> {
+  const existing = await findAccount(db, identity.authId);
+  if (existing) return existing;
+  return enrolAccount(db, identity, "customer");
+}
+
 // Caller owns the transaction; its identity context comes from verified auth.
 export async function enrolAccount(
   db: SqlClient,

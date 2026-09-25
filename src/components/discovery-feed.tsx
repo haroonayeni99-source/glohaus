@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useLabels } from "./platform-labels";
 import { PostActions } from "./post-actions";
+import { DiscoverFollowButton } from "./discover-follow-button";
 import {
   readDeviceEngagement,
   type EngagementMap,
@@ -30,6 +31,9 @@ import type { PublicPost } from "@/modules/posts/domain";
 import { categories } from "@/modules/professionals/domain";
 import { inspiration } from "@/modules/discovery/inspiration";
 const emptyEngagement: EngagementMap = {};
+type FollowState = { following: boolean; followerCount: number };
+type FollowStateMap = Record<string, FollowState>;
+const emptyFollows: FollowStateMap = {};
 function subscribeDevice(callback: () => void) {
   window.addEventListener("storage", callback);
   window.addEventListener("glohaus-preferences", callback);
@@ -50,8 +54,12 @@ export function DiscoveryFeed({
   publishedPosts = [],
   initialNext = null,
   initialEngagement = emptyEngagement,
+  initialFollows = emptyFollows,
   accountMode = false,
+  viewerSignedIn = false,
+  canFollow = false,
   savedView = false,
+  followingView = false,
   savedPage = 1,
   hasMoreSaved = false,
   hideEditorial = false,
@@ -60,8 +68,12 @@ export function DiscoveryFeed({
   publishedPosts?: PublicPost[];
   initialNext?: string | null;
   initialEngagement?: EngagementMap;
+  initialFollows?: FollowStateMap;
   accountMode?: boolean;
+  viewerSignedIn?: boolean;
+  canFollow?: boolean;
   savedView?: boolean;
+  followingView?: boolean;
   savedPage?: number;
   hasMoreSaved?: boolean;
   hideEditorial?: boolean;
@@ -84,15 +96,16 @@ export function DiscoveryFeed({
     setLoadingMore(true);
     setNotice("");
     try {
-      const response = await fetch(
-        `/api/v1/posts?after=${encodeURIComponent(next)}`,
-      );
+      const params = new URLSearchParams({ after: next });
+      if (category === "Following") params.set("scope", "following");
+      const response = await fetch(`/api/v1/posts?${params.toString()}`);
       if (!response.ok) throw new Error();
       const page = await response.json();
       pendingPost.current =
         page.posts.find(
           (post: PublicPost) =>
             category === "For you" ||
+            category === "Following" ||
             (category === "Tutorials"
               ? post.kind === "tutorial"
               : post.category === category),
@@ -107,15 +120,19 @@ export function DiscoveryFeed({
       setNext(page.next);
       // Preserve local in-flight edits to posts already in the feed.
       setAccountEngagement((current) => ({ ...page.engagement, ...current }));
+      setFollowMap((current) => ({ ...(page.follows || {}), ...current }));
     } catch {
       setNotice("Could not load more posts. Please try again.");
     } finally {
       setLoadingMore(false);
     }
   }
-  const [category, setCategory] = useState(savedView ? "Saved" : "For you");
+  const [category, setCategory] = useState(
+    followingView ? "Following" : savedView ? "Saved" : "For you",
+  );
   const router = useRouter();
   const [accountEngagement, setAccountEngagement] = useState(initialEngagement);
+  const [followMap, setFollowMap] = useState<FollowStateMap>(initialFollows);
   const deviceRaw = useSyncExternalStore(
     subscribeDevice,
     deviceSnapshot,
@@ -179,6 +196,14 @@ export function DiscoveryFeed({
     );
   }
   const [notice, setNotice] = useState("");
+  function changeFollow(professionalId: string, state: FollowState) {
+    setFollowMap((current) => ({ ...current, [professionalId]: state }));
+    if (category === "Following" && !state.following) {
+      setFeedPosts((current) =>
+        current.filter((post) => post.professional_id !== professionalId),
+      );
+    }
+  }
   const savedCommunityIds = Object.keys(device).filter(
     (id) => device[id].saved && /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(id),
   );
@@ -219,13 +244,14 @@ export function DiscoveryFeed({
   ).filter(
     (post) =>
       category === "For you" ||
+      category === "Following" ||
       (category === "Saved"
         ? saved.includes(post.id)
         : category === "Tutorials"
           ? post.kind === "tutorial"
           : post.category === category),
   );
-  const posts = (hideEditorial ? [] : inspiration).filter(
+  const posts = (hideEditorial || category === "Following" ? [] : inspiration).filter(
     (post) =>
       category === "For you" ||
       (category === "Saved"
@@ -240,17 +266,40 @@ export function DiscoveryFeed({
         : "smooth",
     });
   }
-  function filter(next: string) {
+  function filter(nextCategory: string) {
     setDevicePage(1);
-    if (accountMode && next === "Saved" && !savedView) {
+
+    if (nextCategory === "Following") {
+      if (!viewerSignedIn) {
+        router.push(
+          `/sign-in?returnTo=${encodeURIComponent(`${routeBase}?feed=following`)}`,
+        );
+        return;
+      }
+      if (!canFollow) {
+        setNotice("Following is available to customer accounts.");
+        return;
+      }
+      if (!followingView) router.push(`${routeBase}?feed=following`);
+      return;
+    }
+
+    if (followingView) {
+      if (nextCategory === "Saved" && accountMode)
+        router.push(`${routeBase}?view=saved`);
+      else router.push(routeBase);
+      return;
+    }
+
+    if (accountMode && nextCategory === "Saved" && !savedView) {
       router.push(`${routeBase}?view=saved`);
       return;
     }
-    if (savedView && next !== "Saved") {
+    if (savedView && nextCategory !== "Saved") {
       router.push(routeBase);
       return;
     }
-    setCategory(next);
+    setCategory(nextCategory);
     scroll.current?.scrollTo({ top: 0 });
   }
   return (
@@ -336,7 +385,7 @@ export function DiscoveryFeed({
           </div>
         </header>
         <div className="discovery-tabs" aria-label="Filter inspiration">
-          {["For you", ...categories, "Tutorials"].map((item) => (
+          {["Following", "For you", ...categories, "Tutorials"].map((item) => (
             <button
               key={item}
               aria-pressed={category === item}
@@ -359,17 +408,34 @@ export function DiscoveryFeed({
               <div className="feed-empty">
                 <Sparkles size={36} />
                 <h2>
-                  {category === "Saved"
-                    ? "Make room for your favourites."
-                    : "A fresh space for new ideas."}
+                  {category === "Following"
+                    ? viewerSignedIn
+                      ? "Your Following feed is ready to grow."
+                      : "Sign in to see your Following feed."
+                    : category === "Saved"
+                      ? "Make room for your favourites."
+                      : "A fresh space for new ideas."}
                 </h2>
                 <p>
-                  {category === "Saved"
-                    ? "Tap the bookmark on a post to keep it here for another day."
-                    : `Our ${category.toLowerCase()} collection is still growing. Explore another category in the meantime.`}
+                  {category === "Following"
+                    ? viewerSignedIn
+                      ? "Follow professionals you want to keep up with and their new work will appear here."
+                      : "Following is personal to your GLOHAUS customer account."
+                    : category === "Saved"
+                      ? "Tap the bookmark on a post to keep it here for another day."
+                      : `Our ${category.toLowerCase()} collection is still growing. Explore another category in the meantime.`}
                 </p>
-                <button className="button" onClick={() => filter("For you")}>
-                  Explore inspiration
+                <button
+                  className="button"
+                  onClick={() =>
+                    category === "Following" && !viewerSignedIn
+                      ? filter("Following")
+                      : filter("For you")
+                  }
+                >
+                  {category === "Following" && !viewerSignedIn
+                    ? "Sign in"
+                    : "Explore inspiration"}
                 </button>
               </div>
             ) : (
@@ -419,6 +485,19 @@ export function DiscoveryFeed({
                         {post.business_name}
                         <small>{post.city}</small>
                       </Link>
+                      <DiscoverFollowButton
+                        professionalId={post.professional_id}
+                        state={
+                          followMap[post.professional_id] || {
+                            following: false,
+                            followerCount: 0,
+                          }
+                        }
+                        signedIn={viewerSignedIn}
+                        canFollow={canFollow}
+                        returnTo={`${routeBase}#post-${post.id}`}
+                        onChange={changeFollow}
+                      />
                       <h2>{post.title}</h2>
                       <details className="post-reader">
                         <summary>

@@ -3,7 +3,8 @@ import { readFile, readdir } from "node:fs/promises";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { enrolAccount, type SqlClient } from "@/modules/accounts/repository";
 import { updateProfile } from "@/modules/professionals/repository";
-import { setFollowing, followState, followedProfessionals } from "@/modules/follows/repository";
+import { setFollowing, followState, followedProfessionals, followStates } from "@/modules/follows/repository";
+import { savePost, followedPostPage } from "@/modules/posts/repository";
 
 const db = new PGlite();
 let professionalId: string;
@@ -33,6 +34,16 @@ beforeAll(async () => {
       city:"London", category:"Hair", publicationStatus:"published",
     }),
   );
+  await asUser("pro-auth", (sql) =>
+    savePost(sql, professionalId, {
+      title:"Fresh silk press",
+      body:"A polished silk press finish created for the GLOHAUS following-feed test.",
+      kind:"design",
+      publicationStatus:"published",
+      serviceId:null,
+      assetId:null,
+    }),
+  );
   const customer = await asUser("customer-auth", (sql) =>
     enrolAccount(sql, { authId:"customer-auth", email:"customer@example.test", displayName:"Customer", secondFactorAge:null }, "customer"),
   );
@@ -47,6 +58,26 @@ describe.sequential("professional following", () => {
     expect(await asUser("customer-auth", (sql) => setFollowing(sql, customerId, professionalId, true)))
       .toEqual({ following:true, followerCount:1 });
   });
+  it("serves only followed professionals in the Following feed", async () => {
+    const page = await asUser("customer-auth", (sql) =>
+      followedPostPage(sql, customerId),
+    );
+    expect(page.posts).toHaveLength(1);
+    expect(page.posts[0]).toMatchObject({
+      professional_id: professionalId,
+      business_name: "Pro Studio",
+      title: "Fresh silk press",
+    });
+
+    const state = await asUser("customer-auth", (sql) =>
+      followStates(sql, customerId, [professionalId]),
+    );
+    expect(state[professionalId]).toEqual({
+      following: true,
+      followerCount: 1,
+    });
+  });
+
   it("shows followed professionals only to the owning customer", async () => {
     const rows = await asUser("customer-auth", (sql) => followedProfessionals(sql, customerId));
     expect(rows).toHaveLength(1);
@@ -58,8 +89,13 @@ describe.sequential("professional following", () => {
     expect(await asUser("", (sql) => followState(sql, null, professionalId)))
       .toEqual({ following:false, followerCount:1 });
   });
-  it("allows the customer to unfollow", async () => {
+  it("allows the customer to unfollow and removes posts from Following", async () => {
     expect(await asUser("customer-auth", (sql) => setFollowing(sql, customerId, professionalId, false)))
       .toEqual({ following:false, followerCount:0 });
+    expect(
+      (await asUser("customer-auth", (sql) =>
+        followedPostPage(sql, customerId),
+      )).posts,
+    ).toEqual([]);
   });
 });

@@ -23,6 +23,7 @@ export type PublicPost = {
   service_id: string | null;
   service_name: string | null;
   price_pence: number | null;
+  professional_id: string;
 };
 export type OwnPost = {
   asset_id?: string | null;

@@ -60,14 +60,14 @@ export function DesktopCustomerHome({ professionals = [], signedIn = false, disp
         <Link className="active" href="/"><Home size={20}/>Home</Link>
         <Link href="/explore"><Search size={20}/>Explore</Link>
         <Link href="/account/bookings"><CalendarDays size={20}/>Bookings</Link>
-        <Link href="/messages"><MessageSquare size={20}/>Messages</Link>
+        <span className="customer-nav-disabled" aria-disabled="true"><MessageSquare size={20}/>Messages<small>Coming soon</small></span>
         <Link href="/shop"><ShoppingBag size={20}/>Shop</Link>
-        <Link href="/wallet"><WalletCards size={20}/>Wallet</Link>
+        <span className="customer-nav-disabled" aria-disabled="true"><WalletCards size={20}/>Wallet<small>Coming soon</small></span>
         <Link href="/workspace"><UserRound size={20}/>Profile</Link>
       </nav>
-      <Link className="glohaus-plus-card" href="/glohaus-plus">
-        <Crown size={22}/><span><strong>GloHaus+</strong><small>Exclusive perks, early access & more.</small></span><ChevronRight size={18}/>
-      </Link>
+      <div className="glohaus-plus-card glohaus-plus-disabled" aria-disabled="true">
+        <Crown size={22}/><span><strong>GloHaus+</strong><small>Planned membership perks · Coming soon</small></span>
+      </div>
     </aside>
 
     <main className="customer-desktop-main">
@@ -119,16 +119,16 @@ export function DesktopCustomerHome({ professionals = [], signedIn = false, disp
         <div className="rail-empty-booking"><CalendarDays size={25}/><div><strong>{signedIn?"Your next appointment":"Ready when you are"}</strong><span>{signedIn?"Your upcoming booking will appear here.":"Sign in to see your bookings."}</span></div></div>
         <Link className="rail-soft-button" href={signedIn?"/account/bookings":"/sign-in"}>{signedIn?"View bookings":"Sign in"}<ChevronRight size={16}/></Link>
       </section>
-      <section><div className="rail-heading"><h2>Messages</h2><Link href="/messages">View all →</Link></div>
+      <section><div className="rail-heading"><h2>Messages</h2><span className="rail-coming-soon">Coming soon</span></div>
         <div className="rail-message"><span className="desktop-avatar">G</span><div><strong>GloHaus</strong><small>Beauty, people, together.</small></div></div>
         <div className="rail-message"><span className="desktop-avatar">✦</span><div><strong>Your professionals</strong><small>Booking messages will appear here.</small></div></div>
       </section>
-      <section><div className="rail-heading"><h2>Wallet & Rewards</h2><Link href="/wallet">View all →</Link></div>
-        <div className="rail-wallet"><WalletCards/><div><small>Available balance</small><strong>£0.00</strong></div><Link href="/wallet">View Wallet →</Link></div>
-        <Link className="rail-reward" href="/wallet"><Gift/><span><strong>GloHaus Rewards</strong><small>Earn rewards as the GloHaus community grows.</small></span><ChevronRight/></Link>
+      <section><div className="rail-heading"><h2>Wallet & Rewards</h2><span className="rail-coming-soon">Coming soon</span></div>
+        <div className="rail-wallet rail-wallet-disabled"><WalletCards/><div><small>Wallet</small><strong>Not active yet</strong></div><span>Roadmap stage 8</span></div>
+        <div className="rail-reward rail-reward-disabled"><Gift/><span><strong>GloHaus Rewards</strong><small>Rewards will launch with the wallet experience.</small></span></div>
       </section>
       <Link className="desktop-shop-banner" href="/shop"><div><strong>Shop Beauty<br/>Essentials</strong><span>Curated products from trusted professionals.</span><b>Shop Now →</b></div><Image fill sizes="320px" src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85" alt="Beauty products"/></Link>
     </aside>
-    <footer className="desktop-status"><Brand/><span>v1.0.0</span><span className="status-right">● GloHaus connected&nbsp; • &nbsp;● Supabase&nbsp; • &nbsp;Realtime</span></footer>
+    <footer className="desktop-status"><Brand/><span>v1.0.0</span><span className="status-right">GloHaus beta&nbsp; • &nbsp;Features unlock as they are validated</span></footer>
   </div>;
 }

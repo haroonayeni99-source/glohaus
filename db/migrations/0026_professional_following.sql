@@ -122,6 +122,7 @@ GRANT SELECT (id, auth_id, status) ON beauty.users TO beauty_catalog;
 GRANT SELECT (user_id) ON beauty.customer_profiles TO beauty_catalog;
 GRANT SELECT (id, user_id, publication_status) ON beauty.professional_profiles TO beauty_catalog;
 GRANT SELECT (customer_id, professional_id) ON beauty.professional_follows TO beauty_catalog;
+GRANT INSERT (customer_id, professional_id), DELETE ON beauty.professional_follows TO beauty_catalog;
 REVOKE CREATE ON SCHEMA beauty FROM beauty_catalog;
 
 REVOKE ALL ON FUNCTION beauty.can_manage_follow(uuid,uuid,text) FROM PUBLIC;

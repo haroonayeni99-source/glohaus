@@ -76,7 +76,20 @@ export default async function Profile({
         [id],
       )
     ).rows;
-    return { ...profile, assets, reviews, hours, stats, follow, signedIn: Boolean(viewer) };
+    return {
+      ...profile,
+      assets,
+      reviews,
+      hours,
+      stats,
+      follow,
+      signedIn: Boolean(viewer),
+      messageHref: viewer?.roles.includes("customer")
+        ? `/messages?professional=${id}`
+        : viewer
+          ? null
+          : `/sign-in?returnTo=${encodeURIComponent(`/messages?professional=${id}`)}`,
+    };
   });
   if (!data) notFound();
   return (
@@ -92,6 +105,7 @@ export default async function Profile({
         rating={data.stats.rating}
         reviewCount={data.stats.count}
         follow={{ ...data.follow, signedIn: data.signedIn }}
+        messageHref={data.messageHref}
         booking={
           <BookingPicker
             services={data.services}

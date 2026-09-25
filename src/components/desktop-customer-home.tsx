@@ -30,7 +30,29 @@ const trends = [
 export function DesktopCustomerHome({ professionals = [], signedIn = false, displayName = "" }: {
   professionals?: PublicProfessional[]; signedIn?: boolean; displayName?: string;
 }) {
-  const cards = professionals.slice(0,4);
+  const cards = professionals.length
+    ? professionals.slice(0, 4).map((item, index) => ({
+        id: item.id,
+        name: item.business_name,
+        role: item.category,
+        city: item.city,
+        slug: item.slug,
+        image: item.photo_id
+          ? `/api/media/${item.photo_id}`
+          : fallbackPros[index % fallbackPros.length][3],
+        unoptimized: Boolean(item.photo_id),
+        rating: item.rating ? Number(item.rating).toFixed(1) : ["4.9", "4.8", "5.0", "4.9"][index],
+      }))
+    : fallbackPros.map(([name, role, city, image], index) => ({
+        id: `fallback-${index}`,
+        name,
+        role,
+        city,
+        slug: "",
+        image,
+        unoptimized: false,
+        rating: ["4.9", "4.8", "5.0", "4.9"][index],
+      }));
   return <div className="desktop-customer-home">
     <aside className="customer-desktop-sidebar">
       <Brand />
@@ -70,15 +92,20 @@ export function DesktopCustomerHome({ professionals = [], signedIn = false, disp
       <section className="desktop-section">
         <div className="desktop-section-title"><h2>Recommended professionals</h2><Link href="/explore">See all <ChevronRight size={15}/></Link></div>
         <div className="desktop-pro-grid">
-          {(cards.length ? cards : fallbackPros).map((item,index:number)=>{
-            const live=cards.length>0; const name=live?item.business_name:item[0]; const role=live?item.category:item[1]; const city=live?item.city:item[2]; const slug=live?item.slug:"";
-            const image=live && item.photo_id ? `/api/media/${item.photo_id}` : fallbackPros[index % fallbackPros.length][3];
-            return <article className="desktop-pro-card" key={live?item.id:name}>
-              <Link href={live?`/p/${slug}`:"/explore"} className="desktop-pro-photo"><Image fill sizes="260px" src={image} alt={name} unoptimized={live && Boolean(item.photo_id)}/><Heart className="desktop-card-heart" size={23}/><span className="desktop-rating">★ {live && item.rating ? Number(item.rating).toFixed(1) : ["4.9","4.8","5.0","4.9"][index]}</span></Link>
-              <div><strong>{name}</strong><span>{role}</span><small><MapPin size={13}/>{city}</small><Link className="desktop-book" href={live?`/p/${slug}`:"/explore"}>Book</Link></div>
+          {cards.map((card) => (
+            <article className="desktop-pro-card" key={card.id}>
+              <Link href={card.slug ? `/p/${card.slug}` : "/explore"} className="desktop-pro-photo">
+                <Image fill sizes="260px" src={card.image} alt={card.name} unoptimized={card.unoptimized}/>
+                <Heart className="desktop-card-heart" size={23}/>
+                <span className="desktop-rating">★ {card.rating}</span>
+              </Link>
+              <div>
+                <strong>{card.name}</strong><span>{card.role}</span>
+                <small><MapPin size={13}/>{card.city}</small>
+                <Link className="desktop-book" href={card.slug ? `/p/${card.slug}` : "/explore"}>Book</Link>
+              </div>
             </article>
-          })}
-        </div>
+          ))}        </div>
       </section>
 
       <section className="desktop-section desktop-trending">

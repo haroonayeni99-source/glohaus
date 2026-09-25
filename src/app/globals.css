@@ -5164,7 +5164,11 @@ svg {
 .customer-desktop-sidebar nav .customer-nav-disabled {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 18px;
+  padding: 13px 17px;
+  border-radius: 12px;
+  color: #201a17;
+  font-size: 14px;
   opacity: .48;
   cursor: not-allowed;
 }
@@ -5179,6 +5183,15 @@ svg {
 .rail-reward-disabled {
   cursor: default;
   opacity: .68;
+}
+.glohaus-plus-disabled {
+  grid-template-columns: auto 1fr;
+}
+.rail-reward-disabled {
+  grid-template-columns: auto 1fr;
+}
+.desktop-status .status-right {
+  color: #817974;
 }
 .rail-coming-soon {
   font-size: .62rem;

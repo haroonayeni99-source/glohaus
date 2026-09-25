@@ -19,8 +19,8 @@ const messages: Record<
     label: "Sign in",
   },
   FORBIDDEN: {
-    title: "This space belongs to another role.",
-    text: "Your account doesn’t have access to this workspace. If you’ve just registered, make sure your email is verified.",
+    title: "Choose the right GLOHAUS space.",
+    text: "You’re signed in, but this account does not have the role required for this workspace. Use My workspace to continue with the account you created.",
     href: "/workspace",
     label: "My workspace",
   },

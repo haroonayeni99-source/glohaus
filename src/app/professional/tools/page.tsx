@@ -12,6 +12,7 @@ import {
   Bell,
   Compass,
   MessageSquare,
+  ShoppingBag,
   WalletCards,
 } from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
@@ -62,6 +63,12 @@ const tools = [
     "Private conversations with your clients",
     "/messages",
     MessageSquare,
+  ],
+  [
+    "Products & stock",
+    "Create, publish and manage your shop catalogue",
+    "/professional/products",
+    ShoppingBag,
   ],
   [
     "Wallet & earnings",

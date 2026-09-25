@@ -14,7 +14,7 @@ export async function followState(
 ): Promise<FollowState> {
   const count = (
     await db.query<{ follower_count: number }>(
-      "SELECT follower_count FROM beauty.public_professional_follow_counts WHERE professional_id=$1",
+      "SELECT beauty.professional_follower_count($1) AS follower_count",
       [professionalId],
     )
   ).rows[0]?.follower_count ?? 0;
@@ -65,7 +65,7 @@ export async function professionalFollowerCount(
 ): Promise<number> {
   return (
     await db.query<{ count: number }>(
-      "SELECT count(*)::integer AS count FROM beauty.professional_follows WHERE professional_id=$1",
+      "SELECT beauty.professional_follower_count($1) AS count",
       [professionalId],
     )
   ).rows[0]?.count ?? 0;

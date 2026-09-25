@@ -13,7 +13,8 @@ test("public entry works on mobile and desktop", async ({ page }, testInfo) => {
       page.getByRole("heading", { name: "Recommended professionals" }),
     ).toBeVisible();
     await expect(page.locator('a[href="/messages"]:visible').first()).toBeVisible();
-    await expect(page.locator('a[href="/wallet"], a[href="/glohaus-plus"]')).toHaveCount(0);
+    await expect(page.locator('a[href="/wallet"]:visible').first()).toBeVisible();
+    await expect(page.locator('a[href="/glohaus-plus"]')).toHaveCount(0);
     await expect(page.getByText("Coming soon", { exact: true }).first()).toBeVisible();
   } else {
     await expect(
@@ -52,6 +53,7 @@ test("private routes fail closed without credentials", async ({
     "/onboarding",
     "/security",
     "/messages",
+    "/wallet",
   ]) {
     await page.goto(route);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(

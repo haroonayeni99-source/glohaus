@@ -20,7 +20,7 @@ export default async function Home({
   const savedView = query.view === "saved";
   const page = Math.floor(Math.min(250, Math.max(1, Number(query.page) || 1)));
   const postId = z.uuid().safeParse(query.post);
-  let data: {
+  const defaultData: {
     posts: PublicPost[];
     initialEngagement: EngagementMap;
     accountMode: boolean;
@@ -36,7 +36,7 @@ export default async function Home({
     next: null,
   };
   let desktopProfessionals: PublicProfessional[] = [];
-  let desktopViewer = { signedIn: false, displayName: "" };
+  const defaultDesktopViewer = { signedIn: false, displayName: "" };\n  let data = defaultData;\n  let desktopViewer = defaultDesktopViewer;
   if (process.env.DATABASE_URL) {
     let authId = "";
     try {

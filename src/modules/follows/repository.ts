@@ -47,12 +47,12 @@ export async function setFollowing(
     if (!target) throw new AccessError("FORBIDDEN", 403);
 
     await db.query(
-      "SELECT beauty.set_professional_follow($1,$2,beauty.auth_id(),true)",
+      "SELECT beauty.set_professional_follow($1,$2,true)",
       [customerId, professionalId],
     );
   } else {
     await db.query(
-      "SELECT beauty.set_professional_follow($1,$2,beauty.auth_id(),false)",
+      "SELECT beauty.set_professional_follow($1,$2,false)",
       [customerId, professionalId],
     );
   }

@@ -5,7 +5,7 @@ import { publicSupabaseKey } from "@/lib/config";
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const next = url.searchParams.get("next");
-  const target = next?.startsWith("/") && !next.startsWith("//") ? next : "/onboarding";
+  const target = next?.startsWith("/") && !next.startsWith("//") ? next : "/account";
   const response = NextResponse.redirect(new URL(target, url.origin));
   response.headers.set("Cache-Control", "private, no-store");
 
@@ -24,11 +24,16 @@ export async function GET(request: NextRequest) {
   );
 
   const code = url.searchParams.get("code");
-  if (!code) return NextResponse.redirect(new URL("/sign-in?authError=missing_code", url.origin));
+  if (!code)
+    return NextResponse.redirect(
+      new URL("/sign-in?authError=missing_code", url.origin),
+    );
 
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error)
-    return NextResponse.redirect(new URL("/sign-in?authError=confirmation_failed", url.origin));
+    return NextResponse.redirect(
+      new URL("/sign-in?authError=confirmation_failed", url.origin),
+    );
 
   return response;
 }

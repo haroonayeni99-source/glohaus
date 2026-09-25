@@ -86,14 +86,28 @@ test("missing pages offer a working route home", async ({ page }, testInfo) => {
 });
 
 
-test("dedicated Discover route renders the existing feed on mobile", async ({ page }) => {
+test("dedicated Discover route behaves like a full-screen mobile feed", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/discover");
 
-  await expect(
-    page.getByText("DISCOVER. BOOK. GET INSPIRED.", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByLabel("Beauty inspiration feed. Scroll to see the next post."),
-  ).toBeVisible();
+  const feed = page.getByLabel("Beauty inspiration feed. Scroll to see the next post.");
+  await expect(feed).toBeVisible();
+
+  const metrics = await feed.evaluate((element) => {
+    const style = getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return {
+      scrollSnapType: style.scrollSnapType,
+      height: Math.round(rect.height),
+      viewport: window.innerHeight,
+    };
+  });
+  expect(metrics.scrollSnapType).toContain("y");
+  expect(Math.abs(metrics.height - metrics.viewport)).toBeLessThanOrEqual(4);
+
+  await expect(page.locator('.glohaus-bottom-nav [aria-current="page"]')).toHaveCount(0);
+
+  const firstShare = page.getByRole("button", { name: /^Share / }).first();
+  await firstShare.click();
+  await expect(page.getByLabel("Post link")).toHaveValue(/\/discover#post-/);
 });

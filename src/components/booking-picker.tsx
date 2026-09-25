@@ -14,7 +14,7 @@ function londonDateString(value = new Date()) {
     month: "2-digit",
     day: "2-digit",
   }).formatToParts(value);
-  const get = (type: Intl.DateTimeFormatPartTypes) =>
+  const get = (type: "year" | "month" | "day") =>
     parts.find((part) => part.type === type)?.value || "";
   return get("year") + "-" + get("month") + "-" + get("day");
 }
@@ -78,7 +78,7 @@ export function BookingPicker({
   const [step, setStep] = useState<"appointment" | "summary">("appointment");
 
   const service = services.find((item) => item.id === serviceId);
-  const today = useMemo(() => londonDateString(), []);
+  const [today] = useState(() => londonDateString());
   const quickDates = useMemo(() => dateChoices(today), [today]);
 
   useEffect(() => {

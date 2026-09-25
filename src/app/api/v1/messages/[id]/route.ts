@@ -6,8 +6,9 @@ import { authorize, AccessError } from "@/modules/accounts/domain";
 import { findAccount } from "@/modules/accounts/repository";
 import {
   conversationDetails,
-  conversationMessages,
+  conversationMessagePage,
 } from "@/modules/messages/repository";
+import { parseMessageCursor } from "@/modules/messages/pagination";
 
 const replySchema = z
   .object({
@@ -22,13 +23,20 @@ function assertMessagingAccount(roles: string[]) {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await context.params;
     if (!z.uuid().safeParse(id).success)
       throw new AccessError("INVALID_REQUEST", 400);
+
+    let after;
+    try {
+      after = parseMessageCursor(new URL(request.url).searchParams.get("after"));
+    } catch {
+      throw new AccessError("INVALID_REQUEST", 400);
+    }
 
     const identity = await getIdentity();
     const data = await withIdentity(identity.authId, async (db) => {
@@ -48,7 +56,7 @@ export async function GET(
 
       return {
         conversation,
-        messages: await conversationMessages(db, id),
+        ...(await conversationMessagePage(db, id, after)),
       };
     });
 

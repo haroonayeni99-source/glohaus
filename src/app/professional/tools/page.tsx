@@ -11,6 +11,7 @@ import {
   Star,
   Bell,
   Compass,
+  MessageSquare,
   WalletCards,
 } from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
@@ -56,6 +57,12 @@ const tools = [
     PenSquare,
   ],
   ["Reviews", "Read feedback from your clients", "/professional/reviews", Star],
+  [
+    "Messages",
+    "Private conversations with your clients",
+    "/messages",
+    MessageSquare,
+  ],
   [
     "Wallet & earnings",
     "Your deposits and financial activity",

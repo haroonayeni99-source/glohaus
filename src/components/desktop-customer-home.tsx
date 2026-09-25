@@ -77,7 +77,7 @@ export function DesktopCustomerHome({ professionals = [], signedIn = false, disp
         <Link className="desktop-user-chip" href="/workspace"><span className="desktop-avatar">{displayName ? displayName[0]?.toUpperCase() : "G"}</span>{signedIn ? displayName || "My account" : "Sign in"}<ChevronRight size={15}/></Link></div>
       </header>
 
-      <section className="desktop-hero">
+      <section className="desktop-hero" style={{ position: "relative" }}>
         <div className="desktop-hero-copy"><p className="eyebrow">BEAUTY SERVICES NEAR YOU</p><h1>Good afternoon <Heart size={36}/></h1>
         <p>Find and book trusted beauty professionals,<br/>shop your favourites and feel your best — all in one place.</p>
         <form action="/explore" className="desktop-hero-search"><Search size={20}/><input name="q" aria-label="Search beauty" placeholder="Find hair, nails, beauty & more"/><button>Search</button></form></div>

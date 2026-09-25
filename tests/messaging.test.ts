@@ -6,6 +6,7 @@ import { updateProfile } from "@/modules/professionals/repository";
 import {
   conversationInbox,
   conversationMessages,
+  conversationMessagePage,
 } from "@/modules/messages/repository";
 
 const db = new PGlite();
@@ -147,6 +148,37 @@ describe.sequential("private messaging foundation", () => {
       "customer",
       "professional",
     ]);
+  });
+
+  it("supports incremental delivery without reloading the whole thread", async () => {
+    const firstPage = await asUser("message-customer-auth", (sql) =>
+      conversationMessagePage(sql, conversationId),
+    );
+    expect(firstPage.messages).toHaveLength(2);
+    expect(firstPage.next).toBeTruthy();
+
+    await asUser("message-pro-auth", (sql) =>
+      sql.query("SELECT beauty.send_message($1,$2,$3)", [
+        conversationId,
+        "Here is one more update for the incremental delivery test.",
+        null,
+      ]),
+    );
+
+    const { parseMessageCursor } = await import(
+      "@/modules/messages/pagination"
+    );
+    const nextPage = await asUser("message-customer-auth", (sql) =>
+      conversationMessagePage(
+        sql,
+        conversationId,
+        parseMessageCursor(firstPage.next),
+      ),
+    );
+    expect(nextPage.messages).toHaveLength(1);
+    expect(nextPage.messages[0].body).toBe(
+      "Here is one more update for the incremental delivery test.",
+    );
   });
 
   it("tracks unread state independently for each participant", async () => {

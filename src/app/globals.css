@@ -5090,3 +5090,27 @@ svg {
 .pro-live-card small { display: block; max-width: 760px; margin-top: 12px; color: var(--muted); }
 .pro-live-locked { display: inline-flex; align-items: center; gap: 8px; }
 @media (max-width: 700px) { .pro-live-requirements { grid-template-columns: 1fr; } }
+
+.following-page { max-width: 980px; }
+.following-list { display: grid; gap: 12px; margin-top: 28px; }
+.following-row {
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--white);
+  color: inherit;
+  text-decoration: none;
+}
+.following-avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--soft-pink); color: var(--plum);
+  font-weight: 800; font-size: 1.1rem;
+}
+.following-copy { min-width: 0; display: grid; gap: 4px; }
+.following-copy small { display: flex; align-items: center; gap: 5px; color: var(--muted); }
+.following-copy > span { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

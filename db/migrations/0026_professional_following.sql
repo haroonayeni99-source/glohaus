@@ -119,9 +119,13 @@ ALTER FUNCTION beauty.professional_follower_count(uuid) OWNER TO beauty_catalog;
 GRANT EXECUTE ON FUNCTION beauty.auth_id() TO beauty_catalog;
 -- Keep the catalogue role blind to private account fields such as email.
 GRANT SELECT (id, auth_id, status) ON beauty.users TO beauty_catalog;
+ALTER TABLE beauty.users NO FORCE ROW LEVEL SECURITY;
 GRANT SELECT (user_id) ON beauty.customer_profiles TO beauty_catalog;
+ALTER TABLE beauty.customer_profiles NO FORCE ROW LEVEL SECURITY;
 GRANT SELECT (id, user_id, publication_status) ON beauty.professional_profiles TO beauty_catalog;
+ALTER TABLE beauty.professional_profiles NO FORCE ROW LEVEL SECURITY;
 GRANT SELECT (customer_id, professional_id) ON beauty.professional_follows TO beauty_catalog;
+ALTER TABLE beauty.professional_follows NO FORCE ROW LEVEL SECURITY;
 GRANT INSERT (customer_id, professional_id), DELETE ON beauty.professional_follows TO beauty_catalog;
 REVOKE CREATE ON SCHEMA beauty FROM beauty_catalog;
 

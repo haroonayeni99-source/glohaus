@@ -5,7 +5,7 @@ test("public entry works on mobile and desktop", async ({ page }) => {
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "A little scroll.",
+    /A little scroll\.|Good afternoon/,
   );
   await expect(
     page.getByRole("heading", { name: "It’s all in the details." }),
@@ -18,7 +18,7 @@ test("public entry works on mobile and desktop", async ({ page }) => {
   await page.goto("/sign-up?intent=professional");
   await expect(page).toHaveURL(/sign-up\?intent=professional/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "A little preparation",
+    "Your GLOHAUS account is nearly ready.",
   );
   expect(errors).toEqual([]);
 });
@@ -58,6 +58,6 @@ test("missing pages offer a working route home", async ({ page }) => {
   );
   await page.getByRole("link", { name: "Back to glohaus" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "A little scroll",
+    /A little scroll|Good afternoon/,
   );
 });

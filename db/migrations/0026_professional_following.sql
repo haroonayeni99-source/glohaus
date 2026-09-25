@@ -50,7 +50,7 @@ AS $follow$
   )
 $follow$;
 
-CREATE FUNCTION beauty.set_professional_follow(target_customer uuid, target_professional uuid, actor_auth_id text, should_follow boolean)
+CREATE FUNCTION beauty.set_professional_follow(target_customer uuid, target_professional uuid, should_follow boolean)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -58,7 +58,7 @@ SET search_path = pg_catalog
 AS $follow_write$
 BEGIN
   IF should_follow THEN
-    IF NOT beauty.can_manage_follow(target_customer, target_professional, actor_auth_id) THEN
+    IF NOT beauty.can_manage_follow(target_customer, target_professional, beauty.auth_id()) THEN
       RAISE EXCEPTION 'follow not permitted' USING ERRCODE = '42501';
     END IF;
     INSERT INTO beauty.professional_follows(customer_id, professional_id)
@@ -68,7 +68,7 @@ BEGIN
     IF NOT EXISTS (
       SELECT 1 FROM beauty.users u
       WHERE u.id = target_customer
-        AND u.auth_id = actor_auth_id
+        AND u.auth_id = beauty.auth_id()
         AND u.status = 'active'
     ) THEN
       RAISE EXCEPTION 'follow not permitted' USING ERRCODE = '42501';
@@ -113,34 +113,31 @@ $$;
 
 GRANT CREATE ON SCHEMA beauty TO beauty_catalog;
 ALTER FUNCTION beauty.can_manage_follow(uuid,uuid,text) OWNER TO beauty_catalog;
-ALTER FUNCTION beauty.set_professional_follow(uuid,uuid,text,boolean) OWNER TO beauty_catalog;
+ALTER FUNCTION beauty.set_professional_follow(uuid,uuid,boolean) OWNER TO beauty_catalog;
 ALTER FUNCTION beauty.owns_follow(uuid) OWNER TO beauty_catalog;
 ALTER FUNCTION beauty.professional_follower_count(uuid) OWNER TO beauty_catalog;
 GRANT EXECUTE ON FUNCTION beauty.auth_id() TO beauty_catalog;
 -- Keep the catalogue role blind to private account fields such as email.
 GRANT SELECT (id, auth_id, status) ON beauty.users TO beauty_catalog;
-ALTER TABLE beauty.users NO FORCE ROW LEVEL SECURITY;
 GRANT SELECT (user_id) ON beauty.customer_profiles TO beauty_catalog;
-ALTER TABLE beauty.customer_profiles NO FORCE ROW LEVEL SECURITY;
+CREATE POLICY catalog_follow_customer_membership ON beauty.customer_profiles
+  FOR SELECT TO beauty_catalog USING (true);
 GRANT SELECT (id, user_id, publication_status) ON beauty.professional_profiles TO beauty_catalog;
-ALTER TABLE beauty.professional_profiles NO FORCE ROW LEVEL SECURITY;
 GRANT SELECT (customer_id, professional_id) ON beauty.professional_follows TO beauty_catalog;
-ALTER TABLE beauty.professional_follows NO FORCE ROW LEVEL SECURITY;
+CREATE POLICY catalog_follow_internal ON beauty.professional_follows
+  FOR ALL TO beauty_catalog USING (true) WITH CHECK (true);
 GRANT INSERT (customer_id, professional_id), DELETE ON beauty.professional_follows TO beauty_catalog;
 REVOKE CREATE ON SCHEMA beauty FROM beauty_catalog;
 
 REVOKE ALL ON FUNCTION beauty.can_manage_follow(uuid,uuid,text) FROM PUBLIC;
-REVOKE ALL ON FUNCTION beauty.set_professional_follow(uuid,uuid,text,boolean) FROM PUBLIC;
+REVOKE ALL ON FUNCTION beauty.set_professional_follow(uuid,uuid,boolean) FROM PUBLIC;
 REVOKE ALL ON FUNCTION beauty.owns_follow(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION beauty.professional_follower_count(uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION beauty.can_manage_follow(uuid,uuid,text) TO beauty_app;
-GRANT EXECUTE ON FUNCTION beauty.set_professional_follow(uuid,uuid,text,boolean) TO beauty_app;
+GRANT EXECUTE ON FUNCTION beauty.set_professional_follow(uuid,uuid,boolean) TO beauty_app;
 GRANT EXECUTE ON FUNCTION beauty.owns_follow(uuid) TO beauty_app;
 GRANT EXECUTE ON FUNCTION beauty.professional_follower_count(uuid) TO beauty_app;
 
 GRANT SELECT ON beauty.professional_follows TO beauty_app;
-GRANT INSERT (customer_id, professional_id) ON beauty.professional_follows TO beauty_app;
-GRANT DELETE ON beauty.professional_follows TO beauty_app;
 
 CREATE POLICY follow_self_read ON beauty.professional_follows
   FOR SELECT TO beauty_app

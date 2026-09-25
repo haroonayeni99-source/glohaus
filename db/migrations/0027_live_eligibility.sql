@@ -49,8 +49,7 @@ BEGIN
     RAISE EXCEPTION 'FORBIDDEN' USING ERRCODE='42501';
   END IF;
 
-  SELECT count(*)::integer INTO followers
-    FROM beauty.professional_follows WHERE professional_id=target;
+  SELECT beauty.professional_follower_count(target) INTO followers;
   SELECT count(*)::integer INTO completed
     FROM beauty.bookings WHERE professional_id=target AND status='completed';
   SELECT verification_status,standing_status,live_restricted_until

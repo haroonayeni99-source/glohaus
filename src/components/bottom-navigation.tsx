@@ -17,7 +17,7 @@ const items = [
   { id: "profile", href: "/workspace", label: "Profile", icon: UserRound },
 ] as const;
 
-export function BottomNavigation({ active }: { active: (typeof items)[number]["id"] }) {
+export function BottomNavigation({ active }: { active?: (typeof items)[number]["id"] }) {
   return (
     <nav className="glohaus-bottom-nav" aria-label="Mobile navigation">
       {items.map((item) => {

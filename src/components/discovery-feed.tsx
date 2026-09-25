@@ -446,6 +446,7 @@ export function DiscoveryFeed({
                       requireAuth={
                         accountMode ? undefined : requireAuthForEngagement
                       }
+                      editorialBase={routeBase}
                     />
                   </article>
                 ))}
@@ -515,6 +516,7 @@ export function DiscoveryFeed({
                       requireAuth={
                         accountMode ? undefined : requireAuthForEngagement
                       }
+                      editorialBase={routeBase}
                     />
 
                     <span className="feed-page">
@@ -619,7 +621,7 @@ export function DiscoveryFeed({
           </div>
         )}
       </main>
-      <BottomNavigation active="home" />
+      <BottomNavigation />
     </div>
   );
 }

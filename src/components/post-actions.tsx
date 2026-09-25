@@ -10,6 +10,7 @@ export function PostActions({
   onNotice,
   requireAuth,
   editorial = false,
+  editorialBase = "/",
 }: {
   id: string;
   title: string;
@@ -18,6 +19,7 @@ export function PostActions({
   onNotice: (message: string) => void;
   requireAuth?: (id: string, value: Engagement) => void;
   editorial?: boolean;
+  editorialBase?: "/" | "/discover";
 }) {
   const [busy, setBusy] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
@@ -39,7 +41,7 @@ export function PostActions({
   function openShare() {
     setShareUrl(
       new URL(
-        editorial ? `/#post-${id}` : `/posts/${id}`,
+        editorial ? `${editorialBase}#post-${id}` : `/posts/${id}`,
         window.location.origin,
       ).href,
     );

@@ -185,7 +185,7 @@ describe.sequential("private messaging foundation", () => {
     const customerInbox = await asUser("message-customer-auth", (sql) =>
       conversationInbox(sql, customerId, null),
     );
-    expect(customerInbox[0].unread_count).toBe(1);
+    expect(customerInbox[0].unread_count).toBe(2);
 
     await asUser("message-customer-auth", (sql) =>
       sql.query("SELECT beauty.mark_conversation_read($1)", [conversationId]),

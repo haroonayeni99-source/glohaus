@@ -71,7 +71,7 @@ export function BookingPicker({
     initialDate && initialSelection?.startsAt ? initialSelection.startsAt : "",
   );
   const [notice, setNotice] = useState("");
-  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [loadingSlots, setLoadingSlots] = useState(Boolean(initialDate));
   const [submitting, setSubmitting] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [needsAccount, setNeedsAccount] = useState(false);
@@ -82,15 +82,9 @@ export function BookingPicker({
   const quickDates = useMemo(() => dateChoices(today), [today]);
 
   useEffect(() => {
-    if (!date || !serviceId) {
-      setSlots([]);
-      setSelected("");
-      return;
-    }
+    if (!date || !serviceId) return;
 
     const controller = new AbortController();
-    setLoadingSlots(true);
-    setNotice("");
 
     async function load() {
       try {
@@ -195,7 +189,10 @@ export function BookingPicker({
               value={serviceId}
               onChange={(event) => {
                 setServiceId(event.target.value);
+                setSlots([]);
                 setSelected("");
+                setNotice("");
+                setLoadingSlots(Boolean(date));
                 setStep("appointment");
               }}
             >
@@ -239,7 +236,10 @@ export function BookingPicker({
                   aria-pressed={date === item.iso}
                   onClick={() => {
                     setDate(item.iso);
+                    setSlots([]);
                     setSelected("");
+                    setNotice("");
+                    setLoadingSlots(true);
                   }}
                 >
                   <span>{item.weekday}</span>
@@ -255,8 +255,12 @@ export function BookingPicker({
                 min={today}
                 value={date}
                 onChange={(event) => {
-                  setDate(event.target.value);
+                  const nextDate = event.target.value;
+                  setDate(nextDate);
+                  setSlots([]);
                   setSelected("");
+                  setNotice("");
+                  setLoadingSlots(Boolean(nextDate));
                 }}
               />
             </label>

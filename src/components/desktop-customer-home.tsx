@@ -60,7 +60,7 @@ export function DesktopCustomerHome({ professionals = [], signedIn = false, disp
         <Link className="active" href="/"><Home size={20}/>Home</Link>
         <Link href="/explore"><Search size={20}/>Explore</Link>
         <Link href="/account/bookings"><CalendarDays size={20}/>Bookings</Link>
-        <span className="customer-nav-disabled" aria-disabled="true"><MessageSquare size={20}/>Messages<small>Coming soon</small></span>
+        <Link href="/messages"><MessageSquare size={20}/>Messages</Link>
         <Link href="/shop"><ShoppingBag size={20}/>Shop</Link>
         <span className="customer-nav-disabled" aria-disabled="true"><WalletCards size={20}/>Wallet<small>Coming soon</small></span>
         <Link href="/workspace"><UserRound size={20}/>Profile</Link>
@@ -119,9 +119,9 @@ export function DesktopCustomerHome({ professionals = [], signedIn = false, disp
         <div className="rail-empty-booking"><CalendarDays size={25}/><div><strong>{signedIn?"Your next appointment":"Ready when you are"}</strong><span>{signedIn?"Your upcoming booking will appear here.":"Sign in to see your bookings."}</span></div></div>
         <Link className="rail-soft-button" href={signedIn?"/account/bookings":"/sign-in"}>{signedIn?"View bookings":"Sign in"}<ChevronRight size={16}/></Link>
       </section>
-      <section><div className="rail-heading"><h2>Messages</h2><span className="rail-coming-soon">Coming soon</span></div>
-        <div className="rail-message"><span className="desktop-avatar">G</span><div><strong>GloHaus</strong><small>Beauty, people, together.</small></div></div>
-        <div className="rail-message"><span className="desktop-avatar">✦</span><div><strong>Your professionals</strong><small>Booking messages will appear here.</small></div></div>
+      <section><div className="rail-heading"><h2>Messages</h2><Link href="/messages">Open →</Link></div>
+        <div className="rail-message"><span className="desktop-avatar">G</span><div><strong>Private conversations</strong><small>Message professionals and keep booking conversations together.</small></div></div>
+        <Link className="rail-soft-button" href="/messages">Open messages<ChevronRight size={16}/></Link>
       </section>
       <section><div className="rail-heading"><h2>Wallet & Rewards</h2><span className="rail-coming-soon">Coming soon</span></div>
         <div className="rail-wallet rail-wallet-disabled"><WalletCards/><div><small>Wallet</small><strong>Not active yet</strong></div><span>Roadmap stage 8</span></div>

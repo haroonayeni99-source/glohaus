@@ -700,7 +700,7 @@ export function DiscoveryFeed({
           </div>
         )}
       </main>
-      <BottomNavigation />
+      <BottomNavigation active="discover" />
     </div>
   );
 }

@@ -105,6 +105,7 @@ export function DiscoveryFeed({
         page.posts.find(
           (post: PublicPost) =>
             category === "For you" ||
+            category === "Following" ||
             (category === "Tutorials"
               ? post.kind === "tutorial"
               : post.category === category),

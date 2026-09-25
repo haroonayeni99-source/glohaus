@@ -26,6 +26,23 @@ export function EmailAuthForm({
       : await supabase.auth.signInWithPassword({ email, password });
     if (result.error) { setError(result.error.message); setPending(false); return; }
     if (mode === "sign-up" && !result.data.session) { setError("Check your email to confirm your account, then return here to sign in."); setPending(false); return; }
+
+    // A Supabase session alone is not enough: GLOHAUS also needs its own
+    // least-privilege account row. Customer auth can safely provision this
+    // automatically; professional registration keeps the explicit setup flow.
+    if (audience === "customer") {
+      const provision = await fetch("/api/v1/accounts/enrol", { method: "PUT" });
+      if (!provision.ok) {
+        setError("You’re signed in, but we couldn’t finish opening your GLOHAUS account. Please try again.");
+        setPending(false);
+        return;
+      }
+      const account = await provision.json();
+      router.replace(redirectTo || account.redirectTo || "/account");
+      router.refresh();
+      return;
+    }
+
     router.replace(redirectTo); router.refresh();
   }
   const professional = audience === "professional";

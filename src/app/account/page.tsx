@@ -9,6 +9,7 @@ import {
   Star,
   Store,
   Users,
+  WalletCards,
 } from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
@@ -48,6 +49,12 @@ const links = [
     "Feedback from your verified appointments",
     "/account/reviews",
     Star,
+  ],
+  [
+    "Payments & refunds",
+    "Deposits, refund progress and payment history",
+    "/wallet",
+    WalletCards,
   ],
   ["Notifications", "Keep up with your appointments", "/notifications", Bell],
   [

@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
+import { MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 export function BookingActions({
   id,
@@ -38,6 +40,12 @@ export function BookingActions({
   }
   return (
     <div>
+      <div className="booking-message-action">
+        <Link href={`/messages?booking=${id}`}>
+          <MessageCircle size={16} aria-hidden />
+          Message about this booking
+        </Link>
+      </div>
       {["confirmed", "payment_pending"].includes(status) && (
         <div className="editor-form">
           <h2>Manage appointment</h2>

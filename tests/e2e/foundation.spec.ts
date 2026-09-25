@@ -12,6 +12,8 @@ test("public entry works on mobile and desktop", async ({ page }, testInfo) => {
     await expect(
       page.getByRole("heading", { name: "Recommended professionals" }),
     ).toBeVisible();
+    await expect(page.locator('a[href="/messages"], a[href="/wallet"], a[href="/glohaus-plus"]')).toHaveCount(0);
+    await expect(page.getByText("Coming soon", { exact: true }).first()).toBeVisible();
   } else {
     await expect(
       page.getByText("DISCOVER. BOOK. GET INSPIRED.", { exact: true }),

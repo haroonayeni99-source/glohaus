@@ -1,6 +1,6 @@
 -- GLOHAUS professional following foundation.
--- Customers can follow published professionals. The authenticated beauty_app
--- role can only create/delete its own follow relationship.
+-- Customers can follow published professionals. Follower identities remain private:
+-- beauty_app can only see the current customer's own follow rows.
 CREATE TABLE beauty.professional_follows (
   customer_id uuid NOT NULL REFERENCES beauty.users(id) ON DELETE CASCADE,
   professional_id uuid NOT NULL REFERENCES beauty.professional_profiles(id) ON DELETE CASCADE,
@@ -13,64 +13,74 @@ CREATE INDEX professional_follows_professional_created
 ALTER TABLE beauty.professional_follows ENABLE ROW LEVEL SECURITY;
 ALTER TABLE beauty.professional_follows FORCE ROW LEVEL SECURITY;
 
+GRANT SELECT ON beauty.professional_follows TO beauty_app;
+GRANT INSERT (customer_id, professional_id) ON beauty.professional_follows TO beauty_app;
+GRANT DELETE ON beauty.professional_follows TO beauty_app;
+
 CREATE POLICY follow_self_read ON beauty.professional_follows
   FOR SELECT TO beauty_app
   USING (
-    EXISTS (
-      SELECT 1 FROM beauty.users u
-      WHERE u.id = customer_id
-        AND u.auth_id = beauty.auth_id()
-        AND u.status = 'active'
+    customer_id IN (
+      SELECT u.id
+      FROM beauty.users u
+      WHERE u.auth_id = beauty.auth_id() AND u.status = 'active'
     )
   );
 
 CREATE POLICY follow_self_create ON beauty.professional_follows
   FOR INSERT TO beauty_app
   WITH CHECK (
-    EXISTS (
-      SELECT 1
-      FROM beauty.users u
-      JOIN beauty.user_roles r ON r.user_id = u.id
-      WHERE u.id = customer_id
-        AND u.auth_id = beauty.auth_id()
-        AND u.status = 'active'
-        AND r.role = 'customer'
+    customer_id IN (
+      SELECT r.user_id
+      FROM beauty.user_roles r
+      WHERE r.role = 'customer'
     )
-    AND EXISTS (
-      SELECT 1 FROM beauty.professional_profiles p
-      JOIN beauty.users pu ON pu.id = p.user_id
-      WHERE p.id = professional_id
-        AND p.publication_status = 'published'
-        AND pu.status = 'active'
+    AND customer_id IN (
+      SELECT u.id
+      FROM beauty.users u
+      WHERE u.auth_id = beauty.auth_id() AND u.status = 'active'
+    )
+    AND professional_id IN (
+      SELECT p.id
+      FROM beauty.professional_profiles p
+      WHERE p.publication_status = 'published'
         AND p.user_id <> customer_id
+        AND p.user_id IN (
+          SELECT u.id FROM beauty.users u WHERE u.status = 'active'
+        )
     )
   );
 
 CREATE POLICY follow_self_delete ON beauty.professional_follows
   FOR DELETE TO beauty_app
   USING (
-    EXISTS (
-      SELECT 1 FROM beauty.users u
-      WHERE u.id = customer_id
-        AND u.auth_id = beauty.auth_id()
-        AND u.status = 'active'
+    customer_id IN (
+      SELECT u.id
+      FROM beauty.users u
+      WHERE u.auth_id = beauty.auth_id() AND u.status = 'active'
     )
   );
 
-GRANT SELECT ON beauty.professional_follows TO beauty_app;
-GRANT INSERT (customer_id, professional_id) ON beauty.professional_follows TO beauty_app;
-GRANT DELETE ON beauty.professional_follows TO beauty_app;
-
--- Public profiles expose only an aggregate follower count, never follower identity.
-CREATE VIEW beauty.public_professional_follow_counts
-WITH (security_barrier = true) AS
-  SELECT p.id AS professional_id, count(f.customer_id)::integer AS follower_count
-  FROM beauty.professional_profiles p
-  LEFT JOIN beauty.professional_follows f ON f.professional_id = p.id
-  WHERE p.publication_status = 'published'
-  GROUP BY p.id;
+-- Aggregate counts are exposed through a SECURITY DEFINER function so callers
+-- never receive another customer's follow row or identity.
+CREATE FUNCTION beauty.professional_follower_count(target uuid)
+RETURNS integer
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog
+AS $$
+  SELECT count(*)::integer
+  FROM beauty.professional_follows f
+  JOIN beauty.professional_profiles p ON p.id = f.professional_id
+  JOIN beauty.users u ON u.id = p.user_id
+  WHERE f.professional_id = target
+    AND p.publication_status = 'published'
+    AND u.status = 'active'
+$$;
 
 GRANT CREATE ON SCHEMA beauty TO beauty_catalog;
-ALTER VIEW beauty.public_professional_follow_counts OWNER TO beauty_catalog;
+ALTER FUNCTION beauty.professional_follower_count(uuid) OWNER TO beauty_catalog;
 REVOKE CREATE ON SCHEMA beauty FROM beauty_catalog;
-GRANT SELECT ON beauty.public_professional_follow_counts TO beauty_app;
+REVOKE ALL ON FUNCTION beauty.professional_follower_count(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION beauty.professional_follower_count(uuid) TO beauty_app;

@@ -52,6 +52,7 @@ test("private routes fail closed without credentials", async ({
     "/onboarding",
     "/security",
     "/messages",
+    "/professional/products",
   ]) {
     await page.goto(route);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
@@ -126,4 +127,18 @@ test("Following requires a customer session on Discover", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "Your GLOHAUS account is nearly ready.",
   );
+});
+
+
+test("Shop exposes catalogue without fake checkout", async ({ page }) => {
+  await page.goto("/shop");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "Products from the professionals",
+  );
+  await expect(
+    page.getByText("Marketplace checkout is still protected.", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /buy|checkout|add to cart/i }),
+  ).toHaveCount(0);
 });

@@ -23,7 +23,7 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = pg_catalog
-AS $
+AS $follow$
   SELECT EXISTS (
     SELECT 1
     FROM beauty.users u
@@ -42,7 +42,7 @@ AS $
       AND u.status = 'active'
       AND p.user_id <> target_customer
   )
-$;
+$follow$;
 
 CREATE FUNCTION beauty.owns_follow(target_customer uuid)
 RETURNS boolean

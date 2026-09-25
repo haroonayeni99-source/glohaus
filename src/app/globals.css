@@ -5381,3 +5381,223 @@ svg {
   .mobile-home-categories { padding-right: 9px; padding-left: 9px; gap: 3px; }
   .mobile-home-hero { min-height: 430px; margin-right: 8px; margin-left: 8px; }
 }
+
+
+/* Mobile Discover — full-screen snap experience. */
+@media (max-width: 600px) {
+  .discover-app {
+    position: relative;
+    height: 100dvh;
+    overflow: hidden;
+    background: #080809;
+  }
+  .discover-app .discovery-main {
+    position: relative;
+    width: 100%;
+    height: 100dvh;
+    padding: 0;
+    overflow: hidden;
+    background: #080809;
+  }
+  .discover-app .discovery-top {
+    position: absolute;
+    z-index: 20;
+    top: 0;
+    right: 0;
+    left: 0;
+    min-height: 64px;
+    margin: 0;
+    padding: 12px 13px 8px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    background: linear-gradient(180deg, rgb(0 0 0 / 72%), rgb(0 0 0 / 8%));
+    color: #fff;
+  }
+  .discover-app .discovery-mobile-brand {
+    display: block;
+    min-width: 0;
+  }
+  .discover-app .discovery-mobile-brand .brand {
+    color: #ff9fbd;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.65rem;
+    letter-spacing: -.04em;
+    text-decoration: none;
+  }
+  .discover-app .discovery-mobile-brand .brand-crown {
+    color: #ff9fbd;
+  }
+  .discover-app .discovery-heading {
+    display: none;
+  }
+  .discover-app .discovery-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .discover-app .discovery-search-bar {
+    display: grid;
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    padding: 0;
+    place-items: center;
+    border: 1px solid rgb(255 255 255 / 22%);
+    border-radius: 50%;
+    background: rgb(0 0 0 / 28%);
+    color: #fff;
+    backdrop-filter: blur(10px);
+  }
+  .discover-app .discovery-search-bar span,
+  .discover-app .discovery-join {
+    display: none;
+  }
+  .discover-app .discovery-notifications {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border: 1px solid rgb(255 255 255 / 22%);
+    border-radius: 50%;
+    background: rgb(0 0 0 / 28%);
+    color: #fff;
+    backdrop-filter: blur(10px);
+  }
+  .discover-app .discovery-tabs {
+    position: absolute;
+    z-index: 19;
+    top: 62px;
+    right: 0;
+    left: 0;
+    height: 50px;
+    margin: 0;
+    padding: 5px 12px 8px;
+    gap: 7px;
+    background: linear-gradient(180deg, rgb(0 0 0 / 34%), transparent);
+    scrollbar-width: none;
+  }
+  .discover-app .discovery-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .discover-app .discovery-tabs button {
+    min-height: 36px;
+    padding: 7px 13px;
+    border: 1px solid rgb(255 255 255 / 24%);
+    background: rgb(0 0 0 / 26%);
+    color: rgb(255 255 255 / 84%);
+    font-size: .68rem;
+    backdrop-filter: blur(10px);
+  }
+  .discover-app .discovery-tabs button.active {
+    border-color: #fff;
+    background: #fff;
+    color: #191316;
+  }
+  .discover-app .feed-layout {
+    display: block;
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    margin: 0;
+  }
+  .discover-app .feed-scroll {
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    border: 0;
+    border-radius: 0;
+    background: #080809;
+    box-shadow: none;
+    scroll-snap-type: y mandatory;
+  }
+  .discover-app .feed-slide {
+    height: 100dvh;
+    border-radius: 0;
+  }
+  .discover-app .feed-overline {
+    top: 116px;
+    padding: 0 16px;
+  }
+  .discover-app .feed-overline span {
+    font-size: .57rem;
+  }
+  .discover-app .feed-caption {
+    right: 72px;
+    bottom: 102px;
+    left: 16px;
+    padding-right: 0;
+  }
+  .discover-app .feed-caption .editorial-author {
+    min-height: 38px;
+    padding-left: 46px;
+    font-size: .78rem;
+  }
+  .discover-app .feed-caption h2,
+  .discover-app .community-slide .feed-caption h2 {
+    max-width: 15ch;
+    margin: 13px 0 9px;
+    font-size: clamp(1.55rem, 7.4vw, 2.1rem);
+    line-height: 1.02;
+    letter-spacing: -.045em;
+  }
+  .discover-app .feed-caption p,
+  .discover-app .post-reader {
+    max-width: 31ch;
+    font-size: .7rem;
+    line-height: 1.5;
+  }
+  .discover-app .feed-cta {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: .68rem;
+  }
+  .discover-app .photo-credit {
+    margin-top: 8px;
+    font-size: .46rem;
+  }
+  .discover-app .post-actions {
+    top: auto;
+    right: 9px;
+    bottom: 103px;
+    gap: 10px;
+  }
+  .discover-app .post-actions > button {
+    width: 48px;
+    min-height: 52px;
+    border: 1px solid rgb(255 255 255 / 18%);
+    background: rgb(11 8 10 / 52%);
+    backdrop-filter: blur(10px);
+  }
+  .discover-app .post-actions > button span {
+    font-size: .56rem;
+  }
+  .discover-app .post-share-panel {
+    right: 55px;
+    top: auto;
+    bottom: 0;
+    width: min(270px, 72vw);
+  }
+  .discover-app .feed-page {
+    display: none;
+  }
+  .discover-app .feed-more,
+  .discover-app .feed-empty {
+    min-height: 100dvh;
+    padding: 140px 24px 105px;
+  }
+  .discover-app .feed-toast {
+    bottom: 82px;
+  }
+  .discover-app .glohaus-bottom-nav {
+    border-top-color: rgb(255 255 255 / 12%);
+    background: rgb(8 8 9 / 88%);
+    box-shadow: 0 -10px 28px rgb(0 0 0 / 20%);
+    backdrop-filter: blur(18px);
+  }
+  .discover-app .glohaus-bottom-nav a {
+    color: rgb(255 255 255 / 78%);
+  }
+  .discover-app .glohaus-bottom-nav a svg {
+    color: inherit;
+  }
+}

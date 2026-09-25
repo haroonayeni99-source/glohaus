@@ -516,6 +516,7 @@ export function DiscoveryFeed({
                       requireAuth={
                         accountMode ? undefined : requireAuthForEngagement
                       }
+                      editorialBase={routeBase}
                     />
 
                     <span className="feed-page">

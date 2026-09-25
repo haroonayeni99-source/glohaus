@@ -55,6 +55,7 @@ export function DiscoveryFeed({
   savedPage = 1,
   hasMoreSaved = false,
   hideEditorial = false,
+  routeBase = "/",
 }: {
   publishedPosts?: PublicPost[];
   initialNext?: string | null;
@@ -64,6 +65,7 @@ export function DiscoveryFeed({
   savedPage?: number;
   hasMoreSaved?: boolean;
   hideEditorial?: boolean;
+  routeBase?: "/" | "/discover";
 }) {
   const labels = useLabels();
   const [feedPosts, setFeedPosts] = useState(publishedPosts);
@@ -172,7 +174,9 @@ export function DiscoveryFeed({
     } catch {
       // The return URL still preserves the visitor's position when storage is unavailable.
     }
-    router.push(`/sign-in?returnTo=${encodeURIComponent(`/#post-${id}`)}`);
+    router.push(
+      `/sign-in?returnTo=${encodeURIComponent(`${routeBase}#post-${id}`)}`,
+    );
   }
   const [notice, setNotice] = useState("");
   const savedCommunityIds = Object.keys(device).filter(
@@ -239,11 +243,11 @@ export function DiscoveryFeed({
   function filter(next: string) {
     setDevicePage(1);
     if (accountMode && next === "Saved" && !savedView) {
-      router.push("/?view=saved");
+      router.push(`${routeBase}?view=saved`);
       return;
     }
     if (savedView && next !== "Saved") {
-      router.push("/");
+      router.push(routeBase);
       return;
     }
     setCategory(next);
@@ -595,12 +599,12 @@ export function DiscoveryFeed({
         {savedView && accountMode && (
           <nav className="editor-actions" aria-label="Saved posts pages">
             {savedPage > 1 && (
-              <Link href={`/?view=saved&page=${savedPage - 1}`}>
+              <Link href={`${routeBase}?view=saved&page=${savedPage - 1}`}>
                 Previous saved posts
               </Link>
             )}
             {hasMoreSaved && (
-              <Link href={`/?view=saved&page=${savedPage + 1}`}>
+              <Link href={`${routeBase}?view=saved&page=${savedPage + 1}`}>
                 More saved posts →
               </Link>
             )}

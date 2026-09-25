@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState } from "react";\nimport { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 
 export function FollowProfessionalButton({
@@ -13,14 +13,14 @@ export function FollowProfessionalButton({
   initialFollowerCount: number;
   signedIn: boolean;
 }) {
-  const [following, setFollowing] = useState(initialFollowing);
+  const router = useRouter();\n  const [following, setFollowing] = useState(initialFollowing);
   const [count, setCount] = useState(initialFollowerCount);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
   async function toggle() {
     if (!signedIn) {
-      window.location.href = `/sign-in?returnTo=${encodeURIComponent(window.location.pathname)}`;
+      router.push(`/sign-in?returnTo=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
     setBusy(true);

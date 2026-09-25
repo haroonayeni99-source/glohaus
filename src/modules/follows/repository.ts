@@ -70,3 +70,30 @@ export async function professionalFollowerCount(
     )
   ).rows[0]?.count ?? 0;
 }
+
+export type FollowedProfessional = {
+  id: string;
+  slug: string;
+  business_name: string;
+  bio: string;
+  city: string;
+  category: string;
+  followed_at: string;
+};
+
+export async function followedProfessionals(
+  db: SqlClient,
+  customerId: string,
+): Promise<FollowedProfessional[]> {
+  return (
+    await db.query<FollowedProfessional>(
+      `SELECT p.id,p.slug,p.business_name,p.bio,p.city,p.category,
+        f.created_at::text AS followed_at
+       FROM beauty.professional_follows f
+       JOIN beauty.public_professionals p ON p.id=f.professional_id
+       WHERE f.customer_id=$1
+       ORDER BY f.created_at DESC,p.business_name,p.id`,
+      [customerId],
+    )
+  ).rows;
+}

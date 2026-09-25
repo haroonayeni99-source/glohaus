@@ -92,3 +92,43 @@ ALTER FUNCTION beauty.live_eligibility(uuid) OWNER TO beauty_admin_ops;
 REVOKE CREATE ON SCHEMA beauty FROM beauty_admin_ops;
 REVOKE ALL ON FUNCTION beauty.live_eligibility(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION beauty.live_eligibility(uuid) TO beauty_app;
+
+-- Admin-only trust decisions. Every change is written to the existing audit log.
+CREATE FUNCTION beauty.admin_set_professional_trust(
+  target uuid,
+  next_verification text,
+  next_standing text,
+  restrict_until timestamptz,
+  decision_reason text
+) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$
+DECLARE actor uuid; target_user uuid;
+BEGIN
+  actor:=beauty.require_admin();
+  IF next_verification NOT IN ('unverified','pending','verified','rejected')
+    OR next_standing NOT IN ('good','restricted')
+    OR length(trim(decision_reason)) NOT BETWEEN 5 AND 500
+    OR (restrict_until IS NOT NULL AND restrict_until<=now()) THEN
+    RAISE EXCEPTION 'INVALID_REQUEST' USING ERRCODE='22023';
+  END IF;
+  SELECT user_id INTO target_user FROM beauty.professional_profiles WHERE id=target;
+  IF target_user IS NULL THEN RAISE EXCEPTION 'NOT_FOUND' USING ERRCODE='22023'; END IF;
+
+  INSERT INTO beauty.professional_trust_status(
+    professional_id,verification_status,standing_status,live_restricted_until,updated_at
+  ) VALUES(target,next_verification,next_standing,restrict_until,now())
+  ON CONFLICT(professional_id) DO UPDATE SET
+    verification_status=excluded.verification_status,
+    standing_status=excluded.standing_status,
+    live_restricted_until=excluded.live_restricted_until,
+    updated_at=now();
+
+  PERFORM beauty.write_admin_audit(
+    actor,'admin','professional.trust.changed',target_user,'professional',target,
+    decision_reason,
+    jsonb_build_object('verification',next_verification,'standing',next_standing,'liveRestrictedUntil',restrict_until)
+  );
+END $$;
+
+ALTER FUNCTION beauty.admin_set_professional_trust(uuid,text,text,timestamptz,text) OWNER TO beauty_admin_ops;
+REVOKE ALL ON FUNCTION beauty.admin_set_professional_trust(uuid,text,text,timestamptz,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION beauty.admin_set_professional_trust(uuid,text,text,timestamptz,text) TO beauty_app;

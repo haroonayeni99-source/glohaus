@@ -16,11 +16,13 @@ test("public entry works on mobile and desktop", async ({ page }, testInfo) => {
     await expect(page.getByText("Coming soon", { exact: true }).first()).toBeVisible();
   } else {
     await expect(
-      page.getByText("DISCOVER. BOOK. GET INSPIRED.", { exact: true }),
+      page.getByRole("heading", { name: /Real Beauty\s*Real People\s*Real Results/ }),
     ).toBeVisible();
-    await expect(
-      page.getByLabel("Beauty inspiration feed. Scroll to see the next post."),
-    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Find Your Glow" })).toHaveAttribute(
+      "href",
+      "/discover",
+    );
+    await expect(page.getByRole("navigation", { name: "Beauty categories" })).toBeVisible();
   }
 
   expect(
@@ -78,7 +80,7 @@ test("missing pages offer a working route home", async ({ page }, testInfo) => {
     );
   } else {
     await expect(
-      page.getByText("DISCOVER. BOOK. GET INSPIRED.", { exact: true }),
+      page.getByRole("heading", { name: /Real Beauty\s*Real People\s*Real Results/ }),
     ).toBeVisible();
   }
 });

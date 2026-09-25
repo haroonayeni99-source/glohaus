@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { SqlClient } from "@/modules/accounts/repository";
+import { encodeMessageCursor, type MessageCursor } from "./pagination";
 
 export type ConversationSummary = {
   id: string;
@@ -115,4 +116,53 @@ export async function conversationMessages(db: SqlClient, id: string) {
       [id],
     )
   ).rows;
+}
+
+
+export async function conversationMessagePage(
+  db: SqlClient,
+  id: string,
+  after?: MessageCursor,
+) {
+  const rows = after
+    ? (
+        await db.query<ConversationMessage>(
+          `SELECT id,booking_id,sender_role,body,created_at
+           FROM beauty.messages
+           WHERE conversation_id=$1
+             AND (created_at,id)>($2::timestamptz,$3::uuid)
+           ORDER BY created_at ASC,id ASC
+           LIMIT 101`,
+          [id, after.createdAt, after.id],
+        )
+      ).rows
+    : (
+        await db.query<ConversationMessage>(
+          `SELECT id,booking_id,sender_role,body,created_at
+           FROM (
+             SELECT id,booking_id,sender_role,body,created_at
+             FROM beauty.messages
+             WHERE conversation_id=$1
+             ORDER BY created_at DESC,id DESC
+             LIMIT 100
+           ) recent
+           ORDER BY created_at ASC,id ASC`,
+          [id],
+        )
+      ).rows;
+
+  const visible = rows.slice(0, 100);
+  const last = visible.at(-1);
+  return {
+    messages: visible,
+    next: last
+      ? encodeMessageCursor({
+          id: last.id,
+          createdAt: new Date(last.created_at).toISOString(),
+        })
+      : after
+        ? encodeMessageCursor(after)
+        : null,
+    hasMore: rows.length > 100,
+  };
 }

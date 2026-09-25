@@ -82,3 +82,16 @@ test("missing pages offer a working route home", async ({ page }, testInfo) => {
     ).toBeVisible();
   }
 });
+
+
+test("dedicated Discover route renders the existing feed on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/discover");
+
+  await expect(
+    page.getByText("DISCOVER. BOOK. GET INSPIRED.", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByLabel("Beauty inspiration feed. Scroll to see the next post."),
+  ).toBeVisible();
+});

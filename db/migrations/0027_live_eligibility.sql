@@ -89,7 +89,6 @@ END $$;
 GRANT CREATE ON SCHEMA beauty TO beauty_admin_ops;
 ALTER FUNCTION beauty.live_eligibility(uuid) OWNER TO beauty_admin_ops;
 GRANT EXECUTE ON FUNCTION beauty.professional_follower_count(uuid) TO beauty_admin_ops;
-REVOKE CREATE ON SCHEMA beauty FROM beauty_admin_ops;
 REVOKE ALL ON FUNCTION beauty.live_eligibility(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION beauty.live_eligibility(uuid) TO beauty_app;
 
@@ -130,5 +129,6 @@ BEGIN
 END $$;
 
 ALTER FUNCTION beauty.admin_set_professional_trust(uuid,text,text,timestamptz,text) OWNER TO beauty_admin_ops;
+REVOKE CREATE ON SCHEMA beauty FROM beauty_admin_ops;
 REVOKE ALL ON FUNCTION beauty.admin_set_professional_trust(uuid,text,text,timestamptz,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION beauty.admin_set_professional_trust(uuid,text,text,timestamptz,text) TO beauty_app;

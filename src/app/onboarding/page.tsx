@@ -4,7 +4,7 @@ import { AccessMessage } from "@/components/access-message";
 import { EnrolmentForm } from "@/components/enrolment-form";
 import { getIdentity } from "@/lib/identity";
 import { withIdentity } from "@/lib/db";
-import { AccessError } from "@/modules/accounts/domain";
+import { AccessError, workspacePath } from "@/modules/accounts/domain";
 import { findAccount } from "@/modules/accounts/repository";
 import { safeReturnTo } from "@/lib/return-to";
 export const dynamic = "force-dynamic";
@@ -22,6 +22,12 @@ export default async function Page({
       findAccount(db, identity.authId),
     );
     if (account && account.status !== "active") code = "ACCOUNT_INACTIVE";
+    if (account?.status === "active") {
+      const needsProfessionalSetup =
+        intent === "professional" &&
+        !account.roles.includes("professional");
+      if (!needsProfessionalSetup) redirect(workspacePath(account));
+    }
   } catch (error) {
     if (error instanceof AccessError && error.code === "UNAUTHENTICATED")
       redirect("/sign-in");

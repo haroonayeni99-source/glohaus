@@ -5601,3 +5601,43 @@ svg {
     color: inherit;
   }
 }
+
+
+/* Discover follow control */
+.discover-follow {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 9px;
+  padding: 6px 14px;
+  border: 1px solid rgb(255 255 255 / 72%);
+  border-radius: 999px;
+  background: rgb(18 12 15 / 42%);
+  color: #fff;
+  font-size: .68rem;
+  font-weight: 800;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+.discover-follow.is-following {
+  border-color: #ff9fbd;
+  background: rgb(255 159 189 / 18%);
+  color: #ffd6e3;
+}
+.discover-follow:disabled {
+  opacity: .62;
+  cursor: wait;
+}
+.discover-follow:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .discover-app .discover-follow {
+    min-height: 32px;
+    margin-top: 7px;
+    padding: 5px 12px;
+    font-size: .64rem;
+  }
+}

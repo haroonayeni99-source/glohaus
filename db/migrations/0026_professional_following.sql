@@ -14,6 +14,9 @@ CREATE INDEX professional_follows_professional_created
 ALTER TABLE beauty.professional_follows ENABLE ROW LEVEL SECURITY;
 ALTER TABLE beauty.professional_follows FORCE ROW LEVEL SECURITY;
 
+-- A narrow definer function performs the write after validating the caller and target.
+-- This avoids relying on INSERT policy evaluation across other FORCE-RLS tables.
+
 -- These predicates run as the restricted catalog owner so RLS on account
 -- tables cannot accidentally make a valid follow fail, while callers receive
 -- only booleans rather than account/role rows.
@@ -46,6 +49,35 @@ AS $follow$
       AND p.user_id <> target_customer
   )
 $follow$;
+
+CREATE FUNCTION beauty.set_professional_follow(target_customer uuid, target_professional uuid, actor_auth_id text, should_follow boolean)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog
+AS $follow_write$
+BEGIN
+  IF should_follow THEN
+    IF NOT beauty.can_manage_follow(target_customer, target_professional, actor_auth_id) THEN
+      RAISE EXCEPTION 'follow not permitted' USING ERRCODE = '42501';
+    END IF;
+    INSERT INTO beauty.professional_follows(customer_id, professional_id)
+      VALUES (target_customer, target_professional)
+      ON CONFLICT DO NOTHING;
+  ELSE
+    IF NOT EXISTS (
+      SELECT 1 FROM beauty.users u
+      WHERE u.id = target_customer
+        AND u.auth_id = actor_auth_id
+        AND u.status = 'active'
+    ) THEN
+      RAISE EXCEPTION 'follow not permitted' USING ERRCODE = '42501';
+    END IF;
+    DELETE FROM beauty.professional_follows
+      WHERE customer_id = target_customer AND professional_id = target_professional;
+  END IF;
+END
+$follow_write$;
 
 CREATE FUNCTION beauty.owns_follow(target_customer uuid)
 RETURNS boolean
@@ -81,6 +113,7 @@ $$;
 
 GRANT CREATE ON SCHEMA beauty TO beauty_catalog;
 ALTER FUNCTION beauty.can_manage_follow(uuid,uuid,text) OWNER TO beauty_catalog;
+ALTER FUNCTION beauty.set_professional_follow(uuid,uuid,text,boolean) OWNER TO beauty_catalog;
 ALTER FUNCTION beauty.owns_follow(uuid) OWNER TO beauty_catalog;
 ALTER FUNCTION beauty.professional_follower_count(uuid) OWNER TO beauty_catalog;
 GRANT EXECUTE ON FUNCTION beauty.auth_id() TO beauty_catalog;
@@ -92,9 +125,11 @@ GRANT SELECT (customer_id, professional_id) ON beauty.professional_follows TO be
 REVOKE CREATE ON SCHEMA beauty FROM beauty_catalog;
 
 REVOKE ALL ON FUNCTION beauty.can_manage_follow(uuid,uuid,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION beauty.set_professional_follow(uuid,uuid,text,boolean) FROM PUBLIC;
 REVOKE ALL ON FUNCTION beauty.owns_follow(uuid) FROM PUBLIC;
 REVOKE ALL ON FUNCTION beauty.professional_follower_count(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION beauty.can_manage_follow(uuid,uuid,text) TO beauty_app;
+GRANT EXECUTE ON FUNCTION beauty.set_professional_follow(uuid,uuid,text,boolean) TO beauty_app;
 GRANT EXECUTE ON FUNCTION beauty.owns_follow(uuid) TO beauty_app;
 GRANT EXECUTE ON FUNCTION beauty.professional_follower_count(uuid) TO beauty_app;
 

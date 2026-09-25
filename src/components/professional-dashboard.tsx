@@ -123,19 +123,21 @@ export function ProfessionalDashboard({
           <div className="pro-live-requirements">
             <div>
               <span><Users size={17} aria-hidden /> Followers</span>
-              <strong>{data.stats.followerCount} / 500</strong>
-              <progress max={500} value={Math.min(data.stats.followerCount, 500)} />
+              <strong>{data.live?.followers ?? data.stats.followerCount} / {data.live?.followersRequired ?? 500}</strong>
+              <progress max={500} value={Math.min(data.live?.followers ?? data.stats.followerCount, data.live?.followersRequired ?? 500)} />
             </div>
             <div>
               <span><CalendarDays size={17} aria-hidden /> Completed bookings</span>
-              <strong>{data.stats.completedBookings} / 10</strong>
-              <progress max={10} value={Math.min(data.stats.completedBookings, 10)} />
+              <strong>{data.live?.completedBookings ?? data.stats.completedBookings} / {data.live?.completedBookingsRequired ?? 10}</strong>
+              <progress max={10} value={Math.min(data.live?.completedBookings ?? data.stats.completedBookings, data.live?.completedBookingsRequired ?? 10)} />
             </div>
           </div>
           <button className="pro-dark-button pro-live-locked" type="button" disabled>
-            <LockKeyhole size={16} aria-hidden /> LIVE coming after eligibility verification
+            <LockKeyhole size={16} aria-hidden /> {data.live?.eligible ? "LIVE eligible — streaming setup coming next" : "LIVE locked"}
           </button>
-          <small>Final access will also require professional verification, an account in good standing and no serious/recent moderation restriction.</small>
+          <small>
+            Verification: {data.live?.verified ? "complete" : "required"} · Account standing: {data.live?.goodStanding ? "good" : "restricted"} · Moderation: {data.live?.seriousModerationRestriction ? "restriction active" : "clear"}
+          </small>
         </section>
 
         <section className="pro-quick-actions" aria-label="Professional quick actions">

@@ -81,7 +81,11 @@ ALTER FUNCTION beauty.can_manage_follow(uuid,uuid) OWNER TO beauty_catalog;
 ALTER FUNCTION beauty.owns_follow(uuid) OWNER TO beauty_catalog;
 ALTER FUNCTION beauty.professional_follower_count(uuid) OWNER TO beauty_catalog;
 GRANT EXECUTE ON FUNCTION beauty.auth_id() TO beauty_catalog;
-GRANT SELECT ON beauty.users, beauty.user_roles, beauty.professional_profiles, beauty.professional_follows TO beauty_catalog;
+-- Keep the catalogue role blind to private account fields such as email.
+GRANT SELECT (id, auth_id, status) ON beauty.users TO beauty_catalog;
+GRANT SELECT (user_id, role) ON beauty.user_roles TO beauty_catalog;
+GRANT SELECT (id, user_id, publication_status) ON beauty.professional_profiles TO beauty_catalog;
+GRANT SELECT (customer_id, professional_id) ON beauty.professional_follows TO beauty_catalog;
 REVOKE CREATE ON SCHEMA beauty FROM beauty_catalog;
 
 REVOKE ALL ON FUNCTION beauty.can_manage_follow(uuid,uuid) FROM PUBLIC;

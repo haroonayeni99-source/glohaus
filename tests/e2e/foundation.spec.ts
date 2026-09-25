@@ -111,3 +111,15 @@ test("dedicated Discover route behaves like a full-screen mobile feed", async ({
   await firstShare.click();
   await expect(page.getByLabel("Post link")).toHaveValue(/\/discover#post-/);
 });
+
+
+test("Following requires a customer session on Discover", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/discover");
+
+  await page.getByRole("button", { name: "Following", exact: true }).click();
+  await expect(page).toHaveURL(/\/sign-in\?returnTo=.*discover.*feed.*following/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "Your GLOHAUS account is nearly ready.",
+  );
+});

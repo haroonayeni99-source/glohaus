@@ -47,12 +47,12 @@ export async function setFollowing(
     if (!target) throw new AccessError("FORBIDDEN", 403);
 
     await db.query(
-      "INSERT INTO beauty.professional_follows(customer_id,professional_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "SELECT beauty.set_professional_follow($1,$2,beauty.auth_id(),true)",
       [customerId, professionalId],
     );
   } else {
     await db.query(
-      "DELETE FROM beauty.professional_follows WHERE customer_id=$1 AND professional_id=$2",
+      "SELECT beauty.set_professional_follow($1,$2,beauty.auth_id(),false)",
       [customerId, professionalId],
     );
   }

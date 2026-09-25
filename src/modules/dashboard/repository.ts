@@ -2,6 +2,7 @@ import "server-only";
 import type { SqlClient } from "@/modules/accounts/repository";
 import { bookingPage, type BookingRecord } from "@/modules/bookings/repository";
 import { professionalWallet, type WalletOverview } from "@/modules/finance/repository";
+import { liveEligibility, type LiveEligibility } from "@/modules/live/repository";
 
 export type ProfessionalDashboard = {
   profile: {
@@ -20,6 +21,7 @@ export type ProfessionalDashboard = {
   };
   upcoming: BookingRecord[];
   wallet: WalletOverview | null;
+  live: LiveEligibility | null;
 };
 
 /**
@@ -87,6 +89,10 @@ export async function professionalDashboard(
   // was not readable. This keeps an accidental foreign profile ID from
   // returning the current professional's financial summary alongside it.
   const wallet = profile ? await professionalWallet(db) : null;
+  let live: LiveEligibility | null = null;
+  if (profile) {
+    try { live = await liveEligibility(db, professionalId); } catch { live = null; }
+  }
   const stats = statsResult.rows[0] ?? {
     new_bookings: 0,
     upcoming_appointments: 0,
@@ -114,6 +120,7 @@ export async function professionalDashboard(
     },
     upcoming: bookings.bookings.slice(0, 5),
     wallet: wallet ?? null,
+    live,
   };
 }
 

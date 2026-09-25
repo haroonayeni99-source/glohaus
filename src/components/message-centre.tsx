@@ -49,7 +49,7 @@ export function MessageCentre({
   draftRecipientName: string | null;
 }) {
   const router = useRouter();
-  const [conversations, setConversations] = useState(initialConversations);
+  const conversations = initialConversations;
   const [messages, setMessages] = useState(initialMessages);
   const [cursor, setCursor] = useState(initialCursor);
   const [body, setBody] = useState("");
@@ -74,13 +74,6 @@ export function MessageCentre({
         headers: { "Content-Type": "application/json" },
         body: "{}",
       });
-      setConversations((current) =>
-        current.map((conversation) =>
-          conversation.id === activeId
-            ? { ...conversation, unread_count: 0 }
-            : conversation,
-        ),
-      );
     } catch {}
   }, [activeId]);
 

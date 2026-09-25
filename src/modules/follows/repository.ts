@@ -7,6 +7,8 @@ export type FollowState = {
   followerCount: number;
 };
 
+export type FollowStateMap = Record<string, FollowState>;
+
 export async function followState(
   db: SqlClient,
   customerId: string | null,
@@ -96,4 +98,42 @@ export async function followedProfessionals(
       [customerId],
     )
   ).rows;
+}
+
+
+export async function followStates(
+  db: SqlClient,
+  customerId: string | null,
+  professionalIds: string[],
+): Promise<FollowStateMap> {
+  const ids = [...new Set(professionalIds)].slice(0, 80);
+  if (!ids.length) return {};
+
+  const rows = (
+    await db.query<{
+      professional_id: string;
+      following: boolean;
+      follower_count: number;
+    }>(
+      `SELECT p.id AS professional_id,
+        CASE WHEN $1::uuid IS NULL THEN false ELSE EXISTS (
+          SELECT 1 FROM beauty.professional_follows f
+          WHERE f.customer_id=$1 AND f.professional_id=p.id
+        ) END AS following,
+        beauty.professional_follower_count(p.id) AS follower_count
+       FROM beauty.public_professionals p
+       WHERE p.id=ANY($2::uuid[])`,
+      [customerId, ids],
+    )
+  ).rows;
+
+  return Object.fromEntries(
+    rows.map((row) => [
+      row.professional_id,
+      {
+        following: row.following,
+        followerCount: row.follower_count,
+      },
+    ]),
+  );
 }

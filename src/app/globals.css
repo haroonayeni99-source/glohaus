@@ -5034,3 +5034,31 @@ svg {
   .pro-management-actions { align-items: stretch; flex-direction: column; gap: 9px; }
   .pro-preview-button { width: 100%; }
 }
+
+/* Professional following */
+.professional-follow-control {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+.follow-button {
+  min-height: 42px;
+  padding: 9px 18px;
+  border: 1px solid var(--plum);
+  border-radius: 999px;
+  background: var(--plum);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+.follow-button.is-following {
+  background: transparent;
+  color: var(--plum);
+}
+.follower-count { color: var(--muted); font-size: .88rem; }
+.follower-count strong { color: var(--ink); }
+.follow-message { flex-basis: 100%; color: var(--muted); }

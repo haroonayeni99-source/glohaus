@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Bell, CalendarDays, ChevronRight, Compass, Heart, Home, MapPin,
+  Bell, CalendarDays, ChevronRight, Heart, Home, MapPin,
   MessageSquare, Search, ShoppingBag, UserRound, WalletCards, Crown, Gift,
 } from "lucide-react";
 import { Brand } from "./brand";
@@ -70,7 +70,7 @@ export function DesktopCustomerHome({ professionals = [], signedIn = false, disp
       <section className="desktop-section">
         <div className="desktop-section-title"><h2>Recommended professionals</h2><Link href="/explore">See all <ChevronRight size={15}/></Link></div>
         <div className="desktop-pro-grid">
-          {(cards.length ? cards : fallbackPros).map((item:any,index:number)=>{
+          {(cards.length ? cards : fallbackPros).map((item,index:number)=>{
             const live=cards.length>0; const name=live?item.business_name:item[0]; const role=live?item.category:item[1]; const city=live?item.city:item[2]; const slug=live?item.slug:"";
             const image=live && item.photo_id ? `/api/media/${item.photo_id}` : fallbackPros[index % fallbackPros.length][3];
             return <article className="desktop-pro-card" key={live?item.id:name}>

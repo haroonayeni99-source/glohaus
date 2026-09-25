@@ -27,11 +27,14 @@ AS $follow$
   SELECT EXISTS (
     SELECT 1
     FROM beauty.users u
-    JOIN beauty.user_roles r ON r.user_id = u.id
     WHERE u.id = target_customer
       AND u.auth_id = actor_auth_id
       AND u.status = 'active'
-      AND r.role = 'customer'
+  )
+  AND EXISTS (
+    SELECT 1
+    FROM beauty.customer_profiles c
+    WHERE c.user_id = target_customer
   )
   AND EXISTS (
     SELECT 1
@@ -83,7 +86,7 @@ ALTER FUNCTION beauty.professional_follower_count(uuid) OWNER TO beauty_catalog;
 GRANT EXECUTE ON FUNCTION beauty.auth_id() TO beauty_catalog;
 -- Keep the catalogue role blind to private account fields such as email.
 GRANT SELECT (id, auth_id, status) ON beauty.users TO beauty_catalog;
-GRANT SELECT (user_id, role) ON beauty.user_roles TO beauty_catalog;
+GRANT SELECT (user_id) ON beauty.customer_profiles TO beauty_catalog;
 GRANT SELECT (id, user_id, publication_status) ON beauty.professional_profiles TO beauty_catalog;
 GRANT SELECT (customer_id, professional_id) ON beauty.professional_follows TO beauty_catalog;
 REVOKE CREATE ON SCHEMA beauty FROM beauty_catalog;

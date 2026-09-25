@@ -88,6 +88,7 @@ END $$;
 
 GRANT CREATE ON SCHEMA beauty TO beauty_admin_ops;
 ALTER FUNCTION beauty.live_eligibility(uuid) OWNER TO beauty_admin_ops;
+GRANT EXECUTE ON FUNCTION beauty.professional_follower_count(uuid) TO beauty_admin_ops;
 REVOKE CREATE ON SCHEMA beauty FROM beauty_admin_ops;
 REVOKE ALL ON FUNCTION beauty.live_eligibility(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION beauty.live_eligibility(uuid) TO beauty_app;

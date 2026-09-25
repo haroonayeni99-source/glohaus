@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";\nimport { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 
 export function FollowProfessionalButton({
@@ -13,7 +14,8 @@ export function FollowProfessionalButton({
   initialFollowerCount: number;
   signedIn: boolean;
 }) {
-  const router = useRouter();\n  const [following, setFollowing] = useState(initialFollowing);
+  const router = useRouter();
+  const [following, setFollowing] = useState(initialFollowing);
   const [count, setCount] = useState(initialFollowerCount);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");

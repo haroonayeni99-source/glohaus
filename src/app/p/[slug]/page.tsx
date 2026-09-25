@@ -97,6 +97,7 @@ export default async function Profile({
             services={data.services}
             ready={paymentReady()}
             returnPath={`/p/${slug}`}
+            professionalName={data.professional.business_name}
             initialSelection={{
               serviceId: booking.bookService,
               date: booking.bookDate,

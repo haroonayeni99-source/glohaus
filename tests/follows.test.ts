@@ -55,7 +55,7 @@ describe.sequential("professional following", () => {
   });
   it("does not expose follower identity anonymously", async () => {
     expect((await asUser("", (sql) => sql.query("SELECT * FROM beauty.professional_follows"))).rows).toEqual([]);
-    expect(await asUser("", (sql) => followState(sql, null, professionalId))
+    expect(await asUser("", (sql) => followState(sql, null, professionalId)))
       .toEqual({ following:false, followerCount:1 });
   });
   it("allows the customer to unfollow", async () => {

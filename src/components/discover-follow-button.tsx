@@ -8,17 +8,21 @@ export function DiscoverFollowButton({
   professionalId,
   state,
   signedIn,
+  canFollow,
   returnTo,
   onChange,
 }: {
   professionalId: string;
   state: FollowState;
   signedIn: boolean;
+  canFollow: boolean;
   returnTo: string;
   onChange: (professionalId: string, state: FollowState) => void;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+
+  if (signedIn && !canFollow) return null;
 
   async function toggle() {
     if (!signedIn) {

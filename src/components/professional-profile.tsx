@@ -10,6 +10,7 @@ import {
   Mail,
   Phone,
   Globe,
+  MessageCircle,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import {
@@ -30,6 +31,7 @@ export type ProfilePresentation = {
   reviewCount: number;
   booking: ReactNode;
   follow: { following: boolean; followerCount: number; signedIn: boolean };
+  messageHref: string | null;
 };
 export function ProfessionalProfile({
   professional: p,
@@ -42,6 +44,7 @@ export function ProfessionalProfile({
   reviewCount,
   booking,
   follow,
+  messageHref,
 }: ProfilePresentation) {
   const safeHref = (value: string) => {
     try {
@@ -112,12 +115,20 @@ export function ProfessionalProfile({
             </a>
           </div>
           <p className="professional-bio">{p.bio}</p>
-          <FollowProfessionalButton
-            professionalId={p.id}
-            initialFollowing={follow.following}
-            initialFollowerCount={follow.followerCount}
-            signedIn={follow.signedIn}
-          />
+          <div className="professional-social-actions">
+            <FollowProfessionalButton
+              professionalId={p.id}
+              initialFollowing={follow.following}
+              initialFollowerCount={follow.followerCount}
+              signedIn={follow.signedIn}
+            />
+            {messageHref && (
+              <a className="professional-message-button" href={messageHref}>
+                <MessageCircle size={16} aria-hidden />
+                Message
+              </a>
+            )}
+          </div>
         </div>
         <a className="button professional-book-button" href="#booking">
           Book an appointment <ArrowUpRight size={18} aria-hidden />

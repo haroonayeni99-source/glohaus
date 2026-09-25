@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { storedAuthAudience } from "@/lib/auth-flow";
 
 export function EmailAuthForm({
   mode,
@@ -29,6 +30,7 @@ export function EmailAuthForm({
             password,
             options: {
               emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+              data: { glohaus_audience: audience },
             },
           })
         : await supabase.auth.signInWithPassword({ email, password });
@@ -47,7 +49,12 @@ export function EmailAuthForm({
     // A Supabase session alone is not enough: GLOHAUS also needs its own
     // least-privilege account row. Customer auth can safely provision this
     // automatically; professional registration keeps the explicit setup flow.
-    if (audience === "customer") {
+    const savedAudience = storedAuthAudience(result.data.user?.user_metadata);
+    const effectiveAudience =
+      audience === "professional" || savedAudience === "professional"
+        ? "professional"
+        : "customer";
+    if (effectiveAudience === "customer") {
       const provision = await fetch("/api/v1/accounts/enrol", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },

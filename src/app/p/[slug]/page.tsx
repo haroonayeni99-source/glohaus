@@ -6,6 +6,9 @@ import { BottomNavigation } from "@/components/bottom-navigation";
 import { withIdentity } from "@/lib/db";
 import { publicProfile } from "@/modules/professionals/repository";
 import { paymentReady } from "@/modules/payments/stripe";
+import { followState } from "@/modules/follows/repository";
+import { getIdentity } from "@/lib/identity";
+import { findAccount } from "@/modules/accounts/repository";
 import type { Rule } from "@/modules/availability/domain";
 export const dynamic = "force-dynamic";
 export default async function Profile({
@@ -32,7 +35,13 @@ export default async function Profile({
         </main>
       </>
     );
-  const data = await withIdentity("", async (db) => {
+  let viewerAuthId = "";
+  try {
+    viewerAuthId = (await getIdentity()).authId;
+  } catch {
+    // Public profiles remain viewable while signed out.
+  }
+  const data = await withIdentity(viewerAuthId, async (db) => {
     const profile = await publicProfile(db, slug);
     if (!profile) return null;
     const id = profile.professional.id;
@@ -59,13 +68,15 @@ export default async function Profile({
         [id],
       )
     ).rows[0];
+    const viewer = viewerAuthId ? await findAccount(db, viewerAuthId) : null;
+    const follow = await followState(db, viewer?.id ?? null, id);
     const hours = (
       await db.query<Rule>(
         'SELECT weekday,start_minute AS "startMinute",end_minute AS "endMinute" FROM beauty.public_hours WHERE professional_id=$1 ORDER BY weekday',
         [id],
       )
     ).rows;
-    return { ...profile, assets, reviews, hours, stats };
+    return { ...profile, assets, reviews, hours, stats, follow, signedIn: Boolean(viewer) };
   });
   if (!data) notFound();
   return (
@@ -80,6 +91,7 @@ export default async function Profile({
         hours={data.hours}
         rating={data.stats.rating}
         reviewCount={data.stats.count}
+        follow={{ ...data.follow, signedIn: data.signedIn }}
         booking={
           <BookingPicker
             services={data.services}

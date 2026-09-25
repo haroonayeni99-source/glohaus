@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { FollowState } from "@/modules/follows/repository";
+type FollowState = { following: boolean; followerCount: number };
 
 export function DiscoverFollowButton({
   professionalId,

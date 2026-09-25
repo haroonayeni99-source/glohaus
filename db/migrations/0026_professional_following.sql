@@ -80,6 +80,8 @@ GRANT CREATE ON SCHEMA beauty TO beauty_catalog;
 ALTER FUNCTION beauty.can_manage_follow(uuid,uuid) OWNER TO beauty_catalog;
 ALTER FUNCTION beauty.owns_follow(uuid) OWNER TO beauty_catalog;
 ALTER FUNCTION beauty.professional_follower_count(uuid) OWNER TO beauty_catalog;
+GRANT EXECUTE ON FUNCTION beauty.auth_id() TO beauty_catalog;
+GRANT SELECT ON beauty.users, beauty.user_roles, beauty.professional_profiles, beauty.professional_follows TO beauty_catalog;
 REVOKE CREATE ON SCHEMA beauty FROM beauty_catalog;
 
 REVOKE ALL ON FUNCTION beauty.can_manage_follow(uuid,uuid) FROM PUBLIC;

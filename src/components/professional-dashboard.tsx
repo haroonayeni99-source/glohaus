@@ -10,6 +10,9 @@ import {
   Plus,
   Star,
   UserRoundCheck,
+  Users,
+  Radio,
+  LockKeyhole,
 } from "lucide-react";
 import type { Account } from "@/modules/accounts/domain";
 import type { ProfessionalDashboard as DashboardData } from "@/modules/dashboard/repository";
@@ -106,6 +109,33 @@ export function ProfessionalDashboard({
                 : "No reviews yet"}
             </span>
           </article>
+        </section>
+
+        <section className="pro-live-card" aria-label="GLOHAUS Live eligibility">
+          <div className="pro-panel-title">
+            <div>
+              <p className="pro-kicker">GLOHAUS LIVE</p>
+              <h2>Build your community. Unlock LIVE.</h2>
+            </div>
+            <Radio size={24} aria-hidden />
+          </div>
+          <p>LIVE is earned by established GLOHAUS professionals. Keep bringing genuine clients into your community and completing bookings through GLOHAUS.</p>
+          <div className="pro-live-requirements">
+            <div>
+              <span><Users size={17} aria-hidden /> Followers</span>
+              <strong>{data.stats.followerCount} / 500</strong>
+              <progress max={500} value={Math.min(data.stats.followerCount, 500)} />
+            </div>
+            <div>
+              <span><CalendarDays size={17} aria-hidden /> Completed bookings</span>
+              <strong>{data.stats.completedBookings} / 10</strong>
+              <progress max={10} value={Math.min(data.stats.completedBookings, 10)} />
+            </div>
+          </div>
+          <button className="pro-dark-button pro-live-locked" type="button" disabled>
+            <LockKeyhole size={16} aria-hidden /> LIVE coming after eligibility verification
+          </button>
+          <small>Final access will also require professional verification, an account in good standing and no serious/recent moderation restriction.</small>
         </section>
 
         <section className="pro-quick-actions" aria-label="Professional quick actions">

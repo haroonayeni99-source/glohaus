@@ -1,35 +1,13 @@
-import { DiscoveryFeed } from "@/components/discovery-feed";
 import { DesktopCustomerHome } from "@/components/desktop-customer-home";
+import { MobileCustomerHome } from "@/components/mobile-customer-home";
 import { withIdentity } from "@/lib/db";
 import { getIdentity } from "@/lib/identity";
 import { findAccount } from "@/modules/accounts/repository";
-import { publicPostPage } from "@/modules/posts/repository";
-import { savedPosts, viewerEngagement } from "@/modules/engagement/repository";
 import { discoveryPage } from "@/modules/professionals/repository";
-import type { PublicPost } from "@/modules/posts/domain";
-import type { EngagementMap } from "@/modules/engagement/domain";
 import type { PublicProfessional } from "@/modules/professionals/domain";
-import { z } from "zod";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
-
-type FeedData = {
-  posts: PublicPost[];
-  initialEngagement: EngagementMap;
-  accountMode: boolean;
-  hasMore: boolean;
-  viewer: string;
-  next: string | null;
-};
-
-const emptyFeedData: FeedData = {
-  posts: [],
-  initialEngagement: {},
-  accountMode: false,
-  hasMore: false,
-  viewer: "",
-  next: null,
-};
 
 export default async function Home({
   searchParams,
@@ -37,13 +15,18 @@ export default async function Home({
   searchParams: Promise<{ view?: string; page?: string; post?: string }>;
 }) {
   const query = await searchParams;
-  const savedView = query.view === "saved";
-  const page = Math.floor(Math.min(250, Math.max(1, Number(query.page) || 1)));
-  const postId = z.uuid().safeParse(query.post);
 
-  let data = emptyFeedData;
-  let desktopViewer = { signedIn: false, displayName: "" };
-  let desktopProfessionals: PublicProfessional[] = [];
+  // Preserve old feed links/bookmarks now that Discover has its own route.
+  if (query.view || query.page || query.post) {
+    const params = new URLSearchParams();
+    if (query.view) params.set("view", query.view);
+    if (query.page) params.set("page", query.page);
+    if (query.post) params.set("post", query.post);
+    redirect(`/discover?${params.toString()}`);
+  }
+
+  let viewer = { signedIn: false, displayName: "" };
+  let professionals: PublicProfessional[] = [];
 
   if (process.env.DATABASE_URL) {
     let authId = "";
@@ -52,77 +35,34 @@ export default async function Home({
     } catch {}
 
     try {
-      const homeResult = await withIdentity(authId, async (db) => {
+      viewer = await withIdentity(authId, async (db) => {
         const account = authId ? await findAccount(db, authId) : null;
-        const accountMode = account?.status === "active";
-        const pageData =
-          !postId.success && !savedView ? await publicPostPage(db) : null;
-        const rows = postId.success
-          ? (
-              await db.query<PublicPost>(
-                "SELECT * FROM beauty.public_posts WHERE id=$1",
-                [postId.data],
-              )
-            ).rows
-          : savedView && accountMode
-            ? await savedPosts(db, page)
-            : pageData?.posts || [];
-        const posts = rows.slice(0, 40);
-
         return {
-          data: {
-            posts,
-            initialEngagement: accountMode
-              ? await viewerEngagement(
-                  db,
-                  posts.map((post) => post.id),
-                )
-              : {},
-            accountMode,
-            hasMore: savedView && rows.length > 40,
-            viewer: account?.id || "",
-            next: pageData?.next || null,
-          } satisfies FeedData,
-          desktopViewer: {
-            signedIn: Boolean(accountMode),
-            displayName: account?.displayName || "",
-          },
+          signedIn: account?.status === "active",
+          displayName: account?.displayName || "",
         };
       });
-
-      data = homeResult.data;
-      desktopViewer = homeResult.desktopViewer;
     } catch {
-      console.error("Public feed unavailable");
+      console.error("Customer account state unavailable");
     }
 
     try {
-      desktopProfessionals = (
+      professionals = (
         await withIdentity("", (db) => discoveryPage(db, ""))
       ).professionals;
-    } catch {}
+    } catch {
+      console.error("Professional recommendations unavailable");
+    }
   }
 
   return (
     <>
       <DesktopCustomerHome
-        professionals={desktopProfessionals}
-        signedIn={desktopViewer.signedIn}
-        displayName={desktopViewer.displayName}
+        professionals={professionals}
+        signedIn={viewer.signedIn}
+        displayName={viewer.displayName}
       />
-      <div className="mobile-existing-home">
-        <DiscoveryFeed
-          key={`${data.posts[0]?.id || ""}:${data.next || ""}:${data.viewer}:${savedView}:${page}:${postId.success ? postId.data : ""}:${JSON.stringify(data.initialEngagement)}`}
-          publishedPosts={data.posts}
-          initialNext={data.next}
-          initialEngagement={data.initialEngagement}
-          accountMode={data.accountMode}
-          savedView={savedView}
-          savedPage={page}
-          hasMoreSaved={data.hasMore}
-          hideEditorial={postId.success}
-        />
-      </div>
+      <MobileCustomerHome />
     </>
   );
 }

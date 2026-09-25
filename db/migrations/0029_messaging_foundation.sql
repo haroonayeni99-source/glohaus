@@ -10,6 +10,8 @@ CREATE TABLE beauty.conversations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   customer_id uuid NOT NULL REFERENCES beauty.users(id),
   professional_id uuid NOT NULL REFERENCES beauty.professional_profiles(id),
+  customer_name text NOT NULL CHECK(length(customer_name) BETWEEN 1 AND 120),
+  professional_name text NOT NULL CHECK(length(professional_name) BETWEEN 1 AND 100),
   created_at timestamptz NOT NULL DEFAULT now(),
   last_message_at timestamptz NOT NULL DEFAULT now(),
   customer_read_at timestamptz,
@@ -26,6 +28,7 @@ CREATE TABLE beauty.messages (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   conversation_id uuid NOT NULL REFERENCES beauty.conversations(id),
   sender_user_id uuid NOT NULL REFERENCES beauty.users(id),
+  sender_role text NOT NULL CHECK(sender_role IN('customer','professional')),
   booking_id uuid REFERENCES beauty.bookings(id),
   body text NOT NULL CHECK(length(trim(body)) BETWEEN 1 AND 2000),
   created_at timestamptz NOT NULL DEFAULT now()
@@ -138,8 +141,10 @@ BEGIN
     RAISE EXCEPTION 'TOO_MANY_MESSAGES' USING ERRCODE='22023';
   END IF;
 
-  INSERT INTO beauty.conversations(customer_id,professional_id,customer_read_at)
-  VALUES(actor.id,target.id,now())
+  INSERT INTO beauty.conversations(
+    customer_id,professional_id,customer_name,professional_name,customer_read_at
+  )
+  VALUES(actor.id,target.id,actor.display_name,target.business_name,now())
   ON CONFLICT(customer_id,professional_id) DO NOTHING;
 
   SELECT c.id INTO conversation_id
@@ -147,8 +152,8 @@ BEGIN
   WHERE c.customer_id=actor.id AND c.professional_id=target.id
   FOR UPDATE;
 
-  INSERT INTO beauty.messages(conversation_id,sender_user_id,body)
-  VALUES(conversation_id,actor.id,clean_body)
+  INSERT INTO beauty.messages(conversation_id,sender_user_id,sender_role,body)
+  VALUES(conversation_id,actor.id,'customer',clean_body)
   RETURNING id INTO message_id;
 
   UPDATE beauty.conversations
@@ -209,11 +214,14 @@ BEGIN
   END IF;
 
   INSERT INTO beauty.conversations(
-    customer_id,professional_id,customer_read_at,professional_read_at
+    customer_id,professional_id,customer_name,professional_name,
+    customer_read_at,professional_read_at
   )
   VALUES(
     booking.customer_id,
     booking.professional_id,
+    booking.customer_name,
+    booking.professional_name,
     CASE WHEN actor_is_customer THEN now() ELSE NULL END,
     CASE WHEN actor_is_professional THEN now() ELSE NULL END
   )
@@ -226,9 +234,15 @@ BEGIN
   FOR UPDATE;
 
   INSERT INTO beauty.messages(
-    conversation_id,sender_user_id,booking_id,body
+    conversation_id,sender_user_id,sender_role,booking_id,body
   )
-  VALUES(conversation_id,actor.id,booking.id,clean_body)
+  VALUES(
+    conversation_id,
+    actor.id,
+    CASE WHEN actor_is_customer THEN 'customer' ELSE 'professional' END,
+    booking.id,
+    clean_body
+  )
   RETURNING id INTO message_id;
 
   UPDATE beauty.conversations
@@ -308,9 +322,15 @@ BEGIN
   END IF;
 
   INSERT INTO beauty.messages(
-    conversation_id,sender_user_id,booking_id,body
+    conversation_id,sender_user_id,sender_role,booking_id,body
   )
-  VALUES(target_conversation,actor.id,target_booking,clean_body)
+  VALUES(
+    target_conversation,
+    actor.id,
+    CASE WHEN actor_is_customer THEN 'customer' ELSE 'professional' END,
+    target_booking,
+    clean_body
+  )
   RETURNING id INTO message_id;
 
   UPDATE beauty.conversations

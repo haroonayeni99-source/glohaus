@@ -24,16 +24,27 @@ export default async function Page() {
       ? ownerControls().catch(() => null)
       : Promise.resolve(null),
   ]);
+  const isOwner = result.account.roles.includes("owner");
   return (
     <main id="main" className="admin-workspace">
         <AdminNavigation account={result.account} />
         <div className="admin-workspace-content">
           <section id="overview" className="admin-workspace-heading">
-            <p className="eyebrow">PLATFORM ADMINISTRATION</p>
+            <p className="eyebrow">{isOwner ? "GLOHAUS OWNER · SUPER ADMIN CONTROL CENTRE" : "PLATFORM ADMINISTRATION"}</p>
             <h1>
-              Your community, <em>cared for.</em>
+              {isOwner ? <>Platform control, <em>with guardrails.</em></> : <>Your community, <em>cared for.</em></>}
             </h1>
-            <p className="lead">Every management action is authorised on the server and recorded in the audit trail.</p>
+            <p className="lead">
+              {isOwner
+                ? "Owner is the highest application role. Staff and admin access can be delegated here; Owner itself cannot be granted or removed from the web console."
+                : "Every management action is authorised on the server and recorded in the audit trail."}
+            </p>
+            {isOwner && (
+              <div className="owner-control-status" role="status">
+                <strong>OWNER ACCESS ACTIVE</strong>
+                <span>Server-authorised · MFA required · privileged changes audited</span>
+              </div>
+            )}
           </section>
           <section id="settings" className="admin-workspace-section">
             <p className="eyebrow">PLATFORM LANGUAGE</p>

@@ -22,6 +22,16 @@ export type ProfessionalDashboard = {
   upcoming: BookingRecord[];
   wallet: WalletOverview | null;
   live: LiveEligibility | null;
+  plan: "starter" | "pro" | "premium";
+  insights: {
+    completedServiceValuePence: number;
+    completedBookings: number;
+    repeatClients: number;
+    averageServiceValuePence: number;
+    cancellationRate: number;
+    busiestWeekday: string | null;
+    quietestWeekday: string | null;
+  } | null;
 };
 
 /**
@@ -34,7 +44,7 @@ export async function professionalDashboard(
   db: SqlClient,
   professionalId: string,
 ): Promise<ProfessionalDashboard> {
-  const [profileResult, statsResult, reviewResult, bookings] =
+  const [profileResult, statsResult, reviewResult, bookings, planResult] =
     await Promise.all([
       db.query<{
         business_name: string;
@@ -82,6 +92,15 @@ export async function professionalDashboard(
         { role: "professional", id: professionalId },
         { view: "upcoming" },
       ),
+      db.query<{ plan_key: "starter" | "pro" | "premium" }>(
+        `SELECT coalesce((
+          SELECT plan_key
+          FROM beauty.professional_subscriptions
+          WHERE professional_id=$1 AND status='active'
+          LIMIT 1
+        ),'starter') AS plan_key`,
+        [professionalId],
+      ),
     ]);
 
   const profile = profileResult.rows[0];
@@ -101,6 +120,73 @@ export async function professionalDashboard(
     completed_bookings: 0,
   };
   const reviews = reviewResult.rows[0] ?? { count: 0, rating: null };
+  const plan = planResult.rows[0]?.plan_key ?? "starter";
+  let insights: ProfessionalDashboard["insights"] = null;
+  if (profile && plan !== "starter") {
+    const result = await db.query<{
+      completed_service_value_pence: number;
+      completed_bookings: number;
+      repeat_clients: number;
+      average_service_value_pence: number;
+      cancellation_rate: number;
+      busiest_weekday: string | null;
+      quietest_weekday: string | null;
+    }>(
+      `WITH recent AS (
+         SELECT b.*
+         FROM beauty.bookings b
+         WHERE b.professional_id=$1
+           AND b.starts_at>=now()-interval '30 days'
+       ),
+       client_counts AS (
+         SELECT customer_id,count(*)::integer AS appointments
+         FROM beauty.bookings
+         WHERE professional_id=$1 AND status='completed'
+         GROUP BY customer_id
+       ),
+       weekday_counts AS (
+         SELECT
+           trim(to_char(starts_at AT TIME ZONE 'Europe/London','Day')) AS weekday,
+           count(*)::integer AS appointments
+         FROM recent
+         WHERE status IN ('confirmed','completed','no_show','cancelled')
+         GROUP BY 1
+       )
+       SELECT
+         coalesce(sum(price_pence) FILTER(WHERE status='completed'),0)::integer
+           AS completed_service_value_pence,
+         count(*) FILTER(WHERE status='completed')::integer
+           AS completed_bookings,
+         coalesce((SELECT count(*)::integer FROM client_counts WHERE appointments>=2),0)
+           AS repeat_clients,
+         coalesce(round(avg(price_pence) FILTER(WHERE status='completed')),0)::integer
+           AS average_service_value_pence,
+         CASE
+           WHEN count(*) FILTER(WHERE status IN ('confirmed','completed','no_show','cancelled'))=0 THEN 0
+           ELSE round(
+             100.0 * count(*) FILTER(WHERE status='cancelled')
+             / count(*) FILTER(WHERE status IN ('confirmed','completed','no_show','cancelled')),
+             1
+           )::float
+         END AS cancellation_rate,
+         (SELECT weekday FROM weekday_counts ORDER BY appointments DESC,weekday ASC LIMIT 1)
+           AS busiest_weekday,
+         (SELECT weekday FROM weekday_counts ORDER BY appointments ASC,weekday ASC LIMIT 1)
+           AS quietest_weekday
+       FROM recent`,
+      [professionalId],
+    );
+    const row = result.rows[0];
+    insights = {
+      completedServiceValuePence: row?.completed_service_value_pence ?? 0,
+      completedBookings: row?.completed_bookings ?? 0,
+      repeatClients: row?.repeat_clients ?? 0,
+      averageServiceValuePence: row?.average_service_value_pence ?? 0,
+      cancellationRate: row?.cancellation_rate ?? 0,
+      busiestWeekday: row?.busiest_weekday ?? null,
+      quietestWeekday: row?.quietest_weekday ?? null,
+    };
+  }
   return {
     profile: profile
       ? {
@@ -121,6 +207,8 @@ export async function professionalDashboard(
     upcoming: bookings.bookings.slice(0, 5),
     wallet: wallet ?? null,
     live,
+    plan,
+    insights,
   };
 }
 

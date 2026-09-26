@@ -118,6 +118,8 @@ describe.sequential("professional dashboard data", () => {
       availablePence: 0,
       pendingPence: 0,
     });
+    expect(dashboard.plan).toBe("starter");
+    expect(dashboard.insights).toBeNull();
 
     const clients = await asUser("ada", (sql) =>
       professionalClients(sql, adaProfessionalId),
@@ -129,6 +131,50 @@ describe.sequential("professional dashboard data", () => {
         appointment_count: 1,
       }),
     ]);
+  });
+
+  it("unlocks business insights only after an active paid plan", async () => {
+    await db.query(
+      `INSERT INTO beauty.bookings(
+        professional_id,customer_id,service_id,service_name,customer_name,professional_name,
+        starts_at,ends_at,duration_minutes,price_pence,deposit_pence,status,hold_expires_at,
+        completed_at
+      ) VALUES
+        ($1,$2,$3,'Gel manicure','Customer','Ada Studio',
+         now()-interval '8 days',now()-interval '8 days'+interval '1 hour',
+         60,4500,1500,'completed',now()-interval '9 days',now()-interval '8 days'),
+        ($1,$2,$3,'Gel manicure','Customer','Ada Studio',
+         now()-interval '3 days',now()-interval '3 days'+interval '1 hour',
+         60,5500,1500,'completed',now()-interval '4 days',now()-interval '3 days')`,
+      [adaProfessionalId, customerId, adaServiceId],
+    );
+
+    await db.query(
+      `INSERT INTO beauty.professional_subscriptions(
+        professional_id,plan_key,status,provider_customer_id,
+        provider_subscription_id,provider_price_id,current_period_end,
+        accepted_terms_version,accepted_at
+      ) VALUES($1,'pro','active','cus_insights','sub_insights','price_pro',
+        now()+interval '30 days','pricing-v1',now())
+       ON CONFLICT(professional_id) DO UPDATE SET
+        plan_key='pro',status='active'`,
+      [adaProfessionalId],
+    );
+
+    const dashboard = await asUser("ada", (sql) =>
+      professionalDashboard(sql, adaProfessionalId),
+    );
+
+    expect(dashboard.plan).toBe("pro");
+    expect(dashboard.insights).toMatchObject({
+      completedServiceValuePence: 10000,
+      completedBookings: 2,
+      repeatClients: 1,
+      averageServiceValuePence: 5000,
+      cancellationRate: 0,
+    });
+    expect(dashboard.insights?.busiestWeekday).toBeTruthy();
+    expect(dashboard.insights?.quietestWeekday).toBeTruthy();
   });
 
   it("does not disclose another professional's dashboard, clients or wallet", async () => {

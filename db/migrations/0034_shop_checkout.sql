@@ -55,6 +55,7 @@ GRANT SELECT,UPDATE ON beauty.products TO beauty_payment_worker;
 GRANT SELECT,DELETE ON beauty.cart_items TO beauty_payment_worker;
 GRANT SELECT ON beauty.users,beauty.user_roles,beauty.professional_profiles,beauty.professional_financial_controls,beauty.financial_fee_rules TO beauty_payment_worker;
 GRANT SELECT,INSERT,UPDATE ON beauty.product_orders,beauty.product_order_items TO beauty_payment_worker;
+GRANT SELECT,INSERT ON beauty.payment_events TO beauty_payment_worker;
 
 CREATE POLICY shop_checkout_worker ON beauty.shop_checkouts
 FOR ALL TO beauty_payment_worker USING(true) WITH CHECK(true);
@@ -77,6 +78,8 @@ FOR SELECT TO beauty_payment_worker USING(true);
 CREATE POLICY shop_orders_payment_worker ON beauty.product_orders
 FOR ALL TO beauty_payment_worker USING(true) WITH CHECK(true);
 CREATE POLICY shop_order_items_payment_worker ON beauty.product_order_items
+FOR ALL TO beauty_payment_worker USING(true) WITH CHECK(true);
+CREATE POLICY shop_payment_events_worker ON beauty.payment_events
 FOR ALL TO beauty_payment_worker USING(true) WITH CHECK(true);
 
 CREATE FUNCTION beauty.shop_checkout_payload(target uuid) RETURNS jsonb

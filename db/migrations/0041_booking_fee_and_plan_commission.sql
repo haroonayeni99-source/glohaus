@@ -465,6 +465,11 @@ BEGIN
   ON CONFLICT DO NOTHING;
 END $$;
 
+GRANT SELECT ON beauty.financial_quotes TO beauty_booking_ops;
+CREATE POLICY booking_ops_financial_quote_read
+ON beauty.financial_quotes
+FOR SELECT TO beauty_booking_ops USING(true);
+
 GRANT CREATE ON SCHEMA beauty TO beauty_booking_ops;
 ALTER FUNCTION beauty.apply_checkout_payment(text,uuid,text,text,integer,text)
   OWNER TO beauty_booking_ops;

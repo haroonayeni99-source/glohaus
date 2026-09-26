@@ -198,10 +198,10 @@ export function CartManager({ initialCart }: { initialCart: CartOverview }) {
         </div>
         <div>
           <span>Delivery</span>
-          <strong>Calculated later</strong>
+          <strong>{money(0)}</strong>
         </div>
         <div className="cart-summary-total">
-          <span>Current product total</span>
+          <span>Total</span>
           <strong>{money(cart.totalPence)}</strong>
         </div>
         {hasUnavailable && (
@@ -219,7 +219,8 @@ export function CartManager({ initialCart }: { initialCart: CartOverview }) {
         <p>
           Payment is completed securely with Stripe. Stock is reserved while
           checkout is open, and paid orders are created only after Stripe
-          confirms the payment.
+          confirms the payment. This MVP checkout adds no separate delivery
+          charge, so the amount shown above is the amount Stripe will collect.
         </p>
         <Link href="/shop">Continue shopping</Link>
       </aside>

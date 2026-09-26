@@ -261,3 +261,11 @@ export async function confirmProductOrderDelivery(
   );
   return result.rows[0].data;
 }
+
+
+export async function shopCartPayoutsReady(db: SqlClient): Promise<boolean> {
+  const result = await db.query<{ ready: boolean }>(
+    "SELECT beauty.shop_cart_payouts_ready() AS ready",
+  );
+  return result.rows[0]?.ready ?? false;
+}

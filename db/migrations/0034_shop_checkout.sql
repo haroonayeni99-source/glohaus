@@ -52,7 +52,7 @@ ALTER TABLE beauty.shop_checkout_items FORCE ROW LEVEL SECURITY;
 GRANT EXECUTE ON FUNCTION beauty.auth_id() TO beauty_payment_worker;
 GRANT SELECT,INSERT,UPDATE ON beauty.shop_checkouts,beauty.shop_checkout_items TO beauty_payment_worker;
 GRANT SELECT,UPDATE ON beauty.products TO beauty_payment_worker;
-GRANT SELECT,DELETE ON beauty.cart_items TO beauty_payment_worker;
+GRANT SELECT,UPDATE,DELETE ON beauty.cart_items TO beauty_payment_worker;
 GRANT SELECT ON beauty.users,beauty.user_roles,beauty.professional_profiles,beauty.professional_financial_controls,beauty.financial_fee_rules TO beauty_payment_worker;
 GRANT SELECT,INSERT,UPDATE ON beauty.product_orders,beauty.product_order_items TO beauty_payment_worker;
 GRANT SELECT,INSERT ON beauty.payment_events TO beauty_payment_worker;

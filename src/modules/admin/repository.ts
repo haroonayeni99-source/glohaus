@@ -195,3 +195,24 @@ export async function ownerControls() {
     return row.overview;
   });
 }
+
+
+export type OwnerProductFeeRule = {
+  id: string;
+  percentageBasisPoints: number;
+  fixedFeePence: number;
+  minimumFeePence: number;
+  maximumFeePence: number | null;
+  minimumTransactionPence: number;
+  processingCostPayer: "platform" | "professional";
+  effectiveFrom: string;
+};
+
+export async function ownerProductFeeRule(): Promise<OwnerProductFeeRule | null> {
+  return withOwner(async (db) => {
+    const result = await db.query<{ data: OwnerProductFeeRule | null }>(
+      "SELECT beauty.owner_active_product_fee_rule() AS data",
+    );
+    return result.rows[0]?.data ?? null;
+  });
+}

@@ -6344,3 +6344,320 @@ svg {
     height: calc(100dvh - 128px);
   }
 }
+
+
+/* Theme consistency pass: surfaces added after the original light/night toggle. */
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="night"] { color-scheme: dark; }
+
+:root[data-theme="night"] .access-card,
+:root[data-theme="night"] .auth-email-form,
+:root[data-theme="night"] .professional-card,
+:root[data-theme="night"] .catalog-search,
+:root[data-theme="night"] .booking-widget,
+:root[data-theme="night"] .booking-service-preview,
+:root[data-theme="night"] .booking-journey,
+:root[data-theme="night"] .booking-date-strip button,
+:root[data-theme="night"] .booking-journey .booking-times button,
+:root[data-theme="night"] .booking-policy,
+:root[data-theme="night"] .booking-confirmation,
+:root[data-theme="night"] .following-row,
+:root[data-theme="night"] .message-centre,
+:root[data-theme="night"] .message-inbox,
+:root[data-theme="night"] .message-thread,
+:root[data-theme="night"] .message-thread-header,
+:root[data-theme="night"] .message-composer,
+:root[data-theme="night"] .message-bubble,
+:root[data-theme="night"] .customer-wallet-summary article,
+:root[data-theme="night"] .customer-payment-history,
+:root[data-theme="night"] .customer-wallet-note,
+:root[data-theme="night"] .shop-product-card,
+:root[data-theme="night"] .shop-checkout-note,
+:root[data-theme="night"] .professional-preview-checklist,
+:root[data-theme="night"] .professional-preview-stage,
+:root[data-theme="night"] .professional-preview-section,
+:root[data-theme="night"] .professional-preview-booking {
+  background: #241f21;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+:root[data-theme="night"] .access-card p:not(.eyebrow),
+:root[data-theme="night"] .auth-email-intro,
+:root[data-theme="night"] .professional-card p,
+:root[data-theme="night"] .booking-service-preview small,
+:root[data-theme="night"] .booking-help,
+:root[data-theme="night"] .booking-policy p,
+:root[data-theme="night"] .booking-confirmation-intro,
+:root[data-theme="night"] .message-inbox-copy small,
+:root[data-theme="night"] .message-thread-header small,
+:root[data-theme="night"] .customer-wallet-note p,
+:root[data-theme="night"] .customer-payment-list span,
+:root[data-theme="night"] .customer-payment-list small,
+:root[data-theme="night"] .shop-product-copy p,
+:root[data-theme="night"] .professional-preview p {
+  color: var(--muted);
+}
+
+:root[data-theme="night"] .booking-service-select,
+:root[data-theme="night"] .booking-date-section legend,
+:root[data-theme="night"] .booking-time-section legend,
+:root[data-theme="night"] .booking-back,
+:root[data-theme="night"] .message-thread-header > a,
+:root[data-theme="night"] .professional-message-button,
+:root[data-theme="night"] .booking-message-action a {
+  color: var(--ink);
+}
+
+:root[data-theme="night"] .booking-service-select select,
+:root[data-theme="night"] .booking-custom-date input,
+:root[data-theme="night"] .message-composer textarea,
+:root[data-theme="night"] .catalog-search,
+:root[data-theme="night"] .auth-email-form input {
+  background: #2d2629;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+:root[data-theme="night"] .booking-date-strip button.selected,
+:root[data-theme="night"] .booking-journey .booking-times button.selected {
+  background: #d95f8d;
+  border-color: #ea78a3;
+  color: #fff;
+}
+
+:root[data-theme="night"] .booking-deposit-callout,
+:root[data-theme="night"] .payment-summary-note,
+:root[data-theme="night"] .customer-wallet-note {
+  background: #302329;
+  border-color: #5a3b47;
+  color: var(--ink);
+}
+
+:root[data-theme="night"] .messages-page,
+:root[data-theme="night"] .customer-account-page,
+:root[data-theme="night"] .professional-preview,
+:root[data-theme="night"] .shop-catalogue {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+:root[data-theme="night"] .message-inbox nav > a,
+:root[data-theme="night"] .customer-payment-list > a,
+:root[data-theme="night"] .shop-product-footer a {
+  color: var(--ink);
+}
+:root[data-theme="night"] .message-inbox nav > a:hover,
+:root[data-theme="night"] .message-inbox nav > a[aria-current="page"],
+:root[data-theme="night"] .customer-payment-list > a:hover {
+  background: #30262a;
+}
+:root[data-theme="night"] .message-thread-body {
+  background:
+    linear-gradient(rgb(29 25 27 / 94%), rgb(29 25 27 / 94%)),
+    radial-gradient(circle at 10% 10%, #5d3042, transparent 36%);
+}
+:root[data-theme="night"] .message-bubble.mine {
+  background: #5a2c40;
+  border-color: #754057;
+}
+:root[data-theme="night"] .message-avatar {
+  background: linear-gradient(145deg, #7a4157, #9a4f6d);
+  color: #fff;
+}
+
+:root[data-theme="night"] .professional-preview {
+  background: #171415;
+}
+:root[data-theme="night"] .professional-preview-stage {
+  box-shadow: 0 22px 60px rgb(0 0 0 / 28%);
+}
+:root[data-theme="night"] .professional-preview-services article,
+:root[data-theme="night"] .professional-preview-review blockquote,
+:root[data-theme="night"] .professional-preview-date-row span,
+:root[data-theme="night"] .professional-preview-time-grid span {
+  background: #2a2326;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+/* The professional workspace now respects the global light theme too. */
+:root[data-theme="light"] .pro-app {
+  background:
+    radial-gradient(circle at 86% -10%, rgb(241 105 153 / 11%), transparent 28rem),
+    #f8f5f3;
+  color: #201a1d;
+}
+:root[data-theme="light"] .pro-header {
+  background: rgb(255 252 253 / 94%);
+  border-bottom-color: #eadde2;
+  color: #201a1d;
+}
+:root[data-theme="light"] .pro-header .brand.inverse {
+  color: #201a1d;
+}
+:root[data-theme="light"] .pro-header-brand > span,
+:root[data-theme="light"] .pro-account-name {
+  color: #765c66;
+}
+:root[data-theme="light"] .pro-desktop-nav,
+:root[data-theme="light"] .pro-mobile-nav {
+  background: #fffafb;
+  border-color: #eadde2;
+}
+:root[data-theme="light"] .pro-desktop-nav a,
+:root[data-theme="light"] .pro-mobile-nav a {
+  color: #66565d;
+}
+:root[data-theme="light"] .pro-desktop-nav a[aria-current="page"],
+:root[data-theme="light"] .pro-mobile-nav a[aria-current="page"] {
+  background: #f8e4eb;
+  color: #a4305d;
+}
+:root[data-theme="light"] .pro-welcome p:not(.pro-kicker),
+:root[data-theme="light"] .pro-page-lead,
+:root[data-theme="light"] .pro-profile-panel p:not(.pro-kicker),
+:root[data-theme="light"] .pro-setup-card p:not(.pro-kicker),
+:root[data-theme="light"] .pro-empty-state p,
+:root[data-theme="light"] .pro-stat-grid span {
+  color: #74666c;
+}
+:root[data-theme="light"] .pro-stat-grid article,
+:root[data-theme="light"] .pro-panel,
+:root[data-theme="light"] .pro-client-list article,
+:root[data-theme="light"] .pro-live-card {
+  background: #fff;
+  border-color: #eadde2;
+  color: #201a1d;
+  box-shadow: 0 14px 34px rgb(56 29 40 / 6%);
+}
+:root[data-theme="light"] .pro-appointment-list,
+:root[data-theme="light"] .pro-appointment-list > a,
+:root[data-theme="light"] .pro-live-requirements > div {
+  border-color: #eadde2;
+}
+:root[data-theme="light"] .pro-appointment-list time,
+:root[data-theme="light"] .pro-appointment-list div > span {
+  color: #75666c;
+}
+:root[data-theme="light"] .pro-quick-actions a,
+:root[data-theme="light"] .professional-dashboard-preview .pro-quick-actions > span {
+  background: #fff;
+  border-color: #eadde2;
+  color: #a4305d;
+}
+:root[data-theme="light"] .pro-quick-actions span,
+:root[data-theme="light"] .professional-dashboard-preview .pro-quick-actions > span b {
+  color: #201a1d;
+}
+:root[data-theme="light"] .pro-quick-actions small,
+:root[data-theme="light"] .professional-dashboard-preview .pro-quick-actions > span small {
+  color: #74666c;
+}
+:root[data-theme="light"] .pro-icon-button {
+  border-color: #dfcbd3;
+  color: #5d4550;
+}
+:root[data-theme="light"] .pro-setup-card {
+  background: linear-gradient(100deg, #fff0f5, #fff);
+  border-color: #efbfd0;
+}
+
+/* Professional dashboard preview helpers. */
+.pro-preview-banner {
+  margin-bottom: 20px;
+  padding: 10px 12px;
+  border: 1px solid #ff9ec552;
+  border-radius: 10px;
+  background: #ff9ec515;
+  color: #ff9ec5;
+  font-size: .62rem;
+  font-weight: 850;
+  letter-spacing: .08em;
+  text-align: center;
+}
+.professional-dashboard-preview .pro-desktop-nav span {
+  display: inline-flex;
+  min-height: 35px;
+  align-items: center;
+  padding: 0 12px;
+  color: #bcaeb3;
+  font-size: .75rem;
+  font-weight: 750;
+}
+.professional-dashboard-preview .pro-desktop-nav span[aria-current="page"] {
+  border-radius: 8px;
+  background: rgb(245 105 158 / 17%);
+  color: #ffb2cf;
+}
+.professional-dashboard-preview .pro-quick-actions > span {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 10px;
+  row-gap: 2px;
+  align-items: start;
+  min-height: 82px;
+  padding: 14px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 13px;
+  background: linear-gradient(140deg, #211b1e, #171415);
+  color: #ff9fc6;
+}
+.professional-dashboard-preview .pro-quick-actions > span b,
+.professional-dashboard-preview .pro-quick-actions > span small {
+  grid-column: 2;
+}
+.professional-dashboard-preview .pro-quick-actions > span b {
+  color: #fff;
+  font-size: .75rem;
+}
+.professional-dashboard-preview .pro-quick-actions > span small {
+  color: #b6a8ae;
+  font-size: .63rem;
+}
+.pro-preview-appointment {
+  display: grid;
+  grid-template-columns: 126px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  min-height: 69px;
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+}
+.pro-preview-appointment time { color: #c9bfc2; font-size: .73rem; }
+.pro-preview-appointment strong { display: block; font-size: .86rem; }
+.pro-preview-appointment div > span { display: block; margin-top: 3px; color: #a99da1; font-size: .71rem; }
+.pro-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 28px;
+}
+.auth-switch-row {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: .72rem;
+}
+.auth-switch-row a { color: var(--plum); font-weight: 800; }
+.auth-dashboard-preview {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  color: var(--plum);
+  font-size: .7rem;
+  font-weight: 800;
+}
+.auth-preview-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px 16px;
+}
+@media (max-width: 700px) {
+  .professional-dashboard-preview .pro-desktop-nav { display: flex; overflow-x: auto; }
+  .pro-preview-appointment { grid-template-columns: 92px minmax(0, 1fr); gap: 10px; }
+  .pro-preview-appointment .pro-status { display: none; }
+}

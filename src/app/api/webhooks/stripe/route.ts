@@ -37,16 +37,21 @@ async function applyPaidSession(
   }
 
   if (session.metadata?.booking_id)
-    await withPaymentWorker((db) =>
-      db.query("SELECT beauty.apply_checkout_payment($1,$2,$3,$4,$5,$6)", [
+    await withPaymentWorker(async (db) => {
+      await db.query("SELECT beauty.apply_checkout_payment($1,$2,$3,$4,$5,$6)", [
         eventId,
         session.metadata!.booking_id,
         session.id,
         intent,
         session.amount_total,
         session.currency,
-      ]),
-    );
+      ]);
+      if (intent)
+        await db.query("SELECT beauty.record_booking_payment_finance($1,$2)", [
+          session.metadata!.booking_id,
+          intent,
+        ]);
+    });
 }
 
 async function releaseShopSession(

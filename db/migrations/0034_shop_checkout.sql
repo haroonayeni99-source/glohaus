@@ -49,6 +49,7 @@ ALTER TABLE beauty.shop_checkouts FORCE ROW LEVEL SECURITY;
 ALTER TABLE beauty.shop_checkout_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE beauty.shop_checkout_items FORCE ROW LEVEL SECURITY;
 
+GRANT EXECUTE ON FUNCTION beauty.auth_id() TO beauty_payment_worker;
 GRANT SELECT,INSERT,UPDATE ON beauty.shop_checkouts,beauty.shop_checkout_items TO beauty_payment_worker;
 GRANT SELECT,UPDATE ON beauty.products TO beauty_payment_worker;
 GRANT SELECT,DELETE ON beauty.cart_items TO beauty_payment_worker;

@@ -323,19 +323,59 @@ BEGIN
   ),'[]'::jsonb);
 END $$;
 
+
+CREATE OR REPLACE FUNCTION beauty.cancel_requested_payout(target uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path=pg_catalog
+AS $
+DECLARE payout beauty.financial_payouts;
+BEGIN
+  SELECT * INTO payout
+  FROM beauty.financial_payouts
+  WHERE id=target
+  FOR UPDATE;
+
+  IF payout.id IS NULL OR payout.status='cancelled' THEN RETURN; END IF;
+  IF payout.status<>'requested' OR payout.provider_payout_id IS NOT NULL THEN
+    RAISE EXCEPTION 'PAYOUT_STATE_MISMATCH' USING ERRCODE='22023';
+  END IF;
+
+  PERFORM beauty.record_financial_ledger(
+    'payout-reversal:'||payout.id::text,
+    'recovery','payout',payout.id,payout.professional_id,
+    jsonb_build_object('reason','provider_setup_failed'),
+    CASE WHEN payout.withdrawal_fee_pence>0 THEN jsonb_build_array(
+      jsonb_build_object('accountCode','professional_processing','amountPence',payout.bank_amount_pence),
+      jsonb_build_object('accountCode','platform_fee_revenue','amountPence',payout.withdrawal_fee_pence),
+      jsonb_build_object('accountCode','professional_available','amountPence',-payout.requested_pence)
+    ) ELSE jsonb_build_array(
+      jsonb_build_object('accountCode','professional_processing','amountPence',payout.bank_amount_pence),
+      jsonb_build_object('accountCode','professional_available','amountPence',-payout.requested_pence)
+    ) END
+  );
+
+  UPDATE beauty.financial_payouts
+  SET status='cancelled',updated_at=now()
+  WHERE id=payout.id;
+END $;
+
 GRANT CREATE ON SCHEMA beauty TO beauty_financial_worker,beauty_payment_worker;
 ALTER FUNCTION beauty.request_my_payout(text,integer) OWNER TO beauty_financial_worker;
 ALTER FUNCTION beauty.my_payout_history() OWNER TO beauty_financial_worker;
 ALTER FUNCTION beauty.record_payout_provider(uuid,text,text,text,integer,timestamptz)
   OWNER TO beauty_payment_worker;
 ALTER FUNCTION beauty.apply_payout_result(text,text) OWNER TO beauty_payment_worker;
+ALTER FUNCTION beauty.cancel_requested_payout(uuid) OWNER TO beauty_payment_worker;
 REVOKE CREATE ON SCHEMA beauty FROM beauty_financial_worker,beauty_payment_worker;
 
 REVOKE ALL ON FUNCTION
   beauty.request_my_payout(text,integer),
   beauty.my_payout_history(),
   beauty.record_payout_provider(uuid,text,text,text,integer,timestamptz),
-  beauty.apply_payout_result(text,text)
+  beauty.apply_payout_result(text,text),
+  beauty.cancel_requested_payout(uuid)
 FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION
@@ -345,5 +385,6 @@ TO beauty_app;
 
 GRANT EXECUTE ON FUNCTION
   beauty.record_payout_provider(uuid,text,text,text,integer,timestamptz),
-  beauty.apply_payout_result(text,text)
+  beauty.apply_payout_result(text,text),
+  beauty.cancel_requested_payout(uuid)
 TO beauty_payment_worker;

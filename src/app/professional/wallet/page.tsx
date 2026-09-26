@@ -29,6 +29,7 @@ export default async function ProfessionalWalletPage() {
   const finance = await withIdentity(result.account.authId, async (db) => {
     await releaseMatureProductProceeds(db);
     await releaseMatureBookingProceeds(db);
+    await db.query("SELECT beauty.recover_my_outstanding_obligation()");
     const wallet = await professionalWallet(db);
     const pricing = (
       await db.query<{

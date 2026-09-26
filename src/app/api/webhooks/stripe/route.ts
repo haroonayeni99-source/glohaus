@@ -245,8 +245,8 @@ export async function POST(request: Request) {
     ) {
       const refund = event.data.object;
       if (refund.metadata?.refund_decision_id)
-        await withPaymentWorker((db) =>
-          db.query("SELECT beauty.apply_refund_result($1,$2,$3,$4,$5)", [
+        await withPaymentWorker(async (db) => {
+          await db.query("SELECT beauty.apply_refund_result($1,$2,$3,$4,$5)", [
             refund.metadata!.refund_decision_id,
             refund.id,
             refund.amount,
@@ -254,8 +254,11 @@ export async function POST(request: Request) {
             typeof refund.payment_intent === "string"
               ? refund.payment_intent
               : refund.payment_intent?.id,
-          ]),
-        );
+          ]);
+          await db.query("SELECT beauty.record_booking_refund_finance($1)", [
+            refund.metadata!.refund_decision_id,
+          ]);
+        });
     } else if (
       event.type === "customer.subscription.updated" ||
       event.type === "customer.subscription.deleted"

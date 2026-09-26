@@ -69,3 +69,62 @@ export type CartOverview = {
   totalPence: number;
   itemCount: number;
 };
+
+
+export type ProductOrderItem = {
+  id: string;
+  productId: string;
+  productName: string;
+  imageAssetId: string | null;
+  unitPricePence: number;
+  quantity: number;
+  lineTotalPence: number;
+};
+
+export type ProductOrder = {
+  id: string;
+  professionalId: string;
+  professionalName: string;
+  status:
+    | "paid"
+    | "processing"
+    | "shipped"
+    | "delivered"
+    | "cancelled"
+    | "refund_pending"
+    | "refunded";
+  subtotalPence: number;
+  deliveryPence: number;
+  totalPence: number;
+  recipientName: string;
+  addressLine1: string;
+  addressLine2: string | null;
+  city: string;
+  postcode: string;
+  countryCode: string;
+  trackingCarrier: string | null;
+  trackingNumber: string | null;
+  shippedAt: Date | string | null;
+  deliveredAt: Date | string | null;
+  createdAt: Date | string;
+  items: ProductOrderItem[];
+};
+
+export const fulfilmentUpdateSchema = z
+  .object({
+    status: z.enum(["processing", "shipped"]),
+    carrier: z.string().trim().min(2).max(80).nullable().optional(),
+    trackingNumber: z.string().trim().min(3).max(120).nullable().optional(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (
+      value.status === "shipped" &&
+      (!value.carrier || !value.trackingNumber)
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "Carrier and tracking number are required when shipping.",
+      });
+    }
+  });

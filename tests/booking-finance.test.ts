@@ -7,7 +7,6 @@ import { saveService, updateProfile } from "@/modules/professionals/repository";
 
 const db = new PGlite();
 let professionalId: string;
-let customerId: string;
 let serviceId: string;
 let bookingId: string;
 
@@ -102,16 +101,7 @@ beforeAll(async () => {
       "customer",
     ),
   );
-  customerId = customer.id;
-
-  await db.query(
-    `INSERT INTO beauty.financial_fee_rules(
-      transaction_kind,category_key,fee_payer,percentage_basis_points,
-      fixed_fee_pence,minimum_fee_pence,minimum_transaction_pence,
-      processing_cost_payer,created_by_user_id
-    ) VALUES('booking',NULL,'professional',1000,0,0,1,'platform',$1)`,
-    [customerId],
-  );
+  expect(customer.id).toBeTruthy();
 
   const start = new Date(Date.now() + 3 * 86400000);
   start.setUTCHours(12, 0, 0, 0);
@@ -128,7 +118,27 @@ beforeAll(async () => {
 afterAll(() => db.close());
 
 describe.sequential("protected booking deposit finance", () => {
-  it("snapshots professional commission without changing the customer deposit", async () => {
+  it("uses Starter pricing and adds the £1 customer booking fee separately", async () => {
+    const pricing = (
+      await asUser("finance-pro", (sql) =>
+        sql.query<{
+          data: {
+            planKey: string;
+            monthlyPricePence: number;
+            serviceCommissionBasisPoints: number;
+            productCommissionBasisPoints: number;
+            instantWithdrawalBasisPoints: number;
+          };
+        }>("SELECT beauty.my_professional_pricing() AS data"),
+      )
+    ).rows[0].data;
+    expect(pricing).toMatchObject({
+      planKey: "starter",
+      monthlyPricePence: 0,
+      serviceCommissionBasisPoints: 800,
+      productCommissionBasisPoints: 1000,
+      instantWithdrawalBasisPoints: 400,
+    });
     const quote = (
       await asUser("finance-customer", (sql) =>
         sql.query<{
@@ -146,9 +156,9 @@ describe.sequential("protected booking deposit finance", () => {
 
     expect(quote).toEqual(
       expect.objectContaining({
-        customerTotalPence: 2000,
-        professionalPlatformFeePence: 200,
-        professionalProceedsPence: 1800,
+        customerTotalPence: 2100,
+        professionalPlatformFeePence: 400,
+        professionalProceedsPence: 1600,
       }),
     );
   });
@@ -168,7 +178,7 @@ describe.sequential("protected booking deposit finance", () => {
           bookingId,
           "cs_booking_finance",
           "pi_booking_finance",
-          2000,
+          2100,
           "gbp",
         ],
       );
@@ -185,7 +195,7 @@ describe.sequential("protected booking deposit finance", () => {
         ),
       )
     ).rows[0].data;
-    expect(wallet.pendingPence).toBe(1800);
+    expect(wallet.pendingPence).toBe(1600);
     expect(wallet.availablePence).toBe(0);
   });
 
@@ -227,14 +237,14 @@ describe.sequential("protected booking deposit finance", () => {
         ),
       )
     ).rows[0].data.availablePence;
-    expect(available).toBe(1800);
+    expect(available).toBe(1600);
 
     for (let attempt = 0; attempt < 2; attempt++)
       await asPaymentWorker((sql) =>
         sql.query("SELECT beauty.record_booking_transfer($1,$2,$3)", [
           bookingId,
           "tr_booking_finance",
-          1800,
+          1600,
         ]),
       );
 

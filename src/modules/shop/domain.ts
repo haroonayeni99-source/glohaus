@@ -142,6 +142,7 @@ export type ShopCheckoutItem = {
 export type ShopCheckout = {
   id: string;
   stripeSessionId: string | null;
+  integrationIdentifier: string;
   expiresAt: string;
   totalPence: number;
   itemCount: number;

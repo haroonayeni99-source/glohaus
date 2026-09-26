@@ -223,6 +223,67 @@ describe.sequential("secure Shop checkout", () => {
     });
   });
 
+  it("records a released product transfer once and clears GLOHAUS available funds", async () => {
+    const order = (
+      await db.query<{
+        id: string;
+        professional_proceeds_pence: number;
+      }>(
+        "SELECT id,professional_proceeds_pence FROM beauty.product_orders WHERE provider_payment_intent_id='pi_secure_shop'",
+      )
+    ).rows[0];
+
+    await db.query(
+      "UPDATE beauty.product_orders SET status='delivered',delivered_at=now()-interval '49 hours' WHERE id=$1",
+      [order.id],
+    );
+
+    await asUser("checkout-pro", (sql) =>
+      sql.query("SELECT beauty.release_my_mature_product_proceeds()"),
+    );
+
+    const before = await asUser("checkout-pro", (sql) =>
+      sql.query<{ data: { availablePence: number } }>(
+        "SELECT beauty.my_wallet_overview() AS data",
+      ),
+    );
+    expect(before.rows[0].data.availablePence).toBe(
+      order.professional_proceeds_pence,
+    );
+
+    await asPaymentWorker((sql) =>
+      sql.query("SELECT beauty.record_product_transfer($1,$2,$3)", [
+        order.id,
+        "tr_secure_product",
+        order.professional_proceeds_pence,
+      ]),
+    );
+
+    await asPaymentWorker((sql) =>
+      sql.query("SELECT beauty.record_product_transfer($1,$2,$3)", [
+        order.id,
+        "tr_secure_product",
+        order.professional_proceeds_pence,
+      ]),
+    );
+
+    const row = (
+      await db.query<{ stripe_transfer_id: string; transferred_at: Date }>(
+        "SELECT stripe_transfer_id,transferred_at FROM beauty.product_orders WHERE id=$1",
+        [order.id],
+      )
+    ).rows[0];
+    expect(row.stripe_transfer_id).toBe("tr_secure_product");
+    expect(row.transferred_at).toBeTruthy();
+
+    const after = await asUser("checkout-pro", (sql) =>
+      sql.query<{ data: { availablePence: number } }>(
+        "SELECT beauty.my_wallet_overview() AS data",
+      ),
+    );
+    expect(after.rows[0].data.availablePence).toBe(0);
+  });
+
   it("restores reserved stock if an attached checkout expires", async () => {
     await asUser("checkout-customer", (sql) =>
       addCartItem(sql, productId, 1),

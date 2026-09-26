@@ -324,6 +324,25 @@ BEGIN
 END $$;
 
 
+
+CREATE OR REPLACE FUNCTION beauty.payout_reversal_details(payout_ref text)
+RETURNS jsonb
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path=pg_catalog
+AS $
+  SELECT CASE WHEN p.id IS NULL THEN NULL ELSE jsonb_build_object(
+    'id',p.id,
+    'transferId',p.provider_transfer_id,
+    'applicationFeeId',p.provider_application_fee_id,
+    'withdrawalFeePence',p.withdrawal_fee_pence,
+    'status',p.status
+  ) END
+  FROM (SELECT 1) seed
+  LEFT JOIN beauty.financial_payouts p ON p.provider_payout_id=payout_ref
+  LIMIT 1
+$;
+
 CREATE OR REPLACE FUNCTION beauty.cancel_requested_payout(target uuid)
 RETURNS void
 LANGUAGE plpgsql
@@ -368,6 +387,7 @@ ALTER FUNCTION beauty.record_payout_provider(uuid,text,text,text,integer,timesta
   OWNER TO beauty_payment_worker;
 ALTER FUNCTION beauty.apply_payout_result(text,text) OWNER TO beauty_payment_worker;
 ALTER FUNCTION beauty.cancel_requested_payout(uuid) OWNER TO beauty_payment_worker;
+ALTER FUNCTION beauty.payout_reversal_details(text) OWNER TO beauty_payment_worker;
 REVOKE CREATE ON SCHEMA beauty FROM beauty_financial_worker,beauty_payment_worker;
 
 REVOKE ALL ON FUNCTION
@@ -375,7 +395,8 @@ REVOKE ALL ON FUNCTION
   beauty.my_payout_history(),
   beauty.record_payout_provider(uuid,text,text,text,integer,timestamptz),
   beauty.apply_payout_result(text,text),
-  beauty.cancel_requested_payout(uuid)
+  beauty.cancel_requested_payout(uuid),
+  beauty.payout_reversal_details(text)
 FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION
@@ -386,5 +407,6 @@ TO beauty_app;
 GRANT EXECUTE ON FUNCTION
   beauty.record_payout_provider(uuid,text,text,text,integer,timestamptz),
   beauty.apply_payout_result(text,text),
-  beauty.cancel_requested_payout(uuid)
+  beauty.cancel_requested_payout(uuid),
+  beauty.payout_reversal_details(text)
 TO beauty_payment_worker;

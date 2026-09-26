@@ -9,6 +9,7 @@ import {
   customerProductOrders,
   prepareShopCheckout,
   saveProduct,
+  shopCartPayoutsReady,
 } from "@/modules/shop/repository";
 
 const db = new PGlite();
@@ -96,6 +97,13 @@ beforeAll(async () => {
     )
   ).id;
 
+  await asUser("checkout-pro", (sql) =>
+    sql.query(
+      "INSERT INTO beauty.professional_payment_accounts(professional_id,stripe_account_id) VALUES($1,$2)",
+      [professionalId, "acct_checkout_test"],
+    ),
+  );
+
   await db.query(
     `INSERT INTO beauty.financial_fee_rules(
       transaction_kind,category_key,fee_payer,percentage_basis_points,
@@ -109,6 +117,34 @@ beforeAll(async () => {
 afterAll(() => db.close());
 
 describe.sequential("secure Shop checkout", () => {
+  it("hides payout account IDs and requires Stripe transfer readiness", async () => {
+    const visible = await asUser("checkout-customer", (sql) =>
+      sql.query<{ stripe_account_id: string }>(
+        "SELECT stripe_account_id FROM beauty.professional_payment_accounts WHERE professional_id=$1",
+        [professionalId],
+      ),
+    );
+    expect(visible.rows).toEqual([]);
+
+    await asUser("checkout-customer", (sql) => addCartItem(sql, productId, 1));
+    expect(
+      await asUser("checkout-customer", (sql) => shopCartPayoutsReady(sql)),
+    ).toBe(false);
+
+    await asPaymentWorker((sql) =>
+      sql.query("SELECT beauty.sync_connect_account($1,true)", [
+        "acct_checkout_test",
+      ]),
+    );
+
+    expect(
+      await asUser("checkout-customer", (sql) => shopCartPayoutsReady(sql)),
+    ).toBe(true);
+
+    await asUser("checkout-customer", (sql) =>
+      sql.query("SELECT beauty.clear_cart()"),
+    );
+  });
   it("reserves stock before Stripe checkout opens", async () => {
     await asUser("checkout-customer", (sql) =>
       addCartItem(sql, productId, 2),

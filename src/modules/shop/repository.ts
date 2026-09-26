@@ -249,3 +249,15 @@ export async function releaseUnattachedShopCheckout(
     [checkoutId],
   );
 }
+
+
+export async function confirmProductOrderDelivery(
+  db: SqlClient,
+  orderId: string,
+): Promise<{ id: string; status: "delivered"; deliveredAt: string }> {
+  const result = await db.query<{ data: { id: string; status: "delivered"; deliveredAt: string } }>(
+    "SELECT beauty.confirm_product_order_delivery($1) AS data",
+    [orderId],
+  );
+  return result.rows[0].data;
+}

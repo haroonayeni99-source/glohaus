@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ShoppingBag } from "lucide-react";
 import { useState } from "react";
 
@@ -11,6 +12,7 @@ export function AddToCartButton({
   productId: string;
   disabled?: boolean;
 }) {
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
 
@@ -28,13 +30,11 @@ export function AddToCartButton({
       if (!response.ok) {
         const code = data.error?.code;
         if (code === "UNAUTHENTICATED") {
-          window.location.assign(
-            "/sign-in?returnTo=" + encodeURIComponent("/shop"),
-          );
+          router.push("/sign-in?returnTo=" + encodeURIComponent("/shop"));
           return;
         }
         if (code === "ONBOARDING_REQUIRED") {
-          window.location.assign("/onboarding");
+          router.push("/onboarding");
           return;
         }
         if (code === "FORBIDDEN") {

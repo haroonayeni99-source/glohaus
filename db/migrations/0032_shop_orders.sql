@@ -16,6 +16,7 @@ CREATE TABLE beauty.product_orders (
     CHECK(length(provider_payment_intent_id) BETWEEN 3 AND 255),
   customer_id uuid NOT NULL REFERENCES beauty.users(id),
   professional_id uuid NOT NULL REFERENCES beauty.professional_profiles(id),
+  professional_name text NOT NULL CHECK(length(trim(professional_name)) BETWEEN 1 AND 100),
   currency text NOT NULL DEFAULT 'GBP' CHECK(currency='GBP'),
   subtotal_pence integer NOT NULL CHECK(subtotal_pence>0),
   delivery_pence integer NOT NULL DEFAULT 0 CHECK(delivery_pence>=0),

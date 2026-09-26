@@ -131,3 +131,11 @@ export async function releaseMatureProductProceeds(db: SqlClient) {
   );
   return result.rows[0]?.released ?? 0;
 }
+
+
+export async function releaseMatureBookingProceeds(db: SqlClient) {
+  const result = await db.query<{ released: number }>(
+    "SELECT beauty.release_my_mature_booking_proceeds() AS released",
+  );
+  return result.rows[0]?.released ?? 0;
+}

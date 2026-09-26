@@ -106,6 +106,11 @@ export function preview(editor = false) {
           follow={{ following: false, followerCount: 0, signedIn: false }}
           messageHref={null}
           bookingFeePence={100}
+          presentation={{
+            profile_style: "signature",
+            portfolio_layout: "grid",
+            service_style: "cards",
+          }}
           booking={
             <section className="booking-widget">
               <p className="eyebrow">YOUR NEXT BEAUTY MOMENT</p>

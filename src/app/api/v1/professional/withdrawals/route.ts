@@ -61,6 +61,8 @@ export async function POST(request: Request) {
       if (!paymentAccount.charges_enabled)
         throw new AccessError("UNAVAILABLE", 409);
 
+      await db.query("SELECT beauty.recover_my_outstanding_obligation()");
+
       requestRecord = (
         await db.query<{ data: PayoutRequest }>(
           "SELECT beauty.request_my_payout($1,$2) AS data",

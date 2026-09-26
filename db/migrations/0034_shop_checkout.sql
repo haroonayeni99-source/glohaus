@@ -245,7 +245,7 @@ BEGIN
     fee_minimum_pence,fee_maximum_pence,amount_pence,expires_at
   ) VALUES(
     actor,fee.id,fee.percentage_basis_points,fee.fixed_fee_pence,
-    fee.minimum_fee_pence,fee.maximum_fee_pence,total,now()+interval '30 minutes'
+    fee.minimum_fee_pence,fee.maximum_fee_pence,total,now()+interval '40 minutes'
   ) RETURNING id INTO checkout_id;
 
   INSERT INTO beauty.shop_checkout_items(

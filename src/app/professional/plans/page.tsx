@@ -98,7 +98,7 @@ export default async function ProfessionalPlansPage() {
           <p>
             Example on Starter: a £100 service has an £8 GLOHAUS commission,
             leaving £92 professional earnings before any other applicable
-            adjustments. The customer's separate £1 booking fee is not deducted
+            adjustments. The customer&apos;s separate £1 booking fee is not deducted
             from your service price and is not shown as your earnings.
           </p>
         </section>

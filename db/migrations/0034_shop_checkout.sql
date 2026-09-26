@@ -514,7 +514,7 @@ CREATE FUNCTION beauty.owner_active_product_fee_rule() RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path=pg_catalog
-AS $
+AS $owner$
 DECLARE actor uuid;
 BEGIN
   actor:=beauty.require_owner();
@@ -539,7 +539,7 @@ BEGIN
     ORDER BY effective_from DESC,id DESC
     LIMIT 1
   );
-END $;
+END $owner$;
 
 GRANT CREATE ON SCHEMA beauty TO beauty_admin_ops;
 ALTER FUNCTION beauty.owner_active_product_fee_rule() OWNER TO beauty_admin_ops;

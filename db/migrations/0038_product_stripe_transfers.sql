@@ -7,6 +7,11 @@ ALTER TABLE beauty.product_orders
   ADD COLUMN stripe_transfer_id text UNIQUE,
   ADD COLUMN transferred_at timestamptz;
 
+
+GRANT SELECT ON beauty.financial_ledger_transactions TO beauty_payment_worker;
+CREATE POLICY product_transfer_ledger_worker ON beauty.financial_ledger_transactions
+FOR SELECT TO beauty_payment_worker USING(true);
+
 CREATE FUNCTION beauty.record_product_transfer(
   target_order uuid,
   transfer_ref text,

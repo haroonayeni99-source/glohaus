@@ -31,7 +31,15 @@ export default async function RootLayout({
     </>
   );
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var k='glohaus-theme';var s=localStorage.getItem(k);var t=s==='night'||(s!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)?'night':'light';document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='light';}})();",
+          }}
+        />
+      </head>
       <body>
         <ThemeToggle />
         {content}

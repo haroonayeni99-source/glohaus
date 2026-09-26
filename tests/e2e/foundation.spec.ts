@@ -53,6 +53,7 @@ test("private routes fail closed without credentials", async ({
     "/security",
     "/messages",
     "/professional/products",
+    "/cart",
   ]) {
     await page.goto(route);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
@@ -139,6 +140,7 @@ test("Shop exposes catalogue without fake checkout", async ({ page }) => {
     page.getByText("Marketplace checkout is still protected.", { exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: /buy|checkout|add to cart/i }),
+    page.getByRole("button", { name: /buy now|checkout/i }),
   ).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /cart/i }).first()).toBeVisible();
 });

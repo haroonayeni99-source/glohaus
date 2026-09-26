@@ -6,6 +6,13 @@ ALTER TABLE beauty.financial_payouts
   ADD COLUMN provider_transfer_id text UNIQUE,
   ADD COLUMN provider_application_fee_id text UNIQUE;
 
+
+GRANT SELECT,UPDATE ON beauty.financial_payouts TO beauty_payment_worker;
+CREATE POLICY payout_payment_worker
+ON beauty.financial_payouts
+FOR ALL TO beauty_payment_worker
+USING(true) WITH CHECK(true);
+
 CREATE OR REPLACE FUNCTION beauty.request_my_payout(
   payout_kind text,
   amount_pence integer

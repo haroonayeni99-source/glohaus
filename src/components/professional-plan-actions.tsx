@@ -40,7 +40,7 @@ export function ProfessionalPlanActions({
             ? "You already have a paid subscription. Manage it through Stripe."
             : "Paid plan checkout is unavailable right now.",
         );
-      window.location.href = data.url;
+      window.location.assign(data.url);
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : "Could not open plan checkout.",
@@ -61,7 +61,7 @@ export function ProfessionalPlanActions({
       const data = await response.json();
       if (!response.ok)
         throw new Error("Your subscription management page is unavailable.");
-      window.location.href = data.url;
+      window.location.assign(data.url);
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : "Could not open billing.",

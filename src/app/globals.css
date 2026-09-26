@@ -7508,3 +7508,16 @@ svg {
     width: 100%;
   }
 }
+
+
+/* Public policy pages */
+.policy-page{max-width:960px;margin:0 auto;padding:7rem 1.25rem 4rem}
+.policy-hero{margin-bottom:2rem}
+.policy-updated{font-size:.9rem;opacity:.7}
+.policy-content{display:grid;gap:1.5rem}
+.policy-content section{padding:1.4rem;border:1px solid color-mix(in srgb,currentColor 14%,transparent);border-radius:1rem;background:color-mix(in srgb,var(--surface,transparent) 96%,transparent)}
+.policy-content h2{margin:0 0 .6rem}
+.policy-content p{margin:0;line-height:1.65}
+.policy-links{display:flex;flex-wrap:wrap;gap:.9rem;margin-top:2rem;padding-top:1.5rem;border-top:1px solid color-mix(in srgb,currentColor 14%,transparent)}
+.policy-links a{text-decoration:underline;text-underline-offset:3px}
+@media (max-width:640px){.policy-page{padding:6rem 1rem 3rem}.policy-content section{padding:1.1rem}.policy-links{gap:.75rem 1rem}}

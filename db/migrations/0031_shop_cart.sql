@@ -201,7 +201,7 @@ CREATE FUNCTION beauty.add_cart_item(
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path=pg_catalog
-AS $
+AS $cart$
 DECLARE
   actor beauty.users;
   product beauty.products;
@@ -263,7 +263,7 @@ BEGIN
   DO UPDATE SET quantity=excluded.quantity,updated_at=now();
 
   RETURN beauty.my_cart();
-END $;
+END $cart$;
 
 CREATE FUNCTION beauty.clear_cart() RETURNS jsonb
 LANGUAGE plpgsql

@@ -125,6 +125,7 @@ export default async function MessagesPage({
       bookingId={data.bookingId}
       professionalId={data.professionalId}
       draftRecipientName={data.draftRecipientName}
+      professionalMessaging={account.roles.includes("professional")}
     />
   );
 

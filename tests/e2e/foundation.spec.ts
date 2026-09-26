@@ -54,6 +54,8 @@ test("private routes fail closed without credentials", async ({
     "/messages",
     "/professional/products",
     "/cart",
+    "/account/orders",
+    "/professional/orders",
   ]) {
     await page.goto(route);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(

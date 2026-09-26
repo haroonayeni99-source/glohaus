@@ -160,8 +160,7 @@ BEGIN
   WHERE p.id=target_product
     AND p.publication_status='published'
     AND pro.publication_status='published'
-    AND u.status='active'
-  FOR SHARE OF p;
+    AND u.status='active';
 
   IF product.id IS NULL THEN
     RAISE EXCEPTION 'PRODUCT_UNAVAILABLE' USING ERRCODE='22023';
@@ -230,8 +229,7 @@ BEGIN
   WHERE p.id=target_product
     AND p.publication_status='published'
     AND pro.publication_status='published'
-    AND u.status='active'
-  FOR SHARE OF p;
+    AND u.status='active';
 
   IF product.id IS NULL THEN
     RAISE EXCEPTION 'PRODUCT_UNAVAILABLE' USING ERRCODE='22023';

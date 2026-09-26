@@ -13,13 +13,14 @@ CREATE POLICY finance_worker_payments ON beauty.payments
 FOR SELECT TO beauty_financial_worker USING(true);
 
 GRANT SELECT ON beauty.financial_quotes TO beauty_payment_worker;
-GRANT SELECT ON beauty.bookings,beauty.payments TO beauty_payment_worker;
+GRANT SELECT ON beauty.bookings TO beauty_payment_worker;
+GRANT SELECT,UPDATE ON beauty.payments TO beauty_payment_worker;
 CREATE POLICY booking_finance_worker_quotes ON beauty.financial_quotes
 FOR SELECT TO beauty_payment_worker USING(true);
 CREATE POLICY booking_finance_worker_bookings ON beauty.bookings
 FOR SELECT TO beauty_payment_worker USING(true);
 CREATE POLICY booking_finance_worker_payments ON beauty.payments
-FOR SELECT TO beauty_payment_worker USING(true);
+FOR ALL TO beauty_payment_worker USING(true) WITH CHECK(true);
 
 CREATE FUNCTION beauty.prepare_booking_financial_quote(target uuid) RETURNS jsonb
 LANGUAGE plpgsql
@@ -36,8 +37,7 @@ BEGIN
 
   SELECT * INTO booking
   FROM beauty.bookings
-  WHERE id=target
-  FOR UPDATE;
+  WHERE id=target;
 
   IF actor IS NULL OR booking.id IS NULL OR booking.customer_id<>actor
     OR booking.status<>'payment_pending'
@@ -111,8 +111,8 @@ SET search_path=pg_catalog
 AS $$
 DECLARE booking beauty.bookings; payment beauty.payments; quote beauty.financial_quotes;
 BEGIN
-  SELECT * INTO booking FROM beauty.bookings WHERE id=target FOR UPDATE;
-  SELECT * INTO payment FROM beauty.payments WHERE booking_id=target FOR UPDATE;
+  SELECT * INTO booking FROM beauty.bookings WHERE id=target;
+  SELECT * INTO payment FROM beauty.payments WHERE booking_id=target;
   SELECT * INTO quote FROM beauty.financial_quotes WHERE booking_id=target;
 
   IF booking.id IS NULL OR payment.booking_id IS NULL OR quote.id IS NULL
@@ -232,7 +232,7 @@ BEGIN
     RAISE EXCEPTION 'INVALID_REQUEST' USING ERRCODE='22023';
   END IF;
 
-  SELECT * INTO booking FROM beauty.bookings WHERE id=target FOR UPDATE;
+  SELECT * INTO booking FROM beauty.bookings WHERE id=target;
   SELECT * INTO payment FROM beauty.payments WHERE booking_id=target FOR UPDATE;
   SELECT * INTO quote FROM beauty.financial_quotes WHERE booking_id=target;
 

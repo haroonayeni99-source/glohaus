@@ -408,7 +408,6 @@ it("bounds business details and rejects credentials in social links", () => {
 describe.sequential("booking without a payment-provider setup", () => {
   let serviceId: string;
   let startsAt: string;
-  let bookingId: string;
   it("requires payment setup even for a zero-deposit service because the £1 booking fee is mandatory", async () => {
     current = identities.client;
     serviceId = (await asUser("", (sql) => publicProfile(sql, profile.slug)))!
@@ -427,7 +426,6 @@ describe.sequential("booking without a payment-provider setup", () => {
         ])
       ).rows,
     ).toEqual([]);
-    bookingId = "";
   });
   it("does not hold a slot when a deposit is required but runtime payment setup is absent", async () => {
     await db.query(

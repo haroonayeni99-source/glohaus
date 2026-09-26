@@ -76,9 +76,14 @@ export function AuthFrame({
           ← Back to GLOHAUS
         </Link>
         {audience === "professional" && (
-          <Link className="auth-preview-link" href="/professional-preview">
-            See a GLOHAUS PRO page preview <ArrowUpRight size={15} aria-hidden />
-          </Link>
+          <div className="auth-preview-links">
+            <Link className="auth-preview-link" href="/professional-dashboard-preview">
+              Preview professional dashboard <ArrowUpRight size={15} aria-hidden />
+            </Link>
+            <Link className="auth-preview-link" href="/professional-preview">
+              Preview public professional page <ArrowUpRight size={15} aria-hidden />
+            </Link>
+          </div>
         )}
         <div className="auth-body">{children}</div>
         <p className="auth-footer">

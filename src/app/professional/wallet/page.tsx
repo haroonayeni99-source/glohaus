@@ -3,7 +3,7 @@ import { ArrowUpRight, CircleAlert, ShieldCheck, WalletCards } from "lucide-reac
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
 import { AccessMessage } from "@/components/access-message";
-import { professionalWallet } from "@/modules/finance/repository";
+import { professionalWallet, releaseMatureProductProceeds } from "@/modules/finance/repository";
 import { money } from "@/modules/professionals/domain";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
 
@@ -19,7 +19,10 @@ export default async function ProfessionalWalletPage() {
       </div>
     );
 
-  const wallet = await withIdentity(result.account.authId, professionalWallet);
+  const wallet = await withIdentity(result.account.authId, async (db) => {
+    await releaseMatureProductProceeds(db);
+    return professionalWallet(db);
+  });
   const restricted = wallet.withdrawalsBlocked || wallet.instantPayoutBlocked;
   return (
     <div className="pro-app">
@@ -77,10 +80,10 @@ export default async function ProfessionalWalletPage() {
             </span>
             <h2>How money moves</h2>
             <p>
-              Service proceeds begin as pending. After a completed appointment
-              and the customer reporting window, eligible proceeds become
-              available. Disputes, refunds, reserves and provider reviews can
-              hold funds while they are reviewed.
+              Service proceeds begin as pending. Product proceeds remain pending
+              until tracked delivery is confirmed by the customer, then become
+              eligible for release after 48 hours. Disputes, refunds, reserves
+              and provider reviews can hold funds while they are reviewed.
             </p>
           </div>
           <WalletCards className="pro-wallet-symbol" aria-hidden />

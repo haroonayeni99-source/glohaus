@@ -17,7 +17,6 @@ type Reservation = {
   serviceName: string;
   professionalName: string;
   status: string;
-  stripeAccountId: string;
   holdExpiresAt: string;
 };
 export async function POST(request: Request) {
@@ -60,6 +59,20 @@ export async function POST(request: Request) {
     if (!depositWithinLimit) throw new AccessError("UNAVAILABLE", 503);
     if (booking.status === "confirmed")
       return json({ url: `/account/bookings/${booking.id}` });
+
+    const quote = await withAccount("customer", async (db) => {
+      const result = await db.query<{
+        quote: {
+          customerTotalPence: number;
+          professionalProceedsPence: number;
+          professionalPlatformFeePence: number;
+        };
+      }>("SELECT beauty.prepare_booking_financial_quote($1) AS quote", [
+        booking.id,
+      ]);
+      return result.rows[0].quote;
+    });
+
     const origin = new URL(process.env.NEXT_PUBLIC_APP_URL!).origin;
     const checkout = await stripe().checkout.sessions.create(
       {
@@ -68,7 +81,7 @@ export async function POST(request: Request) {
           {
             price_data: {
               currency: "gbp",
-              unit_amount: booking.depositPence,
+              unit_amount: quote.customerTotalPence,
               product_data: {
                 name: `Deposit: ${booking.serviceName} · ${booking.professionalName}`,
               },
@@ -77,8 +90,7 @@ export async function POST(request: Request) {
           },
         ],
         payment_intent_data: {
-          transfer_data: { destination: booking.stripeAccountId },
-          on_behalf_of: booking.stripeAccountId,
+          transfer_group: `booking_${booking.id}`,
           metadata: { booking_id: booking.id },
         },
         metadata: { booking_id: booking.id },

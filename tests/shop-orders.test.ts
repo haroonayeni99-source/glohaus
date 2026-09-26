@@ -7,7 +7,12 @@ import {
   customerProductOrders,
   professionalProductOrders,
   saveProduct,
+  confirmProductOrderDelivery,
 } from "@/modules/shop/repository";
+import {
+  professionalWallet,
+  releaseMatureProductProceeds,
+} from "@/modules/finance/repository";
 
 const db = new PGlite();
 
@@ -264,5 +269,53 @@ describe.sequential("Shop orders and fulfilment", () => {
         ),
       ),
     ).rejects.toThrow();
+  });
+
+  it("lets only the customer confirm tracked delivery", async () => {
+    await expect(
+      asUser("order-customer-two", (sql) =>
+        confirmProductOrderDelivery(sql, orderId),
+      ),
+    ).rejects.toThrow();
+
+    const delivered = await asUser("order-customer", (sql) =>
+      confirmProductOrderDelivery(sql, orderId),
+    );
+    expect(delivered.status).toBe("delivered");
+
+    const orders = await asUser("order-customer", (sql) =>
+      customerProductOrders(sql, customerId),
+    );
+    expect(orders[0].status).toBe("delivered");
+    expect(orders[0].deliveredAt).toBeTruthy();
+  });
+
+  it("releases product proceeds only after the 48 hour protection window", async () => {
+    await db.query(
+      "UPDATE beauty.product_orders SET professional_proceeds_pence=3600, delivered_at=now()-interval '49 hours' WHERE id=$1",
+      [orderId],
+    );
+
+    await db.query(
+      "SELECT beauty.record_financial_ledger($1,'proceeds_pending','product_order',$2,$3,'{}'::jsonb,$4::jsonb)",
+      [
+        `test-product-pending:${orderId}`,
+        orderId,
+        professionalId,
+        JSON.stringify([
+          { accountCode: "provider_clearing", amountPence: 3600 },
+          { accountCode: "professional_pending", amountPence: -3600 },
+        ]),
+      ],
+    );
+
+    const before = await asUser("order-pro", professionalWallet);
+    expect(before.pendingPence).toBeGreaterThanOrEqual(3600);
+
+    const released = await asUser("order-pro", releaseMatureProductProceeds);
+    expect(released).toBe(1);
+
+    const after = await asUser("order-pro", professionalWallet);
+    expect(after.availablePence).toBeGreaterThanOrEqual(3600);
   });
 });

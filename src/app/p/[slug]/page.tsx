@@ -44,6 +44,11 @@ export default async function Profile({
   const data = await withIdentity(viewerAuthId, async (db) => {
     const profile = await publicProfile(db, slug);
     if (!profile) return null;
+    const bookingFeePence = (
+      await db.query<{ fee: number }>(
+        "SELECT beauty.public_booking_fee_pence() AS fee",
+      )
+    ).rows[0]?.fee ?? 100;
     const id = profile.professional.id;
     const assets = (
       await db.query<{ id: string; alt_text: string }>(
@@ -84,6 +89,7 @@ export default async function Profile({
       stats,
       follow,
       signedIn: Boolean(viewer),
+      bookingFeePence,
       messageHref: viewer?.roles.includes("customer")
         ? `/messages?professional=${id}`
         : viewer
@@ -106,12 +112,14 @@ export default async function Profile({
         reviewCount={data.stats.count}
         follow={{ ...data.follow, signedIn: data.signedIn }}
         messageHref={data.messageHref}
+        bookingFeePence={data.bookingFeePence}
         booking={
           <BookingPicker
             services={data.services}
             ready={paymentReady()}
             returnPath={`/p/${slug}`}
             professionalName={data.professional.business_name}
+            bookingFeePence={data.bookingFeePence}
             initialSelection={{
               serviceId: booking.bookService,
               date: booking.bookDate,

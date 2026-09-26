@@ -22,6 +22,7 @@ type InstantPayout = Stripe.Payout & {
 export async function POST(request: Request) {
   let requestRecord: PayoutRequest | undefined;
   let transferId: string | undefined;
+  let providerPayoutCreated = false;
 
   try {
     assertSameOrigin(request);
@@ -79,7 +80,10 @@ export async function POST(request: Request) {
         currency: "gbp",
         destination: account.stripeAccountId,
         transfer_group: `withdrawal_${account.payout.id}`,
-        metadata: { glohaus_payout_id: account.payout.id },
+        metadata: {
+          glohaus_payout_id: account.payout.id,
+          glohaus_transfer_id: transfer.id,
+        },
       },
       { idempotencyKey: `withdrawal-transfer-${account.payout.id}` },
     );
@@ -122,6 +126,7 @@ export async function POST(request: Request) {
       },
     )) as InstantPayout;
 
+    providerPayoutCreated = true;
     const applicationFeeId =
       typeof providerPayout.application_fee === "string"
         ? providerPayout.application_fee
@@ -135,19 +140,26 @@ export async function POST(request: Request) {
     )
       throw new AccessError("UNAVAILABLE", 503);
 
-    await withPaymentWorker((db) =>
-      db.query(
-        "SELECT beauty.record_payout_provider($1,$2,$3,$4,$5,$6)",
-        [
-          account.payout.id,
-          transfer.id,
-          providerPayout.id,
-          applicationFeeId ?? null,
-          providerFeePence,
-          new Date(providerPayout.arrival_date * 1000),
-        ],
-      ),
-    );
+    try {
+      await withPaymentWorker((db) =>
+        db.query(
+          "SELECT beauty.record_payout_provider($1,$2,$3,$4,$5,$6)",
+          [
+            account.payout.id,
+            transfer.id,
+            providerPayout.id,
+            applicationFeeId ?? null,
+            providerFeePence,
+            new Date(providerPayout.arrival_date * 1000),
+          ],
+        ),
+      );
+    } catch {
+      // The Stripe payout already exists. Keep the wallet reserved rather than
+      // reversing live money; the signed payout webhook can recover the record
+      // from payout metadata.
+      console.error("GLOHAUS payout provider record deferred to webhook");
+    }
 
     return json({
       payout: {
@@ -163,7 +175,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    if (transferId && requestRecord) {
+    if (transferId && requestRecord && !providerPayoutCreated) {
       try {
         await stripe().transfers.createReversal(transferId, undefined, {
           idempotencyKey: `withdrawal-transfer-reversal-${requestRecord.id}`,
@@ -172,7 +184,7 @@ export async function POST(request: Request) {
         console.error("Stripe withdrawal transfer reversal failed");
       }
     }
-    if (requestRecord) {
+    if (requestRecord && !providerPayoutCreated) {
       try {
         await withPaymentWorker((db) =>
           db.query("SELECT beauty.cancel_requested_payout($1)", [

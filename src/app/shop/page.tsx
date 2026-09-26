@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, ShoppingBag } from "lucide-react";
+import { AddToCartButton } from "@/components/add-to-cart-button";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { PublicHeader } from "@/components/public-header";
 import { withIdentity } from "@/lib/db";
@@ -19,7 +20,12 @@ export default async function ShopPage() {
     <>
       <PublicHeader />
       <main id="main" className="catalog-page shop-catalogue">
-        <p className="eyebrow">GLOHAUS SHOP</p>
+        <div className="shop-heading-row">
+          <p className="eyebrow">GLOHAUS SHOP</p>
+          <Link className="shop-cart-link" href="/cart">
+            <ShoppingBag size={16} aria-hidden /> Cart
+          </Link>
+        </div>
         <h1>
           Products from the professionals <em>behind the look.</em>
         </h1>
@@ -63,6 +69,10 @@ export default async function ShopPage() {
                       View professional <ArrowUpRight size={14} aria-hidden />
                     </Link>
                   </div>
+                  <AddToCartButton
+                    productId={product.id}
+                    disabled={!product.in_stock}
+                  />
                 </div>
               </article>
             ))}
@@ -86,8 +96,9 @@ export default async function ShopPage() {
         <section className="shop-checkout-note">
           <strong>Marketplace checkout is still protected.</strong>
           <p>
-            Browsing is live. Buying stays unavailable until orders, shipping
-            state, refunds and secure payment capture are implemented together.
+            Browsing and a persistent customer cart are live. Payment stays
+            unavailable until orders, shipping state, refunds and secure
+            payment capture are implemented together.
           </p>
         </section>
       </main>

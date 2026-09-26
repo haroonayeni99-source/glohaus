@@ -40,3 +40,32 @@ export type PublicProduct = {
   professional_name: string;
   updated_at: Date;
 };
+
+
+export const cartItemInputSchema = z
+  .object({
+    productId: z.uuid(),
+    quantity: z.number().int().min(0).max(20),
+  })
+  .strict();
+
+export type CartItemInput = z.infer<typeof cartItemInputSchema>;
+
+export type CartItem = {
+  productId: string;
+  professionalId: string;
+  professionalName: string;
+  professionalSlug: string;
+  imageAssetId: string | null;
+  name: string;
+  pricePence: number;
+  quantity: number;
+  available: boolean;
+  inStockForQuantity: boolean;
+};
+
+export type CartOverview = {
+  items: CartItem[];
+  totalPence: number;
+  itemCount: number;
+};

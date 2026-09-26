@@ -4,9 +4,13 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { enrolAccount, type SqlClient } from "@/modules/accounts/repository";
 import { updateProfile } from "@/modules/professionals/repository";
 import {
+  addCartItem,
+  clearCart,
+  customerCart,
   professionalProducts,
   publicProducts,
   saveProduct,
+  setCartItem,
 } from "@/modules/shop/repository";
 
 const db = new PGlite();
@@ -64,18 +68,21 @@ beforeAll(async () => {
     );
   }
 
-  await asUser("shop-customer", (sql) =>
-    enrolAccount(
-      sql,
-      {
-        authId: "shop-customer",
-        email: "shop-customer@example.test",
-        displayName: "Shop Customer",
-        secondFactorAge: null,
-      },
-      "customer",
-    ),
-  );
+  for (const authId of ["shop-customer", "shop-customer-two"]) {
+    await asUser(authId, (sql) =>
+      enrolAccount(
+        sql,
+        {
+          authId,
+          email: `${authId}@example.test`,
+          displayName:
+            authId === "shop-customer" ? "Shop Customer" : "Other Customer",
+          secondFactorAge: null,
+        },
+        "customer",
+      ),
+    );
+  }
 });
 
 afterAll(() => db.close());
@@ -164,6 +171,63 @@ describe.sequential("Shop product catalogue", () => {
     expect(catalogue[0]).not.toHaveProperty("sku");
   });
 
+  it("persists a private customer cart and increments atomically", async () => {
+    const first = await asUser("shop-customer", (sql) =>
+      addCartItem(sql, productId),
+    );
+    expect(first).toMatchObject({
+      itemCount: 1,
+      totalPence: 2400,
+    });
+    expect(first.items[0]).toMatchObject({
+      productId,
+      quantity: 1,
+      available: true,
+      inStockForQuantity: true,
+      pricePence: 2400,
+    });
+
+    const second = await asUser("shop-customer", (sql) =>
+      addCartItem(sql, productId),
+    );
+    expect(second).toMatchObject({
+      itemCount: 2,
+      totalPence: 4800,
+    });
+    expect(second.items[0].quantity).toBe(2);
+  });
+
+  it("keeps carts isolated between customers", async () => {
+    expect(
+      await asUser("shop-customer-two", (sql) => customerCart(sql)),
+    ).toMatchObject({ itemCount: 0, totalPence: 0, items: [] });
+
+    await expect(
+      asUser("shop-customer-two", (sql) =>
+        sql.query(
+          "UPDATE beauty.cart_items SET quantity=5 WHERE product_id=$1",
+          [productId],
+        ),
+      ),
+    ).rejects.toThrow();
+  });
+
+  it("rejects quantities above current stock and supports exact updates", async () => {
+    await expect(
+      asUser("shop-customer", (sql) =>
+        setCartItem(sql, productId, 13),
+      ),
+    ).rejects.toThrow();
+
+    const updated = await asUser("shop-customer", (sql) =>
+      setCartItem(sql, productId, 3),
+    );
+    expect(updated).toMatchObject({
+      itemCount: 3,
+      totalPence: 7200,
+    });
+  });
+
   it("prevents customer accounts from writing product inventory", async () => {
     await expect(
       asUser("shop-customer", (sql) =>
@@ -193,5 +257,18 @@ describe.sequential("Shop product catalogue", () => {
       ),
     );
     expect(await asUser("", publicProducts)).toEqual([]);
+
+    const cart = await asUser("shop-customer", (sql) => customerCart(sql));
+    expect(cart.items[0]).toMatchObject({
+      productId,
+      quantity: 3,
+      available: false,
+      inStockForQuantity: false,
+    });
+    expect(cart.totalPence).toBe(0);
+
+    expect(
+      await asUser("shop-customer", (sql) => clearCart(sql)),
+    ).toMatchObject({ itemCount: 0, totalPence: 0, items: [] });
   });
 });

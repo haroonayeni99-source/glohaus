@@ -81,6 +81,22 @@ export default async function Profile({
         [id],
       )
     ).rows;
+    const presentation = (
+      await db.query<{
+        profile_style: "signature" | "minimal" | "editorial";
+        portfolio_layout: "grid" | "feature";
+        service_style: "cards" | "clean";
+      }>(
+        `SELECT profile_style,portfolio_layout,service_style
+         FROM beauty.professional_profile_presentation
+         WHERE professional_id=$1`,
+        [id],
+      )
+    ).rows[0] ?? {
+      profile_style: "signature" as const,
+      portfolio_layout: "grid" as const,
+      service_style: "cards" as const,
+    };
     return {
       ...profile,
       assets,
@@ -90,6 +106,7 @@ export default async function Profile({
       follow,
       signedIn: Boolean(viewer),
       bookingFeePence,
+      presentation,
       messageHref: viewer?.roles.includes("customer")
         ? `/messages?professional=${id}`
         : viewer
@@ -113,6 +130,7 @@ export default async function Profile({
         follow={{ ...data.follow, signedIn: data.signedIn }}
         messageHref={data.messageHref}
         bookingFeePence={data.bookingFeePence}
+        presentation={data.presentation}
         booking={
           <BookingPicker
             services={data.services}

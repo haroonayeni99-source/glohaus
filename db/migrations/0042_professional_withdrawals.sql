@@ -330,7 +330,7 @@ RETURNS jsonb
 LANGUAGE sql
 SECURITY DEFINER
 SET search_path=pg_catalog
-AS $
+AS $$
   SELECT CASE WHEN p.id IS NULL THEN NULL ELSE jsonb_build_object(
     'id',p.id,
     'transferId',p.provider_transfer_id,
@@ -341,14 +341,14 @@ AS $
   FROM (SELECT 1) seed
   LEFT JOIN beauty.financial_payouts p ON p.provider_payout_id=payout_ref
   LIMIT 1
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION beauty.cancel_requested_payout(target uuid)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path=pg_catalog
-AS $
+AS $$
 DECLARE payout beauty.financial_payouts;
 BEGIN
   SELECT * INTO payout
@@ -378,7 +378,7 @@ BEGIN
   UPDATE beauty.financial_payouts
   SET status='cancelled',updated_at=now()
   WHERE id=payout.id;
-END $;
+END $$;
 
 GRANT CREATE ON SCHEMA beauty TO beauty_financial_worker,beauty_payment_worker;
 ALTER FUNCTION beauty.request_my_payout(text,integer) OWNER TO beauty_financial_worker;

@@ -282,6 +282,72 @@ export function AdminManager({ data }: { data: AdminOverview }) {
           </article>
         ))}
       </div>
+      <h2 id="orders" className="admin-section-title">Shop order oversight</h2>
+      <p className="admin-section-intro">
+        Read-only marketplace oversight for support and operational review.
+        Sellers manage fulfilment; payment and refund states remain protected.
+      </p>
+      {data.shopOrders ? (
+        <>
+          <div className="analytics-grid admin-order-metrics">
+            <article>
+              <strong>{data.shopOrders.counts.total}</strong>
+              <span>Total shop orders</span>
+            </article>
+            <article>
+              <strong>{data.shopOrders.counts.processing}</strong>
+              <span>Processing</span>
+            </article>
+            <article>
+              <strong>{data.shopOrders.counts.shipped}</strong>
+              <span>Shipped</span>
+            </article>
+            <article>
+              <strong>{data.shopOrders.counts.refundPending}</strong>
+              <span>Refund pending</span>
+            </article>
+          </div>
+          <div className="service-edit-list">
+            {data.shopOrders.orders.map((order) => (
+              <article className="service-edit-row admin-shop-order" key={order.id}>
+                <div>
+                  <h3>{order.professional_name} · £{(order.total_pence / 100).toFixed(2)}</h3>
+                  <p>
+                    {order.recipient_name} · {order.city} {order.postcode} · {order.status}
+                  </p>
+                  <small>
+                    {order.items.length
+                      ? order.items
+                          .map((item) => `${item.quantity}× ${item.name}`)
+                          .join(" · ")
+                      : "No item rows recorded"}
+                  </small>
+                  {(order.tracking_carrier || order.tracking_number) && (
+                    <small>
+                      Tracking: {order.tracking_carrier || "Carrier"} · {order.tracking_number || "Pending"}
+                    </small>
+                  )}
+                  <small>
+                    {new Date(order.created_at).toLocaleString("en-GB", {
+                      timeZone: "Europe/London",
+                    })}
+                  </small>
+                </div>
+                <span className={`admin-status admin-status-${order.status}`}>
+                  {order.status.replace("_", " ")}
+                </span>
+              </article>
+            ))}
+            {!data.shopOrders.orders.length && (
+              <p className="lead">No paid Shop orders exist yet.</p>
+            )}
+          </div>
+        </>
+      ) : (
+        <p className="lead">
+          Shop order oversight will appear after the Admin order migration is available.
+        </p>
+      )}
       <h2 id="reviews" className="admin-section-title">Review moderation</h2>
       <h2 className="admin-section-title">Refund appeals</h2>
       <div className="service-edit-list">

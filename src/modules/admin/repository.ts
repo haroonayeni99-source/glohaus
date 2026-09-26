@@ -97,6 +97,45 @@ export type AdminOverview = {
   } | null;
 };
 
+export type AdminFinanceOverview = {
+  metrics: {
+    platformRevenuePence: number;
+    platformRevenue30dPence: number;
+    bookingCapturedPence: number;
+    bookingRefundedPence: number;
+    activePaidSubscriptions: number;
+    activeSubscriptionMrrPence: number;
+    professionalPendingPence: number;
+    professionalAvailablePence: number;
+    professionalOutstandingPence: number;
+    payoutRequestedPence: number;
+    payoutPaidPence: number;
+    instantWithdrawalFeesPence: number;
+  };
+  payoutCounts: {
+    requested: number;
+    processing: number;
+    paid: number;
+    failed: number;
+    cancelled: number;
+  };
+  revenueBySource30d: {
+    source: string;
+    revenuePence: number;
+  }[];
+  recentPayouts: {
+    id: string;
+    kind: string;
+    requested_pence: number;
+    withdrawal_fee_pence: number;
+    bank_amount_pence: number;
+    status: string;
+    expected_arrival_at: string | null;
+    created_at: string;
+    business_name: string;
+  }[];
+};
+
 export type OwnerControls = {
   staff: {
     id: string;
@@ -214,5 +253,18 @@ export async function ownerProductFeeRule(): Promise<OwnerProductFeeRule | null>
       "SELECT beauty.owner_active_product_fee_rule() AS data",
     );
     return result.rows[0]?.data ?? null;
+  });
+}
+
+
+export async function adminFinanceOverview(): Promise<AdminFinanceOverview> {
+  return withAdmin(async (db) => {
+    const row = (
+      await db.query<{ data: AdminFinanceOverview }>(
+        "SELECT beauty.admin_finance_overview() AS data",
+      )
+    ).rows[0];
+    if (!row?.data) throw new Error("Admin finance reporting is unavailable.");
+    return row.data;
   });
 }

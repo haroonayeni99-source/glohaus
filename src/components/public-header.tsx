@@ -1,4 +1,4 @@
 import { GlohausHeader } from "./glohaus-header";
-export function PublicHeader() {
-  return <GlohausHeader />;
+export function PublicHeader({ professional = false }: { professional?: boolean }) {
+  return <GlohausHeader professional={professional} />;
 }

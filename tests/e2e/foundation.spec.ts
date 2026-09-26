@@ -127,3 +127,45 @@ test("Following requires a customer session on Discover", async ({ page }) => {
     "Your GLOHAUS account is nearly ready.",
   );
 });
+
+
+test("professional auth preserves professional intent", async ({ page }) => {
+  await page.goto("/sign-in?intent=professional&returnTo=/professional");
+  await expect(page.getByText("GLOHAUS PRO", { exact: true }).first()).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /See a GLOHAUS PRO page preview/ }),
+  ).toHaveAttribute("href", "/professional-preview");
+
+  await page.goto("/sign-up?intent=professional");
+  await expect(page.getByText("GLOHAUS PRO", { exact: true }).first()).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /See a GLOHAUS PRO page preview/ }),
+  ).toHaveAttribute("href", "/professional-preview");
+});
+
+test("professional preview exposes real auth entry points", async ({ page }) => {
+  await page.goto("/professional-preview");
+  await expect(
+    page.getByRole("link", { name: "Professional sign in" }).first(),
+  ).toHaveAttribute(
+    "href",
+    "/sign-in?intent=professional&returnTo=/professional",
+  );
+  await expect(
+    page.getByRole("link", { name: "Create PRO account" }),
+  ).toHaveAttribute(
+    "href",
+    "/sign-up?intent=professional&returnTo=/professional/setup",
+  );
+});
+
+test("theme toggle switches professional preview to night mode", async ({ page }) => {
+  await page.goto("/professional-preview");
+  const toggle = page.getByRole("button", { name: "Switch to night mode" });
+  await expect(toggle).toBeVisible();
+  await toggle.click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
+  await expect(
+    page.getByRole("button", { name: "Switch to light mode" }),
+  ).toBeVisible();
+});

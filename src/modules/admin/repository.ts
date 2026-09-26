@@ -45,6 +45,38 @@ export type AdminOverview = {
     status: string;
     created_at: string;
   }[];
+  payments?: {
+    counts: {
+      capturedPence: number;
+      refundedPence: number;
+      refundRequired: number;
+      pendingPayouts: number;
+      paidPayoutsPence: number;
+    };
+    bookingPayments: {
+      booking_id: string;
+      service_name: string;
+      professional_name: string;
+      customer_name: string;
+      captured_pence: number;
+      refunded_pence: number;
+      status: string;
+      updated_at: string;
+      refund_status: string | null;
+      refund_amount_pence: number | null;
+    }[];
+    payouts: {
+      id: string;
+      professional_name: string;
+      kind: string;
+      requested_pence: number;
+      withdrawal_fee_pence: number;
+      bank_amount_pence: number;
+      expected_arrival_at: string | null;
+      status: string;
+      created_at: string;
+    }[];
+  } | null;
   shopOrders?: {
     counts: {
       total: number;
@@ -163,6 +195,17 @@ export async function adminOverview() {
     } catch {
       safety = null;
     }
+    let payments: AdminOverview["payments"] = null;
+    try {
+      payments = (
+        await db.query<{ overview: NonNullable<AdminOverview["payments"]> }>(
+          "SELECT beauty.admin_payment_overview() AS overview",
+        )
+      ).rows[0]?.overview ?? null;
+    } catch {
+      payments = null;
+    }
+
     let shopOrders: AdminOverview["shopOrders"] = null;
     try {
       shopOrders = (
@@ -180,7 +223,14 @@ export async function adminOverview() {
         "SELECT p.id,p.user_id,p.business_name,coalesce(t.verification_status,'unverified') verification_status,coalesce(t.standing_status,'good') standing_status,t.live_restricted_until::text FROM beauty.professional_profiles p LEFT JOIN beauty.professional_trust_status t ON t.professional_id=p.id ORDER BY p.business_name,p.id LIMIT 100"
       )).rows;
     } catch { professionalTrust = []; }
-    return { ...base, ...extra, safety, shopOrders, professionalTrust };
+    return {
+      ...base,
+      ...extra,
+      safety,
+      payments,
+      shopOrders,
+      professionalTrust,
+    };
   });
 }
 

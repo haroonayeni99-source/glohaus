@@ -111,6 +111,69 @@ export function ProfessionalDashboard({
           </article>
         </section>
 
+        <section className="pro-panel" aria-label="Business insights">
+          <div className="pro-panel-title">
+            <div>
+              <p className="pro-kicker">BUSINESS INSIGHTS</p>
+              <h2>Understand how your business is moving.</h2>
+            </div>
+            <span className="pro-status pro-status-confirmed">
+              {data.plan === "starter" ? "Pro feature" : data.plan === "pro" ? "Pro" : "Premium"}
+            </span>
+          </div>
+
+          {data.insights ? (
+            <>
+              <div className="pro-stat-grid">
+                <article>
+                  <strong>{money(data.insights.completedServiceValuePence)}</strong>
+                  <span>Completed service value · 30 days</span>
+                </article>
+                <article>
+                  <strong>{data.insights.completedBookings}</strong>
+                  <span>Completed bookings · 30 days</span>
+                </article>
+                <article>
+                  <strong>{data.insights.repeatClients}</strong>
+                  <span>Repeat clients</span>
+                </article>
+                <article>
+                  <strong>{money(data.insights.averageServiceValuePence)}</strong>
+                  <span>Average completed service value</span>
+                </article>
+                <article>
+                  <strong>{data.insights.cancellationRate.toFixed(1)}%</strong>
+                  <span>Cancellation rate · 30 days</span>
+                </article>
+                <article>
+                  <strong>{data.insights.busiestWeekday ?? "—"}</strong>
+                  <span>Busiest weekday · 30 days</span>
+                </article>
+              </div>
+              {data.plan === "premium" && (
+                <div className="pro-finance-notice">
+                  <CircleDollarSign size={18} aria-hidden />
+                  <span>
+                    Premium insight: {data.insights.quietestWeekday
+                      ? `${data.insights.quietestWeekday} is currently your quietest booking day. Use it for targeted offers, rebooking campaigns or last-minute availability.`
+                      : "Complete more bookings to unlock quiet-period recommendations."}
+                  </span>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="pro-empty-state">
+              <CircleDollarSign size={29} aria-hidden />
+              <h3>Advanced business insights are available on Pro and Premium.</h3>
+              <p>
+                Upgrade to see completed service value, repeat-client activity,
+                cancellation rate and booking-pattern insights.
+              </p>
+              <Link href="/professional/plans">Compare professional plans</Link>
+            </div>
+          )}
+        </section>
+
         <section className="pro-live-card" aria-label="GLOHAUS Live eligibility">
           <div className="pro-panel-title">
             <div>

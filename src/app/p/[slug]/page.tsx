@@ -88,7 +88,7 @@ export default async function Profile({
         service_style: "cards" | "clean";
       }>(
         `SELECT profile_style,portfolio_layout,service_style
-         FROM beauty.professional_profile_presentation
+         FROM beauty.public_profile_presentation
          WHERE professional_id=$1`,
         [id],
       )

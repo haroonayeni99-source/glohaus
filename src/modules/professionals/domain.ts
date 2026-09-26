@@ -113,6 +113,16 @@ export const serviceSchema = z
         message: depositLimitMessage(value.pricePence),
       });
   });
+export const professionalPresentationSchema = z
+  .object({
+    profileStyle: z.enum(["signature", "minimal", "editorial"]),
+    portfolioLayout: z.enum(["grid", "feature"]),
+    serviceStyle: z.enum(["cards", "clean"]),
+  })
+  .strict();
+export type ProfessionalPresentationInput = z.infer<
+  typeof professionalPresentationSchema
+>;
 export type ProfileInput = z.infer<typeof profileSchema>;
 export type ServiceInput = z.infer<typeof serviceSchema>;
 export type PublicProfessional = {

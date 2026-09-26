@@ -32,11 +32,7 @@ export async function POST(request: Request) {
         )
       ).rows[0].booking;
       // Throw before the transaction commits: unavailable paid checkout must not leave a slot held.
-      if (
-        reservation.status !== "confirmed" &&
-        reservation.depositPence > 0 &&
-        !paymentReady()
-      )
+      if (reservation.status !== "confirmed" && !paymentReady())
         throw new AccessError("UNAVAILABLE", 503);
       return reservation;
     });
@@ -66,6 +62,7 @@ export async function POST(request: Request) {
           customerTotalPence: number;
           professionalProceedsPence: number;
           professionalPlatformFeePence: number;
+          customerPlatformFeePence: number;
         };
       }>("SELECT beauty.prepare_booking_financial_quote($1) AS quote", [
         booking.id,
@@ -78,12 +75,26 @@ export async function POST(request: Request) {
       {
         mode: "payment",
         line_items: [
+          ...(booking.depositPence > 0
+            ? [
+                {
+                  price_data: {
+                    currency: "gbp",
+                    unit_amount: booking.depositPence,
+                    product_data: {
+                      name: `Service deposit: ${booking.serviceName} · ${booking.professionalName}`,
+                    },
+                  },
+                  quantity: 1,
+                },
+              ]
+            : []),
           {
             price_data: {
               currency: "gbp",
-              unit_amount: quote.customerTotalPence,
+              unit_amount: quote.customerPlatformFeePence,
               product_data: {
-                name: `Deposit: ${booking.serviceName} · ${booking.professionalName}`,
+                name: "GLOHAUS booking fee",
               },
             },
             quantity: 1,

@@ -189,3 +189,25 @@ test("Shop exposes catalogue without fake checkout", async ({ page }) => {
   ).toHaveCount(0);
   await expect(page.getByRole("link", { name: /cart/i }).first()).toBeVisible();
 });
+
+
+test("public policy pages are reachable on mobile and desktop", async ({ page }) => {
+  const pages = [
+    ["/terms", "Terms of Use"],
+    ["/privacy", "Privacy Policy"],
+    ["/refunds", "Refunds & Cancellations"],
+    ["/professional-terms", "Professional Terms"],
+    ["/marketplace-terms", "Marketplace Terms"],
+  ] as const;
+
+  for (const [route, heading] of pages) {
+    await page.goto(route);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(heading);
+    await expect(page.getByText("Draft for legal review", { exact: false })).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+  }
+});

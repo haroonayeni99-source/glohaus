@@ -31,6 +31,7 @@ const coreSections = [
 ] as const;
 
 const ownerSections = [
+  ["Shop Fees", "shop-fees", CreditCard],
   ["Staff & Admins", "staff", ShieldCheck],
   ["Audit Log", "audit", BarChart3],
 ] as const;

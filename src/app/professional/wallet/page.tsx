@@ -29,15 +29,30 @@ export default async function ProfessionalWalletPage() {
     await releaseMatureProductProceeds(db);
     await releaseMatureBookingProceeds(db);
     const wallet = await professionalWallet(db);
+    const pricing = (
+      await db.query<{
+        data: {
+          planName: string;
+          monthlyPricePence: number;
+          serviceCommissionBasisPoints: number;
+          productCommissionBasisPoints: number;
+          instantWithdrawalBasisPoints: number;
+        };
+      }>("SELECT beauty.my_professional_pricing() AS data")
+    ).rows[0].data;
     const paymentAccount = (
       await db.query<{ stripe_account_id: string }>(
         "SELECT stripe_account_id FROM beauty.professional_payment_accounts WHERE professional_id=$1",
         [result.account!.professionalId],
       )
     ).rows[0];
-    return { wallet, hasStripeAccount: Boolean(paymentAccount?.stripe_account_id) };
+    return {
+      wallet,
+      pricing,
+      hasStripeAccount: Boolean(paymentAccount?.stripe_account_id),
+    };
   });
-  const { wallet, hasStripeAccount } = finance;
+  const { wallet, pricing, hasStripeAccount } = finance;
   const restricted = wallet.withdrawalsBlocked || wallet.instantPayoutBlocked;
   return (
     <div className="pro-app">
@@ -87,6 +102,26 @@ export default async function ProfessionalWalletPage() {
             </span>
           </section>
         )}
+
+        <section className="pro-panel">
+          <div className="pro-panel-title">
+            <h2>Your GLOHAUS pricing</h2>
+            <span className="pro-status pro-status-confirmed">{pricing.planName}</span>
+          </div>
+          <p>
+            Service commission: {(pricing.serviceCommissionBasisPoints / 100).toFixed(0)}% ·
+            Product commission: {(pricing.productCommissionBasisPoints / 100).toFixed(0)}% ·
+            Standard withdrawal: Free · Instant withdrawal: {(pricing.instantWithdrawalBasisPoints / 100).toFixed(0)}%
+          </p>
+          <p>
+            {pricing.monthlyPricePence
+              ? `Subscription: ${money(pricing.monthlyPricePence)}/month`
+              : "Subscription: £0/month"}
+          </p>
+          <Link href="/professional/plans">
+            View plans & fee details <ArrowUpRight size={18} aria-hidden />
+          </Link>
+        </section>
 
         <section className="pro-panel">
           <div className="pro-panel-title">

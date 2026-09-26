@@ -44,12 +44,14 @@ export function BookingPicker({
   ready,
   returnPath,
   professionalName,
+  bookingFeePence,
   initialSelection,
 }: {
   services: Service[];
   ready: boolean;
   returnPath: string;
   professionalName: string;
+  bookingFeePence: number;
   initialSelection?: { serviceId?: string; date?: string; startsAt?: string };
 }) {
   const validInitialService = services.some(
@@ -198,7 +200,7 @@ export function BookingPicker({
             >
               {services.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.name} · {money(item.price_pence)}
+                  {item.name} · {money(item.price_pence + bookingFeePence)} total
                 </option>
               ))}
             </select>
@@ -220,7 +222,7 @@ export function BookingPicker({
               <strong>{service.name}</strong>
               <small>{professionalName}</small>
               <small>
-                {money(service.price_pence)} · {service.duration_minutes} min
+                {money(service.price_pence + bookingFeePence)} total · {service.duration_minutes} min
               </small>
             </div>
           </div>
@@ -374,6 +376,7 @@ export function BookingPicker({
           <PaymentSummary
             servicePricePence={service.price_pence}
             depositPence={service.deposit_pence}
+            bookingFeePence={bookingFeePence}
           />
 
           <details className="booking-policy" open>
@@ -403,7 +406,7 @@ export function BookingPicker({
             className="button full-width booking-pay-button"
             type="button"
             disabled={
-              (!ready && service.deposit_pence !== 0) ||
+              !ready ||
               !accepted ||
               submitting
             }
@@ -411,23 +414,16 @@ export function BookingPicker({
           >
             {submitting
               ? "Confirming…"
-              : service.deposit_pence
-                ? "Continue to secure " + money(service.deposit_pence)
-                : "Confirm appointment"}
+              : "Continue to secure " +
+                money(service.deposit_pence + bookingFeePence)}
           </button>
 
-          {service.deposit_pence > 0 ? (
-            <p className="booking-secure-note">
-              <LockKeyhole size={14} aria-hidden />
-              Card details are handled securely by Stripe.
-            </p>
-          ) : (
-            <p className="booking-secure-note">
-              No online payment is required for this appointment.
-            </p>
-          )}
+          <p className="booking-secure-note">
+            <LockKeyhole size={14} aria-hidden />
+            Payment details are handled securely by Stripe.
+          </p>
 
-          {!ready && service.deposit_pence !== 0 && (
+          {!ready && (
             <p className="form-notice">
               Secure online payment is not connected yet, so paid-deposit
               bookings remain disabled.

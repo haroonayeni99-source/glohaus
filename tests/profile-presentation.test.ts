@@ -92,7 +92,7 @@ describe.sequential("paid professional profile presentation", () => {
         service_style: string;
       }>(
         `SELECT profile_style,portfolio_layout,service_style
-         FROM beauty.professional_profile_presentation
+         FROM beauty.public_profile_presentation
          WHERE professional_id=$1`,
         [professionalId],
       ),
@@ -103,6 +103,14 @@ describe.sequential("paid professional profile presentation", () => {
       portfolio_layout: "feature",
       service_style: "clean",
     });
+
+    const privateRead = await asUser("", (sql) =>
+      sql.query(
+        "SELECT professional_id FROM beauty.professional_profile_presentation WHERE professional_id=$1",
+        [professionalId],
+      ),
+    );
+    expect(privateRead.rows).toEqual([]);
   });
 
   it("removes paid presentation settings when the subscription is no longer active", async () => {

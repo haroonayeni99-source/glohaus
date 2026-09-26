@@ -25,6 +25,7 @@ type Row = {
   last_longitude: number | null;
   last_accuracy_m: number | null;
   last_observed_at: Date | null;
+  booking_status: string;
 };
 
 function present(row?: Row) {
@@ -45,7 +46,8 @@ function present(row?: Row) {
     row.sharing &&
     row.last_observed_at !== null &&
     Date.now() - new Date(row.last_observed_at).getTime() <= 90000 &&
-    Date.now() < new Date(row.expires_at).getTime();
+    Date.now() < new Date(row.expires_at).getTime() &&
+    row.booking_status === "confirmed";
 
   return {
     sharing: row.sharing,
@@ -68,10 +70,12 @@ async function locationRow(
 ) {
   return (
     await db.query<Row>(
-      `SELECT sharing,started_at,stopped_at,expires_at,last_latitude,last_longitude,
-              last_accuracy_m,last_observed_at
-       FROM beauty.booking_location_sessions
-       WHERE booking_id=$1`,
+      `SELECT session.sharing,session.started_at,session.stopped_at,session.expires_at,
+              session.last_latitude,session.last_longitude,session.last_accuracy_m,
+              session.last_observed_at,booking.status AS booking_status
+       FROM beauty.booking_location_sessions session
+       JOIN beauty.bookings booking ON booking.id=session.booking_id
+       WHERE session.booking_id=$1`,
       [id],
     )
   ).rows[0];

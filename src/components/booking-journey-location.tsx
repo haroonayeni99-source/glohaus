@@ -51,9 +51,13 @@ export function BookingJourneyLocation({
   }, [bookingId]);
 
   useEffect(() => {
-    void refresh();
-    const timer = window.setInterval(() => void refresh(), professional ? 15000 : 30000);
+    const initialTimer = window.setTimeout(() => void refresh(), 0);
+    const timer = window.setInterval(
+      () => void refresh(),
+      professional ? 15000 : 30000,
+    );
     return () => {
+      window.clearTimeout(initialTimer);
       window.clearInterval(timer);
       if (watchId.current !== null)
         navigator.geolocation?.clearWatch(watchId.current);

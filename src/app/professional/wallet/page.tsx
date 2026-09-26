@@ -12,6 +12,7 @@ import { money } from "@/modules/professionals/domain";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { ConnectButton } from "@/components/connect-button";
 import { PayoutDashboardButton } from "@/components/payout-dashboard-button";
+import { WithdrawalForm } from "@/components/withdrawal-form";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "GLOHAUS Wallet" };
@@ -123,6 +124,29 @@ export default async function ProfessionalWalletPage() {
           </Link>
         </section>
 
+        {hasStripeAccount && (
+          <section className="pro-panel">
+            <div className="pro-panel-title">
+              <h2>Withdraw earnings</h2>
+              <span className="pro-status pro-status-confirmed">
+                Standard free · Instant 4%
+              </span>
+            </div>
+            <p>
+              Choose how much of your released balance to withdraw. The exact
+              Instant fee is shown before you submit and is never allowed to
+              push your GLOHAUS wallet below zero.
+            </p>
+            <WithdrawalForm
+              availablePence={wallet.availablePence}
+              instantBlocked={wallet.instantPayoutBlocked}
+              instantConfigured={
+                process.env.STRIPE_INSTANT_PAYOUT_FEE_CONFIGURED === "true"
+              }
+            />
+          </section>
+        )}
+
         <section className="pro-panel">
           <div className="pro-panel-title">
             <h2>Payout setup</h2>
@@ -132,7 +156,7 @@ export default async function ProfessionalWalletPage() {
           </div>
           <p>
             {hasStripeAccount
-              ? "Eligible released product earnings can be sent from GLOHAUS to your connected Stripe balance here. You can then manage your payout bank details and payout status in Stripe."
+              ? "Your Stripe payout account is connected. Use the withdrawal controls above to request money, or open Stripe to manage your payout bank details and status."
               : "Connect Stripe before GLOHAUS can release professional earnings to your payout account."}
           </p>
           {hasStripeAccount ? <PayoutDashboardButton /> : <ConnectButton />}

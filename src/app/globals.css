@@ -6446,3 +6446,23 @@ svg {
     text-align: center;
   }
 }
+
+.auth-switch {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: .72rem;
+  text-align: center;
+}
+.auth-switch a,
+.auth-professional-preview {
+  color: var(--plum-dark);
+  font-weight: 850;
+}
+.auth-professional-preview {
+  display: block;
+  margin-top: 9px;
+  font-size: .68rem;
+  text-align: center;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

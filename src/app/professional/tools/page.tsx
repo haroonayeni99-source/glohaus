@@ -12,6 +12,7 @@ import {
   Bell,
   Compass,
   MessageSquare,
+  PackageCheck,
   ShoppingBag,
   WalletCards,
 } from "lucide-react";
@@ -69,6 +70,12 @@ const tools = [
     "Create, publish and manage your shop catalogue",
     "/professional/products",
     ShoppingBag,
+  ],
+  [
+    "Shop orders",
+    "Process paid product orders and add tracking",
+    "/professional/orders",
+    PackageCheck,
   ],
   [
     "Wallet & earnings",

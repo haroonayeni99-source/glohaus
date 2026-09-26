@@ -54,6 +54,56 @@ async function applyPaidSession(
     });
 }
 
+function subscriptionStatus(status: Stripe.Subscription.Status) {
+  if (status === "active" || status === "trialing") return "active";
+  if (status === "canceled") return "cancelled";
+  return "past_due";
+}
+
+async function syncProfessionalSubscription(subscription: Stripe.Subscription) {
+  const professionalId = subscription.metadata?.glohaus_professional_id;
+  const planKey = subscription.metadata?.glohaus_plan_key;
+  const pricingAck =
+    subscription.metadata?.glohaus_pricing_ack_version ??
+    "professional-pricing-v1";
+  const priceId =
+    subscription.items.data[0]?.price.id ??
+    subscription.metadata?.glohaus_price_id;
+  const customerId =
+    typeof subscription.customer === "string"
+      ? subscription.customer
+      : subscription.customer.id;
+
+  if (!professionalId || !planKey || !priceId) return;
+
+  await withPaymentWorker((db) =>
+    db.query(
+      "SELECT beauty.apply_professional_subscription($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+      [
+        professionalId,
+        planKey,
+        customerId,
+        subscription.id,
+        priceId,
+        subscriptionStatus(subscription.status),
+        null,
+        Boolean(subscription.cancel_at || subscription.cancel_at_period_end),
+        pricingAck,
+      ],
+    ),
+  );
+}
+
+async function applyProfessionalPlanCheckout(session: Stripe.Checkout.Session) {
+  if (session.mode !== "subscription" || !session.subscription) return;
+  const subscriptionId =
+    typeof session.subscription === "string"
+      ? session.subscription
+      : session.subscription.id;
+  const subscription = await stripe().subscriptions.retrieve(subscriptionId);
+  await syncProfessionalSubscription(subscription);
+}
+
 async function releaseShopSession(
   session: Stripe.Checkout.Session,
   status: "expired" | "failed",
@@ -184,6 +234,7 @@ export async function POST(request: Request) {
       event.type === "checkout.session.async_payment_succeeded"
     ) {
       await applyPaidSession(event.id, event.data.object);
+      await applyProfessionalPlanCheckout(event.data.object);
     } else if (event.type === "checkout.session.expired") {
       await releaseShopSession(event.data.object, "expired");
     } else if (event.type === "checkout.session.async_payment_failed") {
@@ -205,6 +256,11 @@ export async function POST(request: Request) {
               : refund.payment_intent?.id,
           ]),
         );
+    } else if (
+      event.type === "customer.subscription.updated" ||
+      event.type === "customer.subscription.deleted"
+    ) {
+      await syncProfessionalSubscription(event.data.object);
     } else if (event.type === "payout.paid") {
       await applyPayoutEvent(event.data.object, "paid");
     } else if (event.type === "payout.failed") {

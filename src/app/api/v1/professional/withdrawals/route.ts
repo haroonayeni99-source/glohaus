@@ -82,7 +82,6 @@ export async function POST(request: Request) {
         transfer_group: `withdrawal_${account.payout.id}`,
         metadata: {
           glohaus_payout_id: account.payout.id,
-          glohaus_transfer_id: transfer.id,
         },
       },
       { idempotencyKey: `withdrawal-transfer-${account.payout.id}` },
@@ -118,7 +117,10 @@ export async function POST(request: Request) {
         method: account.payout.kind,
         ...(destination ? { destination } : {}),
         description: "GLOHAUS professional withdrawal",
-        metadata: { glohaus_payout_id: account.payout.id },
+        metadata: {
+          glohaus_payout_id: account.payout.id,
+          glohaus_transfer_id: transfer.id,
+        },
       },
       {
         stripeAccount: account.stripeAccountId,

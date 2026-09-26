@@ -96,6 +96,18 @@ export async function customerCart(db: SqlClient): Promise<CartOverview> {
   return result.rows[0]?.data ?? { items: [], totalPence: 0, itemCount: 0 };
 }
 
+export async function addCartItem(
+  db: SqlClient,
+  productId: string,
+  quantity = 1,
+): Promise<CartOverview> {
+  const result = await db.query<{ data: CartOverview }>(
+    "SELECT beauty.add_cart_item($1,$2) AS data",
+    [productId, quantity],
+  );
+  return result.rows[0].data;
+}
+
 export async function setCartItem(
   db: SqlClient,
   productId: string,

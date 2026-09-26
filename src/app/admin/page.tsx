@@ -4,10 +4,11 @@ import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
 import { AccessMessage } from "@/components/access-message";
 import { AdminManager } from "@/components/admin-manager";
+import { AdminFinancePanel } from "@/components/admin-finance-panel";
 import { AdminNavigation } from "@/components/admin-navigation";
 import { ShopFeeControl } from "@/components/shop-fee-control";
 import { OwnerControls } from "@/components/owner-controls";
-import { adminOverview, ownerControls, ownerProductFeeRule } from "@/modules/admin/repository";
+import { adminFinanceOverview, adminOverview, ownerControls, ownerProductFeeRule } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
@@ -19,11 +20,12 @@ export default async function Page() {
       </AuthFrame>
     );
   const isOwner = result.account.roles.includes("owner");
-  const [data, labels, owner, productFee] = await Promise.all([
+  const [data, labels, owner, productFee, finance] = await Promise.all([
     adminOverview(),
     publicLabels(),
     isOwner ? ownerControls().catch(() => null) : Promise.resolve(null),
     isOwner ? ownerProductFeeRule().catch(() => null) : Promise.resolve(null),
+    adminFinanceOverview().catch(() => null),
   ]);
   return (
     <main id="main" className="admin-workspace">
@@ -70,6 +72,7 @@ export default async function Page() {
               <OwnerControls data={owner} users={data.users} />
             </section>
           )}
+          <AdminFinancePanel data={finance} />
           <AdminManager data={data} />
           {owner && (
             <section id="audit" className="admin-workspace-section">

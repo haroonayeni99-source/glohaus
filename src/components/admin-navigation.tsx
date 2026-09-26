@@ -23,6 +23,8 @@ const coreSections = [
   ["Professionals", "professionals", BadgeCheck],
   ["Bookings", "bookings", CalendarDays],
   ["Orders", "orders", PackageCheck],
+  ["Payments", "payments", CreditCard],
+  ["Analytics", "analytics", BarChart3],
   ["LIVE", "live-access", Radio],
   ["Content", "content", BookOpenCheck],
   ["Reports", "reports", FileWarning],
@@ -34,11 +36,6 @@ const ownerSections = [
   ["Shop Fees", "shop-fees", CreditCard],
   ["Staff & Admins", "staff", ShieldCheck],
   ["Audit Log", "audit", BarChart3],
-] as const;
-
-const pendingSections = [
-  ["Payments", CreditCard],
-  ["Analytics", BarChart3],
 ] as const;
 
 export function AdminNavigation({ account }: { account: Account }) {
@@ -60,12 +57,6 @@ export function AdminNavigation({ account }: { account: Account }) {
             <Icon size={16} aria-hidden />
             {label}
           </a>
-        ))}
-        {pendingSections.map(([label, Icon]) => (
-          <span className="admin-navigation-pending" key={label} aria-disabled="true">
-            <Icon size={16} aria-hidden />
-            {label}<small>Roadmap</small>
-          </span>
         ))}
       </nav>
       <div className="admin-navigation-bottom">

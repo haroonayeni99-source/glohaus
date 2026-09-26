@@ -43,7 +43,9 @@ export function PayoutDashboardButton() {
         onClick={() => void openDashboard()}
       >
         <ExternalLink size={16} aria-hidden />
-        {busy ? "Opening Stripe…" : "Open payout dashboard"}
+        {busy
+          ? "Sending eligible earnings…"
+          : "Send eligible earnings & open Stripe"}
       </button>
       {message && (
         <p className="form-notice" role="status">

@@ -4,6 +4,7 @@ import { withIdentity } from "@/lib/db";
 import { AccessMessage } from "@/components/access-message";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { money } from "@/modules/professionals/domain";
+import { ProfessionalPlanActions } from "@/components/professional-plan-actions";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Professional pricing · GLOHAUS PRO" };
@@ -36,13 +37,27 @@ export default async function ProfessionalPlansPage() {
       </div>
     );
 
-  const pricing = await withIdentity(result.account.authId, async (db) =>
-    (
+  const finance = await withIdentity(result.account.authId, async (db) => {
+    const pricing = (
       await db.query<{ data: Pricing }>(
         "SELECT beauty.my_professional_pricing() AS data",
       )
-    ).rows[0].data,
-  );
+    ).rows[0].data;
+    const subscription = (
+      await db.query<{
+        provider_customer_id: string | null;
+        status: string;
+        cancel_at_period_end: boolean;
+      }>(
+        `SELECT provider_customer_id,status,cancel_at_period_end
+         FROM beauty.professional_subscriptions
+         WHERE professional_id=$1`,
+        [result.account!.professionalId],
+      )
+    ).rows[0];
+    return { pricing, subscription };
+  });
+  const { pricing, subscription } = finance;
 
   return (
     <div className="pro-app">
@@ -66,6 +81,21 @@ export default async function ProfessionalPlansPage() {
             </article>
           ))}
         </section>
+
+        <ProfessionalPlanActions
+          currentPlan={pricing.planKey}
+          hasBillingCustomer={Boolean(subscription?.provider_customer_id)}
+          proReady={Boolean(process.env.STRIPE_PRO_MONTHLY_PRICE_ID)}
+          premiumReady={Boolean(process.env.STRIPE_PREMIUM_MONTHLY_PRICE_ID)}
+        />
+
+        {subscription?.cancel_at_period_end && (
+          <section className="pro-finance-notice" role="status">
+            Your paid plan is scheduled to end at the end of its Stripe billing
+            period. GLOHAUS will return the account to Starter after Stripe
+            confirms cancellation.
+          </section>
+        )}
 
         <section className="pro-panel">
           <h2>Your current commercial terms</h2>
@@ -113,8 +143,9 @@ export default async function ProfessionalPlansPage() {
         </section>
 
         <p className="lead">
-          Paid plan upgrades will only become active after subscription billing
-          and the applicable professional terms are accepted.
+          Paid plan commission changes only after verified Stripe subscription
+          events. The pricing acknowledgement above does not replace GLOHAUS&apos;s
+          final Professional Terms.
         </p>
         <Link className="button" href="/professional/setup">Back to setup</Link>
       </main>

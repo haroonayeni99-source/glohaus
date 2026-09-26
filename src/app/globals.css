@@ -6344,3 +6344,105 @@ svg {
     height: calc(100dvh - 128px);
   }
 }
+
+
+/* Professional auth/preview theme consistency */
+.pro-preview-auth-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 12px clamp(18px, 5vw, 72px);
+  border-bottom: 1px solid var(--line);
+  background: var(--white);
+  color: var(--ink);
+}
+.pro-preview-auth-bar > div {
+  display: grid;
+  gap: 2px;
+}
+.pro-preview-auth-bar strong {
+  color: var(--plum-dark);
+  font-size: .75rem;
+  letter-spacing: .08em;
+}
+.pro-preview-auth-bar span {
+  color: var(--muted);
+  font-size: .66rem;
+}
+.pro-preview-auth-bar nav {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.pro-preview-auth-bar nav > a:not(.button) {
+  font-size: .7rem;
+  font-weight: 800;
+}
+.pro-preview-auth-bar .button {
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 999px;
+}
+:root[data-theme="night"] .auth-layout-professional .auth-story {
+  background: #111011;
+  color: var(--ink);
+}
+:root[data-theme="night"] .auth-layout-professional .auth-brand-lockup > span,
+:root[data-theme="night"] .auth-layout-professional .auth-story p:not(.eyebrow),
+:root[data-theme="night"] .auth-layout-professional .auth-story > .eyebrow {
+  color: var(--muted);
+}
+:root[data-theme="night"] .auth-layout-professional .auth-benefits span {
+  border-color: #493b40;
+  background: #241e20;
+  color: var(--ink);
+}
+:root[data-theme="night"] .auth-layout-professional .auth-orbit-ring {
+  border-color: rgb(255 255 255 / 13%);
+}
+:root[data-theme="night"] .professional-preview,
+:root[data-theme="night"] .pro-preview-auth-bar {
+  background: var(--paper);
+  color: var(--ink);
+}
+:root[data-theme="night"] .professional-preview-stage,
+:root[data-theme="night"] .professional-preview-checklist,
+:root[data-theme="night"] .professional-preview-booking,
+:root[data-theme="night"] .professional-preview-services article {
+  background: var(--white);
+  border-color: var(--line);
+  color: var(--ink);
+}
+:root[data-theme="night"] .professional-preview-nav,
+:root[data-theme="night"] .professional-preview-profile,
+:root[data-theme="night"] .professional-preview-services {
+  border-color: var(--line);
+}
+:root[data-theme="night"] .professional-preview-date-row span,
+:root[data-theme="night"] .professional-preview-time-grid span {
+  border-color: var(--line);
+  background: #2b2426;
+  color: var(--ink);
+}
+:root[data-theme="night"] .professional-preview-date-row .selected,
+:root[data-theme="night"] .professional-preview-time-grid .selected {
+  border-color: #a84a6d;
+  background: #452432;
+  color: #ffb4cf;
+}
+@media (max-width: 700px) {
+  .pro-preview-auth-bar {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 11px 14px;
+  }
+  .pro-preview-auth-bar nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .pro-preview-auth-bar nav a {
+    justify-content: center;
+    text-align: center;
+  }
+}

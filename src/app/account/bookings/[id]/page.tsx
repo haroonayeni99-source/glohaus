@@ -132,11 +132,7 @@ export default async function Booking({
         <BookingJourneyLocation
           bookingId={id}
           professional={data.professional}
-          enabled={
-            b.status === "confirmed" &&
-            Date.now() >= new Date(b.starts_at).getTime() - 3 * 60 * 60 * 1000 &&
-            Date.now() <= new Date(b.ends_at).getTime()
-          }
+          enabled={b.location_window_open}
         />
         {!data.professional &&
           b.status === "completed" &&

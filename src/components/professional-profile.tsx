@@ -32,6 +32,7 @@ export type ProfilePresentation = {
   booking: ReactNode;
   follow: { following: boolean; followerCount: number; signedIn: boolean };
   messageHref: string | null;
+  bookingFeePence: number;
 };
 export function ProfessionalProfile({
   professional: p,
@@ -45,6 +46,7 @@ export function ProfessionalProfile({
   booking,
   follow,
   messageHref,
+  bookingFeePence,
 }: ProfilePresentation) {
   const safeHref = (value: string) => {
     try {
@@ -258,7 +260,10 @@ export function ProfessionalProfile({
                     </span>
                   </div>
                   <div className="profile-service-price">
-                    <strong>{money(service.price_pence)}</strong>
+                    <strong>{money(service.price_pence + bookingFeePence)} total</strong>
+                    <span className="service-deposit-note">
+                      Service {money(service.price_pence)} + GLOHAUS fee {money(bookingFeePence)}
+                    </span>
                     <span className="service-deposit-note">
                       {service.deposit_pence
                         ? `${money(service.deposit_pence)} deposit`

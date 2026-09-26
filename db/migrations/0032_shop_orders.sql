@@ -103,12 +103,14 @@ USING (
 
 GRANT SELECT ON beauty.product_orders,beauty.product_order_items TO beauty_app;
 
-GRANT SELECT ON beauty.users,beauty.professional_profiles
+GRANT SELECT ON beauty.users,beauty.user_roles,beauty.professional_profiles
   TO beauty_order_ops;
 GRANT SELECT,UPDATE ON beauty.product_orders TO beauty_order_ops;
 GRANT SELECT ON beauty.product_order_items TO beauty_order_ops;
 
 CREATE POLICY order_ops_users ON beauty.users
+FOR SELECT TO beauty_order_ops USING(true);
+CREATE POLICY order_ops_roles ON beauty.user_roles
 FOR SELECT TO beauty_order_ops USING(true);
 CREATE POLICY order_ops_profiles ON beauty.professional_profiles
 FOR SELECT TO beauty_order_ops USING(true);

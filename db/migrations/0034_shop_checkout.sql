@@ -510,6 +510,43 @@ BEGIN
   RETURN jsonb_build_object('status','paid');
 END $$;
 
+CREATE FUNCTION beauty.owner_active_product_fee_rule() RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path=pg_catalog
+AS $
+DECLARE actor uuid;
+BEGIN
+  actor:=beauty.require_owner();
+  RETURN (
+    SELECT jsonb_build_object(
+      'id',id,
+      'percentageBasisPoints',percentage_basis_points,
+      'fixedFeePence',fixed_fee_pence,
+      'minimumFeePence',minimum_fee_pence,
+      'maximumFeePence',maximum_fee_pence,
+      'minimumTransactionPence',minimum_transaction_pence,
+      'processingCostPayer',processing_cost_payer,
+      'effectiveFrom',effective_from
+    )
+    FROM beauty.financial_fee_rules
+    WHERE transaction_kind='product'
+      AND category_key IS NULL
+      AND fee_payer='professional'
+      AND active
+      AND effective_from<=now()
+      AND (effective_until IS NULL OR effective_until>now())
+    ORDER BY effective_from DESC,id DESC
+    LIMIT 1
+  );
+END $;
+
+GRANT CREATE ON SCHEMA beauty TO beauty_admin_ops;
+ALTER FUNCTION beauty.owner_active_product_fee_rule() OWNER TO beauty_admin_ops;
+REVOKE CREATE ON SCHEMA beauty FROM beauty_admin_ops;
+REVOKE ALL ON FUNCTION beauty.owner_active_product_fee_rule() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION beauty.owner_active_product_fee_rule() TO beauty_app;
+
 GRANT CREATE ON SCHEMA beauty TO beauty_payment_worker;
 ALTER FUNCTION beauty.shop_checkout_payload(uuid) OWNER TO beauty_payment_worker;
 ALTER FUNCTION beauty.release_shop_checkout(uuid,text,text) OWNER TO beauty_payment_worker;

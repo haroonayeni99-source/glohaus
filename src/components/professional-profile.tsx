@@ -33,6 +33,11 @@ export type ProfilePresentation = {
   follow: { following: boolean; followerCount: number; signedIn: boolean };
   messageHref: string | null;
   bookingFeePence: number;
+  presentation: {
+    profile_style: "signature" | "minimal" | "editorial";
+    portfolio_layout: "grid" | "feature";
+    service_style: "cards" | "clean";
+  };
 };
 export function ProfessionalProfile({
   professional: p,
@@ -47,6 +52,7 @@ export function ProfessionalProfile({
   follow,
   messageHref,
   bookingFeePence,
+  presentation,
 }: ProfilePresentation) {
   const safeHref = (value: string) => {
     try {
@@ -76,7 +82,10 @@ export function ProfessionalProfile({
     },
   ].filter((item) => item.url);
   return (
-    <main id="main" className="professional-public">
+    <main
+      id="main"
+      className={`professional-public profile-style-${presentation.profile_style} service-style-${presentation.service_style}`}
+    >
       <div className="professional-cover">
         <span>INDEPENDENT BEAUTY. PERSONAL BY DESIGN.</span>
         <span aria-hidden>g.</span>
@@ -207,7 +216,7 @@ export function ProfessionalProfile({
             <p className="eyebrow">THE WORK SPEAKS</p>
             <h2>A closer look.</h2>
             {assets.length ? (
-              <div className="professional-gallery">
+              <div className={`professional-gallery portfolio-layout-${presentation.portfolio_layout}`}>
                 {assets.map((asset) => (
                   <Image
                     key={asset.id}

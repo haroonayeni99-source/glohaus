@@ -7,6 +7,7 @@ import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
 import { AccessMessage } from "@/components/access-message";
 import { ProfessionalEditor } from "@/components/professional-editor";
+import { ProfessionalProfileCustomization } from "@/components/professional-profile-customization";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
 import type { ProfileInput, Service } from "@/modules/professionals/domain";
 export default async function EditProfile() {
@@ -59,7 +60,24 @@ export default async function EditProfile() {
         [account.professionalId],
       )
     ).rows;
-    return { profile, services, photo, assets };
+    const pricing = (
+      await db.query<{
+        data: { planKey: "starter" | "pro" | "premium" };
+      }>("SELECT beauty.my_professional_pricing() AS data")
+    ).rows[0].data;
+    const presentation = (
+      await db.query<{
+        profile_style: "signature" | "minimal" | "editorial";
+        portfolio_layout: "grid" | "feature";
+        service_style: "cards" | "clean";
+      }>(
+        `SELECT profile_style,portfolio_layout,service_style
+         FROM beauty.professional_profile_presentation
+         WHERE professional_id=$1`,
+        [account.professionalId],
+      )
+    ).rows[0];
+    return { profile, services, photo, assets, pricing, presentation };
   });
   if (!data.profile)
     return (
@@ -101,6 +119,14 @@ export default async function EditProfile() {
           <ProfilePhotoEditor
             photo={data.photo}
             published={data.profile.publication_status === "published"}
+          />
+          <ProfessionalProfileCustomization
+            planKey={data.pricing.planKey}
+            initial={{
+              profileStyle: data.presentation?.profile_style ?? "signature",
+              portfolioLayout: data.presentation?.portfolio_layout ?? "grid",
+              serviceStyle: data.presentation?.service_style ?? "cards",
+            }}
           />
           <div className="profile-editor-links">
             <Link href="/professional/availability">

@@ -31,6 +31,41 @@ export function ProductOrderList({
   const [tracking, setTracking] = useState("");
   const [notice, setNotice] = useState("");
 
+  async function confirmDelivery(id: string) {
+    setBusyId(id);
+    setNotice("");
+    try {
+      const response = await fetch(`/api/v1/account/orders/${id}/delivery`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(
+          data.error?.code === "INVALID_REQUEST"
+            ? "This order cannot be confirmed as delivered yet."
+            : "Delivery could not be confirmed.",
+        );
+      setOrders((current) =>
+        current.map((order) =>
+          order.id === id
+            ? {
+                ...order,
+                status: "delivered",
+                deliveredAt: data.order.deliveredAt,
+              }
+            : order,
+        ),
+      );
+      setNotice("Delivery confirmed. Professional proceeds remain protected for 48 hours before becoming available.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Delivery could not be confirmed.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function advance(
     id: string,
     status: "processing" | "shipped",
@@ -169,6 +204,18 @@ export function ProductOrderList({
               <span>Total</span>
               <strong>{money(order.totalPence)}</strong>
             </div>
+
+            {mode === "customer" && order.status === "shipped" && (
+              <div className="product-order-actions">
+                <button
+                  type="button"
+                  disabled={busyId !== null}
+                  onClick={() => void confirmDelivery(order.id)}
+                >
+                  Confirm delivery
+                </button>
+              </div>
+            )}
 
             {mode === "professional" &&
               (order.status === "paid" || order.status === "processing") && (

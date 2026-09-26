@@ -409,7 +409,7 @@ describe.sequential("booking without a payment-provider setup", () => {
   let serviceId: string;
   let startsAt: string;
   let bookingId: string;
-  it("confirms a zero-deposit service and returns the same confirmation on retry", async () => {
+  it("requires payment setup even for a zero-deposit service because the £1 booking fee is mandatory", async () => {
     current = identities.client;
     serviceId = (await asUser("", (sql) => publicProfile(sql, profile.slug)))!
       .services[0].id;
@@ -419,27 +419,15 @@ describe.sequential("booking without a payment-provider setup", () => {
     startsAt = monday.toISOString();
     const input = { serviceId, startsAt, acceptPolicy: true };
     const response = await createBooking(request(input, "POST"));
-    expect(response.status).toBe(200);
-    const first = await response.json();
-    bookingId = first.url.split("/").at(-1);
-    const retry = await createBooking(request(input, "POST"));
-    expect(retry.status).toBe(200);
-    expect(await retry.json()).toEqual(first);
-    const row = (
-      await db.query<{ status: string; deposit_pence: number }>(
-        "SELECT status,deposit_pence FROM beauty.bookings WHERE id=$1",
-        [bookingId],
-      )
-    ).rows[0];
-    expect(row).toEqual({ status: "confirmed", deposit_pence: 0 });
+    expect(response.status).toBe(503);
     expect(
       (
-        await db.query(
-          "SELECT * FROM beauty.notification_outbox WHERE booking_id=$1",
-          [bookingId],
-        )
+        await db.query("SELECT id FROM beauty.bookings WHERE starts_at=$1", [
+          startsAt,
+        ])
       ).rows,
-    ).toHaveLength(3);
+    ).toEqual([]);
+    bookingId = "";
   });
   it("does not hold a slot when a deposit is required but runtime payment setup is absent", async () => {
     await db.query(
@@ -506,11 +494,11 @@ describe.sequential("scoped appointment history and pagination", () => {
         bookingListOptions({ view: "upcoming", after: first.next! }),
       ),
     );
-    expect(second.bookings).toHaveLength(4);
+    expect(second.bookings).toHaveLength(3);
     expect(second.next).toBeNull();
     expect(
       new Set([...first.bookings, ...second.bookings].map((r) => r.id)).size,
-    ).toBe(29);
+    ).toBe(28);
   });
   it("keeps foreign appointment records inaccessible even with a valid cursor", async () => {
     const first = await asUser("client", (sql) =>

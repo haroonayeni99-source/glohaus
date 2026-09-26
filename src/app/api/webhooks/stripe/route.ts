@@ -139,7 +139,10 @@ export async function POST(request: Request) {
       await withPaymentWorker((db) =>
         db.query("SELECT beauty.sync_connect_account($1,$2)", [
           account.id,
-          Boolean(account.charges_enabled && account.payouts_enabled),
+          Boolean(
+            account.capabilities?.transfers === "active" &&
+              account.payouts_enabled,
+          ),
         ]),
       );
     }

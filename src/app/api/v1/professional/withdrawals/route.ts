@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       body.kind === "instant" &&
       process.env.STRIPE_INSTANT_PAYOUT_FEE_CONFIGURED !== "true"
     )
-      throw new AccessError("INSTANT_PAYOUT_SETUP_REQUIRED", 503);
+      throw new AccessError("UNAVAILABLE", 503);
 
     const account = await withAccount("professional", async (db, account) => {
       const paymentAccount = (
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
           (entry) => entry.amount >= account.payout.bankAmountPence,
         );
       if (!eligible)
-        throw new AccessError("INSTANT_PAYOUT_UNAVAILABLE", 409);
+        throw new AccessError("INVALID_REQUEST", 409);
       destination = eligible.destination;
     }
 
@@ -133,7 +133,7 @@ export async function POST(request: Request) {
       (providerFeePence !== account.payout.withdrawalFeePence ||
         !applicationFeeId)
     )
-      throw new AccessError("INSTANT_PAYOUT_FEE_MISMATCH", 503);
+      throw new AccessError("UNAVAILABLE", 503);
 
     await withPaymentWorker((db) =>
       db.query(

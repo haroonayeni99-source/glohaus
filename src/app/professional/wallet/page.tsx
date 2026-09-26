@@ -92,7 +92,7 @@ export default async function ProfessionalWalletPage() {
           </div>
           <p>
             {hasStripeAccount
-              ? "Manage your payout bank details and standard Stripe payout access. GLOHAUS only releases protected available funds after the relevant service or delivery window."
+              ? "Eligible released product earnings can be sent from GLOHAUS to your connected Stripe balance here. You can then manage your payout bank details and payout status in Stripe."
               : "Connect Stripe before GLOHAUS can release professional earnings to your payout account."}
           </p>
           {hasStripeAccount ? <PayoutDashboardButton /> : <ConnectButton />}

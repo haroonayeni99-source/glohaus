@@ -347,6 +347,11 @@ describe.sequential("booking transactions and verified deposits", () => {
     await asUser("bob", (sql) =>
       sql.query("SELECT beauty.attach_checkout($1,'cs_late')", [otherBooking]),
     );
+    await asUser("bob", (sql) =>
+      sql.query("SELECT beauty.prepare_booking_financial_quote($1)", [
+        otherBooking,
+      ]),
+    );
     await db.query(
       "UPDATE beauty.bookings SET hold_expires_at=now()-interval '1 minute' WHERE id=$1",
       [otherBooking],

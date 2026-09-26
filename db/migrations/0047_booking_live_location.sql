@@ -88,7 +88,6 @@ WITH CHECK(
       AND booking.professional_id=professional_id
       AND customer.auth_id=beauty.auth_id()
       AND customer.status='active'
-      AND booking.status='confirmed'
       AND expires_at=booking.ends_at
   )
 );

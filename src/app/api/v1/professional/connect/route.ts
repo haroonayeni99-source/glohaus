@@ -17,10 +17,13 @@ export async function POST(request: Request) {
     if (!stripeAccountId) {
       const created = await stripe().accounts.create(
         {
-          type: "express",
           country: "GB",
+          controller: {
+            fees: { payer: "application" },
+            losses: { payments: "application" },
+            stripe_dashboard: { type: "express" },
+          },
           capabilities: {
-            card_payments: { requested: true },
             transfers: { requested: true },
           },
           metadata: { glohaus_professional_id: account.professionalId },

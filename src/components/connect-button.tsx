@@ -5,10 +5,10 @@ export function ConnectButton() {
   const [message, setMessage] = useState("");
   return (
     <div className="editor-form">
-      <h2>Receive your deposits.</h2>
+      <h2>Set up your payouts.</h2>
       <p className="lead">
-        Connect your business to Stripe to receive payments. Stripe handles
-        verification and bank details.
+        Connect your professional account to Stripe so GLOHAUS can release eligible
+        earnings to you. Stripe handles identity verification and payout bank details.
       </p>
       <button
         className="button"
@@ -35,7 +35,7 @@ export function ConnectButton() {
           }
         }}
       >
-        Set up Stripe deposits
+        Set up Stripe payouts
       </button>
       {message && (
         <p role="status" className="form-notice">

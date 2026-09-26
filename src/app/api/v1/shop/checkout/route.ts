@@ -5,6 +5,7 @@ import {
   attachShopCheckoutSession,
   prepareShopCheckout,
   releaseUnattachedShopCheckout,
+  shopCartPayoutsReady,
 } from "@/modules/shop/repository";
 import { paymentReady, stripe } from "@/modules/payments/stripe";
 
@@ -15,10 +16,14 @@ export async function POST(request: Request) {
     assertSameOrigin(request);
     if (!paymentReady()) throw new AccessError("UNAVAILABLE", 503);
 
-    const prepared = await withAccount("customer", async (db, account) => ({
-      checkout: await prepareShopCheckout(db),
-      email: account.email,
-    }));
+    const prepared = await withAccount("customer", async (db, account) => {
+      if (!(await shopCartPayoutsReady(db)))
+        throw new AccessError("INVALID_REQUEST", 409);
+      return {
+        checkout: await prepareShopCheckout(db),
+        email: account.email,
+      };
+    });
     checkoutId = prepared.checkout.id;
 
     if (prepared.checkout.stripeSessionId) {

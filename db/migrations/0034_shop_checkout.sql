@@ -49,6 +49,9 @@ ALTER TABLE beauty.shop_checkouts FORCE ROW LEVEL SECURITY;
 ALTER TABLE beauty.shop_checkout_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE beauty.shop_checkout_items FORCE ROW LEVEL SECURITY;
 
+-- PostgreSQL 16+ requires SET permission before transferring function ownership.
+GRANT beauty_payment_worker TO postgres WITH INHERIT TRUE, SET TRUE;
+
 GRANT EXECUTE ON FUNCTION beauty.auth_id() TO beauty_payment_worker;
 GRANT SELECT,INSERT,UPDATE ON beauty.shop_checkouts,beauty.shop_checkout_items TO beauty_payment_worker;
 GRANT SELECT,UPDATE ON beauty.products TO beauty_payment_worker;

@@ -69,6 +69,51 @@ async function releaseShopSession(
   );
 }
 
+
+async function applyPayoutEvent(
+  payout: Stripe.Payout,
+  nextStatus: "paid" | "failed" | "cancelled",
+) {
+  if (!payout.metadata?.glohaus_payout_id) return;
+
+  if (nextStatus !== "paid") {
+    const details = await withPaymentWorker(async (db) => {
+      const result = await db.query<{
+        data: {
+          transferId: string | null;
+          applicationFeeId: string | null;
+          withdrawalFeePence: number;
+          status: string;
+        } | null;
+      }>("SELECT beauty.payout_reversal_details($1) AS data", [payout.id]);
+      return result.rows[0]?.data;
+    });
+
+    if (!details || ["failed", "cancelled"].includes(details.status)) return;
+
+    if (details.applicationFeeId && details.withdrawalFeePence > 0)
+      await stripe().applicationFees.createRefund(
+        details.applicationFeeId,
+        { amount: details.withdrawalFeePence },
+        { idempotencyKey: `payout-fee-refund-${payout.id}` },
+      );
+
+    if (details.transferId)
+      await stripe().transfers.createReversal(
+        details.transferId,
+        undefined,
+        { idempotencyKey: `payout-transfer-reversal-${payout.id}` },
+      );
+  }
+
+  await withPaymentWorker((db) =>
+    db.query("SELECT beauty.apply_payout_result($1,$2)", [
+      payout.id,
+      nextStatus,
+    ]),
+  );
+}
+
 export async function POST(request: Request) {
   const signature = request.headers.get("stripe-signature");
   const secrets = [
@@ -139,6 +184,12 @@ export async function POST(request: Request) {
               : refund.payment_intent?.id,
           ]),
         );
+    } else if (event.type === "payout.paid") {
+      await applyPayoutEvent(event.data.object, "paid");
+    } else if (event.type === "payout.failed") {
+      await applyPayoutEvent(event.data.object, "failed");
+    } else if (event.type === "payout.canceled") {
+      await applyPayoutEvent(event.data.object, "cancelled");
     } else if (event.type === "account.updated") {
       const account = event.data.object;
       await withPaymentWorker((db) =>

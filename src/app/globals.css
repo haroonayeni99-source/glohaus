@@ -7521,3 +7521,20 @@ svg {
 .policy-links{display:flex;flex-wrap:wrap;gap:.9rem;margin-top:2rem;padding-top:1.5rem;border-top:1px solid color-mix(in srgb,currentColor 14%,transparent)}
 .policy-links a{text-decoration:underline;text-underline-offset:3px}
 @media (max-width:640px){.policy-page{padding:6rem 1rem 3rem}.policy-content section{padding:1.1rem}.policy-links{gap:.75rem 1rem}}
+
+
+/* Paid professional storefront presentation */
+.profile-style-minimal .professional-cover{display:none}
+.profile-style-minimal .professional-hero{padding-top:2rem}
+.profile-style-minimal .professional-heading h1{font-weight:600;letter-spacing:-.025em}
+.profile-style-minimal .professional-section{box-shadow:none}
+.profile-style-editorial .professional-cover{min-height:220px;align-items:flex-end}
+.profile-style-editorial .professional-heading h1{font-size:clamp(3rem,8vw,6.6rem);line-height:.9;letter-spacing:-.055em}
+.profile-style-editorial .professional-bio{max-width:42rem;font-size:1.08rem}
+.professional-gallery.portfolio-layout-feature> :first-child{grid-column:span 2;grid-row:span 2;height:100%}
+.service-style-clean .service-list article{border-radius:0;background:transparent;box-shadow:none;border-left:0;border-right:0}
+.service-style-clean .service-list article+article{margin-top:0}
+@media (max-width:700px){
+  .professional-gallery.portfolio-layout-feature> :first-child{grid-column:auto;grid-row:auto;height:auto}
+  .profile-style-editorial .professional-cover{min-height:150px}
+}

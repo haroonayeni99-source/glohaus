@@ -194,6 +194,77 @@ BEGIN
   RETURN beauty.my_cart();
 END $$;
 
+CREATE FUNCTION beauty.add_cart_item(
+  target_product uuid,
+  add_quantity integer DEFAULT 1
+) RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path=pg_catalog
+AS $
+DECLARE
+  actor beauty.users;
+  product beauty.products;
+  existing_quantity integer;
+  next_quantity integer;
+  owner_user uuid;
+BEGIN
+  SELECT u.* INTO actor
+  FROM beauty.users u
+  JOIN beauty.user_roles r ON r.user_id=u.id AND r.role='customer'
+  WHERE u.auth_id=beauty.auth_id()
+    AND u.status='active';
+
+  IF actor.id IS NULL THEN
+    RAISE EXCEPTION 'FORBIDDEN' USING ERRCODE='42501';
+  END IF;
+
+  IF add_quantity IS NULL OR add_quantity<1 OR add_quantity>20 THEN
+    RAISE EXCEPTION 'INVALID_QUANTITY' USING ERRCODE='22023';
+  END IF;
+
+  SELECT p.* INTO product
+  FROM beauty.products p
+  JOIN beauty.professional_profiles pro ON pro.id=p.professional_id
+  JOIN beauty.users u ON u.id=pro.user_id
+  WHERE p.id=target_product
+    AND p.publication_status='published'
+    AND pro.publication_status='published'
+    AND u.status='active'
+  FOR SHARE OF p;
+
+  IF product.id IS NULL THEN
+    RAISE EXCEPTION 'PRODUCT_UNAVAILABLE' USING ERRCODE='22023';
+  END IF;
+
+  SELECT pro.user_id INTO owner_user
+  FROM beauty.professional_profiles pro
+  WHERE pro.id=product.professional_id;
+
+  IF owner_user=actor.id THEN
+    RAISE EXCEPTION 'SELF_PURCHASE_NOT_ALLOWED' USING ERRCODE='22023';
+  END IF;
+
+  SELECT quantity INTO existing_quantity
+  FROM beauty.cart_items
+  WHERE customer_id=actor.id
+    AND product_id=target_product
+  FOR UPDATE;
+
+  next_quantity:=coalesce(existing_quantity,0)+add_quantity;
+
+  IF next_quantity>20 OR product.stock_quantity<next_quantity THEN
+    RAISE EXCEPTION 'INSUFFICIENT_STOCK' USING ERRCODE='22023';
+  END IF;
+
+  INSERT INTO beauty.cart_items(customer_id,product_id,quantity)
+  VALUES(actor.id,target_product,next_quantity)
+  ON CONFLICT(customer_id,product_id)
+  DO UPDATE SET quantity=excluded.quantity,updated_at=now();
+
+  RETURN beauty.my_cart();
+END $;
+
 CREATE FUNCTION beauty.clear_cart() RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -218,10 +289,11 @@ END $$;
 GRANT CREATE ON SCHEMA beauty TO beauty_cart_ops;
 ALTER FUNCTION beauty.my_cart() OWNER TO beauty_cart_ops;
 ALTER FUNCTION beauty.set_cart_item(uuid,integer) OWNER TO beauty_cart_ops;
+ALTER FUNCTION beauty.add_cart_item(uuid,integer) OWNER TO beauty_cart_ops;
 ALTER FUNCTION beauty.clear_cart() OWNER TO beauty_cart_ops;
 REVOKE CREATE ON SCHEMA beauty FROM beauty_cart_ops;
 
-REVOKE ALL ON FUNCTION beauty.my_cart(),beauty.set_cart_item(uuid,integer),beauty.clear_cart()
+REVOKE ALL ON FUNCTION beauty.my_cart(),beauty.set_cart_item(uuid,integer),beauty.add_cart_item(uuid,integer),beauty.clear_cart()
   FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION beauty.my_cart(),beauty.set_cart_item(uuid,integer),beauty.clear_cart()
+GRANT EXECUTE ON FUNCTION beauty.my_cart(),beauty.set_cart_item(uuid,integer),beauty.add_cart_item(uuid,integer),beauty.clear_cart()
   TO beauty_app;

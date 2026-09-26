@@ -53,6 +53,10 @@ test("private routes fail closed without credentials", async ({
     "/onboarding",
     "/security",
     "/messages",
+    "/professional/products",
+    "/cart",
+    "/account/orders",
+    "/professional/orders",
   ]) {
     await page.goto(route);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
@@ -169,4 +173,19 @@ test("theme toggle switches professional preview to night mode", async ({ page }
   await expect(
     page.getByRole("button", { name: "Switch to light mode" }),
   ).toBeVisible();
+});
+
+
+test("Shop exposes catalogue without fake checkout", async ({ page }) => {
+  await page.goto("/shop");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "Products from the professionals",
+  );
+  await expect(
+    page.getByText("Marketplace checkout is still protected.", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /buy now|checkout/i }),
+  ).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /cart/i }).first()).toBeVisible();
 });

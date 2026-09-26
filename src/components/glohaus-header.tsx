@@ -22,8 +22,11 @@ export function GlohausHeader({
         <Link className="glohaus-notification-link" href="/notifications" aria-label="Your GLOHAUS notifications">
           <Bell size={19} aria-hidden />
         </Link>
-        <Link className="glohaus-sign-in" href="/sign-in">
-          Sign in
+        <Link
+          className="glohaus-sign-in"
+          href={professional ? "/sign-in?intent=professional&returnTo=/professional" : "/sign-in"}
+        >
+          {professional ? "Professional sign in" : "Sign in"}
         </Link>
       </nav>
     </header>

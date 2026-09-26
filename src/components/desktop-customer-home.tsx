@@ -62,7 +62,7 @@ export function DesktopCustomerHome({ professionals = [], signedIn = false, disp
         <Link href="/account/bookings"><CalendarDays size={20}/>Bookings</Link>
         <Link href="/messages"><MessageSquare size={20}/>Messages</Link>
         <Link href="/shop"><ShoppingBag size={20}/>Shop</Link>
-        <span className="customer-nav-disabled" aria-disabled="true"><WalletCards size={20}/>Wallet<small>Coming soon</small></span>
+        <Link href="/wallet"><WalletCards size={20}/>Wallet</Link>
         <Link href="/workspace"><UserRound size={20}/>Profile</Link>
       </nav>
       <div className="glohaus-plus-card glohaus-plus-disabled" aria-disabled="true">
@@ -123,9 +123,9 @@ export function DesktopCustomerHome({ professionals = [], signedIn = false, disp
         <div className="rail-message"><span className="desktop-avatar">G</span><div><strong>Private conversations</strong><small>Message professionals and keep booking conversations together.</small></div></div>
         <Link className="rail-soft-button" href="/messages">Open messages<ChevronRight size={16}/></Link>
       </section>
-      <section><div className="rail-heading"><h2>Wallet & Rewards</h2><span className="rail-coming-soon">Coming soon</span></div>
-        <div className="rail-wallet rail-wallet-disabled"><WalletCards/><div><small>Wallet</small><strong>Not active yet</strong></div><span>Roadmap stage 8</span></div>
-        <div className="rail-reward rail-reward-disabled"><Gift/><span><strong>GloHaus Rewards</strong><small>Rewards will launch with the wallet experience.</small></span></div>
+      <section><div className="rail-heading"><h2>Wallet & Rewards</h2><Link href="/wallet">Payments →</Link></div>
+        <Link className="rail-wallet" href="/wallet"><WalletCards/><div><small>Wallet</small><strong>Payments & refunds</strong></div><ChevronRight size={16}/></Link>
+        <div className="rail-reward rail-reward-disabled"><Gift/><span><strong>GloHaus Rewards</strong><small>Rewards remain unavailable until customer-credit programme rules are approved.</small></span></div>
       </section>
       <Link className="desktop-shop-banner" href="/shop"><div><strong>Shop Beauty<br/>Essentials</strong><span>Curated products from trusted professionals.</span><b>Shop Now →</b></div><Image fill sizes="320px" src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85" alt="Beauty products"/></Link>
     </aside>

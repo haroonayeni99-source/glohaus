@@ -390,3 +390,82 @@ ALTER FUNCTION beauty.reserve_booking(uuid,timestamptz) OWNER TO beauty_booking_
 ALTER FUNCTION beauty.prepare_booking_financial_quote(uuid) OWNER TO beauty_financial_worker;
 ALTER FUNCTION beauty.record_booking_payment_finance(uuid,text) OWNER TO beauty_payment_worker;
 REVOKE CREATE ON SCHEMA beauty FROM beauty_booking_ops,beauty_financial_worker,beauty_payment_worker;
+
+
+CREATE OR REPLACE FUNCTION beauty.apply_checkout_payment(
+  event_ref text,
+  target uuid,
+  session_ref text,
+  intent_ref text,
+  amount integer,
+  currency_code text
+) RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path=pg_catalog
+AS $$
+DECLARE
+  booking beauty.bookings;
+  payment beauty.payments;
+  quote beauty.financial_quotes;
+BEGIN
+  IF EXISTS(
+    SELECT 1 FROM beauty.payment_events WHERE event_id=event_ref
+  ) THEN
+    RETURN;
+  END IF;
+
+  SELECT * INTO booking FROM beauty.bookings WHERE id=target;
+  IF booking.id IS NULL THEN
+    RAISE EXCEPTION 'UNKNOWN_BOOKING' USING ERRCODE='22023';
+  END IF;
+
+  PERFORM pg_advisory_xact_lock(
+    hashtextextended(booking.professional_id::text,0)
+  );
+
+  SELECT * INTO booking FROM beauty.bookings WHERE id=target FOR UPDATE;
+  SELECT * INTO payment FROM beauty.payments WHERE booking_id=target FOR UPDATE;
+  SELECT * INTO quote FROM beauty.financial_quotes WHERE booking_id=target;
+
+  IF payment.stripe_session_id IS DISTINCT FROM session_ref
+    OR quote.id IS NULL
+    OR amount IS DISTINCT FROM quote.customer_total_pence
+    OR currency_code IS DISTINCT FROM 'gbp'
+    OR intent_ref IS NULL THEN
+    RAISE EXCEPTION 'PAYMENT_MISMATCH' USING ERRCODE='22023';
+  END IF;
+
+  IF payment.captured_pence>0 THEN
+    IF payment.stripe_payment_intent_id IS DISTINCT FROM intent_ref THEN
+      RAISE EXCEPTION 'PAYMENT_MISMATCH' USING ERRCODE='22023';
+    END IF;
+  ELSE
+    UPDATE beauty.payments
+    SET captured_pence=amount,
+        stripe_payment_intent_id=intent_ref,
+        status=CASE
+          WHEN booking.status='payment_pending'
+            AND booking.hold_expires_at>now()
+          THEN 'paid'
+          ELSE 'refund_required'
+        END,
+        updated_at=now()
+    WHERE booking_id=target;
+
+    IF booking.status='payment_pending'
+      AND booking.hold_expires_at>now() THEN
+      UPDATE beauty.bookings SET status='confirmed' WHERE id=target;
+      PERFORM beauty.enqueue_booking_notifications(target,'confirmation');
+    END IF;
+  END IF;
+
+  INSERT INTO beauty.payment_events(event_id)
+  VALUES(event_ref)
+  ON CONFLICT DO NOTHING;
+END $$;
+
+GRANT CREATE ON SCHEMA beauty TO beauty_booking_ops;
+ALTER FUNCTION beauty.apply_checkout_payment(text,uuid,text,text,integer,text)
+  OWNER TO beauty_booking_ops;
+REVOKE CREATE ON SCHEMA beauty FROM beauty_booking_ops;

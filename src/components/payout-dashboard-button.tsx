@@ -44,8 +44,8 @@ export function PayoutDashboardButton() {
       >
         <ExternalLink size={16} aria-hidden />
         {busy
-          ? "Sending eligible earnings…"
-          : "Send eligible earnings & open Stripe"}
+          ? "Opening Stripe…"
+          : "Manage payout details in Stripe"}
       </button>
       {message && (
         <p className="form-notice" role="status">

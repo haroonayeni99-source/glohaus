@@ -26,6 +26,11 @@ export async function POST(request: Request) {
           capabilities: {
             transfers: { requested: true },
           },
+          settings: {
+            payouts: {
+              schedule: { interval: "manual" },
+            },
+          },
           metadata: { glohaus_professional_id: account.professionalId },
         },
         { idempotencyKey: `connect-${account.professionalId}` },

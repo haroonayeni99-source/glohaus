@@ -215,7 +215,7 @@ describe.sequential("protected booking deposit finance", () => {
     expect(released).toBe(0);
   });
 
-  it("releases after 24 hours and records the transfer only once", async () => {
+  it("releases after 24 hours and protects standard and instant withdrawals", async () => {
     await db.query(
       "UPDATE beauty.bookings SET completed_at=now()-interval '25 hours' WHERE id=$1",
       [bookingId],
@@ -239,30 +239,115 @@ describe.sequential("protected booking deposit finance", () => {
     ).rows[0].data.availablePence;
     expect(available).toBe(1600);
 
-    for (let attempt = 0; attempt < 2; attempt++)
-      await asPaymentWorker((sql) =>
-        sql.query("SELECT beauty.record_booking_transfer($1,$2,$3)", [
-          bookingId,
-          "tr_booking_finance",
-          1600,
-        ]),
-      );
-
-    const payment = (
-      await db.query<{ stripe_transfer_id: string }>(
-        "SELECT stripe_transfer_id FROM beauty.payments WHERE booking_id=$1",
-        [bookingId],
-      )
-    ).rows[0];
-    expect(payment.stripe_transfer_id).toBe("tr_booking_finance");
-
-    const after = (
+    const standard = (
       await asUser("finance-pro", (sql) =>
-        sql.query<{ data: { availablePence: number } }>(
+        sql.query<{
+          data: {
+            id: string;
+            requestedPence: number;
+            withdrawalFeePence: number;
+            bankAmountPence: number;
+          };
+        }>("SELECT beauty.request_my_payout('standard',1000) AS data"),
+      )
+    ).rows[0].data;
+    expect(standard).toMatchObject({
+      requestedPence: 1000,
+      withdrawalFeePence: 0,
+      bankAmountPence: 1000,
+    });
+
+    let wallet = (
+      await asUser("finance-pro", (sql) =>
+        sql.query<{ data: { availablePence: number; processingPence: number } }>(
           "SELECT beauty.my_wallet_overview() AS data",
         ),
       )
-    ).rows[0].data.availablePence;
-    expect(after).toBe(0);
+    ).rows[0].data;
+    expect(wallet).toMatchObject({
+      availablePence: 600,
+      processingPence: 1000,
+    });
+
+    await asPaymentWorker((sql) =>
+      sql.query("SELECT beauty.cancel_requested_payout($1)", [standard.id]),
+    );
+
+    const instant = (
+      await asUser("finance-pro", (sql) =>
+        sql.query<{
+          data: {
+            id: string;
+            requestedPence: number;
+            withdrawalFeePence: number;
+            bankAmountPence: number;
+          };
+        }>("SELECT beauty.request_my_payout('instant',1000) AS data"),
+      )
+    ).rows[0].data;
+    expect(instant).toMatchObject({
+      requestedPence: 1000,
+      withdrawalFeePence: 40,
+      bankAmountPence: 960,
+    });
+
+    wallet = (
+      await asUser("finance-pro", (sql) =>
+        sql.query<{ data: { availablePence: number; processingPence: number } }>(
+          "SELECT beauty.my_wallet_overview() AS data",
+        ),
+      )
+    ).rows[0].data;
+    expect(wallet).toMatchObject({
+      availablePence: 600,
+      processingPence: 960,
+    });
+
+    await asPaymentWorker((sql) =>
+      sql.query("SELECT beauty.cancel_requested_payout($1)", [instant.id]),
+    );
+
+    await expect(
+      asUser("finance-pro", (sql) =>
+        sql.query("SELECT beauty.request_my_payout('standard',2000)"),
+      ),
+    ).rejects.toThrow();
+
+    const finalStandard = (
+      await asUser("finance-pro", (sql) =>
+        sql.query<{ data: { id: string } }>(
+          "SELECT beauty.request_my_payout('standard',1000) AS data",
+        ),
+      )
+    ).rows[0].data;
+
+    await asPaymentWorker(async (sql) => {
+      await sql.query(
+        "SELECT beauty.record_payout_provider($1,$2,$3,$4,$5,$6)",
+        [
+          finalStandard.id,
+          "tr_standard_withdrawal",
+          "po_standard_withdrawal",
+          null,
+          0,
+          new Date(Date.now() + 3 * 86400000).toISOString(),
+        ],
+      );
+      await sql.query(
+        "SELECT beauty.apply_payout_result('po_standard_withdrawal','paid')",
+      );
+    });
+
+    wallet = (
+      await asUser("finance-pro", (sql) =>
+        sql.query<{ data: { availablePence: number; processingPence: number } }>(
+          "SELECT beauty.my_wallet_overview() AS data",
+        ),
+      )
+    ).rows[0].data;
+    expect(wallet).toMatchObject({
+      availablePence: 600,
+      processingPence: 0,
+    });
   });
 });

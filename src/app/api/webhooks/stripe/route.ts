@@ -69,6 +69,72 @@ async function releaseShopSession(
   );
 }
 
+
+type ConnectPayout = Stripe.Payout & {
+  application_fee?: string | Stripe.ApplicationFee | null;
+  application_fee_amount?: number | null;
+};
+
+async function applyPayoutEvent(
+  rawPayout: Stripe.Payout,
+  nextStatus: "paid" | "failed" | "cancelled",
+) {
+  const payout = rawPayout as ConnectPayout;
+  const targetId = payout.metadata?.glohaus_payout_id;
+  const transferId = payout.metadata?.glohaus_transfer_id;
+  if (!targetId) return;
+
+  const applicationFeeId =
+    typeof payout.application_fee === "string"
+      ? payout.application_fee
+      : payout.application_fee?.id;
+
+  if (transferId)
+    await withPaymentWorker((db) =>
+      db.query(
+        "SELECT beauty.record_payout_provider($1,$2,$3,$4,$5,$6)",
+        [
+          targetId,
+          transferId,
+          payout.id,
+          applicationFeeId ?? null,
+          payout.application_fee_amount ?? 0,
+          new Date(payout.arrival_date * 1000),
+        ],
+      ),
+    );
+
+  if (nextStatus !== "paid") {
+    const details = await withPaymentWorker(async (db) => {
+      const result = await db.query<{
+        data: {
+          transferId: string | null;
+          status: string;
+        } | null;
+      }>("SELECT beauty.payout_reversal_details($1) AS data", [payout.id]);
+      return result.rows[0]?.data;
+    });
+
+    if (!details || ["failed", "cancelled"].includes(details.status)) return;
+
+    // Stripe automatically refunds Instant Payout application fees when the
+    // payout fails. Only reverse the GLOHAUS transfer back to the platform.
+    if (details.transferId)
+      await stripe().transfers.createReversal(
+        details.transferId,
+        undefined,
+        { idempotencyKey: `payout-transfer-reversal-${payout.id}` },
+      );
+  }
+
+  await withPaymentWorker((db) =>
+    db.query("SELECT beauty.apply_payout_result($1,$2)", [
+      payout.id,
+      nextStatus,
+    ]),
+  );
+}
+
 export async function POST(request: Request) {
   const signature = request.headers.get("stripe-signature");
   const secrets = [
@@ -139,6 +205,12 @@ export async function POST(request: Request) {
               : refund.payment_intent?.id,
           ]),
         );
+    } else if (event.type === "payout.paid") {
+      await applyPayoutEvent(event.data.object, "paid");
+    } else if (event.type === "payout.failed") {
+      await applyPayoutEvent(event.data.object, "failed");
+    } else if (event.type === "payout.canceled") {
+      await applyPayoutEvent(event.data.object, "cancelled");
     } else if (event.type === "account.updated") {
       const account = event.data.object;
       await withPaymentWorker((db) =>

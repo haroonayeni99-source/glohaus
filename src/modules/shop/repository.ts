@@ -7,6 +7,7 @@ import type {
   PublicProduct,
   CartOverview,
   ProductOrder,
+  ShopCheckout,
 } from "./domain";
 
 export async function professionalProducts(
@@ -217,4 +218,34 @@ export function professionalProductOrders(
   professionalId: string,
 ) {
   return productOrders(db, "professional_id", professionalId);
+}
+
+
+export async function prepareShopCheckout(db: SqlClient): Promise<ShopCheckout> {
+  const result = await db.query<{ data: ShopCheckout }>(
+    "SELECT beauty.prepare_shop_checkout() AS data",
+  );
+  return result.rows[0].data;
+}
+
+export async function attachShopCheckoutSession(
+  db: SqlClient,
+  checkoutId: string,
+  sessionId: string,
+): Promise<ShopCheckout> {
+  const result = await db.query<{ data: ShopCheckout }>(
+    "SELECT beauty.attach_shop_checkout_session($1,$2) AS data",
+    [checkoutId, sessionId],
+  );
+  return result.rows[0].data;
+}
+
+export async function releaseUnattachedShopCheckout(
+  db: SqlClient,
+  checkoutId: string,
+) {
+  await db.query(
+    "SELECT beauty.release_unattached_shop_checkout($1)",
+    [checkoutId],
+  );
 }

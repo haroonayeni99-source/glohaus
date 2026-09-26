@@ -9,6 +9,7 @@ import {
   Star,
   Store,
   Users,
+  WalletCards,
 } from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
@@ -30,6 +31,12 @@ const links = [
     "Past visits, reviews and rebooking",
     "/account/bookings?view=history",
     CalendarDays,
+  ],
+  [
+    "Wallet & payments",
+    "Deposits, refunds and payment activity",
+    "/wallet",
+    WalletCards,
   ],
   [
     "Following",

@@ -6,6 +6,8 @@ import { AccessMessage } from "@/components/access-message";
 import { professionalWallet, releaseMatureProductProceeds } from "@/modules/finance/repository";
 import { money } from "@/modules/professionals/domain";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
+import { ConnectButton } from "@/components/connect-button";
+import { PayoutDashboardButton } from "@/components/payout-dashboard-button";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "GLOHAUS Wallet" };
@@ -19,10 +21,18 @@ export default async function ProfessionalWalletPage() {
       </div>
     );
 
-  const wallet = await withIdentity(result.account.authId, async (db) => {
+  const finance = await withIdentity(result.account.authId, async (db) => {
     await releaseMatureProductProceeds(db);
-    return professionalWallet(db);
+    const wallet = await professionalWallet(db);
+    const paymentAccount = (
+      await db.query<{ stripe_account_id: string }>(
+        "SELECT stripe_account_id FROM beauty.professional_payment_accounts WHERE professional_id=$1",
+        [result.account!.professionalId],
+      )
+    ).rows[0];
+    return { wallet, hasStripeAccount: Boolean(paymentAccount?.stripe_account_id) };
   });
+  const { wallet, hasStripeAccount } = finance;
   const restricted = wallet.withdrawalsBlocked || wallet.instantPayoutBlocked;
   return (
     <div className="pro-app">
@@ -72,6 +82,21 @@ export default async function ProfessionalWalletPage() {
             </span>
           </section>
         )}
+
+        <section className="pro-panel">
+          <div className="pro-panel-title">
+            <h2>Payout setup</h2>
+            <span className="pro-status pro-status-confirmed">
+              {hasStripeAccount ? "Stripe connected" : "Setup required"}
+            </span>
+          </div>
+          <p>
+            {hasStripeAccount
+              ? "Manage your payout bank details and standard Stripe payout access. GLOHAUS only releases protected available funds after the relevant service or delivery window."
+              : "Connect Stripe before GLOHAUS can release professional earnings to your payout account."}
+          </p>
+          {hasStripeAccount ? <PayoutDashboardButton /> : <ConnectButton />}
+        </section>
 
         <section className="pro-panel pro-wallet-explainer">
           <div>

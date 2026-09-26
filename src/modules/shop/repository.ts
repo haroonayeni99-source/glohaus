@@ -5,6 +5,7 @@ import type {
   ProductInput,
   ProfessionalProduct,
   PublicProduct,
+  CartOverview,
 } from "./domain";
 
 export async function professionalProducts(
@@ -85,4 +86,31 @@ export async function publicProducts(db: SqlClient) {
        LIMIT 100`,
     )
   ).rows;
+}
+
+
+export async function customerCart(db: SqlClient): Promise<CartOverview> {
+  const result = await db.query<{ data: CartOverview }>(
+    "SELECT beauty.my_cart() AS data",
+  );
+  return result.rows[0]?.data ?? { items: [], totalPence: 0, itemCount: 0 };
+}
+
+export async function setCartItem(
+  db: SqlClient,
+  productId: string,
+  quantity: number,
+): Promise<CartOverview> {
+  const result = await db.query<{ data: CartOverview }>(
+    "SELECT beauty.set_cart_item($1,$2) AS data",
+    [productId, quantity],
+  );
+  return result.rows[0].data;
+}
+
+export async function clearCart(db: SqlClient): Promise<CartOverview> {
+  const result = await db.query<{ data: CartOverview }>(
+    "SELECT beauty.clear_cart() AS data",
+  );
+  return result.rows[0].data;
 }

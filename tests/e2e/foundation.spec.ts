@@ -35,8 +35,13 @@ test("public entry works on mobile and desktop", async ({ page }, testInfo) => {
   await page.goto("/sign-up?intent=professional");
   await expect(page).toHaveURL(/sign-up\?intent=professional/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Your GLOHAUS account is nearly ready.",
+    "Create your professional account",
   );
+  await expect(page.getByLabel("Email")).toBeVisible();
+  await expect(page.getByLabel("Password")).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Preview the professional dashboard" }),
+  ).toHaveAttribute("href", "/professional-dashboard-preview");
   expect(errors).toEqual([]);
 });
 
@@ -124,6 +129,28 @@ test("Following requires a customer session on Discover", async ({ page }) => {
   await page.getByRole("button", { name: "Following", exact: true }).click();
   await expect(page).toHaveURL(/\/sign-in\?returnTo=.*discover.*feed.*following/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Your GLOHAUS account is nearly ready.",
+    "Welcome back",
   );
+});
+
+
+test("light and night modes apply consistently on auth and professional preview", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("glohaus-theme", "night"));
+  await page.goto("/sign-up?intent=professional");
+
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
+  const nightForm = await page.locator(".auth-email-form").evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { background: style.backgroundColor, color: style.color };
+  });
+  expect(nightForm.background).not.toBe("rgb(255, 255, 255)");
+
+  await page.getByRole("button", { name: "Switch to light mode" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+
+  await page.goto("/professional-dashboard-preview");
+  await expect(
+    page.getByText("PREVIEW ONLY · SAMPLE DATA · NO LIVE BOOKINGS OR MONEY MOVEMENT"),
+  ).toBeVisible();
+  await expect(page.locator(".pro-app")).toBeVisible();
 });

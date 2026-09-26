@@ -203,7 +203,7 @@ describe.sequential("booking transactions and verified deposits", () => {
     await expect(
       asUser("alice", (sql) =>
         sql.query(
-          "SELECT beauty.apply_checkout_payment('evt_1',$1,'cs_test','pi_test',1500,'gbp')",
+          "SELECT beauty.apply_checkout_payment('evt_1',$1,'cs_test','pi_test',1600,'gbp')",
           [booking],
         ),
       ),
@@ -224,6 +224,18 @@ describe.sequential("booking transactions and verified deposits", () => {
       sql.query("SELECT beauty.attach_checkout($1,'cs_test')", [booking]),
     );
   });
+  it("prepares the immutable customer fee quote before payment capture", async () => {
+    const quote = await asUser("alice", (sql) =>
+      sql.query<{ data: { customerTotalPence: number; customerPlatformFeePence: number } }>(
+        "SELECT beauty.prepare_booking_financial_quote($1) AS data",
+        [booking],
+      ),
+    );
+    expect(quote.rows[0].data).toMatchObject({
+      customerTotalPence: 1600,
+      customerPlatformFeePence: 100,
+    });
+  });
   it("rejects amount, currency and checkout mismatches", async () => {
     await expect(
       worker((sql) =>
@@ -236,7 +248,7 @@ describe.sequential("booking transactions and verified deposits", () => {
     await expect(
       worker((sql) =>
         sql.query(
-          "SELECT beauty.apply_checkout_payment('evt_bad',$1,'cs_other','pi_test',1500,'gbp')",
+          "SELECT beauty.apply_checkout_payment('evt_bad',$1,'cs_other','pi_test',1600,'gbp')",
           [booking],
         ),
       ),
@@ -246,7 +258,7 @@ describe.sequential("booking transactions and verified deposits", () => {
     for (let attempt = 0; attempt < 2; attempt++)
       await worker((sql) =>
         sql.query(
-          "SELECT beauty.apply_checkout_payment('evt_paid',$1,'cs_test','pi_test',1500,'gbp')",
+          "SELECT beauty.apply_checkout_payment('evt_paid',$1,'cs_test','pi_test',1600,'gbp')",
           [booking],
         ),
       );
@@ -278,7 +290,7 @@ describe.sequential("booking transactions and verified deposits", () => {
       customerPaymentOverview(sql, aliceId),
     );
     expect(overview).toMatchObject({
-      capturedPence: 1500,
+      capturedPence: 1600,
       refundedPence: 0,
       pendingRefundPence: 0,
     });
@@ -286,7 +298,7 @@ describe.sequential("booking transactions and verified deposits", () => {
       bookingId: booking,
       serviceName: "Manicure",
       professionalName: "The Studio",
-      capturedPence: 1500,
+      capturedPence: 1600,
       refundedPence: 0,
       paymentStatus: "paid",
     });
@@ -341,7 +353,7 @@ describe.sequential("booking transactions and verified deposits", () => {
     );
     await worker((sql) =>
       sql.query(
-        "SELECT beauty.apply_checkout_payment('evt_late',$1,'cs_late','pi_late',1500,'gbp')",
+        "SELECT beauty.apply_checkout_payment('evt_late',$1,'cs_late','pi_late',1600,'gbp')",
         [otherBooking],
       ),
     );

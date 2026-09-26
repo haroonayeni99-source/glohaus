@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Star,
   Store,
+  PackageCheck,
   Users,
   WalletCards,
 } from "lucide-react";
@@ -55,6 +56,12 @@ const links = [
     "Feedback from your verified appointments",
     "/account/reviews",
     Star,
+  ],
+  [
+    "Shop orders",
+    "Track product purchases and delivery",
+    "/account/orders",
+    PackageCheck,
   ],
   ["Notifications", "Keep up with your appointments", "/notifications", Bell],
   [

@@ -45,6 +45,37 @@ export type AdminOverview = {
     status: string;
     created_at: string;
   }[];
+  shopOrders?: {
+    counts: {
+      total: number;
+      paid: number;
+      processing: number;
+      shipped: number;
+      delivered: number;
+      refundPending: number;
+      refunded: number;
+    };
+    orders: {
+      id: string;
+      status: string;
+      professional_name: string;
+      recipient_name: string;
+      city: string;
+      postcode: string;
+      country_code: string;
+      subtotal_pence: number;
+      delivery_pence: number;
+      total_pence: number;
+      tracking_carrier: string | null;
+      tracking_number: string | null;
+      created_at: string;
+      items: {
+        name: string;
+        quantity: number;
+        lineTotalPence: number;
+      }[];
+    }[];
+  } | null;
   safety?: {
     counts: {
       open: number;
@@ -132,13 +163,24 @@ export async function adminOverview() {
     } catch {
       safety = null;
     }
+    let shopOrders: AdminOverview["shopOrders"] = null;
+    try {
+      shopOrders = (
+        await db.query<{ overview: NonNullable<AdminOverview["shopOrders"]> }>(
+          "SELECT beauty.admin_shop_order_overview() AS overview",
+        )
+      ).rows[0]?.overview ?? null;
+    } catch {
+      shopOrders = null;
+    }
+
     let professionalTrust: NonNullable<AdminOverview["professionalTrust"]> = [];
     try {
       professionalTrust = (await db.query<NonNullable<AdminOverview["professionalTrust"]>[number]>(
         "SELECT p.id,p.user_id,p.business_name,coalesce(t.verification_status,'unverified') verification_status,coalesce(t.standing_status,'good') standing_status,t.live_restricted_until::text FROM beauty.professional_profiles p LEFT JOIN beauty.professional_trust_status t ON t.professional_id=p.id ORDER BY p.business_name,p.id LIMIT 100"
       )).rows;
     } catch { professionalTrust = []; }
-    return { ...base, ...extra, safety, professionalTrust };
+    return { ...base, ...extra, safety, shopOrders, professionalTrust };
   });
 }
 

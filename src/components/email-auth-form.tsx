@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { storedAuthAudience } from "@/lib/auth-flow";
@@ -112,6 +113,27 @@ export function EmailAuthForm({
       <button className="button full-width" disabled={pending}>
         {pending ? "Please wait…" : mode === "sign-up" ? "Create account" : "Sign in"}
       </button>
+
+      <div className="auth-switch-row">
+        <span>
+          {mode === "sign-up" ? "Already have an account?" : "New to GLOHAUS?"}
+        </span>
+        <Link
+          href={
+            mode === "sign-up"
+              ? `/sign-in?intent=${audience}`
+              : `/sign-up?intent=${audience}`
+          }
+        >
+          {mode === "sign-up" ? "Sign in" : "Create account"}
+        </Link>
+      </div>
+
+      {professional && (
+        <Link className="auth-dashboard-preview" href="/professional-dashboard-preview">
+          Preview the professional dashboard
+        </Link>
+      )}
     </form>
   );
 }

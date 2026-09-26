@@ -11,6 +11,7 @@ import { PublicHeader } from "@/components/public-header";
 import { AccessMessage } from "@/components/access-message";
 import { BookingActions } from "@/components/booking-actions";
 import { BookingConfirmation } from "@/components/booking-confirmation";
+import { BookingJourneyLocation } from "@/components/booking-journey-location";
 import { bookingById } from "@/modules/bookings/repository";
 import { money } from "@/modules/professionals/domain";
 export default async function Booking({
@@ -128,6 +129,11 @@ export default async function Booking({
           )}
         </section>
         )}
+        <BookingJourneyLocation
+          bookingId={id}
+          professional={data.professional}
+          enabled={b.location_window_open}
+        />
         {!data.professional &&
           b.status === "completed" &&
           !data.hasReview &&

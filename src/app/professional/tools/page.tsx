@@ -15,6 +15,7 @@ import {
   PackageCheck,
   ShoppingBag,
   WalletCards,
+  BadgePoundSterling,
 } from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
 import { AccessMessage } from "@/components/access-message";
@@ -82,6 +83,12 @@ const tools = [
     "Your deposits and financial activity",
     "/professional/wallet",
     WalletCards,
+  ],
+  [
+    "Plans & fees",
+    "Your commission, subscriptions and withdrawal fees",
+    "/professional/plans",
+    BadgePoundSterling,
   ],
   ["Notifications", "Keep up with your appointments", "/notifications", Bell],
   [

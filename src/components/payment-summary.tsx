@@ -36,10 +36,12 @@ export function PaymentSummary({
         </div>
       )}
       <div className="payment-summary-total">
-        <span>Total payable now</span>
-        <strong>
-          {money(depositPence + (bookingFeePence ?? 0))}
-        </strong>
+        <span>Total service price</span>
+        <strong>{money(servicePricePence + (bookingFeePence ?? 0))}</strong>
+      </div>
+      <div>
+        <span>Payable now</span>
+        <strong>{money(depositPence + (bookingFeePence ?? 0))}</strong>
       </div>
       <div className="payment-summary-balance">
         <span>Remaining service balance</span>
@@ -47,9 +49,8 @@ export function PaymentSummary({
       </div>
       {!hasFee && (
         <p className="payment-summary-note">
-          No additional GLOHAUS customer booking fee is included in this
-          summary. The professional-required deposit remains capped at 40% of
-          the service price.
+          The professional-required deposit remains capped at 40% of the
+          service price.
         </p>
       )}
     </section>

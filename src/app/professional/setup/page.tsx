@@ -97,9 +97,14 @@ export default async function ProfessionalSetup() {
           You control what becomes public. Complete the essentials, then share
           your work when you are ready.
         </p>
-        <Link className="text-link setup-preview-link" href="/professional-preview">
-          See a GLOHAUS PRO page preview <ArrowUpRight size={17} aria-hidden />
-        </Link>
+        <div className="editor-actions">
+          <Link className="text-link setup-preview-link" href="/professional-preview">
+            See a GLOHAUS PRO page preview <ArrowUpRight size={17} aria-hidden />
+          </Link>
+          <Link className="text-link setup-preview-link" href="/professional/plans">
+            Review plans, commission and withdrawal fees <ArrowUpRight size={17} aria-hidden />
+          </Link>
+        </div>
         <section className="setup-progress" aria-label="Setup progress">
           <div>
             <span className="eyebrow">YOUR PAGE PROGRESS</span>

@@ -105,6 +105,7 @@ export function preview(editor = false) {
           reviewCount={1}
           follow={{ following: false, followerCount: 0, signedIn: false }}
           messageHref={null}
+          bookingFeePence={100}
           booking={
             <section className="booking-widget">
               <p className="eyebrow">YOUR NEXT BEAUTY MOMENT</p>

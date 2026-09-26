@@ -64,7 +64,6 @@ export async function POST(request: Request) {
     const checkout = await stripe().checkout.sessions.create(
       {
         mode: "payment",
-        payment_method_types: ["card"],
         line_items: [
           {
             price_data: {
@@ -83,6 +82,10 @@ export async function POST(request: Request) {
           metadata: { booking_id: booking.id },
         },
         metadata: { booking_id: booking.id },
+        integration_identifier: `glohaus_booking_${booking.id
+          .replace(/-/g, "")
+          .slice(0, 8)
+          .replace(/[0-9]/g, (digit) => String.fromCharCode(97 + Number(digit)))}`,
         success_url: `${origin}/account/bookings/${booking.id}`,
         cancel_url: `${origin}/account/bookings/${booking.id}`,
         expires_at: Math.floor(Date.parse(booking.holdExpiresAt) / 1000) - 120,

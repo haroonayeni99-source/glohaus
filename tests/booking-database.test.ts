@@ -6,6 +6,7 @@ import { updateProfile, saveService } from "@/modules/professionals/repository";
 import { saveSchedule } from "@/modules/availability/repository";
 import { professionalReviews } from "@/modules/reviews/repository";
 import { checkoutReference } from "@/modules/bookings/repository";
+import { customerPaymentOverview } from "@/modules/finance/repository";
 const db = new PGlite();
 let professional: string;
 let service: string;
@@ -266,6 +267,37 @@ describe.sequential("booking transactions and verified deposits", () => {
       ).rows,
     ).toHaveLength(3);
   });
+  it("shows verified payment activity only to the booking customer", async () => {
+    const aliceId = (
+      await db.query<{ id: string }>(
+        "SELECT id FROM beauty.users WHERE auth_id='alice'",
+      )
+    ).rows[0].id;
+
+    const overview = await asUser("alice", (sql) =>
+      customerPaymentOverview(sql, aliceId),
+    );
+    expect(overview).toMatchObject({
+      capturedPence: 1500,
+      refundedPence: 0,
+      pendingRefundPence: 0,
+    });
+    expect(overview.records[0]).toMatchObject({
+      bookingId: booking,
+      serviceName: "Manicure",
+      professionalName: "The Studio",
+      capturedPence: 1500,
+      refundedPence: 0,
+      paymentStatus: "paid",
+    });
+
+    expect(
+      (await asUser("bob", (sql) =>
+        customerPaymentOverview(sql, aliceId),
+      )).records,
+    ).toEqual([]);
+  });
+
   it("cannot complete an appointment before it ends", async () => {
     await expect(
       asUser("pro", (sql) =>

@@ -39,6 +39,7 @@ export function MessageCentre({
   bookingId,
   professionalId,
   draftRecipientName,
+  professionalMessaging = false,
 }: {
   initialConversations: ConversationSummary[];
   activeConversation: ConversationDetails | null;
@@ -47,6 +48,7 @@ export function MessageCentre({
   bookingId: string | null;
   professionalId: string | null;
   draftRecipientName: string | null;
+  professionalMessaging?: boolean;
 }) {
   const router = useRouter();
   const conversations = initialConversations;
@@ -58,6 +60,13 @@ export function MessageCentre({
   const endRef = useRef<HTMLDivElement | null>(null);
   const activeId = activeConversation?.id || null;
   const role = activeConversation?.participant_role || null;
+  const professionalPrompts = [
+    "Hi! Thanks for your message. How can I help with your booking?",
+    "Thanks for booking with me. Is there anything I should know before your appointment?",
+    "Hi! I’m just confirming your appointment details. Please let me know if you have any questions.",
+    "I’m running slightly behind. I’ll keep you updated here.",
+    "Thanks for your appointment today. I hope you loved the result!",
+  ];
 
   const title = useMemo(() => {
     if (activeConversation) return otherName(activeConversation);
@@ -294,6 +303,20 @@ export function MessageCentre({
             </div>
 
             <form className="message-composer" onSubmit={send}>
+              {professionalMessaging && (
+                <div className="message-prompts" aria-label="Suggested replies">
+                  {professionalPrompts.map((prompt) => (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() => setBody(prompt)}
+                      disabled={busy}
+                    >
+                      {prompt}
+                    </button>
+                  ))}
+                </div>
+              )}
               <label className="sr-only" htmlFor="message-body">
                 Message
               </label>

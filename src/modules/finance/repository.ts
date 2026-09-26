@@ -123,3 +123,11 @@ export async function customerPaymentOverview(
     records,
   };
 }
+
+
+export async function releaseMatureProductProceeds(db: SqlClient) {
+  const result = await db.query<{ released: number }>(
+    "SELECT beauty.release_my_mature_product_proceeds() AS released",
+  );
+  return result.rows[0]?.released ?? 0;
+}

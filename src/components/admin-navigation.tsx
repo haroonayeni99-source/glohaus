@@ -22,6 +22,7 @@ const coreSections = [
   ["App Users", "users", UsersRound],
   ["Professionals", "professionals", BadgeCheck],
   ["Bookings", "bookings", CalendarDays],
+  ["Payments", "payments", CreditCard],
   ["Orders", "orders", PackageCheck],
   ["LIVE", "live-access", Radio],
   ["Content", "content", BookOpenCheck],
@@ -36,7 +37,6 @@ const ownerSections = [
 ] as const;
 
 const pendingSections = [
-  ["Payments", CreditCard],
   ["Analytics", BarChart3],
 ] as const;
 

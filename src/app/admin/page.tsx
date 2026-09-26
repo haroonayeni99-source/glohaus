@@ -5,8 +5,9 @@ import { AuthFrame } from "@/components/auth-frame";
 import { AccessMessage } from "@/components/access-message";
 import { AdminManager } from "@/components/admin-manager";
 import { AdminNavigation } from "@/components/admin-navigation";
+import { ShopFeeControl } from "@/components/shop-fee-control";
 import { OwnerControls } from "@/components/owner-controls";
-import { adminOverview, ownerControls } from "@/modules/admin/repository";
+import { adminOverview, ownerControls, ownerProductFeeRule } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
@@ -17,14 +18,13 @@ export default async function Page() {
         <AccessMessage code={result.error} />
       </AuthFrame>
     );
-  const [data, labels, owner] = await Promise.all([
+  const isOwner = result.account.roles.includes("owner");
+  const [data, labels, owner, productFee] = await Promise.all([
     adminOverview(),
     publicLabels(),
-    result.account.roles.includes("owner")
-      ? ownerControls().catch(() => null)
-      : Promise.resolve(null),
+    isOwner ? ownerControls().catch(() => null) : Promise.resolve(null),
+    isOwner ? ownerProductFeeRule().catch(() => null) : Promise.resolve(null),
   ]);
-  const isOwner = result.account.roles.includes("owner");
   return (
     <main id="main" className="admin-workspace">
         <AdminNavigation account={result.account} />
@@ -52,6 +52,17 @@ export default async function Page() {
             <p className="lead">Set the professional title and the category language that customers see across GLOHAUS.</p>
             <AdminLabelEditor initial={labels} />
           </section>
+          {owner && (
+            <section id="shop-fees" className="admin-workspace-section">
+              <p className="eyebrow">MARKETPLACE MONEY</p>
+              <h2>Shop commission</h2>
+              <p className="lead">
+                Set the professional-paid commission used by new Shop checkouts.
+                Each paid order keeps an immutable snapshot of the rule used at purchase.
+              </p>
+              <ShopFeeControl initial={productFee} />
+            </section>
+          )}
           {owner && (
             <section id="staff" className="admin-workspace-section">
               <h2>Staff & admins</h2>

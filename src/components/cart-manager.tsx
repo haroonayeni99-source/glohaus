@@ -44,6 +44,33 @@ export function CartManager({ initialCart }: { initialCart: CartOverview }) {
     }
   }
 
+  async function checkout() {
+    if (busyId !== null || hasUnavailable) return;
+    setBusyId("checkout");
+    setNotice("");
+    try {
+      const response = await fetch("/api/v1/shop/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      const data = await response.json();
+      if (!response.ok || !data.url) {
+        setNotice(
+          data.error?.code === "INVALID_REQUEST"
+            ? "Checkout is not available for this cart right now."
+            : "Secure checkout is temporarily unavailable.",
+        );
+        return;
+      }
+      window.location.assign(data.url);
+    } catch {
+      setNotice("Secure checkout is temporarily unavailable.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function clear() {
     setBusyId("all");
     setNotice("");
@@ -171,10 +198,10 @@ export function CartManager({ initialCart }: { initialCart: CartOverview }) {
         </div>
         <div>
           <span>Delivery</span>
-          <strong>Calculated later</strong>
+          <strong>{money(0)}</strong>
         </div>
         <div className="cart-summary-total">
-          <span>Current product total</span>
+          <span>Total</span>
           <strong>{money(cart.totalPence)}</strong>
         </div>
         {hasUnavailable && (
@@ -182,12 +209,18 @@ export function CartManager({ initialCart }: { initialCart: CartOverview }) {
             Remove unavailable or over-stock items before checkout can open.
           </p>
         )}
-        <button type="button" disabled>
-          Checkout is not open yet
+        <button
+          type="button"
+          disabled={hasUnavailable || busyId !== null}
+          onClick={checkout}
+        >
+          {busyId === "checkout" ? "Opening secure checkout…" : "Checkout securely"}
         </button>
         <p>
-          Your cart works now. Payment stays locked until marketplace orders,
-          delivery tracking, refunds and protected payment capture are connected.
+          Payment is completed securely with Stripe. Stock is reserved while
+          checkout is open, and paid orders are created only after Stripe
+          confirms the payment. This MVP checkout adds no separate delivery
+          charge, so the amount shown above is the amount Stripe will collect.
         </p>
         <Link href="/shop">Continue shopping</Link>
       </aside>

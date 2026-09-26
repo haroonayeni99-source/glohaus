@@ -128,3 +128,23 @@ export const fulfilmentUpdateSchema = z
       });
     }
   });
+
+
+export type ShopCheckoutItem = {
+  productId: string;
+  professionalId: string;
+  professionalName: string;
+  name: string;
+  pricePence: number;
+  quantity: number;
+};
+
+export type ShopCheckout = {
+  id: string;
+  stripeSessionId: string | null;
+  integrationIdentifier: string;
+  expiresAt: string;
+  totalPence: number;
+  itemCount: number;
+  items: ShopCheckoutItem[];
+};

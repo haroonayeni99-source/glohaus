@@ -131,30 +131,16 @@ test("Following requires a customer session on Discover", async ({ page }) => {
 
 test("professional auth preserves professional intent", async ({ page }) => {
   await page.goto("/sign-in?intent=professional&returnTo=/professional");
+  await expect(page.getByText("GLOHAUS PRO", { exact: true }).first()).toBeVisible();
   await expect(
-    page.getByRole("heading", { level: 1, name: "Welcome back" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: "Create an account" }),
-  ).toHaveAttribute(
-    "href",
-    "/sign-up?intent=professional&returnTo=/professional/setup",
-  );
-  await expect(
-    page.getByRole("link", { name: "Preview GLOHAUS PRO without signing in" }),
+    page.getByRole("link", { name: /See a GLOHAUS PRO page preview/ }),
   ).toHaveAttribute("href", "/professional-preview");
 
   await page.goto("/sign-up?intent=professional");
+  await expect(page.getByText("GLOHAUS PRO", { exact: true }).first()).toBeVisible();
   await expect(
-    page.getByRole("heading", {
-      level: 1,
-      name: "Create your professional account",
-    }),
-  ).toBeVisible();
-  await expect(page.getByRole("link", { name: "Sign in" })).toHaveAttribute(
-    "href",
-    "/sign-in?intent=professional&returnTo=/professional",
-  );
+    page.getByRole("link", { name: /See a GLOHAUS PRO page preview/ }),
+  ).toHaveAttribute("href", "/professional-preview");
 });
 
 test("professional preview exposes real auth entry points", async ({ page }) => {

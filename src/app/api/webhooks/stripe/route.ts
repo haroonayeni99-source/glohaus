@@ -70,19 +70,45 @@ async function releaseShopSession(
 }
 
 
+type ConnectPayout = Stripe.Payout & {
+  application_fee?: string | Stripe.ApplicationFee | null;
+  application_fee_amount?: number | null;
+};
+
 async function applyPayoutEvent(
-  payout: Stripe.Payout,
+  rawPayout: Stripe.Payout,
   nextStatus: "paid" | "failed" | "cancelled",
 ) {
-  if (!payout.metadata?.glohaus_payout_id) return;
+  const payout = rawPayout as ConnectPayout;
+  const targetId = payout.metadata?.glohaus_payout_id;
+  const transferId = payout.metadata?.glohaus_transfer_id;
+  if (!targetId) return;
+
+  const applicationFeeId =
+    typeof payout.application_fee === "string"
+      ? payout.application_fee
+      : payout.application_fee?.id;
+
+  if (transferId)
+    await withPaymentWorker((db) =>
+      db.query(
+        "SELECT beauty.record_payout_provider($1,$2,$3,$4,$5,$6)",
+        [
+          targetId,
+          transferId,
+          payout.id,
+          applicationFeeId ?? null,
+          payout.application_fee_amount ?? 0,
+          new Date(payout.arrival_date * 1000),
+        ],
+      ),
+    );
 
   if (nextStatus !== "paid") {
     const details = await withPaymentWorker(async (db) => {
       const result = await db.query<{
         data: {
           transferId: string | null;
-          applicationFeeId: string | null;
-          withdrawalFeePence: number;
           status: string;
         } | null;
       }>("SELECT beauty.payout_reversal_details($1) AS data", [payout.id]);
@@ -91,13 +117,8 @@ async function applyPayoutEvent(
 
     if (!details || ["failed", "cancelled"].includes(details.status)) return;
 
-    if (details.applicationFeeId && details.withdrawalFeePence > 0)
-      await stripe().applicationFees.createRefund(
-        details.applicationFeeId,
-        { amount: details.withdrawalFeePence },
-        { idempotencyKey: `payout-fee-refund-${payout.id}` },
-      );
-
+    // Stripe automatically refunds Instant Payout application fees when the
+    // payout fails. Only reverse the GLOHAUS transfer back to the platform.
     if (details.transferId)
       await stripe().transfers.createReversal(
         details.transferId,

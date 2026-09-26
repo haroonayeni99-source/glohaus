@@ -144,7 +144,7 @@ export default async function ProfessionalPlansPage() {
 
         <p className="lead">
           Paid plan commission changes only after verified Stripe subscription
-          events. The pricing acknowledgement above does not replace GLOHAUS's
+          events. The pricing acknowledgement above does not replace GLOHAUS&apos;s
           final Professional Terms.
         </p>
         <Link className="button" href="/professional/setup">Back to setup</Link>

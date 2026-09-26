@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { publicSupabaseKey } from "@/lib/config";
+import { publicSupabaseKey, publicSupabaseUrl } from "@/lib/config";
 import { confirmationPlan } from "@/lib/auth-flow";
 import { withIdentity } from "@/lib/db";
 import { ensureCustomerAccount } from "@/modules/accounts/repository";
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const response = noStoreRedirect(url.origin, "/account");
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    publicSupabaseUrl(),
     publicSupabaseKey()!,
     {
       cookies: {

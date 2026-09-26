@@ -39,13 +39,12 @@ export async function POST(request: Request) {
         {
           payment_intent: resolution.paymentIntentId,
           amount: resolution.amountPence,
-          reverse_transfer: true,
           metadata: { refund_decision_id: resolution.decisionId },
         },
         { idempotencyKey: `glohaus-refund-${resolution.decisionId}` },
       );
-      await withPaymentWorker((db) =>
-        db.query("SELECT beauty.apply_refund_result($1,$2,$3,$4,$5)", [
+      await withPaymentWorker(async (db) => {
+        await db.query("SELECT beauty.apply_refund_result($1,$2,$3,$4,$5)", [
           resolution.decisionId,
           refund.id,
           refund.amount,
@@ -53,8 +52,11 @@ export async function POST(request: Request) {
           typeof refund.payment_intent === "string"
             ? refund.payment_intent
             : refund.payment_intent?.id,
-        ]),
-      );
+        ]);
+        await db.query("SELECT beauty.record_booking_refund_finance($1)", [
+          resolution.decisionId,
+        ]);
+      });
     }
     return json({ saved: true });
   } catch (error) {

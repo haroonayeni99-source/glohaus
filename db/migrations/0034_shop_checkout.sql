@@ -4,6 +4,7 @@
 CREATE TABLE beauty.shop_checkouts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   customer_id uuid NOT NULL REFERENCES beauty.users(id),
+  integration_identifier text NOT NULL DEFAULT ('glohaus_shop_' || translate(substr(md5(gen_random_uuid()::text),1,8),'0123456789','klmnopqrst')),
   stripe_session_id text UNIQUE,
   stripe_payment_intent_id text,
   fee_rule_id uuid REFERENCES beauty.financial_fee_rules(id),
@@ -85,6 +86,7 @@ AS $$
   SELECT jsonb_build_object(
     'id',c.id,
     'stripeSessionId',c.stripe_session_id,
+    'integrationIdentifier',c.integration_identifier,
     'expiresAt',c.expires_at,
     'totalPence',c.amount_pence,
     'itemCount',coalesce((SELECT sum(i.quantity)::integer FROM beauty.shop_checkout_items i WHERE i.checkout_id=c.id),0),

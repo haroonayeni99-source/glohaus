@@ -4,6 +4,21 @@ import type { Metadata } from "next";
 import { ThemeToggle } from "@/components/theme-toggle";
 import "./globals.css";
 import "./ui-upgrades.css";
+import "./theme-compat.css";
+
+const themeBootstrap = `(() => {
+  try {
+    const saved = window.localStorage.getItem("glohaus-theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const theme =
+      saved === "night" || (saved !== "light" && prefersDark) ? "night" : "light";
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme === "night" ? "dark" : "light";
+  } catch {
+    document.documentElement.dataset.theme = "light";
+    document.documentElement.style.colorScheme = "light";
+  }
+})();`;
 
 export const metadata: Metadata = {
   title: {
@@ -31,7 +46,13 @@ export default async function RootLayout({
     </>
   );
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          id="glohaus-theme-bootstrap"
+          dangerouslySetInnerHTML={{ __html: themeBootstrap }}
+        />
+      </head>
       <body>
         <ThemeToggle />
         {content}

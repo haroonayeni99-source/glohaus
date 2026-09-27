@@ -48,6 +48,18 @@ const messages: Record<
     href: "/professional/bookings",
     label: "View appointments",
   },
+  VERIFICATION_REQUIRED: {
+    title: "Verify your identity to unlock this feature.",
+    text: "You can keep using the free Starter professional account, but this feature requires completed identity verification.",
+    href: "/professional/profile#verification",
+    label: "Verify identity",
+  },
+  PROFESSIONAL_RESTRICTED: {
+    title: "This professional account is currently restricted.",
+    text: "New marketplace activity is limited while the account standing or verification status is under review.",
+    href: "/professional",
+    label: "Professional dashboard",
+  },
   INVALID_REQUEST: {
     title: "That didn’t go through.",
     text: "Please return to your account and try again.",

@@ -12,7 +12,11 @@ const mobileCategories = [
   ["Makeup", "https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=240&q=82"],
 ] as const;
 
-export function MobileCustomerHome() {
+export function MobileCustomerHome({ signedIn = false }: { signedIn?: boolean }) {
+  const notificationHref = signedIn
+    ? "/notifications"
+    : "/sign-in?returnTo=%2Fnotifications";
+
   return (
     <div className="mobile-customer-home">
       <main id="main" className="mobile-home-main">
@@ -23,7 +27,7 @@ export function MobileCustomerHome() {
           </div>
           <Link
             className="mobile-home-bell"
-            href="/notifications"
+            href={notificationHref}
             aria-label="Notifications"
           >
             <Bell size={21} aria-hidden />
@@ -81,7 +85,7 @@ export function MobileCustomerHome() {
           <span aria-hidden>→</span>
         </Link>
       </main>
-      <BottomNavigation active="home" />
+      <BottomNavigation active="home" signedIn={signedIn} />
     </div>
   );
 }

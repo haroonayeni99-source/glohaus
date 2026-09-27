@@ -4,6 +4,10 @@ import { apiError, assertSameOrigin, json } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
 import { paymentReady, stripe } from "@/modules/payments/stripe";
 import { withPaymentWorker } from "@/modules/payments/worker";
+import {
+  assertWithdrawalAllowed,
+  professionalAccessState,
+} from "@/modules/professionals/verification";
 
 type PayoutRequest = {
   id: string;
@@ -46,6 +50,10 @@ export async function POST(request: Request) {
       throw new AccessError("UNAVAILABLE", 503);
 
     const account = await withAccount("professional", async (db, account) => {
+      const access = await professionalAccessState(db, account.professionalId!);
+      assertWithdrawalAllowed(access);
+      await db.query("SELECT beauty.assert_my_professional_verified()");
+
       const paymentAccount = (
         await db.query<{
           stripe_account_id: string;

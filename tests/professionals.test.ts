@@ -91,6 +91,7 @@ describe.sequential("professional publishing and private ownership", () => {
       "rating",
       "review_count",
       "slug",
+      "verification_status",
     ]);
   });
   it("cannot change another professional even with their ID", async () => {

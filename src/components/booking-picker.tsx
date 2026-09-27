@@ -46,6 +46,8 @@ export function BookingPicker({
   professionalName,
   bookingFeePence,
   initialSelection,
+  verificationStatus = "unverified",
+  starterBookingsRemaining = null,
 }: {
   services: Service[];
   ready: boolean;
@@ -53,6 +55,8 @@ export function BookingPicker({
   professionalName: string;
   bookingFeePence: number;
   initialSelection?: { serviceId?: string; date?: string; startsAt?: string };
+  verificationStatus?: "unverified" | "pending" | "verified" | "restricted";
+  starterBookingsRemaining?: number | null;
 }) {
   const validInitialService = services.some(
     (service) => service.id === initialSelection?.serviceId,
@@ -164,7 +168,11 @@ export function BookingPicker({
         throw new Error(
           result.error?.code === "SLOT_TAKEN"
             ? "That time has just been taken. Please choose another."
-            : "Booking is unavailable right now. Please try again.",
+            : result.error?.code === "VERIFICATION_REQUIRED"
+              ? "This professional has reached an unverified account limit. They need to complete identity verification before taking this booking."
+              : result.error?.code === "PROFESSIONAL_RESTRICTED"
+                ? "This professional is temporarily unable to accept new bookings."
+                : "Booking is unavailable right now. Please try again.",
         );
       }
       window.location.href = result.url;
@@ -180,6 +188,15 @@ export function BookingPicker({
     <section className="booking-widget booking-journey">
       {step === "appointment" ? (
         <>
+          {verificationStatus !== "verified" && (
+            <div className="form-notice" role="status">
+              {verificationStatus === "restricted"
+                ? "This professional account is currently restricted from new marketplace activity."
+                : verificationStatus === "pending"
+                  ? "Identity verification is pending. Starter booking limits remain in place until verification is complete."
+                  : `Identity has not yet been verified. Starter bookings are limited to services up to £200 with no online deposit${starterBookingsRemaining === null ? "." : `, with ${starterBookingsRemaining} starter booking${starterBookingsRemaining === 1 ? "" : "s"} remaining.`}`}
+            </div>
+          )}
           <div className="booking-journey-heading">
             <p className="eyebrow">BOOK YOUR APPOINTMENT</p>
             <h2>Choose your service and time.</h2>
@@ -320,7 +337,7 @@ export function BookingPicker({
           <button
             type="button"
             className="button full-width booking-continue"
-            disabled={!selected || loadingSlots}
+            disabled={!selected || loadingSlots || verificationStatus === "restricted" || starterBookingsRemaining === 0}
             onClick={() => {
               setAccepted(false);
               setNotice("");

@@ -65,6 +65,19 @@ export default async function EditProfile() {
         data: { planKey: "starter" | "pro" | "premium" };
       }>("SELECT beauty.my_professional_pricing() AS data")
     ).rows[0].data;
+    const access = (
+      await db.query<{
+        data: {
+          status: "unverified" | "pending" | "verified" | "restricted";
+          verified: boolean;
+          paymentReady: boolean;
+          starterBookingsUsed: number;
+          starterBookingsRemaining: number | null;
+        };
+      }>("SELECT beauty.professional_access_state($1) AS data", [
+        account.professionalId,
+      ])
+    ).rows[0].data;
     const presentation = (
       await db.query<{
         profile_style: "signature" | "minimal" | "editorial";
@@ -77,7 +90,7 @@ export default async function EditProfile() {
         [account.professionalId],
       )
     ).rows[0];
-    return { profile, services, photo, assets, pricing, presentation };
+    return { profile, services, photo, assets, pricing, presentation, access };
   });
   if (!data.profile)
     return (
@@ -156,7 +169,7 @@ export default async function EditProfile() {
             services={data.services}
             assets={data.assets}
           />
-          <ConnectButton />
+          <ConnectButton status={data.access.status} />
         </section>
       </main>
     </div>

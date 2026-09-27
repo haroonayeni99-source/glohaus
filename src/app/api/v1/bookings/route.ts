@@ -32,7 +32,7 @@ export async function POST(request: Request) {
           price_pence: number;
           deposit_pence: number;
         }>(
-          "SELECT professional_id,price_pence,deposit_pence FROM beauty.services WHERE id=$1 AND active",
+          "SELECT professional_id,price_pence,deposit_pence FROM beauty.public_services WHERE id=$1",
           [parsed.data.serviceId],
         )
       ).rows[0];

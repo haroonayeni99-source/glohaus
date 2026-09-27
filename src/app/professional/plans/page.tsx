@@ -66,15 +66,16 @@ export default async function ProfessionalPlansPage() {
         <p className="pro-kicker">GLOHAUS PRO PRICING</p>
         <h1>Your fees, clearly explained.</h1>
         <p className="pro-page-lead">
-          Customers do not see your GLOHAUS commission or payout amount. These
-          commercial terms are shown to you so you can understand your costs
-          before using paid GLOHAUS services.
+          Starter is free to use. Identity verification is separate from your
+          subscription plan: verification unlocks higher-trust marketplace
+          features, while Pro and Premium change your paid business features and
+          commission rate.
         </p>
 
         <section className="analytics-grid" aria-label="Professional plans">
           {plans.map((plan) => (
             <article key={plan.key}>
-              <strong>{plan.name}</strong>
+              <strong>{plan.key === "starter" ? "Starter · Free" : plan.name}</strong>
               <span>{plan.monthly === 0 ? "£0/month" : money(plan.monthly) + "/month"}</span>
               <span>{percent(plan.commission)} GLOHAUS service commission</span>
               {pricing.planKey === plan.key && <small>Current plan</small>}
@@ -96,6 +97,15 @@ export default async function ProfessionalPlansPage() {
             confirms cancellation.
           </section>
         )}
+
+        <section className="pro-panel">
+          <h2>Verification and plans are separate</h2>
+          <p>
+            You do not need a paid plan to become verified. A verified Starter
+            professional keeps the £0 monthly plan while unlocking verification-gated
+            features such as paid deposits, product selling and payouts.
+          </p>
+        </section>
 
         <section className="pro-panel">
           <h2>Your current commercial terms</h2>

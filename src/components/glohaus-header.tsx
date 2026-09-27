@@ -14,7 +14,7 @@ export function GlohausHeader({
     ? "/notifications"
     : "/sign-in?returnTo=%2Fnotifications";
   const accountHref = signedIn
-    ? "/workspace"
+    ? "/account"
     : professional
       ? "/sign-in?intent=professional&returnTo=/professional"
       : "/sign-in";

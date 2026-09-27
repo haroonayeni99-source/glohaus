@@ -30,6 +30,9 @@ const trends = [
 export function DesktopCustomerHome({ professionals = [], signedIn = false, displayName = "" }: {
   professionals?: PublicProfessional[]; signedIn?: boolean; displayName?: string;
 }) {
+  const protectedHref = (path: string) =>
+    signedIn ? path : `/sign-in?returnTo=${encodeURIComponent(path)}`;
+
   const cards = professionals.length
     ? professionals.slice(0, 4).map((item, index) => ({
         id: item.id,
@@ -59,11 +62,11 @@ export function DesktopCustomerHome({ professionals = [], signedIn = false, disp
       <nav aria-label="Customer navigation">
         <Link className="active" href="/"><Home size={20}/>Home</Link>
         <Link href="/explore"><Search size={20}/>Explore</Link>
-        <Link href="/account/bookings"><CalendarDays size={20}/>Bookings</Link>
-        <Link href="/messages"><MessageSquare size={20}/>Messages</Link>
+        <Link href={protectedHref("/account/bookings")}><CalendarDays size={20}/>Bookings</Link>
+        <Link href={protectedHref("/messages")}><MessageSquare size={20}/>Messages</Link>
         <Link href="/shop"><ShoppingBag size={20}/>Shop</Link>
-        <Link href="/wallet"><WalletCards size={20}/>Wallet</Link>
-        <Link href="/workspace"><UserRound size={20}/>Profile</Link>
+        <Link href={protectedHref("/wallet")}><WalletCards size={20}/>Wallet</Link>
+        <Link href={protectedHref("/workspace")}><UserRound size={20}/>Profile</Link>
       </nav>
       <div className="glohaus-plus-card glohaus-plus-disabled" aria-disabled="true">
         <Crown size={22}/><span><strong>GloHaus+</strong><small>Planned membership perks · Coming soon</small></span>
@@ -73,8 +76,8 @@ export function DesktopCustomerHome({ professionals = [], signedIn = false, disp
     <main className="customer-desktop-main">
       <header className="customer-desktop-topbar">
         <span />
-        <div><Link href="/notifications" aria-label="Notifications"><Bell size={21}/></Link>
-        <Link className="desktop-user-chip" href="/workspace"><span className="desktop-avatar">{displayName ? displayName[0]?.toUpperCase() : "G"}</span>{signedIn ? displayName || "My account" : "Sign in"}<ChevronRight size={15}/></Link></div>
+        <div><Link href={protectedHref("/notifications")} aria-label="Notifications"><Bell size={21}/></Link>
+        <Link className="desktop-user-chip" href={signedIn ? "/workspace" : "/sign-in"}><span className="desktop-avatar">{displayName ? displayName[0]?.toUpperCase() : "G"}</span>{signedIn ? displayName || "My account" : "Sign in"}<ChevronRight size={15}/></Link></div>
       </header>
 
       <section className="desktop-hero" style={{ position: "relative" }}>
@@ -115,16 +118,16 @@ export function DesktopCustomerHome({ professionals = [], signedIn = false, disp
     </main>
 
     <aside className="customer-desktop-rail">
-      <section><div className="rail-heading"><h2>Upcoming Booking</h2><Link href="/account/bookings">View all →</Link></div>
+      <section><div className="rail-heading"><h2>Upcoming Booking</h2><Link href={protectedHref("/account/bookings")}>View all →</Link></div>
         <div className="rail-empty-booking"><CalendarDays size={25}/><div><strong>{signedIn?"Your next appointment":"Ready when you are"}</strong><span>{signedIn?"Your upcoming booking will appear here.":"Sign in to see your bookings."}</span></div></div>
-        <Link className="rail-soft-button" href={signedIn?"/account/bookings":"/sign-in"}>{signedIn?"View bookings":"Sign in"}<ChevronRight size={16}/></Link>
+        <Link className="rail-soft-button" href={protectedHref("/account/bookings")}>{signedIn?"View bookings":"Sign in"}<ChevronRight size={16}/></Link>
       </section>
-      <section><div className="rail-heading"><h2>Messages</h2><Link href="/messages">Open →</Link></div>
+      <section><div className="rail-heading"><h2>Messages</h2><Link href={protectedHref("/messages")}>Open →</Link></div>
         <div className="rail-message"><span className="desktop-avatar">G</span><div><strong>Private conversations</strong><small>Message professionals and keep booking conversations together.</small></div></div>
-        <Link className="rail-soft-button" href="/messages">Open messages<ChevronRight size={16}/></Link>
+        <Link className="rail-soft-button" href={protectedHref("/messages")}>Open messages<ChevronRight size={16}/></Link>
       </section>
-      <section><div className="rail-heading"><h2>Wallet & Rewards</h2><Link href="/wallet">Payments →</Link></div>
-        <Link className="rail-wallet" href="/wallet"><WalletCards/><div><small>Wallet</small><strong>Payments & refunds</strong></div><ChevronRight size={16}/></Link>
+      <section><div className="rail-heading"><h2>Wallet & Rewards</h2><Link href={protectedHref("/wallet")}>Payments →</Link></div>
+        <Link className="rail-wallet" href={protectedHref("/wallet")}><WalletCards/><div><small>Wallet</small><strong>Payments & refunds</strong></div><ChevronRight size={16}/></Link>
         <div className="rail-reward rail-reward-disabled"><Gift/><span><strong>GloHaus Rewards</strong><small>Rewards remain unavailable until customer-credit programme rules are approved.</small></span></div>
       </section>
       <Link className="desktop-shop-banner" href="/shop"><div><strong>Shop Beauty<br/>Essentials</strong><span>Curated products from trusted professionals.</span><b>Shop Now →</b></div><Image fill sizes="320px" src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85" alt="Beauty products"/></Link>

@@ -12,8 +12,16 @@ test("public entry works on mobile and desktop", async ({ page }, testInfo) => {
     await expect(
       page.getByRole("heading", { name: "Recommended professionals" }),
     ).toBeVisible();
-    await expect(page.locator('a[href="/messages"]:visible').first()).toBeVisible();
-    await expect(page.locator('a[href="/wallet"]:visible').first()).toBeVisible();
+    await expect(
+      page.locator('a[href="/sign-in?returnTo=%2Fmessages"]:visible').first(),
+    ).toBeVisible();
+    await expect(
+      page.locator('a[href="/sign-in?returnTo=%2Fwallet"]:visible').first(),
+    ).toBeVisible();
+    await expect(page.locator(".desktop-user-chip")).toHaveAttribute(
+      "href",
+      "/sign-in",
+    );
     await expect(page.locator('a[href="/glohaus-plus"]')).toHaveCount(0);
     await expect(page.getByText("GloHaus+", { exact: true }).first()).toBeVisible();
   } else {
@@ -39,6 +47,29 @@ test("public entry works on mobile and desktop", async ({ page }, testInfo) => {
     "Your GLOHAUS account is nearly ready.",
   );
   expect(errors).toEqual([]);
+});
+
+test("signed-out desktop customer shortcuts preserve their return route", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+
+  const navigation = page.getByRole("navigation", { name: "Customer navigation" });
+  await expect(navigation.getByRole("link", { name: "Bookings" })).toHaveAttribute(
+    "href",
+    "/sign-in?returnTo=%2Faccount%2Fbookings",
+  );
+  await expect(navigation.getByRole("link", { name: "Messages" })).toHaveAttribute(
+    "href",
+    "/sign-in?returnTo=%2Fmessages",
+  );
+  await expect(navigation.getByRole("link", { name: "Wallet" })).toHaveAttribute(
+    "href",
+    "/sign-in?returnTo=%2Fwallet",
+  );
+  await expect(navigation.getByRole("link", { name: "Profile" })).toHaveAttribute(
+    "href",
+    "/sign-in?returnTo=%2Fworkspace",
+  );
 });
 
 test("private routes fail closed without credentials", async ({

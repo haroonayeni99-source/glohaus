@@ -29,12 +29,15 @@ DECLARE
   payment_ready boolean;
   payment_exists boolean;
   effective text;
+  starter_used integer;
 BEGIN
   IF NOT EXISTS(SELECT 1 FROM beauty.professional_profiles WHERE id=target) THEN
     RETURN jsonb_build_object(
       'status','restricted',
       'verified',false,
-      'paymentReady',false
+      'paymentReady',false,
+      'starterBookingsUsed',0,
+      'starterBookingsRemaining',0
     );
   END IF;
 
@@ -49,6 +52,11 @@ BEGIN
   LEFT JOIN beauty.professional_payment_accounts pa ON pa.professional_id=p.id
   WHERE p.id=target;
 
+  SELECT count(*)::integer INTO starter_used
+  FROM beauty.bookings
+  WHERE professional_id=target
+    AND status IN('confirmed','completed','no_show');
+
   effective :=
     CASE
       WHEN standing='restricted' OR verification='rejected' THEN 'restricted'
@@ -60,7 +68,10 @@ BEGIN
   RETURN jsonb_build_object(
     'status',effective,
     'verified',effective='verified',
-    'paymentReady',payment_ready
+    'paymentReady',payment_ready,
+    'starterBookingsUsed',starter_used,
+    'starterBookingsRemaining',
+      CASE WHEN effective='verified' THEN NULL ELSE greatest(0,5-starter_used) END
   );
 END $$;
 

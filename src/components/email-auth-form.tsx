@@ -80,13 +80,11 @@ export function EmailAuthForm({
         return;
       }
       const account = await provision.json();
-      router.replace(redirectTo || account.redirectTo || "/account");
-      router.refresh();
+      window.location.assign(redirectTo || account.redirectTo || "/account");
       return;
     }
 
-    router.replace(redirectTo);
-    router.refresh();
+    window.location.assign(redirectTo);
   }
 
   const professional = audience === "professional";

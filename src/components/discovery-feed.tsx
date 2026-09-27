@@ -131,6 +131,8 @@ export function DiscoveryFeed({
     followingView ? "Following" : savedView ? "Saved" : "For you",
   );
   const router = useRouter();
+  const protectedHref = (path: string) =>
+    viewerSignedIn ? path : `/sign-in?returnTo=${encodeURIComponent(path)}`;
   const [accountEngagement, setAccountEngagement] = useState(initialEngagement);
   const [followMap, setFollowMap] = useState<FollowStateMap>(initialFollows);
   const deviceRaw = useSyncExternalStore(
@@ -330,7 +332,7 @@ export function DiscoveryFeed({
             <Bookmark size={22} />
             Saved
           </button>
-          <Link className="discovery-nav" href="/workspace">
+          <Link className="discovery-nav" href={protectedHref("/workspace")}>
             <UserRound size={22} />
             Your space
           </Link>
@@ -349,7 +351,9 @@ export function DiscoveryFeed({
         </div>
         <div className="discovery-sidebar-foot">
           <span>ENGLAND · GBP £</span>
-          <Link href="/sign-in">Sign in</Link>
+          <Link href={viewerSignedIn ? "/workspace" : "/sign-in"}>
+            {viewerSignedIn ? "Your space" : "Sign in"}
+          </Link>
         </div>
       </aside>
       <main id="main" className="discovery-main">
@@ -373,7 +377,7 @@ export function DiscoveryFeed({
             </Link>
             <Link
               className="discovery-notifications"
-              href="/notifications"
+              href={protectedHref("/notifications")}
               aria-label="Your notifications"
             >
               <Bell size={19} aria-hidden />
@@ -700,7 +704,7 @@ export function DiscoveryFeed({
           </div>
         )}
       </main>
-      <BottomNavigation active="discover" />
+      <BottomNavigation active="discover" signedIn={viewerSignedIn} />
     </div>
   );
 }

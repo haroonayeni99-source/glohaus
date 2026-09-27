@@ -134,7 +134,8 @@ export function ProfessionalPlanActions({
       {(!proReady || !premiumReady) && (
         <p className="form-help">
           Paid plan checkout remains disabled until the matching Stripe monthly
-          price is configured. Starter remains fully available.
+          price is configured. Starter remains available at £0/month; identity
+          verification limits are separate from subscription pricing.
         </p>
       )}
       {message && <p className="form-notice" role="status">{message}</p>}

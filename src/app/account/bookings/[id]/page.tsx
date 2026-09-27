@@ -12,6 +12,7 @@ import { AccessMessage } from "@/components/access-message";
 import { BookingActions } from "@/components/booking-actions";
 import { BookingConfirmation } from "@/components/booking-confirmation";
 import { BookingJourneyLocation } from "@/components/booking-journey-location";
+import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { bookingById } from "@/modules/bookings/repository";
 import { money } from "@/modules/professionals/domain";
 export default async function Booking({
@@ -61,20 +62,26 @@ export default async function Booking({
   }));
   if (!data.booking) notFound();
   const b = data.booking;
-  return (
+  const detail = (
     <>
-      <PublicHeader />
-      <main id="main" className="catalog-page">
         <p className="eyebrow">{b.status.replaceAll("_", " ")}</p>
         <h1>
-          {b.status === "confirmed"
-            ? "You’re booked in."
-            : b.status === "payment_pending"
-              ? "Awaiting your deposit."
-              : "Your appointment."}
+          {data.professional
+            ? b.status === "confirmed"
+              ? "Appointment confirmed."
+              : b.status === "payment_pending"
+                ? "Awaiting customer deposit."
+                : "Appointment details."
+            : b.status === "confirmed"
+              ? "You’re booked in."
+              : b.status === "payment_pending"
+                ? "Awaiting your deposit."
+                : "Your appointment."}
         </h1>
         <p className="lead">
-          {b.service_name} with {b.professional_name}
+          {data.professional
+            ? `${b.service_name} for ${b.customer_name}`
+            : `${b.service_name} with ${b.professional_name}`}
         </p>
         {b.status === "confirmed" && !data.professional ? (
           <BookingConfirmation
@@ -163,6 +170,30 @@ export default async function Booking({
           professional={data.professional}
           ended={b.has_ended}
         />
+    </>
+  );
+
+  if (data.professional) {
+    return (
+      <div className="pro-app">
+        <ProfessionalNavigation
+          active="bookings"
+          displayName={account.displayName}
+        />
+        <main id="main" className="pro-main pro-list-page">
+          <section className="pro-editor-surface catalog-page">
+            {detail}
+          </section>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <PublicHeader signedIn />
+      <main id="main" className="catalog-page">
+        {detail}
       </main>
     </>
   );

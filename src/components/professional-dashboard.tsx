@@ -210,7 +210,7 @@ export function ProfessionalDashboard({
             <CalendarDays size={18} aria-hidden />
             <span><strong>Bookings</strong><small>See your upcoming week</small></span>
           </Link>
-          <Link href="/messages">
+          <Link href="/messages?view=professional">
             <MessageSquare size={18} aria-hidden />
             <span>
               <strong>Messages</strong>

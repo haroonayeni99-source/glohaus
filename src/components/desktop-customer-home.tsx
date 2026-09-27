@@ -5,7 +5,8 @@ import {
   MessageSquare, Search, ShoppingBag, UserRound, WalletCards, Crown, Gift,
 } from "lucide-react";
 import { Brand } from "./brand";
-import type { PublicProfessional } from "@/modules/professionals/domain";
+import { money, type PublicProfessional } from "@/modules/professionals/domain";
+import type { CustomerHomeSummary } from "@/modules/home/repository";
 
 const serviceTiles = [
   ["Hair","https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=240&q=80"],
@@ -27,11 +28,38 @@ const trends = [
   ["Top Rated Salons","Near you","https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=700&q=85"],
 ] as const;
 
-export function DesktopCustomerHome({ professionals = [], signedIn = false, displayName = "" }: {
-  professionals?: PublicProfessional[]; signedIn?: boolean; displayName?: string;
+function bookingTime(value: Date | string) {
+  return new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Europe/London",
+  }).format(new Date(value));
+}
+
+function messagePreview(value: string | null | undefined) {
+  if (!value) return "";
+  return value.length > 64 ? `${value.slice(0, 61)}…` : value;
+}
+
+export function DesktopCustomerHome({
+  professionals = [],
+  signedIn = false,
+  displayName = "",
+  summary = null,
+}: {
+  professionals?: PublicProfessional[];
+  signedIn?: boolean;
+  displayName?: string;
+  summary?: CustomerHomeSummary | null;
 }) {
   const protectedHref = (path: string) =>
     signedIn ? path : `/sign-in?returnTo=${encodeURIComponent(path)}`;
+  const nextBooking = summary?.nextBooking ?? null;
+  const messages = summary?.messages ?? null;
+  const payments = summary?.payments ?? null;
+  const latestMessage = messagePreview(messages?.latestMessageBody);
+  const messageInitial =
+    messages?.latestProfessionalName?.slice(0, 1).toUpperCase() || "G";
 
   const cards = professionals.length
     ? professionals.slice(0, 4).map((item, index) => ({
@@ -119,15 +147,34 @@ export function DesktopCustomerHome({ professionals = [], signedIn = false, disp
 
     <aside className="customer-desktop-rail">
       <section><div className="rail-heading"><h2>Upcoming Booking</h2><Link href={protectedHref("/account/bookings")}>View all →</Link></div>
-        <div className="rail-empty-booking"><CalendarDays size={25}/><div><strong>{signedIn?"Your next appointment":"Ready when you are"}</strong><span>{signedIn?"Your upcoming booking will appear here.":"Sign in to see your bookings."}</span></div></div>
-        <Link className="rail-soft-button" href={protectedHref("/account/bookings")}>{signedIn?"View bookings":"Sign in"}<ChevronRight size={16}/></Link>
+        <div className="rail-empty-booking"><CalendarDays size={25}/><div>
+          <strong>{!signedIn ? "Ready when you are" : !summary ? "Booking summary unavailable" : nextBooking ? nextBooking.serviceName : "No upcoming bookings"}</strong>
+          <span>{!signedIn ? "Sign in to see your bookings." : !summary ? "Open bookings to check your schedule." : nextBooking ? `${nextBooking.professionalName} · ${bookingTime(nextBooking.startsAt)}` : "Find a professional whenever you’re ready."}</span>
+        </div></div>
+        <Link
+          className="rail-soft-button"
+          href={!signedIn ? protectedHref("/account/bookings") : nextBooking ? `/account/bookings/${nextBooking.id}` : "/explore"}
+        >
+          {!signedIn ? "Sign in" : nextBooking ? "View booking" : "Find a professional"}<ChevronRight size={16}/>
+        </Link>
       </section>
       <section><div className="rail-heading"><h2>Messages</h2><Link href={protectedHref("/messages")}>Open →</Link></div>
-        <div className="rail-message"><span className="desktop-avatar">G</span><div><strong>Private conversations</strong><small>Message professionals and keep booking conversations together.</small></div></div>
+        <div className="rail-message"><span className="desktop-avatar">{messageInitial}</span><div>
+          <strong>{!signedIn ? "Private conversations" : !summary ? "Message summary unavailable" : messages?.conversationCount ? messages.unreadCount ? `${messages.unreadCount} unread message${messages.unreadCount === 1 ? "" : "s"}` : "Messages up to date" : "No conversations yet"}</strong>
+          <small>{!signedIn ? "Message professionals and keep booking conversations together." : !summary ? "Open Messages to check your conversations." : messages?.latestProfessionalName ? `${messages.latestProfessionalName}${latestMessage ? ` · ${latestMessage}` : ""}` : "Message a professional from their profile to start a conversation."}</small>
+        </div></div>
         <Link className="rail-soft-button" href={protectedHref("/messages")}>Open messages<ChevronRight size={16}/></Link>
       </section>
       <section><div className="rail-heading"><h2>Wallet & Rewards</h2><Link href={protectedHref("/wallet")}>Payments →</Link></div>
-        <Link className="rail-wallet" href={protectedHref("/wallet")}><WalletCards/><div><small>Wallet</small><strong>Payments & refunds</strong></div><ChevronRight size={16}/></Link>
+        <Link className="rail-wallet" href={protectedHref("/wallet")}><WalletCards/><div>
+          {!signedIn ? (
+            <><small>Wallet</small><strong>Payments & refunds</strong></>
+          ) : payments ? (
+            <><small>Deposits paid</small><strong>{money(payments.capturedPence)}</strong><small>{payments.pendingRefundPence > 0 ? `${money(payments.pendingRefundPence)} refund processing` : payments.refundedPence > 0 ? `${money(payments.refundedPence)} refunded` : "No refunds recorded"}</small></>
+          ) : (
+            <><small>Wallet</small><strong>Payment summary unavailable</strong></>
+          )}
+        </div><ChevronRight size={16}/></Link>
         <div className="rail-reward rail-reward-disabled"><Gift/><span><strong>GloHaus Rewards</strong><small>Rewards remain unavailable until customer-credit programme rules are approved.</small></span></div>
       </section>
       <Link className="desktop-shop-banner" href="/shop"><div><strong>Shop Beauty<br/>Essentials</strong><span>Curated products from trusted professionals.</span><b>Shop Now →</b></div><Image fill sizes="320px" src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85" alt="Beauty products"/></Link>

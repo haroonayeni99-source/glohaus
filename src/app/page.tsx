@@ -5,6 +5,10 @@ import { getIdentity } from "@/lib/identity";
 import { findAccount } from "@/modules/accounts/repository";
 import { discoveryPage } from "@/modules/professionals/repository";
 import type { PublicProfessional } from "@/modules/professionals/domain";
+import {
+  customerHomeSummary,
+  type CustomerHomeSummary,
+} from "@/modules/home/repository";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +29,11 @@ export default async function Home({
     redirect(`/discover?${params.toString()}`);
   }
 
-  let viewer = { signedIn: false, displayName: "" };
+  let viewer: {
+    signedIn: boolean;
+    displayName: string;
+    summary: CustomerHomeSummary | null;
+  } = { signedIn: false, displayName: "", summary: null };
   let professionals: PublicProfessional[] = [];
 
   if (process.env.DATABASE_URL) {
@@ -37,9 +45,21 @@ export default async function Home({
     try {
       viewer = await withIdentity(authId, async (db) => {
         const account = authId ? await findAccount(db, authId) : null;
+        const signedIn = account?.status === "active";
+        let summary: CustomerHomeSummary | null = null;
+
+        if (account?.status === "active" && account.roles.includes("customer")) {
+          try {
+            summary = await customerHomeSummary(db, account.id);
+          } catch {
+            console.error("Customer Home summary unavailable");
+          }
+        }
+
         return {
-          signedIn: account?.status === "active",
+          signedIn,
           displayName: account?.displayName || "",
+          summary,
         };
       });
     } catch {
@@ -61,6 +81,7 @@ export default async function Home({
         professionals={professionals}
         signedIn={viewer.signedIn}
         displayName={viewer.displayName}
+        summary={viewer.summary}
       />
       <MobileCustomerHome signedIn={viewer.signedIn} />
     </>

@@ -25,7 +25,7 @@ export default async function CustomerOrdersPage() {
 
   return (
     <>
-      <PublicHeader />
+      <PublicHeader signedIn />
       <main id="main" className="catalog-page product-orders-page">
         <p className="eyebrow">SHOP ORDERS</p>
         <h1>Your product orders.</h1>
@@ -34,7 +34,7 @@ export default async function CustomerOrdersPage() {
         </p>
         <ProductOrderList initialOrders={orders} mode="customer" />
       </main>
-      <BottomNavigation active="profile" />
+      <BottomNavigation active="profile" signedIn />
     </>
   );
 }

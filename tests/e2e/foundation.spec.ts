@@ -49,6 +49,22 @@ test("public entry works on mobile and desktop", async ({ page }, testInfo) => {
   expect(errors).toEqual([]);
 });
 
+test("sign-up asks whether the account is customer or professional", async ({ page }) => {
+  await page.goto("/sign-up");
+
+  await expect(
+    page.getByRole("heading", { name: "How will you use GLOHAUS?" }),
+  ).toBeVisible();
+
+  await expect(
+    page.getByRole("link", { name: /Sign up as a Customer/ }),
+  ).toHaveAttribute("href", "/sign-up?intent=customer");
+
+  await expect(
+    page.getByRole("link", { name: /Sign up as a Professional/ }),
+  ).toHaveAttribute("href", "/sign-up?intent=professional");
+});
+
 test("signed-out desktop customer shortcuts preserve their return route", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");

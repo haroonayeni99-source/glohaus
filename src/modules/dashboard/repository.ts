@@ -18,6 +18,8 @@ export type ProfessionalDashboard = {
     rating: number | null;
     followerCount: number;
     completedBookings: number;
+    unreadMessages: number;
+    openOrders: number;
   };
   upcoming: BookingRecord[];
   wallet: WalletOverview | null;
@@ -60,6 +62,8 @@ export async function professionalDashboard(
         active_services: number;
         follower_count: number;
         completed_bookings: number;
+        unread_messages: number;
+        open_orders: number;
       }>(
         `SELECT
           (SELECT count(*)::integer FROM beauty.bookings b
@@ -75,7 +79,16 @@ export async function professionalDashboard(
           (SELECT count(*)::integer FROM beauty.professional_follows f
             WHERE f.professional_id=$1) AS follower_count,
           (SELECT count(*)::integer FROM beauty.bookings b
-            WHERE b.professional_id=$1 AND b.status='completed') AS completed_bookings`,
+            WHERE b.professional_id=$1 AND b.status='completed') AS completed_bookings,
+          (SELECT count(*)::integer
+            FROM beauty.messages m
+            JOIN beauty.conversations c ON c.id=m.conversation_id
+            WHERE c.professional_id=$1
+              AND m.sender_role='customer'
+              AND m.created_at>coalesce(c.professional_read_at,'epoch'::timestamptz)
+          ) AS unread_messages,
+          (SELECT count(*)::integer FROM beauty.product_orders o
+            WHERE o.professional_id=$1 AND o.status IN ('paid','processing')) AS open_orders`,
         [professionalId],
       ),
       db.query<{ count: number; rating: number | null }>(
@@ -118,6 +131,8 @@ export async function professionalDashboard(
     active_services: 0,
     follower_count: 0,
     completed_bookings: 0,
+    unread_messages: 0,
+    open_orders: 0,
   };
   const reviews = reviewResult.rows[0] ?? { count: 0, rating: null };
   const plan = planResult.rows[0]?.plan_key ?? "starter";
@@ -203,6 +218,8 @@ export async function professionalDashboard(
       rating: reviews.rating,
       followerCount: stats.follower_count,
       completedBookings: stats.completed_bookings,
+      unreadMessages: stats.unread_messages,
+      openOrders: stats.open_orders,
     },
     upcoming: bookings.bookings.slice(0, 5),
     wallet: wallet ?? null,

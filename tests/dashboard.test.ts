@@ -92,6 +92,36 @@ beforeAll(async () => {
     "INSERT INTO beauty.payments(booking_id,status) SELECT id,'pending' FROM beauty.bookings WHERE professional_id=$1",
     [adaProfessionalId],
   );
+
+  const conversationId = (
+    await db.query<{ id: string }>(
+      `INSERT INTO beauty.conversations(
+        customer_id,professional_id,customer_name,professional_name,
+        customer_read_at,professional_read_at,last_message_at
+      ) VALUES(
+        $1,$2,'Customer','Ada Studio',now(),NULL,now()
+      ) RETURNING id`,
+      [customerId, adaProfessionalId],
+    )
+  ).rows[0].id;
+  await db.query(
+    `INSERT INTO beauty.messages(
+      conversation_id,sender_user_id,sender_role,body,created_at
+    ) VALUES($1,$2,'customer','Can I move my appointment?',now())`,
+    [conversationId, customerId],
+  );
+
+  await db.query(
+    `INSERT INTO beauty.product_orders(
+      checkout_reference,provider_payment_intent_id,customer_id,professional_id,
+      professional_name,subtotal_pence,delivery_pence,total_pence,status,
+      recipient_name,address_line1,city,postcode,country_code
+    ) VALUES(
+      gen_random_uuid(),'pi_dashboard_order',$1,$2,'Ada Studio',
+      2500,0,2500,'paid','Customer','1 Test Street','London','SE1 1AA','GB'
+    )`,
+    [customerId, adaProfessionalId],
+  );
 });
 
 afterAll(() => db.close());
@@ -108,6 +138,8 @@ describe.sequential("professional dashboard data", () => {
       activeServices: 1,
       reviewCount: 0,
       rating: null,
+      unreadMessages: 1,
+      openOrders: 1,
     });
     expect(dashboard.upcoming).toHaveLength(1);
     expect(dashboard.upcoming[0]).toMatchObject({
@@ -189,6 +221,8 @@ describe.sequential("professional dashboard data", () => {
         activeServices: 0,
         reviewCount: 0,
         rating: null,
+        unreadMessages: 0,
+        openOrders: 0,
       },
       upcoming: [],
       wallet: null,

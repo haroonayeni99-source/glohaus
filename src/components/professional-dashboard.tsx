@@ -13,6 +13,8 @@ import {
   Users,
   Radio,
   LockKeyhole,
+  MessageSquare,
+  PackageCheck,
 } from "lucide-react";
 import type { Account } from "@/modules/accounts/domain";
 import type { ProfessionalDashboard as DashboardData } from "@/modules/dashboard/repository";
@@ -208,13 +210,35 @@ export function ProfessionalDashboard({
             <CalendarDays size={18} aria-hidden />
             <span><strong>Bookings</strong><small>See your upcoming week</small></span>
           </Link>
-          <Link href="/professional/profile">
+          <Link href="/messages">
+            <MessageSquare size={18} aria-hidden />
+            <span>
+              <strong>Messages</strong>
+              <small>
+                {data.stats.unreadMessages
+                  ? `${data.stats.unreadMessages} unread`
+                  : "Client conversations"}
+              </small>
+            </span>
+          </Link>
+          <Link href="/professional/services">
             <Plus size={18} aria-hidden />
             <span><strong>Manage services</strong><small>Update your menu and pricing</small></span>
           </Link>
           <Link href="/professional/availability">
             <Clock3 size={18} aria-hidden />
             <span><strong>Availability</strong><small>Set hours and time off</small></span>
+          </Link>
+          <Link href="/professional/orders">
+            <PackageCheck size={18} aria-hidden />
+            <span>
+              <strong>Shop orders</strong>
+              <small>
+                {data.stats.openOrders
+                  ? `${data.stats.openOrders} to fulfil`
+                  : "No orders waiting"}
+              </small>
+            </span>
           </Link>
           <Link href="/professional/posts">
             <ImagePlus size={18} aria-hidden />

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { storedAuthAudience } from "@/lib/auth-flow";
 
@@ -15,7 +14,6 @@ export function EmailAuthForm({
   redirectTo: string;
   audience?: "customer" | "professional";
 }) {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   async function submit(formData: FormData) {

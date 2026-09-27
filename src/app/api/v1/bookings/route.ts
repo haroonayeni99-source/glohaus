@@ -3,6 +3,7 @@ import { withAccount } from "@/lib/api-account";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
 import { isRequiredDepositWithinLimit } from "@/modules/bookings/deposit-policy";
+import { assertBookingAllowed, professionalAccessState } from "@/modules/professionals/verification";
 import { stripe, paymentReady } from "@/modules/payments/stripe";
 const schema = z
   .object({
@@ -25,6 +26,23 @@ export async function POST(request: Request) {
     const parsed = schema.safeParse(await smallJson(request));
     if (!parsed.success) throw new AccessError("INVALID_REQUEST", 400);
     const booking = await withAccount("customer", async (db) => {
+      const service = (
+        await db.query<{
+          professional_id: string;
+          price_pence: number;
+          deposit_pence: number;
+        }>(
+          "SELECT professional_id,price_pence,deposit_pence FROM beauty.services WHERE id=$1 AND active",
+          [parsed.data.serviceId],
+        )
+      ).rows[0];
+      if (!service) throw new AccessError("INVALID_REQUEST", 400);
+      const access = await professionalAccessState(db, service.professional_id);
+      assertBookingAllowed(access, {
+        pricePence: service.price_pence,
+        depositPence: service.deposit_pence,
+      });
+
       const reservation = (
         await db.query<{ booking: Reservation }>(
           "SELECT beauty.reserve_booking($1,$2) AS booking",

@@ -272,15 +272,20 @@ export async function POST(request: Request) {
       await applyPayoutEvent(event.data.object, "cancelled");
     } else if (event.type === "account.updated") {
       const account = event.data.object;
-      await withPaymentWorker((db) =>
-        db.query("SELECT beauty.sync_connect_account($1,$2)", [
-          account.id,
-          Boolean(
-            account.capabilities?.transfers === "active" &&
-              account.payouts_enabled,
-          ),
-        ]),
+      const ready = Boolean(
+        account.capabilities?.transfers === "active" &&
+          account.payouts_enabled,
       );
+      await withPaymentWorker(async (db) => {
+        await db.query("SELECT beauty.sync_connect_account($1,$2)", [
+          account.id,
+          ready,
+        ]);
+        await db.query("SELECT beauty.sync_connect_verification($1,$2)", [
+          account.id,
+          ready,
+        ]);
+      });
     }
 
     return Response.json({ received: true });

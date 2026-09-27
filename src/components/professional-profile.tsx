@@ -139,6 +139,13 @@ export function ProfessionalProfile({
                 : `${rating.toFixed(1)} · ${reviewCount} ${reviewCount === 1 ? "review" : "reviews"}`}
             </a>
           </div>
+          {p.verification_status === "verified" && (
+            <small className="professional-verification-note">
+              Identity verification confirms the professional completed GLOHAUS
+              identity/payment checks. It is not an endorsement or guarantee of
+              service quality.
+            </small>
+          )}
           <p className="professional-bio">{p.bio}</p>
           <div className="professional-social-actions">
             <FollowProfessionalButton

@@ -45,6 +45,22 @@ export async function saveService(
   id?: string,
 ) {
   input = serviceSchema.parse(input);
+  const access = (
+    await db.query<{
+      access: {
+        status: "unverified" | "pending" | "verified" | "restricted";
+        verified: boolean;
+      };
+    }>("SELECT beauty.professional_access_state($1) AS access", [professionalId])
+  ).rows[0]?.access;
+  if (input.active && access?.status === "restricted")
+    throw new AccessError("PROFESSIONAL_RESTRICTED", 403);
+  if (
+    input.active &&
+    !access?.verified &&
+    (input.pricePence > 20000 || input.depositPence > 0)
+  )
+    throw new AccessError("VERIFICATION_REQUIRED", 409);
   if (
     input.assetId &&
     !(

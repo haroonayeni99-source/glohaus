@@ -11,6 +11,9 @@ import {
   Phone,
   Globe,
   MessageCircle,
+  BadgeCheck,
+  ShieldQuestion,
+  CircleAlert,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import {
@@ -114,6 +117,17 @@ export function ProfessionalProfile({
           </p>
           <h1>{p.business_name}</h1>
           <div className="professional-meta">
+            <span>
+              {p.verification_status === "verified" ? (
+                <><BadgeCheck size={16} aria-hidden /> Identity verified</>
+              ) : p.verification_status === "restricted" ? (
+                <><CircleAlert size={16} aria-hidden /> Account restricted</>
+              ) : p.verification_status === "pending" ? (
+                <><ShieldQuestion size={16} aria-hidden /> Verification pending</>
+              ) : (
+                <><ShieldQuestion size={16} aria-hidden /> Identity not verified</>
+              )}
+            </span>
             <span>
               <MapPin size={16} aria-hidden />
               {p.city}, England

@@ -19,11 +19,15 @@ export function ProfessionalEditor({
   services,
   assets = [],
   section = "all",
+  verificationStatus,
+  starterBookingsRemaining,
 }: {
   initial?: ProfileInput;
   section?: "all" | "profile" | "services";
   services: Service[];
   assets?: { id: string; alt_text: string }[];
+  verificationStatus?: "unverified" | "pending" | "verified" | "restricted";
+  starterBookingsRemaining?: number | null;
 }) {
   const labels = useLabels();
   const router = useRouter();
@@ -45,12 +49,18 @@ export function ProfessionalEditor({
         body: JSON.stringify(body),
       });
       const result = await response.json();
-      if (!response.ok)
+      if (!response.ok) {
+        const code = result.error?.code;
         throw new Error(
-          result.error?.code === "SLUG_UNAVAILABLE"
+          code === "SLUG_UNAVAILABLE"
             ? "That profile address is already taken. Choose another."
-            : "Could not save. Check your details and try again.",
+            : code === "VERIFICATION_REQUIRED"
+              ? "Verification is required for this change. Unverified professionals can use active services up to £200 with no deposit and up to five starter bookings."
+              : code === "PROFESSIONAL_RESTRICTED"
+                ? "This professional account is currently restricted. Paid marketplace changes are unavailable while the restriction is reviewed."
+                : "Could not save. Check your details and try again.",
         );
+      }
       setNotice("Saved successfully.");
       router.refresh();
       return true;
@@ -70,7 +80,11 @@ export function ProfessionalEditor({
       <p className="form-notice" role="status">
         {notice ||
           (section === "services"
-            ? "Your active services appear on your published profile. Changes preserve existing appointments."
+            ? verificationStatus === "verified"
+              ? "Your identity is verified. Your active services appear on your published profile and can use verified marketplace features."
+              : verificationStatus === "restricted"
+                ? "This account is restricted. You can review existing services, but new paid marketplace activity may be blocked."
+                : `Starter access: active services can be up to £200 with no deposit. ${starterBookingsRemaining ?? 0} of 5 starter bookings remain before verification is required.`
             : "Your profile is private until you choose Published. Only your business details appear publicly.")}
       </p>
       {section !== "services" && initial && (

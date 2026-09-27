@@ -176,6 +176,36 @@ test("theme toggle switches professional preview to night mode", async ({ page }
 });
 
 
+test("saved theme is restored and mobile Home changes with the selected mode", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.evaluate(() => localStorage.setItem("glohaus-theme", "night"));
+  await page.reload();
+
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
+  await expect(
+    page.getByRole("button", { name: "Switch to light mode" }),
+  ).toBeVisible();
+
+  const home = page.locator(".mobile-customer-home");
+  await expect(home).toBeVisible();
+  const nightBackground = await home.evaluate(
+    (element) => getComputedStyle(element).backgroundColor,
+  );
+
+  await page.getByRole("button", { name: "Switch to light mode" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+
+  const lightBackground = await home.evaluate(
+    (element) => getComputedStyle(element).backgroundColor,
+  );
+  expect(lightBackground).not.toBe(nightBackground);
+  expect(await page.evaluate(() => localStorage.getItem("glohaus-theme"))).toBe(
+    "light",
+  );
+});
+
+
 test("Shop exposes catalogue without fake checkout", async ({ page }) => {
   await page.goto("/shop");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(

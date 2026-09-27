@@ -50,6 +50,17 @@ export default async function Profile({
       )
     ).rows[0]?.fee ?? 100;
     const id = profile.professional.id;
+    const access = (
+      await db.query<{
+        data: {
+          status: "unverified" | "pending" | "verified" | "restricted";
+          verified: boolean;
+          paymentReady: boolean;
+          starterBookingsUsed: number;
+          starterBookingsRemaining: number | null;
+        };
+      }>("SELECT beauty.professional_access_state($1) AS data", [id])
+    ).rows[0].data;
     const assets = (
       await db.query<{ id: string; alt_text: string }>(
         "SELECT id,alt_text FROM beauty.public_portfolio WHERE professional_id=$1 ORDER BY created_at DESC LIMIT 100",
@@ -107,6 +118,7 @@ export default async function Profile({
       signedIn: Boolean(viewer),
       bookingFeePence,
       presentation,
+      access,
       messageHref: viewer?.roles.includes("customer")
         ? `/messages?professional=${id}`
         : viewer
@@ -138,6 +150,8 @@ export default async function Profile({
             returnPath={`/p/${slug}`}
             professionalName={data.professional.business_name}
             bookingFeePence={data.bookingFeePence}
+            verificationStatus={data.access.status}
+            starterBookingsRemaining={data.access.starterBookingsRemaining}
             initialSelection={{
               serviceId: booking.bookService,
               date: booking.bookDate,

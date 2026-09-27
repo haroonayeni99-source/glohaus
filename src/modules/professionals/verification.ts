@@ -46,6 +46,13 @@ export function assertProductPublishingAllowed(
   if (!access.verified) throw new AccessError("VERIFICATION_REQUIRED", 409);
 }
 
+export function assertWithdrawalAllowed(access: ProfessionalAccessState) {
+  if (access.status === "restricted")
+    throw new AccessError("PROFESSIONAL_RESTRICTED", 403);
+  if (!access.verified)
+    throw new AccessError("VERIFICATION_REQUIRED", 409);
+}
+
 export function assertBookingAllowed(
   access: ProfessionalAccessState,
   service: { pricePence: number; depositPence: number },

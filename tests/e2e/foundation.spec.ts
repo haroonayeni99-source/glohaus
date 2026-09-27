@@ -103,10 +103,9 @@ test("signed-out mobile navigation preserves private return routes", async ({ pa
     "href",
     "/sign-in?returnTo=%2Fnotifications",
   );
-  await expect(page.getByRole("link", { name: "Your space" }).first()).toHaveAttribute(
-    "href",
-    "/sign-in?returnTo=%2Fworkspace",
-  );
+  await expect(
+    page.locator(".discovery-sidebar a.discovery-nav").filter({ hasText: "Your space" }),
+  ).toHaveAttribute("href", "/sign-in?returnTo=%2Fworkspace");
 
   await page.goto("/shop");
   await expect(page.getByRole("link", { name: "Cart" })).toHaveAttribute(

@@ -82,7 +82,7 @@ export default async function Page() {
   const account = result.account;
   return (
     <>
-      <PublicHeader />
+      <PublicHeader signedIn />
       <main id="main" className="customer-account-page">
         <section className="customer-identity">
           <span className="customer-avatar" aria-hidden>
@@ -116,7 +116,7 @@ export default async function Page() {
           <AccountControls />
         </div>
       </main>
-      <BottomNavigation active="profile" />
+      <BottomNavigation active="profile" signedIn />
     </>
   );
 }

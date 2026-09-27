@@ -63,7 +63,7 @@ const tools = [
   [
     "Messages",
     "Private conversations with your clients",
-    "/messages",
+    "/messages?view=professional",
     MessageSquare,
   ],
   [
@@ -90,7 +90,7 @@ const tools = [
     "/professional/plans",
     BadgePoundSterling,
   ],
-  ["Notifications", "Keep up with your appointments", "/notifications", Bell],
+  ["Notifications", "Keep up with your appointments", "/notifications?view=professional", Bell],
   [
     "Account & security",
     "Manage your session and verification",

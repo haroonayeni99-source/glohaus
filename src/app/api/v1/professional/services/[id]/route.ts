@@ -7,6 +7,7 @@ import {
   saveService,
   deactivateService,
 } from "@/modules/professionals/repository";
+import { assertStarterServiceAllowed, professionalAccessState } from "@/modules/professionals/verification";
 export async function PUT(
   request: Request,
   context: { params: Promise<{ id: string }> },
@@ -17,9 +18,11 @@ export async function PUT(
     const parsed = serviceSchema.safeParse(await smallJson(request, 4096));
     if (!z.uuid().safeParse(id).success || !parsed.success)
       throw new AccessError("INVALID_REQUEST", 400);
-    await withAccount("professional", (db, account) =>
-      saveService(db, account.professionalId!, parsed.data, id),
-    );
+    await withAccount("professional", async (db, account) => {
+      const access = await professionalAccessState(db, account.professionalId!);
+      assertStarterServiceAllowed(access, parsed.data);
+      return saveService(db, account.professionalId!, parsed.data, id);
+    });
     return json({ saved: true });
   } catch (error) {
     return apiError(error);

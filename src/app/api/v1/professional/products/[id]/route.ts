@@ -4,6 +4,7 @@ import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
 import { productInputSchema } from "@/modules/shop/domain";
 import { saveProduct } from "@/modules/shop/repository";
+import { assertProductPublishingAllowed, professionalAccessState } from "@/modules/professionals/verification";
 
 export async function PUT(
   request: Request,
@@ -18,9 +19,11 @@ export async function PUT(
     const parsed = productInputSchema.safeParse(await smallJson(request, 8192));
     if (!parsed.success) throw new AccessError("INVALID_REQUEST", 400);
 
-    const product = await withAccount("professional", (db, account) =>
-      saveProduct(db, account.professionalId!, parsed.data, id),
-    );
+    const product = await withAccount("professional", async (db, account) => {
+      const access = await professionalAccessState(db, account.professionalId!);
+      assertProductPublishingAllowed(access, parsed.data.publicationStatus);
+      return saveProduct(db, account.professionalId!, parsed.data, id);
+    });
     if (!product) throw new AccessError("FORBIDDEN", 403);
     return json({ product });
   } catch (error) {

@@ -1,7 +1,6 @@
 import "server-only";
 
 import type { SqlClient } from "@/modules/accounts/repository";
-import { AccessError } from "@/modules/accounts/domain";
 import type {
   ProductInput,
   ProfessionalProduct,
@@ -33,20 +32,6 @@ export async function saveProduct(
   input: ProductInput,
   id?: string,
 ) {
-  if (input.publicationStatus === "published") {
-    const access = (
-      await db.query<{
-        access: {
-          status: "unverified" | "pending" | "verified" | "restricted";
-          verified: boolean;
-        };
-      }>("SELECT beauty.professional_access_state($1) AS access", [professionalId])
-    ).rows[0]?.access;
-    if (access?.status === "restricted")
-      throw new AccessError("PROFESSIONAL_RESTRICTED", 403);
-    if (!access?.verified)
-      throw new AccessError("VERIFICATION_REQUIRED", 409);
-  }
   if (id) {
     return (
       await db.query<ProfessionalProduct>(

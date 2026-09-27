@@ -3,6 +3,7 @@ import {
   assertBookingAllowed,
   assertProductPublishingAllowed,
   assertStarterServiceAllowed,
+  assertWithdrawalAllowed,
   type ProfessionalAccessState,
 } from "@/modules/professionals/verification";
 
@@ -74,6 +75,13 @@ describe("professional verification limits", () => {
         depositPence: 10000,
       }),
     ).not.toThrow();
+  });
+
+  it("requires verification before any withdrawal", () => {
+    expect(() => assertWithdrawalAllowed(unverified)).toThrow(
+      "VERIFICATION_REQUIRED",
+    );
+    expect(() => assertWithdrawalAllowed(verified)).not.toThrow();
   });
 
   it("blocks restricted professional activity", () => {

@@ -8,6 +8,7 @@ import { discoveryOptions } from "@/modules/professionals/discovery";
 import { discoveryPage } from "@/modules/professionals/repository";
 import type { PublicProfessional } from "@/modules/professionals/domain";
 import { categories } from "@/modules/professionals/domain";
+import { publicViewerSignedIn } from "@/lib/public-viewer";
 export const dynamic = "force-dynamic";
 export default async function Explore({
   searchParams,
@@ -15,6 +16,7 @@ export default async function Explore({
   searchParams: Promise<{ q?: string; after?: string }>;
 }) {
   const { query: q, after } = discoveryOptions(await searchParams);
+  const viewerSignedIn = await publicViewerSignedIn();
   let next: string | null = null;
   let professionals: PublicProfessional[] = [];
   let unavailable = !process.env.DATABASE_URL;
@@ -28,7 +30,7 @@ export default async function Explore({
     }
   return (
     <>
-      <PublicHeader />
+      <PublicHeader signedIn={viewerSignedIn} />
       <main id="main" className="catalog-page">
         <p className="eyebrow">INDEPENDENT TALENT. YOUR KIND OF BEAUTY.</p>
         <h1>
@@ -120,7 +122,7 @@ export default async function Explore({
           )}
         </nav>
       </main>
-      <BottomNavigation active="search" />
+      <BottomNavigation active="search" signedIn={viewerSignedIn} />
     </>
   );
 }

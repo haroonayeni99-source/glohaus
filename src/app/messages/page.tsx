@@ -28,6 +28,7 @@ export default async function MessagesPage({
     thread?: string;
     booking?: string;
     professional?: string;
+    view?: string;
   }>;
 }) {
   const result = await pageAccount();
@@ -50,6 +51,11 @@ export default async function MessagesPage({
     );
 
   const query = await searchParams;
+  const professionalMode =
+    query.view === "professional" && account.roles.includes("professional");
+  const customerScopeId = professionalMode
+    ? "00000000-0000-0000-0000-000000000000"
+    : account.id;
   const requestedThread = uuid(query.thread);
   const requestedBooking = requestedThread ? null : uuid(query.booking);
   const requestedProfessional = requestedThread
@@ -59,16 +65,16 @@ export default async function MessagesPage({
   const data = await withIdentity(account.authId, async (db) => {
     const inbox = await conversationInbox(
       db,
-      account.id,
-      account.professionalId,
+      customerScopeId,
+      professionalMode ? account.professionalId : null,
     );
 
     const activeConversation = requestedThread
       ? await conversationDetails(
           db,
           requestedThread,
-          account.id,
-          account.professionalId,
+          customerScopeId,
+          professionalMode ? account.professionalId : null,
         )
       : null;
 
@@ -85,8 +91,7 @@ export default async function MessagesPage({
       if (booking) {
         bookingId = booking.id;
         draftRecipientName =
-          account.professionalId &&
-          account.roles.includes("professional")
+          professionalMode
             ? booking.customer_name
             : booking.professional_name;
       }
@@ -119,21 +124,18 @@ export default async function MessagesPage({
   const centre = (
     <MessageCentre
       initialConversations={data.inbox}
+      view={professionalMode ? "professional" : "customer"}
       activeConversation={data.activeConversation}
       initialMessages={data.page.messages}
       initialCursor={data.page.next}
       bookingId={data.bookingId}
       professionalId={data.professionalId}
       draftRecipientName={data.draftRecipientName}
-      professionalMessaging={account.roles.includes("professional")}
+      professionalMessaging={professionalMode}
     />
   );
 
-  const professionalOnly =
-    account.roles.includes("professional") &&
-    !account.roles.includes("customer");
-
-  if (professionalOnly)
+  if (professionalMode)
     return (
       <div className="pro-app">
         <ProfessionalNavigation
@@ -148,11 +150,11 @@ export default async function MessagesPage({
 
   return (
     <>
-      <PublicHeader />
+      <PublicHeader signedIn />
       <main id="main" className="messages-page">
         {centre}
       </main>
-      <BottomNavigation active="messages" />
+      <BottomNavigation active="messages" signedIn />
     </>
   );
 }

@@ -4,25 +4,31 @@ import { Moon, Sun } from "lucide-react";
 import { useEffect, useSyncExternalStore } from "react";
 
 const storageKey = "glohaus-theme";
+const darkPreference = "(prefers-color-scheme: dark)";
 
 function applyTheme(theme: "light" | "night") {
   document.documentElement.dataset.theme = theme;
+  document.documentElement.style.colorScheme =
+    theme === "night" ? "dark" : "light";
 }
 
 function readTheme(): "light" | "night" {
   const saved = window.localStorage.getItem(storageKey);
   return saved === "night" ||
-    (saved !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches)
+    (saved !== "light" && window.matchMedia(darkPreference).matches)
     ? "night"
     : "light";
 }
 
 function subscribeToTheme(onStoreChange: () => void) {
+  const media = window.matchMedia(darkPreference);
   window.addEventListener("storage", onStoreChange);
   window.addEventListener("glohaus-theme-change", onStoreChange);
+  media.addEventListener("change", onStoreChange);
   return () => {
     window.removeEventListener("storage", onStoreChange);
     window.removeEventListener("glohaus-theme-change", onStoreChange);
+    media.removeEventListener("change", onStoreChange);
   };
 }
 

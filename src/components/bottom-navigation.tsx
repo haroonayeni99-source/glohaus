@@ -22,15 +22,27 @@ type ActiveItem =
   | "search"
   | "shop";
 
-export function BottomNavigation({ active }: { active?: ActiveItem }) {
+const privateItems = new Set(["bookings", "messages", "profile"]);
+
+export function BottomNavigation({
+  active,
+  signedIn = false,
+}: {
+  active?: ActiveItem;
+  signedIn?: boolean;
+}) {
   return (
     <nav className="glohaus-bottom-nav" aria-label="Mobile navigation">
       {items.map((item) => {
         const Icon = item.icon;
+        const href =
+          !signedIn && privateItems.has(item.id)
+            ? `/sign-in?returnTo=${encodeURIComponent(item.href)}`
+            : item.href;
         return (
           <Link
             key={item.id}
-            href={item.href}
+            href={href}
             aria-current={active === item.id ? "page" : undefined}
           >
             <Icon size={20} aria-hidden />

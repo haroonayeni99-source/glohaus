@@ -62,7 +62,7 @@ export default async function Home({
         signedIn={viewer.signedIn}
         displayName={viewer.displayName}
       />
-      <MobileCustomerHome />
+      <MobileCustomerHome signedIn={viewer.signedIn} />
     </>
   );
 }

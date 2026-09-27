@@ -17,6 +17,16 @@ export default async function ServicesPage() {
     );
   const account = result.account;
   const data = await withIdentity(account.authId, async (db) => ({
+    access: (
+      await db.query<{
+        data: {
+          status: "unverified" | "pending" | "verified" | "restricted";
+          starterBookingsRemaining: number | null;
+        };
+      }>("SELECT beauty.professional_access_state($1) AS data", [
+        account.professionalId,
+      ])
+    ).rows[0].data,
     services: (
       await db.query<Service>(
         "SELECT * FROM beauty.services WHERE professional_id=$1 ORDER BY created_at,id",
@@ -47,6 +57,8 @@ export default async function ServicesPage() {
             section="services"
             services={data.services}
             assets={data.assets}
+            verificationStatus={data.access.status}
+            starterBookingsRemaining={data.access.starterBookingsRemaining}
           />
         </section>
       </main>

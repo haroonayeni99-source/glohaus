@@ -137,6 +137,7 @@ export type PublicProfessional = {
   bio: string;
   city: string;
   category: (typeof categories)[number];
+  verification_status?: "unverified" | "pending" | "verified" | "restricted";
 };
 export type Service = {
   asset_id?: string | null;

@@ -28,7 +28,7 @@ export default async function History({
   );
   return (
     <>
-      <PublicHeader />
+      <PublicHeader signedIn />
       <main id="main" className="catalog-page">
         <p className="eyebrow">YOUR APPOINTMENTS</p>
         <h1>
@@ -43,7 +43,7 @@ export default async function History({
           <BookingList bookings={bookings.bookings} />
         </BookingNavigation>
       </main>
-      <BottomNavigation active="bookings" />
+      <BottomNavigation active="bookings" signedIn />
     </>
   );
 }

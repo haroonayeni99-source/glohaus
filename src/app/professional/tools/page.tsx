@@ -97,7 +97,7 @@ const tools = [
     "/security",
     ShieldCheck,
   ],
-  ["Customer experience", "Explore GLOHAUS as a customer", "/", Compass],
+  ["Customer account", "Switch to your signed-in customer experience", "/account", Compass],
 ] as const;
 export default async function ToolsPage() {
   const result = await pageAccount("professional");

@@ -29,7 +29,7 @@ export default async function SavedPage({
   );
   return (
     <>
-      <PublicHeader />
+      <PublicHeader signedIn />
       <main id="main" className="catalog-page">
         <Link className="back-link" href="/account">
           ← Your account
@@ -89,7 +89,7 @@ export default async function SavedPage({
           )}
         </nav>
       </main>
-      <BottomNavigation active="profile" />
+      <BottomNavigation active="profile" signedIn />
     </>
   );
 }

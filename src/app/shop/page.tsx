@@ -7,22 +7,25 @@ import { PublicHeader } from "@/components/public-header";
 import { withIdentity } from "@/lib/db";
 import { publicProducts } from "@/modules/shop/repository";
 import { money } from "@/modules/professionals/domain";
+import { publicViewerSignedIn } from "@/lib/public-viewer";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Shop" };
 
 export default async function ShopPage() {
+  const viewerSignedIn = await publicViewerSignedIn();
+  const cartHref = viewerSignedIn ? "/cart" : "/sign-in?returnTo=%2Fcart";
   const products = process.env.DATABASE_URL
     ? await withIdentity("", publicProducts).catch(() => [])
     : [];
 
   return (
     <>
-      <PublicHeader />
+      <PublicHeader signedIn={viewerSignedIn} />
       <main id="main" className="catalog-page shop-catalogue">
         <div className="shop-heading-row">
           <p className="eyebrow">GLOHAUS SHOP</p>
-          <Link className="shop-cart-link" href="/cart">
+          <Link className="shop-cart-link" href={cartHref}>
             <ShoppingBag size={16} aria-hidden /> Cart
           </Link>
         </div>
@@ -102,7 +105,7 @@ export default async function ShopPage() {
           </p>
         </section>
       </main>
-      <BottomNavigation active="shop" />
+      <BottomNavigation active="shop" signedIn={viewerSignedIn} />
     </>
   );
 }

@@ -18,7 +18,7 @@ test("public entry works on mobile and desktop", async ({ page }, testInfo) => {
     await expect(
       page.locator('a[href="/sign-in?returnTo=%2Fwallet"]:visible').first(),
     ).toBeVisible();
-    await expect(page.getByRole("link", { name: /Sign in/ })).toHaveAttribute(
+    await expect(page.locator(".desktop-user-chip")).toHaveAttribute(
       "href",
       "/sign-in",
     );

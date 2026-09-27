@@ -373,6 +373,123 @@ describe.sequential("booking transactions and verified deposits", () => {
   });
 });
 
+describe.sequential("starter zero-deposit booking fee checkout", () => {
+  it("allows an unverified professional without Connect to take a £1-fee starter booking", async () => {
+    const account = await asUser("starter-pro", (sql) =>
+      enrolAccount(
+        sql,
+        {
+          authId: "starter-pro",
+          email: "starter-pro@example.test",
+          displayName: "Starter Studio",
+          secondFactorAge: null,
+        },
+        "professional",
+      ),
+    );
+    const starterProfessional = account.professionalId!;
+
+    const starterService = await asUser("starter-pro", async (sql) => {
+      await updateProfile(sql, starterProfessional, {
+        slug: "starter-studio",
+        businessName: "Starter Studio",
+        bio: "Starter beauty appointments in London.",
+        city: "London",
+        category: "Nails",
+        publicationStatus: "published",
+      });
+      const service = await saveService(sql, starterProfessional, {
+        name: "Starter manicure",
+        description: "",
+        durationMinutes: 60,
+        pricePence: 5000,
+        depositPence: 0,
+        active: true,
+      });
+      await saveSchedule(
+        sql,
+        starterProfessional,
+        Array.from({ length: 7 }, (_, weekday) => ({
+          weekday,
+          startMinute: 480,
+          endMinute: 1200,
+        })),
+      );
+      return service.id as string;
+    });
+
+    const start = new Date(Date.now() + 5 * 86400000);
+    start.setUTCHours(12, 0, 0, 0);
+
+    const reservation = (
+      await asUser("alice", (sql) =>
+        sql.query<{
+          data: {
+            id: string;
+            depositPence: number;
+            bookingFeePence: number;
+            status: string;
+          };
+        }>("SELECT beauty.reserve_booking($1,$2) AS data", [
+          starterService,
+          start.toISOString(),
+        ]),
+      )
+    ).rows[0].data;
+
+    expect(reservation).toMatchObject({
+      depositPence: 0,
+      bookingFeePence: 100,
+      status: "payment_pending",
+    });
+
+    const quote = (
+      await asUser("alice", (sql) =>
+        sql.query<{
+          data: {
+            customerTotalPence: number;
+            customerPlatformFeePence: number;
+            professionalProceedsPence: number;
+          };
+        }>("SELECT beauty.prepare_booking_financial_quote($1) AS data", [
+          reservation.id,
+        ]),
+      )
+    ).rows[0].data;
+
+    expect(quote).toMatchObject({
+      customerTotalPence: 100,
+      customerPlatformFeePence: 100,
+      professionalProceedsPence: 0,
+    });
+
+    await asUser("alice", (sql) =>
+      sql.query("SELECT beauty.attach_checkout($1,'cs_starter_fee')", [
+        reservation.id,
+      ]),
+    );
+    await worker(async (sql) => {
+      await sql.query(
+        "SELECT beauty.apply_checkout_payment('evt_starter_fee',$1,'cs_starter_fee','pi_starter_fee',100,'gbp')",
+        [reservation.id],
+      );
+      await sql.query("SELECT beauty.record_booking_payment_finance($1,$2)", [
+        reservation.id,
+        "pi_starter_fee",
+      ]);
+    });
+
+    expect(
+      (
+        await db.query<{ status: string }>(
+          "SELECT status FROM beauty.bookings WHERE id=$1",
+          [reservation.id],
+        )
+      ).rows[0].status,
+    ).toBe("confirmed");
+  });
+});
+
 describe.sequential("verified reviews", () => {
   it("rejects reviews for unfinished appointments", async () => {
     await expect(

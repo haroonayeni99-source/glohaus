@@ -25,6 +25,16 @@ export default async function ProfessionalSetup() {
         [account.professionalId],
       )
     ).rows[0];
+    const access = (
+      await db.query<{
+        data: {
+          status: "unverified" | "pending" | "verified" | "restricted";
+          verified: boolean;
+        };
+      }>("SELECT beauty.professional_access_state($1) AS data", [
+        account.professionalId,
+      ])
+    ).rows[0].data;
     const [services, availability, portfolio] = await Promise.all([
       db.query<{ count: number }>(
         "SELECT count(*)::integer AS count FROM beauty.services WHERE professional_id=$1 AND active",
@@ -44,6 +54,7 @@ export default async function ProfessionalSetup() {
       services: services.rows[0].count,
       availability: availability.rows[0].count,
       portfolio: portfolio.rows[0].count,
+      verification: access,
     };
   });
   const steps = [
@@ -70,6 +81,12 @@ export default async function ProfessionalSetup() {
       "Upload work you have permission to share, then publish it.",
       "/professional/portfolio",
       progress.portfolio > 0,
+    ],
+    [
+      "Verify your identity",
+      "Optional to get started. Verification unlocks paid deposits, product selling, payouts and higher-trust features.",
+      "/professional/profile#verification",
+      progress.verification.verified,
     ],
     [
       "Share your craft",
@@ -114,8 +131,9 @@ export default async function ProfessionalSetup() {
             {progressPercent}%
           </progress>
           <p>
-            Complete the first four steps to create a confident public booking
-            page. You can return to this checklist whenever you need to.
+            You can publish and start using GLOHAUS before identity verification.
+            Verification unlocks paid deposits, product selling, payouts and other
+            higher-trust marketplace features.
           </p>
         </section>
         <section

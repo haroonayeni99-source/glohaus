@@ -101,7 +101,7 @@ export async function publicProfessionals(
   return (
     await db.query<PublicProfessional>(
       `SELECT p.*,d.photo_id,d.photo_alt,r.rating,r.review_count,s.from_price_pence
- FROM (SELECT p.id,p.slug,p.business_name,p.bio,p.city,p.category FROM beauty.public_professionals p
+ FROM (SELECT p.id,p.slug,p.business_name,p.bio,p.city,p.category,p.verification_status FROM beauty.public_professionals p
  WHERE (p.business_name ILIKE $1 OR p.city ILIKE $1 OR p.category ILIKE $1 OR EXISTS(SELECT 1 FROM beauty.platform_labels labels WHERE labels.key=p.category AND labels.label ILIKE $1) OR EXISTS(SELECT 1 FROM beauty.public_services svc WHERE svc.professional_id=p.id AND svc.name ILIKE $1))
  ${after ? "AND (p.business_name,p.id)>($2::text,$3::uuid)" : ""}
  ORDER BY p.business_name,p.id LIMIT 25) p
@@ -119,7 +119,7 @@ export async function publicProfessionals(
 export async function publicProfile(db: SqlClient, slug: string) {
   const professional = (
     await db.query<PublicProfessional>(
-      "SELECT id,slug,business_name,bio,city,category FROM beauty.public_professionals WHERE slug=$1",
+      "SELECT id,slug,business_name,bio,city,category,verification_status FROM beauty.public_professionals WHERE slug=$1",
       [slug],
     )
   ).rows[0];

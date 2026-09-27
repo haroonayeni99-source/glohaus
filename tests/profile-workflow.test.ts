@@ -433,6 +433,10 @@ describe.sequential("booking without a payment-provider setup", () => {
       [owner],
     );
     await db.query(
+      "INSERT INTO beauty.professional_trust_status(professional_id,verification_status,standing_status) VALUES($1,'verified','good') ON CONFLICT(professional_id) DO UPDATE SET verification_status='verified',standing_status='good'",
+      [owner],
+    );
+    await db.query(
       "UPDATE beauty.services SET deposit_pence=1500 WHERE id=$1",
       [serviceId],
     );

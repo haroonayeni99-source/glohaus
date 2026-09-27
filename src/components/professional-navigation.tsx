@@ -6,6 +6,7 @@ import {
   Plus,
   UsersRound,
   WalletCards,
+  ArrowLeftRight,
 } from "lucide-react";
 import { Brand } from "./brand";
 import { AccountControls } from "./account-controls";
@@ -35,6 +36,10 @@ export function ProfessionalNavigation({
           <span>PROFESSIONAL DASHBOARD</span>
         </div>
         <div className="pro-header-account">
+          <Link className="pro-create-post" href="/account">
+            <ArrowLeftRight size={15} aria-hidden />
+            Customer view
+          </Link>
           <Link className="pro-create-post" href="/professional/posts">
             <Plus size={15} aria-hidden />
             Create post

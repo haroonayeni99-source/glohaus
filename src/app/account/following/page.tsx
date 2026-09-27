@@ -23,7 +23,7 @@ export default async function Page() {
 
   return (
     <>
-      <PublicHeader />
+      <PublicHeader signedIn />
       <main id="main" className="catalog-page following-page">
         <p className="eyebrow">YOUR GLOHAUS COMMUNITY</p>
         <h1>Professionals you <em>follow.</em></h1>
@@ -51,7 +51,7 @@ export default async function Page() {
           </section>
         )}
       </main>
-      <BottomNavigation active="profile" />
+      <BottomNavigation active="profile" signedIn />
     </>
   );
 }

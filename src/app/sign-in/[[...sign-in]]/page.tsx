@@ -11,10 +11,11 @@ export default async function Page({
 }) {
   const { returnTo, intent, authError } = await searchParams;
   const audience = intent === "professional" ? "professional" : "customer";
+  const defaultTarget = audience === "professional" ? "/professional" : "/account";
   return (
     <AuthFrame audience={audience}>
       {authConfigured() ? (
-        <><EmailAuthForm mode="sign-in" redirectTo={safeReturnTo(returnTo)} audience={audience} />{authError && <p className="form-error" role="alert">We couldn’t complete that email confirmation. Please sign in with your email and password.</p>}</>
+        <><EmailAuthForm mode="sign-in" redirectTo={safeReturnTo(returnTo, defaultTarget)} audience={audience} />{authError && <p className="form-error" role="alert">We couldn’t complete that email confirmation. Please sign in with your email and password.</p>}</>
       ) : (
         <AccessMessage />
       )}

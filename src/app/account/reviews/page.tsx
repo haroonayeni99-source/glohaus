@@ -36,7 +36,7 @@ export default async function ReviewsPage() {
   );
   return (
     <>
-      <PublicHeader />
+      <PublicHeader signedIn />
       <main id="main" className="catalog-page">
         <Link className="back-link" href="/account">
           ← Your account
@@ -85,7 +85,7 @@ export default async function ReviewsPage() {
           </section>
         )}
       </main>
-      <BottomNavigation active="profile" />
+      <BottomNavigation active="profile" signedIn />
     </>
   );
 }

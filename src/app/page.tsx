@@ -48,7 +48,7 @@ export default async function Home({
         const signedIn = account?.status === "active";
         let summary: CustomerHomeSummary | null = null;
 
-        if (signedIn && account.roles.includes("customer")) {
+        if (account?.status === "active" && account.roles.includes("customer")) {
           try {
             summary = await customerHomeSummary(db, account.id);
           } catch {

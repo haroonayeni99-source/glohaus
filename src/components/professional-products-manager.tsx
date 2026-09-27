@@ -94,12 +94,18 @@ export function ProfessionalProductsManager({
         },
       );
       const data = await response.json();
-      if (!response.ok)
+      if (!response.ok) {
+        const code = data.error?.code;
         throw new Error(
-          data.error?.code === "INVALID_REQUEST"
+          code === "INVALID_REQUEST"
             ? "Check the product details and try again."
-            : "This product could not be saved.",
+            : code === "VERIFICATION_REQUIRED"
+              ? "You can save this product as a draft, but identity verification is required before it can be published for customers to buy."
+              : code === "PROFESSIONAL_RESTRICTED"
+                ? "This professional account is currently restricted from publishing products."
+                : "This product could not be saved.",
         );
+      }
 
       const product = data.product as ProfessionalProduct;
       setProducts((current) => {
@@ -122,6 +128,10 @@ export function ProfessionalProductsManager({
   return (
     <div className="pro-products-layout">
       <section className="pro-panel pro-product-editor">
+        <p className="form-notice">
+          Product drafts are available to all professional accounts. Publishing
+          products for customer purchase requires completed identity verification.
+        </p>
         <div className="pro-panel-title">
           <div>
             <p className="pro-kicker">{editing ? "EDIT PRODUCT" : "NEW PRODUCT"}</p>

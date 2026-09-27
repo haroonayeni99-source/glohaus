@@ -11,13 +11,19 @@ import { inAppNotifications, type InAppNotification } from "@/modules/notificati
 
 export const metadata = { title: "Notifications" };
 
-export default async function NotificationsPage() {
+export default async function NotificationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
   const result = await pageAccount();
   if (!result.account)
     return (
       <div className="standalone-message"><AccessMessage code={result.error} /></div>
     );
-  const professional = result.account.roles.includes("professional");
+  const query = await searchParams;
+  const professional =
+    query.view === "professional" && result.account.roles.includes("professional");
   let notifications: InAppNotification[] | null = null;
   try {
     notifications = await withIdentity(result.account.authId, inAppNotifications);
@@ -48,7 +54,7 @@ export default async function NotificationsPage() {
     );
   return (
     <>
-      <PublicHeader />
+      <PublicHeader signedIn />
       <main id="main" className="catalog-page notification-page">
         <p className="eyebrow">ACTIVITY</p>
         <h1>Your notifications.</h1>

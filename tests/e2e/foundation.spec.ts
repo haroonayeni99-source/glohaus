@@ -72,6 +72,49 @@ test("signed-out desktop customer shortcuts preserve their return route", async 
   );
 });
 
+test("signed-out mobile navigation preserves private return routes", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  for (const route of ["/", "/discover", "/explore", "/shop"]) {
+    await page.goto(route);
+    const navigation = page.getByRole("navigation", { name: "Mobile navigation" });
+    await expect(navigation.getByRole("link", { name: "Bookings" })).toHaveAttribute(
+      "href",
+      "/sign-in?returnTo=%2Faccount%2Fbookings",
+    );
+    await expect(navigation.getByRole("link", { name: "Messages" })).toHaveAttribute(
+      "href",
+      "/sign-in?returnTo=%2Fmessages",
+    );
+    await expect(navigation.getByRole("link", { name: "Profile" })).toHaveAttribute(
+      "href",
+      "/sign-in?returnTo=%2Fworkspace",
+    );
+  }
+
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "Notifications" })).toHaveAttribute(
+    "href",
+    "/sign-in?returnTo=%2Fnotifications",
+  );
+
+  await page.goto("/discover");
+  await expect(page.getByRole("link", { name: "Your notifications" })).toHaveAttribute(
+    "href",
+    "/sign-in?returnTo=%2Fnotifications",
+  );
+  await expect(page.getByRole("link", { name: "Your space" }).first()).toHaveAttribute(
+    "href",
+    "/sign-in?returnTo=%2Fworkspace",
+  );
+
+  await page.goto("/shop");
+  await expect(page.getByRole("link", { name: "Cart" })).toHaveAttribute(
+    "href",
+    "/sign-in?returnTo=%2Fcart",
+  );
+});
+
 test("private routes fail closed without credentials", async ({
   page,
   request,

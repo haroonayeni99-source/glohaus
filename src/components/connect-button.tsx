@@ -1,14 +1,51 @@
 "use client";
 import { useState } from "react";
-export function ConnectButton() {
+import { BadgeCheck, CircleAlert, ShieldCheck } from "lucide-react";
+
+type VerificationStatus = "unverified" | "pending" | "verified" | "restricted";
+
+export function ConnectButton({
+  status = "unverified",
+}: {
+  status?: VerificationStatus;
+}) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+
+  if (status === "verified")
+    return (
+      <div className="editor-form" id="verification">
+        <h2><BadgeCheck size={21} aria-hidden /> Identity verified</h2>
+        <p className="lead">
+          Stripe has completed the verification required for your GLOHAUS
+          professional payment account. Verified marketplace features are unlocked
+          subject to your account standing and plan.
+        </p>
+      </div>
+    );
+
+  if (status === "restricted")
+    return (
+      <div className="editor-form" id="verification">
+        <h2><CircleAlert size={21} aria-hidden /> Verification restricted</h2>
+        <p className="lead">
+          This professional account currently has a verification or account-standing
+          restriction. New paid marketplace activity remains limited while it is reviewed.
+        </p>
+      </div>
+    );
+
   return (
-    <div className="editor-form">
-      <h2>Set up your payouts.</h2>
+    <div className="editor-form" id="verification">
+      <h2><ShieldCheck size={21} aria-hidden /> Verify your identity</h2>
       <p className="lead">
-        Connect your professional account to Stripe so GLOHAUS can release eligible
-        earnings to you. Stripe handles identity verification and payout bank details.
+        {status === "pending"
+          ? "Your Stripe verification is in progress. Continue the secure Stripe process if more information is requested."
+          : "Verification is optional for getting started. Complete Stripe identity verification to unlock paid deposits, product selling, payouts and other verified features."}
+      </p>
+      <p className="form-help">
+        Until verified, active services are limited to £200 or less with no online
+        deposit, and your account can use up to five starter bookings.
       </p>
       <button
         className="button"
@@ -24,18 +61,22 @@ export function ConnectButton() {
             const result = await response.json();
             if (!response.ok)
               throw new Error(
-                "Payment setup is not available yet. Please try again once Stripe is connected to GLOHAUS.",
+                "Identity verification is not available right now. Please try again shortly.",
               );
-            window.location.href = result.url;
+            window.location.assign(result.url);
           } catch (error) {
             setMessage(
-              error instanceof Error ? error.message : "Could not open Stripe.",
+              error instanceof Error ? error.message : "Could not open Stripe verification.",
             );
             setBusy(false);
           }
         }}
       >
-        Set up Stripe payouts
+        {busy
+          ? "Opening Stripe…"
+          : status === "pending"
+            ? "Continue verification"
+            : "Verify identity with Stripe"}
       </button>
       {message && (
         <p role="status" className="form-notice">

@@ -13,6 +13,7 @@ import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { ConnectButton } from "@/components/connect-button";
 import { PayoutDashboardButton } from "@/components/payout-dashboard-button";
 import { WithdrawalForm } from "@/components/withdrawal-form";
+import { professionalAccessState } from "@/modules/professionals/verification";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "GLOHAUS Wallet" };
@@ -42,6 +43,7 @@ export default async function ProfessionalWalletPage() {
         };
       }>("SELECT beauty.my_professional_pricing() AS data")
     ).rows[0].data;
+    const access = await professionalAccessState(db, result.account!.professionalId!);
     const paymentAccount = (
       await db.query<{ stripe_account_id: string }>(
         "SELECT stripe_account_id FROM beauty.professional_payment_accounts WHERE professional_id=$1",
@@ -51,10 +53,11 @@ export default async function ProfessionalWalletPage() {
     return {
       wallet,
       pricing,
+      access,
       hasStripeAccount: Boolean(paymentAccount?.stripe_account_id),
     };
   });
-  const { wallet, pricing, hasStripeAccount } = finance;
+  const { wallet, pricing, access, hasStripeAccount } = finance;
   const restricted = wallet.withdrawalsBlocked || wallet.instantPayoutBlocked;
   return (
     <div className="pro-app">
@@ -125,7 +128,7 @@ export default async function ProfessionalWalletPage() {
           </Link>
         </section>
 
-        {hasStripeAccount && (
+        {hasStripeAccount && access.verified && (
           <section className="pro-panel">
             <div className="pro-panel-title">
               <h2>Withdraw earnings</h2>
@@ -152,15 +155,25 @@ export default async function ProfessionalWalletPage() {
           <div className="pro-panel-title">
             <h2>Payout setup</h2>
             <span className="pro-status pro-status-confirmed">
-              {hasStripeAccount ? "Stripe connected" : "Setup required"}
+              {access.verified
+                ? "Verified"
+                : access.status === "pending"
+                  ? "Verification pending"
+                  : access.status === "restricted"
+                    ? "Restricted"
+                    : "Verification required"}
             </span>
           </div>
           <p>
-            {hasStripeAccount
-              ? "Your Stripe payout account is connected. Use the withdrawal controls above to request money, or open Stripe to manage your payout bank details and status."
-              : "Connect Stripe before GLOHAUS can release professional earnings to your payout account."}
+            {access.verified
+              ? "Your identity is verified. Manage your Stripe payout account or request withdrawals from your released balance."
+              : "Your earnings records remain protected in GLOHAUS, but withdrawals stay locked until identity verification is complete."}
           </p>
-          {hasStripeAccount ? <PayoutDashboardButton /> : <ConnectButton />}
+          {access.verified && hasStripeAccount ? (
+            <PayoutDashboardButton />
+          ) : (
+            <ConnectButton status={access.status} />
+          )}
         </section>
 
         <section className="pro-panel pro-wallet-explainer">

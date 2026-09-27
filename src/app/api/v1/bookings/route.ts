@@ -130,6 +130,22 @@ export async function POST(request: Request) {
       error.code === "23P01"
     )
       return json({ error: { code: "SLOT_TAKEN" } }, 409);
+    if (
+      error &&
+      typeof error === "object" &&
+      "message" in error &&
+      typeof error.message === "string" &&
+      error.message.includes("VERIFICATION_REQUIRED")
+    )
+      return json({ error: { code: "VERIFICATION_REQUIRED" } }, 409);
+    if (
+      error &&
+      typeof error === "object" &&
+      "message" in error &&
+      typeof error.message === "string" &&
+      error.message.includes("PROFESSIONAL_RESTRICTED")
+    )
+      return json({ error: { code: "PROFESSIONAL_RESTRICTED" } }, 403);
     return apiError(error);
   }
 }

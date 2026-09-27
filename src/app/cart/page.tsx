@@ -25,11 +25,11 @@ export default async function CartPage() {
 
   return (
     <>
-      <PublicHeader />
+      <PublicHeader signedIn />
       <main id="main" className="catalog-page cart-page">
         <CartManager initialCart={cart} />
       </main>
-      <BottomNavigation active="shop" />
+      <BottomNavigation active="shop" signedIn />
     </>
   );
 }

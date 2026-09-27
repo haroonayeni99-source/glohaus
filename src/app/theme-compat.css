@@ -1,0 +1,164 @@
+/*
+ * Theme compatibility layer.
+ * Keep reference-matched layouts intact while making the global Light/Night
+ * control affect the customer Home consistently on both mobile and desktop.
+ */
+
+html {
+  color-scheme: light;
+}
+
+html[data-theme="night"] {
+  color-scheme: dark;
+}
+
+/* Mobile Home is intentionally dark in the reference design, so provide an
+   explicit light treatment when the user selects Light mode. */
+@media (max-width: 1099px) {
+  :root:not([data-theme="night"]) .mobile-customer-home,
+  :root:not([data-theme="night"]) .mobile-home-main {
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  :root:not([data-theme="night"]) .mobile-home-brand > span {
+    color: var(--muted);
+  }
+
+  :root:not([data-theme="night"]) .mobile-home-bell,
+  :root:not([data-theme="night"]) .mobile-home-categories a {
+    color: var(--ink);
+  }
+
+  :root:not([data-theme="night"]) .mobile-home-categories a > span {
+    border-color: color-mix(in srgb, var(--plum) 72%, var(--line));
+    background: var(--white);
+  }
+
+  :root:not([data-theme="night"]) .mobile-home-discover-link {
+    color: var(--plum-dark);
+  }
+}
+
+/* Desktop Home was reference-matched in light colours. These overrides keep
+   the same hierarchy and spacing while converting the shell/cards for Night. */
+@media (min-width: 1100px) {
+  :root[data-theme="night"] .desktop-customer-home {
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  :root[data-theme="night"] .customer-desktop-sidebar,
+  :root[data-theme="night"] .desktop-status {
+    border-color: var(--line);
+    background: var(--white);
+  }
+
+  :root[data-theme="night"] .customer-desktop-sidebar nav a,
+  :root[data-theme="night"] .customer-desktop-sidebar nav .customer-nav-disabled,
+  :root[data-theme="night"] .desktop-service-row a,
+  :root[data-theme="night"] .customer-desktop-topbar a {
+    color: var(--ink);
+  }
+
+  :root[data-theme="night"] .customer-desktop-sidebar nav a.active {
+    background: #402532;
+    color: #ffb9cf;
+  }
+
+  :root[data-theme="night"] .glohaus-plus-card,
+  :root[data-theme="night"] .rail-reward {
+    background: #302527;
+    color: var(--ink);
+  }
+
+  :root[data-theme="night"] .glohaus-plus-card small,
+  :root[data-theme="night"] .rail-reward small,
+  :root[data-theme="night"] .rail-heading a,
+  :root[data-theme="night"] .rail-empty-booking span,
+  :root[data-theme="night"] .rail-message small,
+  :root[data-theme="night"] .desktop-pro-card > div > span,
+  :root[data-theme="night"] .desktop-status > span,
+  :root[data-theme="night"] .desktop-status .status-right {
+    color: var(--muted);
+  }
+
+  :root[data-theme="night"] .desktop-avatar {
+    background: #3a2c31;
+    color: var(--ink);
+  }
+
+  :root[data-theme="night"] .desktop-hero::after {
+    background:
+      linear-gradient(
+        90deg,
+        rgb(35 25 29 / 96%) 0%,
+        rgb(35 25 29 / 82%) 42%,
+        rgb(35 25 29 / 12%) 70%
+      );
+  }
+
+  :root[data-theme="night"] .desktop-hero-copy {
+    color: #fff;
+  }
+
+  :root[data-theme="night"] .desktop-hero-copy .eyebrow {
+    color: #ffb9cf;
+  }
+
+  :root[data-theme="night"] .desktop-hero-search {
+    background: #2b2426;
+    color: var(--ink);
+  }
+
+  :root[data-theme="night"] .desktop-hero-search input {
+    color: var(--ink);
+  }
+
+  :root[data-theme="night"] .desktop-hero-search input::placeholder {
+    color: var(--muted);
+  }
+
+  :root[data-theme="night"] .desktop-service-row .desktop-view-all {
+    border-color: var(--white);
+    box-shadow: 0 0 0 1px var(--line);
+  }
+
+  :root[data-theme="night"] .desktop-pro-card,
+  :root[data-theme="night"] .customer-desktop-rail > section {
+    border-color: var(--line);
+    background: var(--white);
+    box-shadow: 0 5px 24px rgb(0 0 0 / 14%);
+  }
+
+  :root[data-theme="night"] .desktop-rating {
+    background: var(--white);
+    color: var(--ink);
+  }
+
+  :root[data-theme="night"] .desktop-book,
+  :root[data-theme="night"] .rail-soft-button {
+    background: #4a2935;
+    color: #ffc4d8;
+  }
+
+  :root[data-theme="night"] .rail-wallet a {
+    background: var(--plum);
+    color: #fff;
+  }
+}
+
+/* Shared auth surfaces should not leak light-only input/browser chrome in Night. */
+:root[data-theme="night"] .auth-email-form input {
+  background: #2b2426;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+:root[data-theme="night"] .auth-email-form input::placeholder {
+  color: var(--muted);
+}
+
+:root[data-theme="night"] .auth-email-form [role="alert"] {
+  color: #ff9fbd;
+}

@@ -27,7 +27,9 @@ export class AccessError extends Error {
       | "ONBOARDING_REQUIRED"
       | "UNAVAILABLE"
       | "INVALID_REQUEST"
-      | "BOOKING_CONFLICT",
+      | "BOOKING_CONFLICT"
+      | "VERIFICATION_REQUIRED"
+      | "PROFESSIONAL_RESTRICTED",
     public status: number,
   ) {
     super(code);

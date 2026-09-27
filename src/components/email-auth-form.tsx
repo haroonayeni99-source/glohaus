@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { storedAuthAudience } from "@/lib/auth-flow";
 
 export function EmailAuthForm({
   mode,
@@ -45,15 +44,9 @@ export function EmailAuthForm({
       return;
     }
 
-    // A Supabase session alone is not enough: GLOHAUS also needs its own
-    // least-privilege account row. Customer auth can safely provision this
-    // automatically; professional registration keeps the explicit setup flow.
-    const savedAudience = storedAuthAudience(result.data.user?.user_metadata);
-    const effectiveAudience =
-      audience === "professional" || savedAudience === "professional"
-        ? "professional"
-        : "customer";
-    if (effectiveAudience === "customer") {
+    // The sign-in surface the person chose controls the account experience.
+    // Do not infer authorization from editable user metadata.
+    if (audience === "customer") {
       const provision = await fetch("/api/v1/accounts/enrol", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -82,7 +75,30 @@ export function EmailAuthForm({
       return;
     }
 
-    window.location.assign(redirectTo);
+    async function serverAccount() {
+      return fetch("/api/v1/me", { cache: "no-store" });
+    }
+
+    let verified = await serverAccount();
+    if (!verified.ok) {
+      // Refresh once so the SSR cookie contains the newly issued access token
+      // before the protected professional page reads it.
+      await supabase.auth.refreshSession();
+      verified = await serverAccount();
+    }
+
+    if (!verified.ok) {
+      window.location.assign("/onboarding?intent=professional");
+      return;
+    }
+
+    const me = await verified.json();
+    const roles = Array.isArray(me?.account?.roles) ? me.account.roles : [];
+    window.location.assign(
+      roles.includes("professional")
+        ? redirectTo || "/professional"
+        : "/onboarding?intent=professional",
+    );
   }
 
   const professional = audience === "professional";

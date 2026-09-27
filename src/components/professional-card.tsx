@@ -1,7 +1,7 @@
 import { PlatformLabel } from "./platform-labels";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Star, ArrowUpRight } from "lucide-react";
+import { MapPin, Star, ArrowUpRight, BadgeCheck, ShieldQuestion } from "lucide-react";
 import { money, type PublicProfessional } from "@/modules/professionals/domain";
 export function ProfessionalCard({
   professional: pro,
@@ -37,6 +37,13 @@ export function ProfessionalCard({
         <span>
           <MapPin size={14} aria-hidden />
           {pro.city}
+        </span>
+        <span>
+          {pro.verification_status === "verified" ? (
+            <><BadgeCheck size={14} aria-hidden /> Identity verified</>
+          ) : (
+            <><ShieldQuestion size={14} aria-hidden /> Identity not verified</>
+          )}
         </span>
         <p>{pro.bio}</p>
         <div className="professional-card-details">

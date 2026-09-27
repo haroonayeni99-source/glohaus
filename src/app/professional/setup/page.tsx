@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight, Check, Circle } from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
-import { PublicHeader } from "@/components/public-header";
+import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { AccessMessage } from "@/components/access-message";
 
 export const metadata = { title: "Set up your professional page" };
@@ -30,6 +30,8 @@ export default async function ProfessionalSetup() {
         data: {
           status: "unverified" | "pending" | "verified" | "restricted";
           verified: boolean;
+          starterBookingsUsed: number;
+          starterBookingsRemaining: number | null;
         };
       }>("SELECT beauty.professional_access_state($1) AS data", [
         account.professionalId,
@@ -98,9 +100,12 @@ export default async function ProfessionalSetup() {
   const complete = steps.filter((step) => step[3]).length;
   const progressPercent = Math.round((complete / steps.length) * 100);
   return (
-    <>
-      <PublicHeader />
-      <main id="main" className="catalog-page">
+    <div className="pro-app">
+      <ProfessionalNavigation
+        active="more"
+        displayName={account.displayName}
+      />
+      <main id="main" className="pro-main pro-management-page">
         <Link className="back-link" href="/professional">
           ← Your workspace
         </Link>
@@ -122,6 +127,38 @@ export default async function ProfessionalSetup() {
             Review plans, commission and withdrawal fees <ArrowUpRight size={17} aria-hidden />
           </Link>
         </div>
+        <section className="pro-panel" aria-label="Verification status">
+          <div className="pro-panel-title">
+            <h2>Verification status</h2>
+            <span className="pro-status pro-status-confirmed">
+              {progress.verification.status === "verified"
+                ? "Verified"
+                : progress.verification.status === "pending"
+                  ? "Pending"
+                  : progress.verification.status === "restricted"
+                    ? "Restricted"
+                    : "Unverified"}
+            </span>
+          </div>
+          <p>
+            {progress.verification.status === "verified"
+              ? "Your verified marketplace features are unlocked, subject to your plan and account standing."
+              : progress.verification.status === "pending"
+                ? "Your identity check is in progress. Starter limits remain until verification is complete."
+                : progress.verification.status === "restricted"
+                  ? "New paid marketplace activity is restricted while this account is reviewed."
+                  : `You can start on the free Starter plan without verification. You have ${progress.verification.starterBookingsRemaining ?? 0} of 5 Starter bookings remaining. Verification unlocks deposits, higher-value services, product selling and withdrawals.`}
+          </p>
+          {progress.verification.status !== "verified" &&
+            progress.verification.status !== "restricted" && (
+              <Link className="button small" href="/professional/profile#verification">
+                {progress.verification.status === "pending"
+                  ? "Continue verification"
+                  : "Verify identity"}
+              </Link>
+            )}
+        </section>
+
         <section className="setup-progress" aria-label="Setup progress">
           <div>
             <span className="eyebrow">YOUR PAGE PROGRESS</span>
@@ -176,6 +213,6 @@ export default async function ProfessionalSetup() {
           Go to your business workspace
         </Link>
       </main>
-    </>
+    </div>
   );
 }

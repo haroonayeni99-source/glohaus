@@ -18,11 +18,8 @@ export function apiError(error: unknown): Response {
 }
 
 export function assertSameOrigin(request: Request): void {
-  const allowedOrigin = process.env.NEXT_PUBLIC_APP_URL;
-  if (
-    !allowedOrigin ||
-    request.headers.get("origin") !== new URL(allowedOrigin).origin
-  ) {
+  const requestOrigin = new URL(request.url).origin;
+  if (request.headers.get("origin") !== requestOrigin) {
     throw new AccessError("FORBIDDEN", 403);
   }
   if (

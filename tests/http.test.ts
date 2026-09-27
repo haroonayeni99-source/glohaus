@@ -30,6 +30,20 @@ describe("request boundary", () => {
         }),
       ),
     ).not.toThrow());
+
+  it("accepts a valid preview origin even when the canonical app URL differs", () => {
+    process.env.NEXT_PUBLIC_APP_URL = "https://glohaus.example";
+    expect(() =>
+      assertSameOrigin(
+        new Request("https://preview-glohaus.vercel.app/api", {
+          headers: {
+            origin: "https://preview-glohaus.vercel.app",
+            "content-type": "application/json",
+          },
+        }),
+      ),
+    ).not.toThrow();
+  });
   it("rejects non-JSON writes", () =>
     expect(() =>
       assertSameOrigin(

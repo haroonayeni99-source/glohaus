@@ -62,7 +62,20 @@ export function EmailAuthForm({
         body: "{}",
       });
       if (!provision.ok) {
-        setError("You’re signed in, but we couldn’t finish opening your GLOHAUS account. Please try again.");
+        let code = "";
+        try {
+          const payload = await provision.json();
+          code = payload?.error?.code || "";
+        } catch {
+          // Fall back to a safe generic message below.
+        }
+        setError(
+          code === "FORBIDDEN"
+            ? "You’re signed in, but GLOHAUS couldn’t verify this site for account setup. Please refresh and try again."
+            : code === "UNAVAILABLE"
+              ? "You’re signed in, but GLOHAUS account services are temporarily unavailable. Please try again."
+              : "You’re signed in, but we couldn’t finish opening your GLOHAUS account. Please try again.",
+        );
         setPending(false);
         return;
       }

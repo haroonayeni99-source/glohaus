@@ -94,7 +94,7 @@ export function DesktopCustomerHome({
         <Link href={protectedHref("/messages")}><MessageSquare size={20}/>Messages</Link>
         <Link href="/shop"><ShoppingBag size={20}/>Shop</Link>
         <Link href={protectedHref("/wallet")}><WalletCards size={20}/>Wallet</Link>
-        <Link href={protectedHref("/workspace")}><UserRound size={20}/>Profile</Link>
+        <Link href={protectedHref("/account")}><UserRound size={20}/>Profile</Link>
       </nav>
       <div className="glohaus-plus-card glohaus-plus-disabled" aria-disabled="true">
         <Crown size={22}/><span><strong>GloHaus+</strong><small>Planned membership perks · Coming soon</small></span>
@@ -105,7 +105,7 @@ export function DesktopCustomerHome({
       <header className="customer-desktop-topbar">
         <span />
         <div><Link href={protectedHref("/notifications")} aria-label="Notifications"><Bell size={21}/></Link>
-        <Link className="desktop-user-chip" href={signedIn ? "/workspace" : "/sign-in"}><span className="desktop-avatar">{displayName ? displayName[0]?.toUpperCase() : "G"}</span>{signedIn ? displayName || "My account" : "Sign in"}<ChevronRight size={15}/></Link></div>
+        <Link className="desktop-user-chip" href={signedIn ? "/account" : "/sign-in"}><span className="desktop-avatar">{displayName ? displayName[0]?.toUpperCase() : "G"}</span>{signedIn ? displayName || "My account" : "Sign in"}<ChevronRight size={15}/></Link></div>
       </header>
 
       <section className="desktop-hero" style={{ position: "relative" }}>

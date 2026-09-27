@@ -15,6 +15,9 @@ import {
   LockKeyhole,
   MessageSquare,
   PackageCheck,
+  ShieldCheck,
+  BadgeCheck,
+  CircleAlert,
 } from "lucide-react";
 import type { Account } from "@/modules/accounts/domain";
 import type { ProfessionalDashboard as DashboardData } from "@/modules/dashboard/repository";
@@ -63,6 +66,49 @@ export function ProfessionalDashboard({
             <span>Manage profile</span>
           </Link>
         </section>
+
+        {data.access && (
+          <section className="pro-setup-card" aria-label="Professional verification status">
+            <div>
+              <span className="pro-inline-icon">
+                {data.access.status === "verified" ? (
+                  <BadgeCheck size={17} aria-hidden />
+                ) : data.access.status === "restricted" ? (
+                  <CircleAlert size={17} aria-hidden />
+                ) : (
+                  <ShieldCheck size={17} aria-hidden />
+                )}
+              </span>
+              <div>
+                <p className="pro-kicker">IDENTITY & MARKETPLACE ACCESS</p>
+                <h2>
+                  {data.access.status === "verified"
+                    ? "Identity verified."
+                    : data.access.status === "pending"
+                      ? "Verification in progress."
+                      : data.access.status === "restricted"
+                        ? "Marketplace access restricted."
+                        : "Start free. Verify when you’re ready for more."}
+                </h2>
+                <p>
+                  {data.access.status === "verified"
+                    ? "Your verified marketplace features are unlocked, subject to your plan and account standing."
+                    : data.access.status === "pending"
+                      ? "Stripe is reviewing your information. Continue verification if more details are requested."
+                      : data.access.status === "restricted"
+                        ? "Paid marketplace activity is limited while this account is reviewed."
+                        : `You can build your profile, post, message clients and accept starter bookings. You have ${data.access.starterBookingsRemaining ?? 0} of 5 starter bookings remaining; deposits, higher-value services, product selling and wider payout access require verification.`}
+                </p>
+              </div>
+            </div>
+            {data.access.status !== "verified" && data.access.status !== "restricted" && (
+              <Link className="pro-pink-button" href="/professional/profile#verification">
+                {data.access.status === "pending" ? "Continue verification" : "Verify identity"}
+                <ArrowUpRight size={16} aria-hidden />
+              </Link>
+            )}
+          </section>
+        )}
 
         {incomplete && (
           <section className="pro-setup-card" aria-label="Complete your setup">

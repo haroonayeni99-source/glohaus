@@ -40,6 +40,7 @@ export function MessageCentre({
   professionalId,
   draftRecipientName,
   professionalMessaging = false,
+  view = "customer",
 }: {
   initialConversations: ConversationSummary[];
   activeConversation: ConversationDetails | null;
@@ -49,6 +50,7 @@ export function MessageCentre({
   professionalId: string | null;
   draftRecipientName: string | null;
   professionalMessaging?: boolean;
+  view?: "customer" | "professional";
 }) {
   const router = useRouter();
   const conversations = initialConversations;
@@ -60,6 +62,8 @@ export function MessageCentre({
   const endRef = useRef<HTMLDivElement | null>(null);
   const activeId = activeConversation?.id || null;
   const role = activeConversation?.participant_role || null;
+  const viewSuffix = view === "professional" ? "&view=professional" : "";
+  const messagesHref = view === "professional" ? "/messages?view=professional" : "/messages";
   const professionalPrompts = [
     "Hi! Thanks for your message. How can I help with your booking?",
     "Thanks for booking with me. Is there anything I should know before your appointment?",
@@ -164,7 +168,7 @@ export function MessageCentre({
 
       setBody("");
       if (!activeId) {
-        router.push(`/messages?thread=${encodeURIComponent(data.conversationId)}`);
+        router.push(`/messages?thread=${encodeURIComponent(data.conversationId)}${viewSuffix}`);
         router.refresh();
         return;
       }
@@ -202,7 +206,7 @@ export function MessageCentre({
               return (
                 <Link
                   key={conversation.id}
-                  href={`/messages?thread=${conversation.id}`}
+                  href={`/messages?thread=${conversation.id}${viewSuffix}`}
                   aria-current={
                     conversation.id === activeId ? "page" : undefined
                   }
@@ -238,7 +242,9 @@ export function MessageCentre({
               Start from a professional profile or an existing booking when you
               have a question.
             </p>
-            <Link href="/explore">Explore professionals</Link>
+            <Link href={view === "professional" ? "/professional" : "/explore"}>
+              {view === "professional" ? "Back to dashboard" : "Explore professionals"}
+            </Link>
           </div>
         )}
       </aside>
@@ -253,7 +259,7 @@ export function MessageCentre({
         {activeConversation || bookingId || professionalId ? (
           <>
             <header className="message-thread-header">
-              <Link href="/messages" aria-label="Back to messages">
+              <Link href={messagesHref} aria-label="Back to messages">
                 <ArrowLeft size={20} aria-hidden />
               </Link>
               <span className="message-avatar" aria-hidden>

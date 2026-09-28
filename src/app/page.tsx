@@ -10,6 +10,7 @@ import {
   type CustomerHomeSummary,
 } from "@/modules/home/repository";
 import { redirect } from "next/navigation";
+import { RecoveryRedirect } from "@/components/recovery-redirect";
 
 export const dynamic = "force-dynamic";
 
@@ -77,6 +78,7 @@ export default async function Home({
 
   return (
     <>
+      <RecoveryRedirect />
       <DesktopCustomerHome
         professionals={professionals}
         signedIn={viewer.signedIn}

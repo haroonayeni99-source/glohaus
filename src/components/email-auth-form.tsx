@@ -148,6 +148,11 @@ export function EmailAuthForm({
           <Link href="/forgot-password">Forgot password?</Link>
         </p>
       )}
+      {mode === "sign-in" && (
+        <p className="auth-switch">
+          <Link href="/forgot-password">Forgot password?</Link>
+        </p>
+      )}
       {error && <p role="alert">{error}</p>}
       <button className="button full-width" disabled={pending}>
         {pending ? "Please wait…" : mode === "sign-up" ? "Create account" : "Sign in"}

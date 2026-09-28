@@ -213,6 +213,7 @@ describe.sequential("booking refund financial protection", () => {
   });
 
 
+  // Stripe commonly emits both refund.created and refund.updated for one refund.
   it("reconciles a Stripe Dashboard refund exactly once", async () => {
     const start = new Date(Date.now() + 5 * 86400000);
     start.setUTCHours(15, 0, 0, 0);

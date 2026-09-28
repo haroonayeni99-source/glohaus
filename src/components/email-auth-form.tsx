@@ -103,12 +103,15 @@ export function EmailAuthForm({
     }
 
     if (audience === "professional") {
-      router.push("/onboarding?intent=professional");
+      router.push("/professional-preview");
       return;
     }
 
     const account = await provisionCustomer();
-    if (!account) return;
+    if (!account) {
+      router.push("/customer-preview");
+      return;
+    }
     router.push(account.redirectTo || "/account");
   }
 

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { productionAuthUrl } from "@/lib/preview-auth";
 import { BriefcaseBusiness, ChevronRight, UserRound } from "lucide-react";
 import { authConfigured } from "@/lib/config";
 import { AuthFrame } from "@/components/auth-frame";
@@ -14,6 +16,15 @@ export default async function Page({
   searchParams: Promise<{ intent?: string; returnTo?: string }>;
 }) {
   const { intent, returnTo } = await searchParams;
+  const previewTarget = productionAuthUrl(
+    "/sign-up",
+    new URLSearchParams(
+      Object.entries({ intent, returnTo }).filter(
+        (entry): entry is [string, string] => typeof entry[1] === "string",
+      ),
+    ),
+  );
+  if (previewTarget) redirect(previewTarget);
   const selectedIntent =
     intent === "customer" || intent === "professional" ? intent : null;
 

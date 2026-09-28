@@ -21,6 +21,7 @@ export function MfaManager() {
   const [message, setMessage] = useState("");
   const supabase = createClient();
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   async function load() {
     const [factorResult, aalResult] = await Promise.all([
       supabase.auth.mfa.listFactors(),

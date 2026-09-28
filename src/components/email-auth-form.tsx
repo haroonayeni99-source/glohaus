@@ -102,6 +102,17 @@ export function EmailAuthForm({
       return;
     }
 
+    const trustedRoles = Array.isArray(result.data.user?.app_metadata?.glohaus_roles)
+      ? result.data.user.app_metadata.glohaus_roles.filter(
+          (role: unknown): role is string => typeof role === "string",
+        )
+      : [];
+
+    if (trustedRoles.includes("owner") || trustedRoles.includes("admin")) {
+      router.push("/admin");
+      return;
+    }
+
     if (audience === "professional") {
       router.push("/professional-preview");
       return;
@@ -118,13 +129,17 @@ export function EmailAuthForm({
   const professional = audience === "professional";
   const title =
     mode === "sign-in"
-      ? "Welcome back"
+      ? professional
+        ? "GLOHAUS PRO sign in"
+        : "Customer sign in"
       : professional
         ? "Create your professional account"
         : "Create your account";
   const description =
     mode === "sign-in"
-      ? "Sign in to continue your GLOHAUS journey."
+      ? professional
+        ? "Sign in to manage your professional dashboard, bookings, clients and earnings."
+        : "Sign in to your customer account to discover, book, shop and manage appointments."
       : professional
         ? "Start building your GLOHAUS PRO storefront today."
         : "Discover, save and book beauty that feels like you.";
@@ -155,7 +170,13 @@ export function EmailAuthForm({
       )}
       {error && <p role="alert">{error}</p>}
       <button className="button full-width" disabled={pending}>
-        {pending ? "Please wait…" : mode === "sign-up" ? "Create account" : "Sign in"}
+        {pending
+          ? "Please wait…"
+          : mode === "sign-up"
+            ? "Create account"
+            : professional
+              ? "Sign in to GLOHAUS PRO"
+              : "Sign in as customer"}
       </button>
       <p className="auth-switch">
         {mode === "sign-in" ? (

@@ -77,6 +77,16 @@ export function EmailAuthForm({
       return;
     }
 
+    // Bootstrap owner routing fallback only. /admin still performs the real
+    // server-side role and MFA authorization before showing privileged data.
+    if (
+      mode === "sign-in" &&
+      result.data.user?.id === "78302631-b174-4c4c-9373-0cd4938b03a1"
+    ) {
+      router.push("/admin");
+      return;
+    }
+
     if (mode === "sign-up") {
       if (audience === "professional") {
         router.push("/onboarding?intent=professional");

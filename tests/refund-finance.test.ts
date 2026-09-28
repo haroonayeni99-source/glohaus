@@ -213,6 +213,51 @@ describe.sequential("booking refund financial protection", () => {
   });
 
 
+  it("uses future available earnings to clear the obligation first", async () => {
+    await asPaymentWorker((sql) =>
+      sql.query(
+        "SELECT beauty.record_financial_ledger($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb)",
+        [
+          "future-earnings-refund-test",
+          "release",
+          "admin",
+          null,
+          professionalId,
+          JSON.stringify({ test: true }),
+          JSON.stringify([
+            { accountCode: "provider_clearing", amountPence: 600 },
+            { accountCode: "professional_available", amountPence: -600 },
+          ]),
+        ],
+      ),
+    );
+
+    const recovered = (
+      await asUser("refund-pro", (sql) =>
+        sql.query<{ recovered: number }>(
+          "SELECT beauty.recover_my_outstanding_obligation() AS recovered",
+        ),
+      )
+    ).rows[0].recovered;
+    expect(recovered).toBe(500);
+
+    const wallet = (
+      await asUser("refund-pro", (sql) =>
+        sql.query<{
+          data: {
+            availablePence: number;
+            outstandingObligationPence: number;
+          };
+        }>("SELECT beauty.my_wallet_overview() AS data"),
+      )
+    ).rows[0].data;
+
+    expect(wallet).toMatchObject({
+      availablePence: 100,
+      outstandingObligationPence: 0,
+    });
+  });
+
   // Stripe commonly emits both refund.created and refund.updated for one refund.
   it("reconciles a Stripe Dashboard refund exactly once", async () => {
     const start = new Date(Date.now() + 5 * 86400000);
@@ -299,48 +344,4 @@ describe.sequential("booking refund financial protection", () => {
     expect(ledgerRows).toBe(1);
   });
 
-  it("uses future available earnings to clear the obligation first", async () => {
-    await asPaymentWorker((sql) =>
-      sql.query(
-        "SELECT beauty.record_financial_ledger($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb)",
-        [
-          "future-earnings-refund-test",
-          "release",
-          "admin",
-          null,
-          professionalId,
-          JSON.stringify({ test: true }),
-          JSON.stringify([
-            { accountCode: "provider_clearing", amountPence: 600 },
-            { accountCode: "professional_available", amountPence: -600 },
-          ]),
-        ],
-      ),
-    );
-
-    const recovered = (
-      await asUser("refund-pro", (sql) =>
-        sql.query<{ recovered: number }>(
-          "SELECT beauty.recover_my_outstanding_obligation() AS recovered",
-        ),
-      )
-    ).rows[0].recovered;
-    expect(recovered).toBe(500);
-
-    const wallet = (
-      await asUser("refund-pro", (sql) =>
-        sql.query<{
-          data: {
-            availablePence: number;
-            outstandingObligationPence: number;
-          };
-        }>("SELECT beauty.my_wallet_overview() AS data"),
-      )
-    ).rows[0].data;
-
-    expect(wallet).toMatchObject({
-      availablePence: 100,
-      outstandingObligationPence: 0,
-    });
-  });
 });

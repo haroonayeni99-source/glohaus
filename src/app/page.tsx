@@ -13,6 +13,7 @@ import { redirect } from "next/navigation";
 import { RecoveryRedirect } from "@/components/recovery-redirect";
 
 export const dynamic = "force-dynamic";
+// Deployment refresh: production runtime credentials are now configured.
 
 export default async function Home({
   searchParams,

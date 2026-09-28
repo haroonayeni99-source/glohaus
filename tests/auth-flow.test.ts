@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { confirmationPlan, storedAuthAudience } from "@/lib/auth-flow";
+import {
+  confirmationPlan,
+  signedInDestination,
+  storedAuthAudience,
+} from "@/lib/auth-flow";
 
 describe("auth confirmation flow", () => {
   it("provisions customers to the account by default", () => {
@@ -46,5 +50,45 @@ describe("auth confirmation flow", () => {
       redirectTo: "/account",
     });
     expect(storedAuthAudience({ glohaus_audience: "admin" })).toBeNull();
+  });
+});
+
+describe("signed-in role routing", () => {
+  it("routes owner and admin accounts to administration", () => {
+    expect(signedInDestination(["owner"], "customer", "/account")).toBe("/admin");
+    expect(signedInDestination(["admin"], "professional", "/professional")).toBe(
+      "/admin",
+    );
+  });
+
+  it("keeps customer and professional views separate when both roles exist", () => {
+    expect(
+      signedInDestination(["customer", "professional"], "customer", "/account"),
+    ).toBe("/account");
+    expect(
+      signedInDestination(
+        ["customer", "professional"],
+        "professional",
+        "/professional",
+      ),
+    ).toBe("/professional");
+  });
+
+  it("sends professional-only accounts to GLOHAUS PRO from normal sign-in", () => {
+    expect(
+      signedInDestination(["professional"], "customer", "/account"),
+    ).toBe("/professional");
+  });
+
+  it("starts professional onboarding when that role is not enrolled yet", () => {
+    expect(
+      signedInDestination(["customer"], "professional", "/professional"),
+    ).toBe("/onboarding?intent=professional");
+  });
+
+  it("never accepts an external requested destination", () => {
+    expect(
+      signedInDestination(["customer"], "customer", "//evil.example"),
+    ).toBe("/account");
   });
 });

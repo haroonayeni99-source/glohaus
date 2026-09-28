@@ -244,21 +244,32 @@ export async function POST(request: Request) {
       event.type === "refund.created"
     ) {
       const refund = event.data.object;
-      if (refund.metadata?.refund_decision_id)
+      const intentId =
+        typeof refund.payment_intent === "string"
+          ? refund.payment_intent
+          : refund.payment_intent?.id;
+
+      if (refund.metadata?.refund_decision_id) {
         await withPaymentWorker(async (db) => {
           await db.query("SELECT beauty.apply_refund_result($1,$2,$3,$4,$5)", [
             refund.metadata!.refund_decision_id,
             refund.id,
             refund.amount,
             refund.status,
-            typeof refund.payment_intent === "string"
-              ? refund.payment_intent
-              : refund.payment_intent?.id,
+            intentId,
           ]);
           await db.query("SELECT beauty.record_booking_refund_finance($1)", [
             refund.metadata!.refund_decision_id,
           ]);
         });
+      } else if (intentId) {
+        await withPaymentWorker((db) =>
+          db.query(
+            "SELECT beauty.reconcile_external_booking_refund($1,$2,$3,$4,$5)",
+            [event.id, refund.id, refund.amount, refund.status, intentId],
+          ),
+        );
+      }
     } else if (
       event.type === "customer.subscription.updated" ||
       event.type === "customer.subscription.deleted"

@@ -94,7 +94,7 @@ export function DesktopCustomerHome({
         <Link href={protectedHref("/messages")}><MessageSquare size={20}/>Messages</Link>
         <Link href="/shop"><ShoppingBag size={20}/>Shop</Link>
         <Link href={protectedHref("/wallet")}><WalletCards size={20}/>Wallet</Link>
-        <Link href={protectedHref("/account")}><UserRound size={20}/>Profile</Link>
+        <Link href={protectedHref("/workspace")}><UserRound size={20}/>Profile</Link>
       </nav>
       <div className="glohaus-plus-card glohaus-plus-disabled" aria-disabled="true">
         <Crown size={22}/><span><strong>GloHaus+</strong><small>Planned membership perks · Coming soon</small></span>

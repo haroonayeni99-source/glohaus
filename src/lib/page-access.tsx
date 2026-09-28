@@ -30,6 +30,11 @@ export async function pageAccount(
     }
     console.error("Workspace unavailable", {
       type: error instanceof Error ? error.name : "UnknownError",
+      message: error instanceof Error ? error.message : String(error),
+      code:
+        typeof error === "object" && error !== null && "code" in error
+          ? String((error as { code?: unknown }).code ?? "")
+          : "",
     });
     return { account: null, error: "UNAVAILABLE" };
   }

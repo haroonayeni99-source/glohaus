@@ -86,9 +86,9 @@ CREATE FUNCTION beauty.finish_notification(
 LANGUAGE sql
 SECURITY DEFINER
 SET search_path=pg_catalog
-AS $
+AS $fn$
   SELECT beauty.finish_notification(target,succeeded,NULL::text);
-$;
+$fn$;
 
 CREATE OR REPLACE FUNCTION beauty.record_email_provider_event(
   provider_event_id text,

@@ -50,6 +50,15 @@ export async function GET(request: NextRequest) {
     return response;
   }
 
+  const next = url.searchParams.get("next");
+  if (next === "/reset-password") {
+    response.headers.set(
+      "Location",
+      new URL("/reset-password", url.origin).toString(),
+    );
+    return response;
+  }
+
   const user = data.user ?? data.session?.user;
   const plan = confirmationPlan(next, user?.user_metadata);
   response.headers.set(

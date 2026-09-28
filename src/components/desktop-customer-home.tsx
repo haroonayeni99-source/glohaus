@@ -105,7 +105,7 @@ export function DesktopCustomerHome({
       <header className="customer-desktop-topbar">
         <span />
         <div><Link href={protectedHref("/notifications")} aria-label="Notifications"><Bell size={21}/></Link>
-        <Link className="desktop-user-chip" href={signedIn ? "/account" : "/sign-in"}><span className="desktop-avatar">{displayName ? displayName[0]?.toUpperCase() : "G"}</span>{signedIn ? displayName || "My account" : "Sign in"}<ChevronRight size={15}/></Link></div>
+        <Link className="desktop-user-chip" href={signedIn ? "/workspace" : "/sign-in"}><span className="desktop-avatar">{displayName ? displayName[0]?.toUpperCase() : "G"}</span>{signedIn ? displayName || "My workspace" : "Sign in"}<ChevronRight size={15}/></Link></div>
       </header>
 
       <section className="desktop-hero" style={{ position: "relative" }}>

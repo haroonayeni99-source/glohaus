@@ -14,7 +14,7 @@ const items = [
   { id: "discover", href: "/discover", label: "Discover", icon: Compass },
   { id: "bookings", href: "/account/bookings", label: "Bookings", icon: CalendarDays },
   { id: "messages", href: "/messages", label: "Messages", icon: MessageSquare },
-  { id: "profile", href: "/account", label: "Profile", icon: UserRound },
+  { id: "profile", href: "/workspace", label: "Profile", icon: UserRound },
 ] as const;
 
 type ActiveItem =

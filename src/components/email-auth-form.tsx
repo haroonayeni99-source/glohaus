@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { signedInDestination } from "@/lib/auth-flow";
 
@@ -14,6 +15,7 @@ export function EmailAuthForm({
   redirectTo: string;
   audience?: "customer" | "professional";
 }) {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -77,12 +79,12 @@ export function EmailAuthForm({
 
     if (mode === "sign-up") {
       if (audience === "professional") {
-        window.location.assign("/onboarding?intent=professional");
+        router.push("/onboarding?intent=professional");
         return;
       }
       const account = await provisionCustomer();
       if (!account) return;
-      window.location.assign(redirectTo || account.redirectTo || "/account");
+      router.push(redirectTo || account.redirectTo || "/account");
       return;
     }
 
@@ -94,20 +96,20 @@ export function EmailAuthForm({
 
     if (verified.ok) {
       const me = await verified.json();
-      window.location.assign(
+      router.push(
         signedInDestination(me?.account?.roles, audience, redirectTo),
       );
       return;
     }
 
     if (audience === "professional") {
-      window.location.assign("/onboarding?intent=professional");
+      router.push("/onboarding?intent=professional");
       return;
     }
 
     const account = await provisionCustomer();
     if (!account) return;
-    window.location.assign(account.redirectTo || "/account");
+    router.push(account.redirectTo || "/account");
   }
 
   const professional = audience === "professional";

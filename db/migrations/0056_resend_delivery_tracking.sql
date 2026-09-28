@@ -79,6 +79,17 @@ AS $$
   WHERE id = target AND sent_at IS NULL;
 $$;
 
+CREATE FUNCTION beauty.finish_notification(
+  target uuid,
+  succeeded boolean
+) RETURNS void
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path=pg_catalog
+AS $
+  SELECT beauty.finish_notification(target,succeeded,NULL::text);
+$;
+
 CREATE OR REPLACE FUNCTION beauty.record_email_provider_event(
   provider_event_id text,
   provider_id text,
@@ -207,13 +218,16 @@ GRANT CREATE ON SCHEMA beauty TO beauty_booking_ops;
 ALTER TABLE beauty.email_provider_events OWNER TO beauty_booking_ops;
 ALTER TABLE beauty.email_suppressions OWNER TO beauty_booking_ops;
 ALTER FUNCTION beauty.finish_notification(uuid,boolean,text) OWNER TO beauty_booking_ops;
+ALTER FUNCTION beauty.finish_notification(uuid,boolean) OWNER TO beauty_booking_ops;
 ALTER FUNCTION beauty.record_email_provider_event(text,text,text,timestamptz,text) OWNER TO beauty_booking_ops;
 ALTER FUNCTION beauty.claim_notifications() OWNER TO beauty_booking_ops;
 REVOKE CREATE ON SCHEMA beauty FROM beauty_booking_ops;
 
 REVOKE ALL ON FUNCTION beauty.finish_notification(uuid,boolean,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION beauty.finish_notification(uuid,boolean) FROM PUBLIC;
 REVOKE ALL ON FUNCTION beauty.record_email_provider_event(text,text,text,timestamptz,text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION beauty.claim_notifications() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION beauty.finish_notification(uuid,boolean,text) TO beauty_payment_worker;
+GRANT EXECUTE ON FUNCTION beauty.finish_notification(uuid,boolean) TO beauty_payment_worker;
 GRANT EXECUTE ON FUNCTION beauty.record_email_provider_event(text,text,text,timestamptz,text) TO beauty_payment_worker;
 GRANT EXECUTE ON FUNCTION beauty.claim_notifications() TO beauty_payment_worker;

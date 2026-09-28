@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 import { BadgeCheck, CircleAlert, ShieldCheck } from "lucide-react";
 
@@ -11,6 +12,8 @@ export function ConnectButton({
 }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [adultConfirmed, setAdultConfirmed] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   if (status === "verified")
     return (
@@ -47,21 +50,43 @@ export function ConnectButton({
         Until verified, active services are limited to £200 or less with no online
         deposit, and your account can use up to five starter bookings.
       </p>
+      <label>
+        <input
+          type="checkbox"
+          checked={adultConfirmed}
+          onChange={(event) => setAdultConfirmed(event.target.checked)}
+        />
+        I confirm I am 18 or over.
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          checked={termsAccepted}
+          onChange={(event) => setTermsAccepted(event.target.checked)}
+        />
+        I accept the <Link href="/professional-terms" target="_blank">Professional Terms</Link>.
+      </label>
       <button
         className="button"
-        disabled={busy}
+        disabled={busy || !adultConfirmed || !termsAccepted}
         onClick={async () => {
           setBusy(true);
+          setMessage("");
           try {
             const response = await fetch("/api/v1/professional/connect", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: "{}",
+              body: JSON.stringify({
+                adultConfirmed,
+                professionalTermsAccepted: termsAccepted,
+              }),
             });
             const result = await response.json();
             if (!response.ok)
               throw new Error(
-                "Identity verification is not available right now. Please try again shortly.",
+                result.error?.code === "INVALID_REQUEST"
+                  ? "Confirm you are 18+ and accept the Professional Terms before verification."
+                  : "Identity verification is not available right now. Please try again shortly.",
               );
             window.location.assign(result.url);
           } catch (error) {
@@ -78,11 +103,7 @@ export function ConnectButton({
             ? "Continue verification"
             : "Verify identity with Stripe"}
       </button>
-      {message && (
-        <p role="status" className="form-notice">
-          {message}
-        </p>
-      )}
+      {message && <p role="status" className="form-notice">{message}</p>}
     </div>
   );
 }

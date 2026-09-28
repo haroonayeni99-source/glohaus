@@ -80,9 +80,10 @@ beforeAll(async () => {
       [professional],
     );
   });
-  await worker((sql) =>
-    sql.query("SELECT beauty.sync_connect_account('acct_test',true)"),
-  );
+  await worker(async (sql) => {
+    await sql.query("SELECT beauty.sync_connect_account('acct_test',true)");
+    await sql.query("SELECT beauty.sync_connect_verification('acct_test',true)");
+  });
   const tomorrow = new Date(Date.now() + 2 * 86400000);
   tomorrow.setUTCHours(12, 0, 0, 0);
   date = tomorrow.toISOString();

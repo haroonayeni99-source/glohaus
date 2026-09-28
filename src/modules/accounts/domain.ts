@@ -37,8 +37,27 @@ export class AccessError extends Error {
 }
 
 export const enrolmentSchema = z
-  .object({ role: z.enum(["customer", "professional"]) })
-  .strict();
+  .object({
+    role: z.enum(["customer", "professional"]),
+    adultConfirmed: z.boolean().optional(),
+    professionalTermsAccepted: z.boolean().optional(),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    if (value.role !== "professional") return;
+    if (value.adultConfirmed !== true)
+      ctx.addIssue({
+        code: "custom",
+        path: ["adultConfirmed"],
+        message: "Professional accounts are available only to people aged 18 or over.",
+      });
+    if (value.professionalTermsAccepted !== true)
+      ctx.addIssue({
+        code: "custom",
+        path: ["professionalTermsAccepted"],
+        message: "Accept the Professional Terms to create a professional account.",
+      });
+  });
 
 export function authorize(
   account: Account | null,

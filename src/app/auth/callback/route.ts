@@ -41,19 +41,22 @@ export async function GET(request: NextRequest) {
       "/sign-in?authError=confirmation_failed",
     );
 
+  const next = url.searchParams.get("next");
+  if (next === "/reset-password") {
+    response.headers.set(
+      "Location",
+      new URL("/reset-password", url.origin).toString(),
+    );
+    return response;
+  }
+
   const user = data.user ?? data.session?.user;
-  const plan = confirmationPlan(
-    url.searchParams.get("next"),
-    user?.user_metadata,
-  );
+  const plan = confirmationPlan(next, user?.user_metadata);
   response.headers.set(
     "Location",
     new URL(plan.redirectTo, url.origin).toString(),
   );
 
-  // Professional registration stays explicit. Customer confirmation is safe to
-  // complete here because the database still verifies the authenticated auth ID
-  // through beauty_app RLS before creating any application row.
   if (plan.audience === "customer") {
     if (!user?.id || !user.email) {
       response.headers.set(
@@ -77,7 +80,6 @@ export async function GET(request: NextRequest) {
       const account = await withIdentity(identity.authId, (db) =>
         ensureCustomerAccount(db, identity),
       );
-      // Never replace or silently add to an existing non-customer role.
       if (!account.roles.includes("customer")) {
         response.headers.set(
           "Location",
@@ -85,8 +87,6 @@ export async function GET(request: NextRequest) {
         );
       }
     } catch {
-      // Keep the confirmed Supabase session and fall back to the explicit
-      // onboarding boundary so the user can retry safely.
       response.headers.set(
         "Location",
         new URL(

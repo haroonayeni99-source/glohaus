@@ -28,9 +28,7 @@ export function EmailAuthForm({
       try {
         const payload = await provision.json();
         code = payload?.error?.code || "";
-      } catch {
-        // Fall back to a safe generic message below.
-      }
+      } catch {}
       setError(
         code === "FORBIDDEN"
           ? "You’re signed in, but GLOHAUS couldn’t verify this site for account setup. Please refresh and try again."
@@ -90,8 +88,6 @@ export function EmailAuthForm({
 
     let verified = await serverAccount();
     if (!verified.ok) {
-      // Refresh once so the SSR cookie contains the newly issued access token
-      // before protected routes read it.
       await supabase.auth.refreshSession();
       verified = await serverAccount();
     }
@@ -147,6 +143,11 @@ export function EmailAuthForm({
           required
         />
       </label>
+      {mode === "sign-in" && (
+        <p className="auth-switch">
+          <Link href="/forgot-password">Forgot password?</Link>
+        </p>
+      )}
       {error && <p role="alert">{error}</p>}
       <button className="button full-width" disabled={pending}>
         {pending ? "Please wait…" : mode === "sign-up" ? "Create account" : "Sign in"}

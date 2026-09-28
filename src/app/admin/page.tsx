@@ -8,13 +8,14 @@ import { AdminFinancePanel } from "@/components/admin-finance-panel";
 import { AdminNavigation } from "@/components/admin-navigation";
 import { ShopFeeControl } from "@/components/shop-fee-control";
 import { OwnerControls } from "@/components/owner-controls";
-import { adminFinanceOverview, adminOverview, ownerControls, ownerProductFeeRule, paymentLaunchReadiness } from "@/modules/admin/repository";
+import { adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerControls, ownerProductFeeRule, paymentLaunchReadiness } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
   const result = await pageAccount("admin");
   if (!result.account)
-    return (
+    const emailReadiness = isOwner ? emailLaunchReadiness() : null;
+  return (
       <AuthFrame>
         <AccessMessage code={result.error} />
       </AuthFrame>
@@ -93,6 +94,30 @@ export default async function Page() {
                     </div>
                     <span className={`admin-status ${check.ready ? "admin-status-active" : "admin-status-suspended"}`}>
                       {check.ready ? "READY" : check.required ? "BLOCKED" : "OPTIONAL"}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+          {isOwner && emailReadiness && (
+            <section id="email-readiness" className="admin-workspace-section">
+              <p className="eyebrow">EMAIL & AUTH READINESS</p>
+              <h2>Password reset → booking emails → notifications</h2>
+              <p className="lead">
+                {emailReadiness.ready
+                  ? "Required email delivery and authentication safeguards are marked ready for production."
+                  : "Email delivery still needs configuration before GLOHAUS should rely on password-reset and booking emails in production."}
+              </p>
+              <div className="service-edit-list">
+                {emailReadiness.checks.map((check) => (
+                  <article className="service-edit-row" key={check.key}>
+                    <div>
+                      <h3>{check.label}</h3>
+                      <p>{check.ready ? "Ready" : check.required ? "Needs setup" : "Recommended before public launch"}</p>
+                    </div>
+                    <span className={`admin-status ${check.ready ? "admin-status-active" : "admin-status-suspended"}`}>
+                      {check.ready ? "READY" : check.required ? "BLOCKED" : "RECOMMENDED"}
                     </span>
                   </article>
                 ))}

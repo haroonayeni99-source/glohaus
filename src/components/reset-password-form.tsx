@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-export function ResetPasswordForm() {
+export function ResetPasswordForm({ recoveryAllowed }: { recoveryAllowed: boolean }) {
   const supabase = useMemo(() => createClient(), []);
   const [checkingSession, setCheckingSession] = useState(true);
   const [hasRecoverySession, setHasRecoverySession] = useState(false);
@@ -17,14 +17,14 @@ export function ResetPasswordForm() {
 
     void supabase.auth.getSession().then(({ data, error: sessionError }) => {
       if (!active) return;
-      setHasRecoverySession(Boolean(data.session) && !sessionError);
+      setHasRecoverySession(recoveryAllowed && Boolean(data.session) && !sessionError);
       setCheckingSession(false);
     });
 
     return () => {
       active = false;
     };
-  }, [supabase]);
+  }, [recoveryAllowed, supabase]);
 
   async function submit(formData: FormData) {
     if (!hasRecoverySession || pending) return;

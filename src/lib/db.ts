@@ -6,8 +6,21 @@ import { AccessError } from "@/modules/accounts/domain";
 const globalDb = globalThis as unknown as { beautyPool?: Pool };
 function pool(): Pool {
   if (!process.env.DATABASE_URL) throw new AccessError("UNAVAILABLE", 503);
+  const connectionString = (() => {
+    const value = process.env.DATABASE_URL!;
+    try {
+      const url = new URL(value);
+      if (url.searchParams.get("sslmode") === "require") {
+        url.searchParams.set("uselibpqcompat", "true");
+      }
+      return url.toString();
+    } catch {
+      return value;
+    }
+  })();
+
   return (globalDb.beautyPool ??= new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString,
     max: 3,
     connectionTimeoutMillis: 5000,
     idleTimeoutMillis: 10000,

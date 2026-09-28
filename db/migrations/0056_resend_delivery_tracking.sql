@@ -106,6 +106,14 @@ BEGIN
     RETURN false;
   END IF;
 
+  IF NOT EXISTS (
+    SELECT 1
+    FROM beauty.notification_outbox
+    WHERE provider_email_id = provider_id
+  ) THEN
+    RETURN false;
+  END IF;
+
   INSERT INTO beauty.email_provider_events(event_id,provider_email_id,event_type)
   VALUES(provider_event_id,provider_id,provider_event_type)
   ON CONFLICT(event_id) DO NOTHING;

@@ -85,9 +85,10 @@ beforeAll(async () => {
     );
   });
 
-  await asPaymentWorker((sql) =>
-    sql.query("SELECT beauty.sync_connect_account('acct_booking_finance',true)"),
-  );
+  await asPaymentWorker(async (sql) => {
+    await sql.query("SELECT beauty.sync_connect_account('acct_booking_finance',true)");
+    await sql.query("SELECT beauty.sync_connect_verification('acct_booking_finance',true)");
+  });
 
   const customer = await asUser("finance-customer", (sql) =>
     enrolAccount(

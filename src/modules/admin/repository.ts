@@ -353,3 +353,27 @@ export function emailLaunchReadiness(): EmailLaunchReadiness {
     checks,
   };
 }
+
+
+export type OwnerEmailDeliveryOverview = {
+  queued: number;
+  accepted: number;
+  delivered: number;
+  bounced: number;
+  complained: number;
+  failed: number;
+  suppressed: number;
+  lastProviderEventAt: string | null;
+};
+
+export async function ownerEmailDeliveryOverview(): Promise<OwnerEmailDeliveryOverview> {
+  return withOwner(async (db) => {
+    const row = (
+      await db.query<{ data: OwnerEmailDeliveryOverview }>(
+        "SELECT beauty.owner_email_delivery_overview() AS data",
+      )
+    ).rows[0];
+    if (!row?.data) throw new Error("Email delivery reporting is unavailable.");
+    return row.data;
+  });
+}

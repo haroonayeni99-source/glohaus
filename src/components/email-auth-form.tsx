@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { signedInDestination } from "@/lib/auth-flow";
 
 export function EmailAuthForm({
   mode,
@@ -15,6 +16,38 @@ export function EmailAuthForm({
 }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+
+  async function provisionCustomer() {
+    const provision = await fetch("/api/v1/accounts/enrol", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    });
+    if (!provision.ok) {
+      let code = "";
+      try {
+        const payload = await provision.json();
+        code = payload?.error?.code || "";
+      } catch {
+        // Fall back to a safe generic message below.
+      }
+      setError(
+        code === "FORBIDDEN"
+          ? "You’re signed in, but GLOHAUS couldn’t verify this site for account setup. Please refresh and try again."
+          : code === "UNAVAILABLE"
+            ? "You’re signed in, but GLOHAUS account services are temporarily unavailable. Please try again."
+            : "You’re signed in, but we couldn’t finish opening your GLOHAUS account. Please try again.",
+      );
+      setPending(false);
+      return null;
+    }
+    return provision.json();
+  }
+
+  async function serverAccount() {
+    return fetch("/api/v1/me", { cache: "no-store" });
+  }
+
   async function submit(formData: FormData) {
     setPending(true);
     setError(null);
@@ -44,61 +77,41 @@ export function EmailAuthForm({
       return;
     }
 
-    // The sign-in surface the person chose controls the account experience.
-    // Do not infer authorization from editable user metadata.
-    if (audience === "customer") {
-      const provision = await fetch("/api/v1/accounts/enrol", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: "{}",
-      });
-      if (!provision.ok) {
-        let code = "";
-        try {
-          const payload = await provision.json();
-          code = payload?.error?.code || "";
-        } catch {
-          // Fall back to a safe generic message below.
-        }
-        setError(
-          code === "FORBIDDEN"
-            ? "You’re signed in, but GLOHAUS couldn’t verify this site for account setup. Please refresh and try again."
-            : code === "UNAVAILABLE"
-              ? "You’re signed in, but GLOHAUS account services are temporarily unavailable. Please try again."
-              : "You’re signed in, but we couldn’t finish opening your GLOHAUS account. Please try again.",
-        );
-        setPending(false);
+    if (mode === "sign-up") {
+      if (audience === "professional") {
+        window.location.assign("/onboarding?intent=professional");
         return;
       }
-      const account = await provision.json();
+      const account = await provisionCustomer();
+      if (!account) return;
       window.location.assign(redirectTo || account.redirectTo || "/account");
       return;
-    }
-
-    async function serverAccount() {
-      return fetch("/api/v1/me", { cache: "no-store" });
     }
 
     let verified = await serverAccount();
     if (!verified.ok) {
       // Refresh once so the SSR cookie contains the newly issued access token
-      // before the protected professional page reads it.
+      // before protected routes read it.
       await supabase.auth.refreshSession();
       verified = await serverAccount();
     }
 
-    if (!verified.ok) {
+    if (verified.ok) {
+      const me = await verified.json();
+      window.location.assign(
+        signedInDestination(me?.account?.roles, audience, redirectTo),
+      );
+      return;
+    }
+
+    if (audience === "professional") {
       window.location.assign("/onboarding?intent=professional");
       return;
     }
 
-    const me = await verified.json();
-    const roles = Array.isArray(me?.account?.roles) ? me.account.roles : [];
-    window.location.assign(
-      roles.includes("professional")
-        ? redirectTo || "/professional"
-        : "/onboarding?intent=professional",
-    );
+    const account = await provisionCustomer();
+    if (!account) return;
+    window.location.assign(account.redirectTo || "/account");
   }
 
   const professional = audience === "professional";

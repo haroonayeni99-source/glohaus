@@ -8,7 +8,7 @@ import { AdminFinancePanel } from "@/components/admin-finance-panel";
 import { AdminNavigation } from "@/components/admin-navigation";
 import { ShopFeeControl } from "@/components/shop-fee-control";
 import { OwnerControls } from "@/components/owner-controls";
-import { adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerControls, ownerProductFeeRule, paymentLaunchReadiness } from "@/modules/admin/repository";
+import { adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, paymentLaunchReadiness } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
@@ -20,13 +20,14 @@ export default async function Page() {
       </AuthFrame>
     );
   const isOwner = result.account.roles.includes("owner");
-  const [data, labels, owner, productFee, finance, paymentReadiness] = await Promise.all([
+  const [data, labels, owner, productFee, finance, paymentReadiness, emailDelivery] = await Promise.all([
     adminOverview(),
     publicLabels(),
     isOwner ? ownerControls().catch(() => null) : Promise.resolve(null),
     isOwner ? ownerProductFeeRule().catch(() => null) : Promise.resolve(null),
     adminFinanceOverview().catch(() => null),
     isOwner ? paymentLaunchReadiness().catch(() => null) : Promise.resolve(null),
+    isOwner ? ownerEmailDeliveryOverview().catch(() => null) : Promise.resolve(null),
   ]);
   const emailReadiness = isOwner ? emailLaunchReadiness() : null;
   return (
@@ -122,6 +123,36 @@ export default async function Page() {
                   </article>
                 ))}
               </div>
+            </section>
+          )}
+          {isOwner && emailDelivery && (
+            <section id="email-delivery-health" className="admin-workspace-section">
+              <p className="eyebrow">TRANSACTIONAL EMAIL HEALTH</p>
+              <h2>Delivery outcomes</h2>
+              <p className="lead">
+                Provider-confirmed delivery totals only. Recipient addresses and raw webhook payloads are not exposed here.
+              </p>
+              <div className="service-edit-list">
+                {[
+                  ["Queued", emailDelivery.queued],
+                  ["Accepted by provider", emailDelivery.accepted],
+                  ["Delivered", emailDelivery.delivered],
+                  ["Bounced", emailDelivery.bounced],
+                  ["Complained", emailDelivery.complained],
+                  ["Failed", emailDelivery.failed],
+                  ["Suppressed recipients", emailDelivery.suppressed],
+                ].map(([label, value]) => (
+                  <article className="service-edit-row" key={String(label)}>
+                    <div><h3>{label}</h3></div>
+                    <strong>{value}</strong>
+                  </article>
+                ))}
+              </div>
+              <p className="lead">
+                {emailDelivery.lastProviderEventAt
+                  ? `Last provider event: ${new Date(emailDelivery.lastProviderEventAt).toLocaleString("en-GB", { timeZone: "Europe/London" })}`
+                  : "No provider delivery event has been recorded yet."}
+              </p>
             </section>
           )}
           <AdminFinancePanel data={finance} />

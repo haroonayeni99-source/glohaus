@@ -21,7 +21,6 @@ export function MfaManager() {
   const [message, setMessage] = useState("");
   const supabase = createClient();
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   async function load() {
     const [factorResult, aalResult] = await Promise.all([
       supabase.auth.mfa.listFactors(),
@@ -39,6 +38,8 @@ export function MfaManager() {
   }
 
   useEffect(() => {
+    // The async loader only updates state after Supabase network/session reads complete.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, []);
 

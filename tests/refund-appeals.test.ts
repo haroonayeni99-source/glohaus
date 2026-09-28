@@ -49,6 +49,10 @@ beforeAll(async () => {
     "INSERT INTO beauty.user_roles(user_id,role) VALUES($1,'admin')",
     [admin],
   );
+  await db.query(
+    "INSERT INTO beauty.professional_trust_status(professional_id,verification_status) VALUES($1,'verified') ON CONFLICT(professional_id) DO UPDATE SET verification_status='verified'",
+    [professional],
+  );
   const service = (
     await db.query<{ id: string }>(
       "INSERT INTO beauty.services(professional_id,name,duration_minutes,price_pence,deposit_pence) VALUES($1,'Nails',60,5000,1500) RETURNING id",

@@ -42,6 +42,10 @@ beforeAll(async () => {
   );
   professionalId = professional.professionalId!;
   professionalUserId = professional.id;
+  await db.query(
+    "INSERT INTO beauty.professional_trust_status(professional_id,verification_status) VALUES($1,'verified') ON CONFLICT(professional_id) DO UPDATE SET verification_status='verified'",
+    [professionalId],
+  );
 
   const customer = await asUser("home-summary-customer", (sql) =>
     enrolAccount(

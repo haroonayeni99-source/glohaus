@@ -40,13 +40,20 @@ export default async function Home({
   if (process.env.DATABASE_URL) {
     let authId = "";
     try {
-      authId = (await getIdentity()).authId;
+      const identity = await getIdentity();
+      authId = identity.authId;
+      // Authentication state comes from Supabase, so the home UI must not
+      // show "Sign in" merely because the application database is unavailable.
+      viewer = {
+        signedIn: true,
+        displayName: identity.displayName,
+        summary: null,
+      };
     } catch {}
 
     try {
       viewer = await withIdentity(authId, async (db) => {
         const account = authId ? await findAccount(db, authId) : null;
-        const signedIn = account?.status === "active";
         let summary: CustomerHomeSummary | null = null;
 
         if (account?.status === "active" && account.roles.includes("customer")) {
@@ -58,8 +65,8 @@ export default async function Home({
         }
 
         return {
-          signedIn,
-          displayName: account?.displayName || "",
+          signedIn: Boolean(authId),
+          displayName: account?.displayName || viewer.displayName,
           summary,
         };
       });

@@ -27,11 +27,32 @@ function pool(): Pool {
   }));
 }
 
+async function connectWithRetry() {
+  const delays = [0, 1500, 4000] as const;
+  let lastError: unknown;
+
+  for (const delay of delays) {
+    if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+    try {
+      return await pool().connect();
+    } catch (error) {
+      lastError = error;
+      const code =
+        typeof error === "object" && error !== null && "code" in error
+          ? String((error as { code?: unknown }).code ?? "")
+          : "";
+      if (code !== "28P01") throw error;
+    }
+  }
+
+  throw lastError;
+}
+
 export async function withIdentity<T>(
   authId: string,
   work: (db: SqlClient) => Promise<T>,
 ): Promise<T> {
-  const db = await pool().connect();
+  const db = await connectWithRetry();
   try {
     await db.query("BEGIN");
     // Refuse owner/bypass credentials, even if an operator misconfigures DATABASE_URL.

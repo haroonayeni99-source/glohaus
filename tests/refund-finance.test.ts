@@ -212,6 +212,92 @@ describe.sequential("booking refund financial protection", () => {
     });
   });
 
+
+  it("reconciles a Stripe Dashboard refund exactly once", async () => {
+    const start = new Date(Date.now() + 5 * 86400000);
+    start.setUTCHours(15, 0, 0, 0);
+
+    const externalBookingId = (
+      await asUser("refund-customer", (sql) =>
+        sql.query<{ data: { id: string } }>(
+          "SELECT beauty.reserve_booking($1,$2) AS data",
+          [serviceId, start.toISOString()],
+        ),
+      )
+    ).rows[0].data.id;
+
+    await asUser("refund-customer", async (sql) => {
+      await sql.query("SELECT beauty.prepare_booking_financial_quote($1)", [
+        externalBookingId,
+      ]);
+      await sql.query(
+        "SELECT beauty.attach_checkout($1,'cs_external_refund_test')",
+        [externalBookingId],
+      );
+    });
+
+    await asPaymentWorker(async (sql) => {
+      await sql.query(
+        "SELECT beauty.apply_checkout_payment($1,$2,$3,$4,$5,$6)",
+        [
+          "evt_external_refund_payment",
+          externalBookingId,
+          "cs_external_refund_test",
+          "pi_external_refund_test",
+          2100,
+          "gbp",
+        ],
+      );
+      await sql.query("SELECT beauty.record_booking_payment_finance($1,$2)", [
+        externalBookingId,
+        "pi_external_refund_test",
+      ]);
+
+      await sql.query(
+        "SELECT beauty.reconcile_external_booking_refund($1,$2,$3,$4,$5)",
+        [
+          "evt_external_refund_created",
+          "re_external_refund_test",
+          2100,
+          "succeeded",
+          "pi_external_refund_test",
+        ],
+      );
+      await sql.query(
+        "SELECT beauty.reconcile_external_booking_refund($1,$2,$3,$4,$5)",
+        [
+          "evt_external_refund_updated",
+          "re_external_refund_test",
+          2100,
+          "succeeded",
+          "pi_external_refund_test",
+        ],
+      );
+    });
+
+    const payment = (
+      await db.query<{ refunded_pence: number; status: string }>(
+        "SELECT refunded_pence,status FROM beauty.payments WHERE booking_id=$1",
+        [externalBookingId],
+      )
+    ).rows[0];
+    expect(payment).toEqual({ refunded_pence: 2100, status: "refunded" });
+
+    const providerRefunds = (
+      await db.query<{ count: number }>(
+        "SELECT count(*)::integer AS count FROM beauty.external_booking_refunds WHERE provider_ref='re_external_refund_test'",
+      )
+    ).rows[0].count;
+    expect(providerRefunds).toBe(1);
+
+    const ledgerRows = (
+      await db.query<{ count: number }>(
+        "SELECT count(*)::integer AS count FROM beauty.financial_ledger_transactions WHERE event_reference='booking-refund-external:re_external_refund_test'",
+      )
+    ).rows[0].count;
+    expect(ledgerRows).toBe(1);
+  });
+
   it("uses future available earnings to clear the obligation first", async () => {
     await asPaymentWorker((sql) =>
       sql.query(

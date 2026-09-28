@@ -71,7 +71,7 @@ Reference: [Vercel private storage](https://vercel.com/docs/vercel-blob/private-
 
 ## 4. Email and scheduling
 
-Create a Resend account, verify a sender domain and set RESEND_API_KEY and EMAIL_FROM. Set a random high-entropy CRON_SECRET. Invoke GET /api/cron/notifications with `Authorization: Bearer <CRON_SECRET>` from an authorized scheduler, typically every five minutes. Do not embed the secret in the URL. Confirm your hosting plan supports the required frequency before configuring it; no paid scheduler has been purchased or enabled.
+Create a Resend account, verify a sender domain and set RESEND_API_KEY and EMAIL_FROM. Configure that verified sender as the custom SMTP provider for Supabase Auth as well, then set SUPABASE_CUSTOM_SMTP_CONFIGURED=true only after the dashboard configuration is live. Enable leaked-password protection and set SUPABASE_LEAKED_PASSWORD_PROTECTION_CONFIGURED=true after verifying the setting. CAPTCHA/bot protection is strongly recommended before public launch; after enabling it, set SUPABASE_AUTH_CAPTCHA_CONFIGURED=true. Set a random high-entropy CRON_SECRET. Invoke GET /api/cron/notifications with `Authorization: Bearer <CRON_SECRET>` from an authorized scheduler, typically every five minutes. Do not embed the secret in the URL. Confirm your hosting plan supports the required frequency before configuring it; no paid scheduler has been purchased or enabled.
 
 The worker leases queued notifications, retries failures and uses deterministic Resend idempotency keys. It stops retries before the provider's 24-hour idempotency window ends; failed/stalled jobs therefore require operational monitoring. Reminder/review eligibility is checked against booking state. No real messages have been sent during development.
 

@@ -41,6 +41,20 @@ ALTER TABLE beauty.email_provider_events FORCE ROW LEVEL SECURITY;
 ALTER TABLE beauty.email_suppressions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE beauty.email_suppressions FORCE ROW LEVEL SECURITY;
 
+CREATE POLICY email_provider_events_internal
+  ON beauty.email_provider_events
+  FOR ALL
+  TO beauty_booking_ops
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY email_suppressions_internal
+  ON beauty.email_suppressions
+  FOR ALL
+  TO beauty_booking_ops
+  USING (true)
+  WITH CHECK (true);
+
 REVOKE ALL ON beauty.email_provider_events, beauty.email_suppressions FROM PUBLIC;
 
 DROP FUNCTION IF EXISTS beauty.finish_notification(uuid,boolean);

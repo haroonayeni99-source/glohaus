@@ -89,57 +89,79 @@ export async function POST(request: Request) {
     });
 
     const origin = new URL(process.env.NEXT_PUBLIC_APP_URL!).origin;
-    const checkout = await stripe().checkout.sessions.create(
-      {
-        mode: "payment",
-        line_items: [
-          ...(booking.depositPence > 0
-            ? [
-                {
-                  price_data: {
-                    currency: "gbp",
-                    unit_amount: booking.depositPence,
-                    product_data: {
-                      name: `Service deposit: ${booking.serviceName} · ${booking.professionalName}`,
+    let checkoutId: string | null = null;
+    try {
+      const checkout = await stripe().checkout.sessions.create(
+        {
+          mode: "payment",
+          line_items: [
+            ...(booking.depositPence > 0
+              ? [
+                  {
+                    price_data: {
+                      currency: "gbp",
+                      unit_amount: booking.depositPence,
+                      product_data: {
+                        name: `Service deposit: ${booking.serviceName} · ${booking.professionalName}`,
+                      },
                     },
+                    quantity: 1,
                   },
-                  quantity: 1,
+                ]
+              : []),
+            {
+              price_data: {
+                currency: "gbp",
+                unit_amount: quote.customerPlatformFeePence,
+                product_data: {
+                  name: "GLOHAUS booking fee",
                 },
-              ]
-            : []),
-          {
-            price_data: {
-              currency: "gbp",
-              unit_amount: quote.customerPlatformFeePence,
-              product_data: {
-                name: "GLOHAUS booking fee",
               },
+              quantity: 1,
             },
-            quantity: 1,
+          ],
+          payment_intent_data: {
+            transfer_group: `booking_${booking.id}`,
+            metadata: { booking_id: booking.id },
           },
-        ],
-        payment_intent_data: {
-          transfer_group: `booking_${booking.id}`,
           metadata: { booking_id: booking.id },
+          integration_identifier: `glohaus_booking_${booking.id
+            .replace(/-/g, "")
+            .slice(0, 8)
+            .replace(/[0-9]/g, (digit) => String.fromCharCode(97 + Number(digit)))}`,
+          success_url: `${origin}/account/bookings/${booking.id}`,
+          cancel_url: `${origin}/account/bookings/${booking.id}`,
+          expires_at: Math.floor(Date.parse(booking.holdExpiresAt) / 1000) - 120,
         },
-        metadata: { booking_id: booking.id },
-        integration_identifier: `glohaus_booking_${booking.id
-          .replace(/-/g, "")
-          .slice(0, 8)
-          .replace(/[0-9]/g, (digit) => String.fromCharCode(97 + Number(digit)))}`,
-        success_url: `${origin}/account/bookings/${booking.id}`,
-        cancel_url: `${origin}/account/bookings/${booking.id}`,
-        expires_at: Math.floor(Date.parse(booking.holdExpiresAt) / 1000) - 120,
-      },
-      { idempotencyKey: `booking-checkout-${booking.id}` },
-    );
-    await withAccount("customer", (db) =>
-      db.query("SELECT beauty.attach_checkout($1,$2)", [
-        booking.id,
-        checkout.id,
-      ]),
-    );
-    return json({ url: checkout.url, bookingId: booking.id }, 201);
+        { idempotencyKey: `booking-checkout-${booking.id}` },
+      );
+      checkoutId = checkout.id;
+      await withAccount("customer", (db) =>
+        db.query("SELECT beauty.attach_checkout($1,$2)", [
+          booking.id,
+          checkout.id,
+        ]),
+      );
+      return json({ url: checkout.url, bookingId: booking.id }, 201);
+    } catch (checkoutError) {
+      if (checkoutId) {
+        try {
+          await stripe().checkout.sessions.expire(checkoutId);
+        } catch {
+          // Local hold recovery still proceeds if provider cleanup is unavailable.
+        }
+      }
+      try {
+        await withAccount("customer", (db) =>
+          db.query("SELECT beauty.release_failed_booking_checkout($1)", [
+            booking.id,
+          ]),
+        );
+      } catch {
+        // Preserve the original error; the ordinary hold expiry remains a fallback.
+      }
+      throw checkoutError;
+    }
   } catch (error) {
     if (
       error &&

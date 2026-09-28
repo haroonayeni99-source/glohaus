@@ -86,9 +86,10 @@ beforeAll(async () => {
     );
   });
 
-  await asPaymentWorker((sql) =>
-    sql.query("SELECT beauty.sync_connect_account('acct_refund_test',true)"),
-  );
+  await asPaymentWorker(async (sql) => {
+    await sql.query("SELECT beauty.sync_connect_account('acct_refund_test',true)");
+    await sql.query("SELECT beauty.sync_connect_verification('acct_refund_test',true)");
+  });
 
   await asUser("refund-customer", (sql) =>
     enrolAccount(

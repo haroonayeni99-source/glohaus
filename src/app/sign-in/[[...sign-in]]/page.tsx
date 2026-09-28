@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { authConfigured } from "@/lib/config";
 import { AuthFrame } from "@/components/auth-frame";
 import { AccessMessage } from "@/components/access-message";
@@ -17,7 +18,12 @@ export default async function Page({
       {authConfigured() ? (
         <><EmailAuthForm mode="sign-in" redirectTo={safeReturnTo(returnTo, defaultTarget)} audience={audience} />{authError && <p className="form-error" role="alert">We couldn’t complete that email confirmation. Please sign in with your email and password.</p>}</>
       ) : (
-        <AccessMessage />
+        <>
+          <AccessMessage />
+          <p className="auth-switch">
+            <Link href="/forgot-password">Forgot password?</Link>
+          </p>
+        </>
       )}
     </AuthFrame>
   );

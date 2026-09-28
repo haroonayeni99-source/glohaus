@@ -43,6 +43,13 @@ export async function GET(request: NextRequest) {
 
   const next = url.searchParams.get("next");
   if (next === "/reset-password") {
+    response.cookies.set("glohaus_password_recovery", "1", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/reset-password",
+      maxAge: 15 * 60,
+    });
     response.headers.set(
       "Location",
       new URL("/reset-password", url.origin).toString(),

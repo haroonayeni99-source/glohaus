@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type Factor = {
@@ -10,6 +11,8 @@ type Factor = {
 };
 
 export function MfaManager() {
+  const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
   const [factors, setFactors] = useState<Factor[]>([]);
   const [currentLevel, setCurrentLevel] = useState<string | null>(null);
   const [nextLevel, setNextLevel] = useState<string | null>(null);
@@ -19,29 +22,32 @@ export function MfaManager() {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
-  const supabase = createClient();
 
-  async function load() {
+  const load = useCallback(async () => {
     const [factorResult, aalResult] = await Promise.all([
       supabase.auth.mfa.listFactors(),
       supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
     ]);
+
     if (factorResult.error) {
       setMessage(factorResult.error.message);
       return;
     }
+
     setFactors(factorResult.data.totp ?? []);
     if (aalResult.data) {
       setCurrentLevel(aalResult.data.currentLevel);
       setNextLevel(aalResult.data.nextLevel);
     }
-  }
+  }, [supabase]);
 
   useEffect(() => {
-    // The async loader only updates state after Supabase network/session reads complete.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void load();
-  }, []);
+    const timer = window.setTimeout(() => {
+      void load();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [load]);
 
   async function startEnrollment() {
     setBusy(true);
@@ -55,9 +61,15 @@ export function MfaManager() {
       setFactorId(result.data.id);
       setQrCode(result.data.totp.qr_code);
       setSecret(result.data.totp.secret);
-      setMessage("Scan the QR code with your authenticator app, then enter the 6-digit code.");
+      setMessage(
+        "Scan the QR code with your authenticator app, then enter the 6-digit code.",
+      );
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not start two-step verification.");
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not start two-step verification.",
+      );
     } finally {
       setBusy(false);
     }
@@ -69,36 +81,48 @@ export function MfaManager() {
       setMessage("Enter the 6-digit code from your authenticator app.");
       return;
     }
+
     setBusy(true);
     setMessage("");
     try {
       const challenge = await supabase.auth.mfa.challenge({ factorId: id });
       if (challenge.error) throw challenge.error;
+
       const verify = await supabase.auth.mfa.verify({
         factorId: id,
         challengeId: challenge.data.id,
         code: code.trim(),
       });
       if (verify.error) throw verify.error;
-      await supabase.auth.refreshSession();
-      setMessage("Two-step verification complete.");
+
+      const refreshed = await supabase.auth.refreshSession();
+      if (refreshed.error) throw refreshed.error;
+
       await load();
-      window.location.assign("/admin");
+      setMessage("Two-step verification complete.");
+      router.replace("/admin");
+      router.refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "That verification code could not be confirmed.");
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "That verification code could not be confirmed.",
+      );
     } finally {
       setBusy(false);
     }
   }
 
-  const verifiedFactor = factors.find((factor) => factor.status === "verified") ?? factors[0];
+  const verifiedFactor =
+    factors.find((factor) => factor.status === "verified") ?? factors[0];
   const needsChallenge = currentLevel === "aal1" && nextLevel === "aal2";
 
   return (
     <section className="editor-form" aria-labelledby="mfa-title">
       <h2 id="mfa-title">Two-step verification</h2>
       <p className="lead">
-        Owner and admin access requires a recent authenticator-app check. GLOHAUS uses Supabase TOTP MFA.
+        Owner and admin access requires a recent authenticator-app check. GLOHAUS
+        uses Supabase TOTP MFA.
       </p>
 
       {currentLevel === "aal2" && (
@@ -108,14 +132,26 @@ export function MfaManager() {
       )}
 
       {!verifiedFactor && !qrCode && (
-        <button className="button" type="button" disabled={busy} onClick={startEnrollment}>
+        <button
+          className="button"
+          type="button"
+          disabled={busy}
+          onClick={startEnrollment}
+        >
           {busy ? "Starting…" : "Set up authenticator app"}
         </button>
       )}
 
       {qrCode && (
         <div className="mfa-enrolment">
-          <img src={qrCode} width={220} height={220} alt="QR code for GLOHAUS two-step verification" />
+          {/* Supabase returns a data URI for the TOTP QR code. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={qrCode}
+            width={220}
+            height={220}
+            alt="QR code for GLOHAUS two-step verification"
+          />
           <p>
             If you cannot scan the QR code, enter this secret manually:
             <br />
@@ -124,32 +160,43 @@ export function MfaManager() {
         </div>
       )}
 
-      {(qrCode || verifiedFactor || needsChallenge) && currentLevel !== "aal2" && (
-        <>
-          <label>
-            Authenticator code
-            <input
-              value={code}
-              onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              pattern="[0-9]{6}"
-              maxLength={6}
-              placeholder="123456"
-            />
-          </label>
-          <button
-            className="button"
-            type="button"
-            disabled={busy || code.length !== 6}
-            onClick={() => verifyFactor(verifiedFactor?.id)}
-          >
-            {busy ? "Verifying…" : qrCode ? "Enable two-step verification" : "Verify and open Admin"}
-          </button>
-        </>
-      )}
+      {(qrCode || verifiedFactor || needsChallenge) &&
+        currentLevel !== "aal2" && (
+          <>
+            <label>
+              Authenticator code
+              <input
+                value={code}
+                onChange={(event) =>
+                  setCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+                }
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9]{6}"
+                maxLength={6}
+                placeholder="123456"
+              />
+            </label>
+            <button
+              className="button"
+              type="button"
+              disabled={busy || code.length !== 6}
+              onClick={() => verifyFactor(verifiedFactor?.id)}
+            >
+              {busy
+                ? "Verifying…"
+                : qrCode
+                  ? "Enable two-step verification"
+                  : "Verify and open Admin"}
+            </button>
+          </>
+        )}
 
-      {message && <p className="form-notice" role="status">{message}</p>}
+      {message && (
+        <p className="form-notice" role="status">
+          {message}
+        </p>
+      )}
     </section>
   );
 }

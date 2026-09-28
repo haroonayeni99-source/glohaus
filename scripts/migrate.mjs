@@ -9,6 +9,8 @@ try {
   await db.query("BEGIN");
   await db.query("SELECT pg_advisory_xact_lock(74201835)");
   await db.query("CREATE TABLE IF NOT EXISTS public.beauty_schema_migrations (name text PRIMARY KEY, checksum text NOT NULL, applied_at timestamptz NOT NULL DEFAULT now())");
+  await db.query("ALTER TABLE public.beauty_schema_migrations DISABLE ROW LEVEL SECURITY");
+  await db.query("REVOKE ALL ON public.beauty_schema_migrations FROM PUBLIC, anon, authenticated");
   const directory = new URL("../db/migrations/", import.meta.url);
   for (const name of (await readdir(directory)).filter((name) => /^\d+.*\.sql$/.test(name)).sort()) {
     const sql = await readFile(new URL(name, directory), "utf8");

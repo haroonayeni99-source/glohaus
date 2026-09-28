@@ -40,14 +40,20 @@ export async function GET(request: Request) {
           { from: process.env.EMAIL_FROM, to: job.email, ...message },
           { idempotencyKey: `glohaus-notification-${job.id}` },
         );
-        if (result.error) throw new Error("DELIVERY_FAILED");
+        if (result.error || !result.data?.id) throw new Error("DELIVERY_FAILED");
         await withPaymentWorker((db) =>
-          db.query("SELECT beauty.finish_notification($1,true)", [job.id]),
+          db.query("SELECT beauty.finish_notification($1,true,$2)", [
+            job.id,
+            result.data.id,
+          ]),
         );
         sent++;
       } catch {
         await withPaymentWorker((db) =>
-          db.query("SELECT beauty.finish_notification($1,false)", [job.id]),
+          db.query("SELECT beauty.finish_notification($1,false,$2)", [
+            job.id,
+            null,
+          ]),
         );
       }
     }

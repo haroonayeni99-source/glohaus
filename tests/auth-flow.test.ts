@@ -61,6 +61,23 @@ describe("signed-in role routing", () => {
     );
   });
 
+  it("keeps owner routing highest priority when the account also has customer and professional roles", () => {
+    expect(
+      signedInDestination(
+        ["admin", "customer", "owner", "professional"],
+        "customer",
+        "/account",
+      ),
+    ).toBe("/admin");
+    expect(
+      signedInDestination(
+        ["admin", "customer", "owner", "professional"],
+        "professional",
+        "/professional",
+      ),
+    ).toBe("/admin");
+  });
+
   it("keeps customer and professional views separate when both roles exist", () => {
     expect(
       signedInDestination(["customer", "professional"], "customer", "/account"),

@@ -22,11 +22,11 @@ CREATE POLICY external_booking_refunds_worker
   USING(true) WITH CHECK(true);
 
 CREATE FUNCTION beauty.reconcile_external_booking_refund(
-  event_ref text,
-  provider_ref text,
-  amount integer,
-  provider_status text,
-  intent_ref text
+  event_ref_input text,
+  provider_ref_input text,
+  amount_input integer,
+  provider_status_input text,
+  intent_ref_input text
 ) RETURNS uuid
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -48,16 +48,16 @@ DECLARE
   obligation integer:=0;
   rows jsonb;
 BEGIN
-  IF provider_ref IS NULL OR provider_ref NOT LIKE 're_%'
-     OR intent_ref IS NULL OR amount IS NULL OR amount<=0
-     OR provider_status NOT IN('pending','succeeded','failed','canceled','requires_action')
+  IF provider_ref_input IS NULL OR provider_ref_input NOT LIKE 're_%'
+     OR intent_ref_input IS NULL OR amount_input IS NULL OR amount_input<=0
+     OR provider_status_input NOT IN('pending','succeeded','failed','canceled','requires_action')
   THEN
     RAISE EXCEPTION 'REFUND_MISMATCH' USING ERRCODE='22023';
   END IF;
 
   SELECT * INTO payment
   FROM beauty.payments
-  WHERE stripe_payment_intent_id=intent_ref
+  WHERE stripe_payment_intent_id=intent_ref_input
   FOR UPDATE;
 
   -- Ignore refunds for unrelated Stripe activity when the webhook endpoint is
@@ -68,36 +68,36 @@ BEGIN
 
   SELECT * INTO external_refund
   FROM beauty.external_booking_refunds
-  WHERE provider_ref=reconcile_external_booking_refund.provider_ref
+  WHERE provider_ref=provider_ref_input
   FOR UPDATE;
 
   IF external_refund.id IS NULL THEN
     INSERT INTO beauty.external_booking_refunds(
       provider_ref,booking_id,payment_intent_id,amount_pence,status
-    ) VALUES(provider_ref,payment.booking_id,intent_ref,amount,provider_status)
+    ) VALUES(provider_ref_input,payment.booking_id,intent_ref_input,amount_input,provider_status_input)
     RETURNING * INTO external_refund;
   ELSE
     IF external_refund.booking_id IS DISTINCT FROM payment.booking_id
-       OR external_refund.payment_intent_id IS DISTINCT FROM intent_ref
-       OR external_refund.amount_pence IS DISTINCT FROM amount
+       OR external_refund.payment_intent_id IS DISTINCT FROM intent_ref_input
+       OR external_refund.amount_pence IS DISTINCT FROM amount_input
     THEN
       RAISE EXCEPTION 'REFUND_MISMATCH' USING ERRCODE='22023';
     END IF;
     UPDATE beauty.external_booking_refunds
-    SET status=provider_status,updated_at=now()
+    SET status=provider_status_input,updated_at=now()
     WHERE id=external_refund.id
     RETURNING * INTO external_refund;
   END IF;
 
-  IF provider_status='succeeded' AND external_refund.applied_at IS NULL THEN
-    IF payment.refunded_pence+amount>payment.captured_pence THEN
+  IF provider_status_input='succeeded' AND external_refund.applied_at IS NULL THEN
+    IF payment.refunded_pence+amount_input>payment.captured_pence THEN
       RAISE EXCEPTION 'REFUND_MISMATCH' USING ERRCODE='22023';
     END IF;
 
     UPDATE beauty.payments
-    SET refunded_pence=refunded_pence+amount,
+    SET refunded_pence=refunded_pence+amount_input,
         status=CASE
-          WHEN refunded_pence+amount=captured_pence THEN 'refunded'
+          WHEN refunded_pence+amount_input=captured_pence THEN 'refunded'
           ELSE 'partially_refunded'
         END,
         updated_at=now()
@@ -126,7 +126,7 @@ BEGIN
       LEFT JOIN beauty.financial_ledger_entries e ON e.account_id=a.id
       WHERE a.professional_id=target_professional;
 
-      remaining:=amount;
+      remaining:=amount_input;
       use_pending:=least(remaining,pending_balance);
       remaining:=remaining-use_pending;
       use_available:=least(remaining,available_balance);
@@ -167,16 +167,16 @@ BEGIN
       END IF;
 
       PERFORM beauty.record_financial_ledger(
-        'booking-refund-external:'||provider_ref,
+        'booking-refund-external:'||provider_ref_input,
         'refund',
         'refund',
         external_refund.id,
         target_professional,
         jsonb_build_object(
           'bookingId',payment.booking_id,
-          'providerRefundId',provider_ref,
-          'customerRefundPence',amount,
-          'professionalRecoveredPence',amount-obligation,
+          'providerRefundId',provider_ref_input,
+          'customerRefundPence',amount_input,
+          'professionalRecoveredPence',amount_input-obligation,
           'professionalObligationPence',obligation,
           'platformFeesPreserved',true,
           'source','stripe_dashboard_or_external'
@@ -191,7 +191,7 @@ BEGIN
   END IF;
 
   INSERT INTO beauty.payment_events(event_id)
-  VALUES(event_ref)
+  VALUES(event_ref_input)
   ON CONFLICT DO NOTHING;
 
   RETURN external_refund.id;

@@ -8,7 +8,7 @@ import { AdminFinancePanel } from "@/components/admin-finance-panel";
 import { AdminNavigation } from "@/components/admin-navigation";
 import { ShopFeeControl } from "@/components/shop-fee-control";
 import { OwnerControls } from "@/components/owner-controls";
-import { adminFinanceOverview, adminOverview, ownerControls, ownerProductFeeRule } from "@/modules/admin/repository";
+import { adminFinanceOverview, adminOverview, ownerControls, ownerProductFeeRule, paymentLaunchReadiness } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
@@ -20,12 +20,13 @@ export default async function Page() {
       </AuthFrame>
     );
   const isOwner = result.account.roles.includes("owner");
-  const [data, labels, owner, productFee, finance] = await Promise.all([
+  const [data, labels, owner, productFee, finance, paymentReadiness] = await Promise.all([
     adminOverview(),
     publicLabels(),
     isOwner ? ownerControls().catch(() => null) : Promise.resolve(null),
     isOwner ? ownerProductFeeRule().catch(() => null) : Promise.resolve(null),
     adminFinanceOverview().catch(() => null),
+    isOwner ? paymentLaunchReadiness().catch(() => null) : Promise.resolve(null),
   ]);
   return (
     <main id="main" className="admin-workspace">
@@ -70,6 +71,32 @@ export default async function Page() {
               <h2>Staff & admins</h2>
               <p className="lead">Only the owner can delegate or remove privileged access. Owner access cannot be granted here.</p>
               <OwnerControls data={owner} users={data.users} />
+            </section>
+          )}
+          {isOwner && paymentReadiness && (
+            <section id="payment-readiness" className="admin-workspace-section">
+              <p className="eyebrow">LAUNCH READINESS</p>
+              <h2>Booking → payment → payout</h2>
+              <p className="lead">
+                {paymentReadiness.ready
+                  ? "All required server, Stripe and database boundaries for the core booking money flow are present."
+                  : "One or more required payment boundaries still need configuration before real customer money should be accepted."}
+              </p>
+              <div className="service-edit-list">
+                {paymentReadiness.checks.map((check) => (
+                  <article className="service-edit-row" key={check.key}>
+                    <div>
+                      <h3>{check.label}</h3>
+                      <p>
+                        {check.ready ? "Ready" : check.required ? "Needs setup" : "Optional / not configured"}
+                      </p>
+                    </div>
+                    <span className={`admin-status ${check.ready ? "admin-status-active" : "admin-status-suspended"}`}>
+                      {check.ready ? "READY" : check.required ? "BLOCKED" : "OPTIONAL"}
+                    </span>
+                  </article>
+                ))}
+              </div>
             </section>
           )}
           <AdminFinancePanel data={finance} />

@@ -268,3 +268,64 @@ export async function adminFinanceOverview(): Promise<AdminFinanceOverview> {
     return row.data;
   });
 }
+
+
+export type PaymentLaunchReadiness = {
+  ready: boolean;
+  checks: { key: string; label: string; ready: boolean; required: boolean }[];
+};
+
+export async function paymentLaunchReadiness(): Promise<PaymentLaunchReadiness> {
+  const database = await withAdmin(async (db) => {
+    const row = (
+      await db.query<{
+        reserve_booking: boolean;
+        prepare_quote: boolean;
+        apply_checkout: boolean;
+        record_finance: boolean;
+        release_booking: boolean;
+        request_payout: boolean;
+        record_payout: boolean;
+        apply_payout: boolean;
+        sync_connect: boolean;
+        sync_verification: boolean;
+      }>(`
+        SELECT
+          EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='beauty' AND p.proname='reserve_booking') AS reserve_booking,
+          EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='beauty' AND p.proname='prepare_booking_financial_quote') AS prepare_quote,
+          EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='beauty' AND p.proname='apply_checkout_payment') AS apply_checkout,
+          EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='beauty' AND p.proname='record_booking_payment_finance') AS record_finance,
+          EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='beauty' AND p.proname='release_my_mature_booking_proceeds') AS release_booking,
+          EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='beauty' AND p.proname='request_my_payout') AS request_payout,
+          EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='beauty' AND p.proname='record_payout_provider') AS record_payout,
+          EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='beauty' AND p.proname='apply_payout_result') AS apply_payout,
+          EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='beauty' AND p.proname='sync_connect_account') AS sync_connect,
+          EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='beauty' AND p.proname='sync_connect_verification') AS sync_verification
+      `))
+      .rows[0];
+    return row;
+  });
+
+  const checks = [
+    { key: "stripe-key", label: "Stripe secret key", ready: Boolean(process.env.STRIPE_SECRET_KEY), required: true },
+    { key: "stripe-webhook", label: "Stripe booking/payment webhook secret", ready: Boolean(process.env.STRIPE_WEBHOOK_SECRET), required: true },
+    { key: "connect-webhook", label: "Stripe Connect webhook secret", ready: Boolean(process.env.STRIPE_CONNECT_WEBHOOK_SECRET), required: true },
+    { key: "payment-db", label: "Protected payment-worker database connection", ready: Boolean(process.env.PAYMENT_DATABASE_URL), required: true },
+    { key: "app-url", label: "Canonical GLOHAUS app URL", ready: Boolean(process.env.NEXT_PUBLIC_APP_URL), required: true },
+    { key: "reserve-booking", label: "Booking reservation boundary", ready: Boolean(database?.reserve_booking), required: true },
+    { key: "booking-quote", label: "Immutable booking financial quote", ready: Boolean(database?.prepare_quote), required: true },
+    { key: "checkout-webhook-db", label: "Paid checkout application", ready: Boolean(database?.apply_checkout), required: true },
+    { key: "booking-finance", label: "Booking finance ledger recording", ready: Boolean(database?.record_finance), required: true },
+    { key: "booking-release", label: "24-hour booking proceeds release", ready: Boolean(database?.release_booking), required: true },
+    { key: "connect-sync", label: "Stripe Connect payout readiness sync", ready: Boolean(database?.sync_connect), required: true },
+    { key: "verification-sync", label: "Stripe KYC verification sync", ready: Boolean(database?.sync_verification), required: true },
+    { key: "payout-request", label: "Professional payout reservation", ready: Boolean(database?.request_payout), required: true },
+    { key: "payout-provider", label: "Stripe payout reconciliation", ready: Boolean(database?.record_payout && database?.apply_payout), required: true },
+    { key: "instant-fee", label: "Instant payout 4% provider-fee configuration", ready: process.env.STRIPE_INSTANT_PAYOUT_FEE_CONFIGURED === "true", required: false },
+  ];
+
+  return {
+    ready: checks.filter((check) => check.required).every((check) => check.ready),
+    checks,
+  };
+}

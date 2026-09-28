@@ -138,7 +138,7 @@ BEGIN
       obligation:=remaining;
 
       rows:=jsonb_build_array(
-        jsonb_build_object('accountCode','provider_clearing','amountPence',-amount)
+        jsonb_build_object('accountCode','provider_clearing','amountPence',-amount_input)
       );
       IF use_pending>0 THEN
         rows:=rows||jsonb_build_array(jsonb_build_object(

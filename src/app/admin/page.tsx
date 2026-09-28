@@ -14,10 +14,9 @@ export const metadata = { title: "Administration" };
 export default async function Page() {
   const result = await pageAccount("admin");
   if (!result.account)
-    const emailReadiness = isOwner ? emailLaunchReadiness() : null;
-  return (
+    return (
       <AuthFrame>
-        <AccessMessage code={result.error} />
+        <AccessMessage code={result.error ?? undefined} />
       </AuthFrame>
     );
   const isOwner = result.account.roles.includes("owner");
@@ -29,6 +28,7 @@ export default async function Page() {
     adminFinanceOverview().catch(() => null),
     isOwner ? paymentLaunchReadiness().catch(() => null) : Promise.resolve(null),
   ]);
+  const emailReadiness = isOwner ? emailLaunchReadiness() : null;
   return (
     <main id="main" className="admin-workspace">
         <AdminNavigation account={result.account} />

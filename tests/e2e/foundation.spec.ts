@@ -330,3 +330,26 @@ test("public policy pages are reachable on mobile and desktop", async ({ page })
     ).toBe(true);
   }
 });
+
+
+test("sign-in keeps password recovery visible for customer and professional accounts", async ({ page }) => {
+  for (const route of [
+    "/sign-in",
+    "/sign-in?intent=professional&returnTo=/professional",
+  ]) {
+    await page.goto(route);
+    const forgot = page.getByRole("link", { name: "Forgot password?" });
+    await expect(forgot).toBeVisible();
+    await expect(forgot).toHaveAttribute("href", "/forgot-password");
+  }
+
+  await page.goto("/forgot-password");
+  await expect(
+    page.getByRole("heading", { name: "Reset your password" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Send reset link" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to sign in" })).toHaveAttribute(
+    "href",
+    "/sign-in",
+  );
+});

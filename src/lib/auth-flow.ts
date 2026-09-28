@@ -37,3 +37,26 @@ export function confirmationPlan(
 
   return { audience: "customer", redirectTo: target };
 }
+
+export function signedInDestination(
+  roles: unknown,
+  audience: AuthAudience,
+  requested: string | null | undefined,
+): string {
+  const roleList = Array.isArray(roles)
+    ? roles.filter((role): role is string => typeof role === "string")
+    : [];
+
+  if (roleList.includes("owner") || roleList.includes("admin")) return "/admin";
+
+  if (audience === "professional") {
+    return roleList.includes("professional")
+      ? safeReturnTo(requested, "/professional")
+      : "/onboarding?intent=professional";
+  }
+
+  if (roleList.includes("customer")) return safeReturnTo(requested, "/account");
+  if (roleList.includes("professional")) return "/professional";
+
+  return "/onboarding";
+}

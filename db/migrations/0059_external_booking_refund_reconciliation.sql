@@ -14,6 +14,27 @@ CREATE TABLE beauty.external_booking_refunds (
 
 ALTER TABLE beauty.external_booking_refunds ENABLE ROW LEVEL SECURITY;
 ALTER TABLE beauty.external_booking_refunds FORCE ROW LEVEL SECURITY;
+
+-- The payment worker is already the trusted owner for verified Stripe booking
+-- payment/refund application. Ensure the booking SELECT boundary required by
+-- this reconciliation exists in environments that were built from migrations
+-- rather than the live managed schema.
+GRANT SELECT ON beauty.bookings TO beauty_payment_worker;
+DO $policy$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname='beauty'
+      AND tablename='bookings'
+      AND cmd IN ('SELECT','ALL')
+      AND roles::text LIKE '%beauty_payment_worker%'
+  ) THEN
+    EXECUTE 'CREATE POLICY external_refund_worker_bookings ON beauty.bookings FOR SELECT TO beauty_payment_worker USING(true)';
+  END IF;
+END
+$policy$;
+
 GRANT SELECT,INSERT,UPDATE ON beauty.external_booking_refunds TO beauty_payment_worker;
 CREATE POLICY external_booking_refunds_worker
   ON beauty.external_booking_refunds

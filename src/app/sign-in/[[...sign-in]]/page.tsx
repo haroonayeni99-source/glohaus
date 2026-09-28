@@ -27,7 +27,28 @@ export default async function Page({
   return (
     <AuthFrame audience={audience}>
       {authConfigured() ? (
-        <><EmailAuthForm mode="sign-in" redirectTo={safeReturnTo(returnTo, defaultTarget)} audience={audience} />{authError && <p className="form-error" role="alert">We couldn’t complete that email confirmation. Please sign in with your email and password.</p>}</>
+        <>
+          <nav className="auth-switch" aria-label="Choose sign in type">
+            {audience === "professional" ? (
+              <>
+                <strong>Signing in as GLOHAUS PRO</strong>{" "}
+                <Link href="/sign-in">Switch to customer sign in</Link>
+              </>
+            ) : (
+              <>
+                <strong>Signing in as customer</strong>{" "}
+                <Link href="/sign-in?intent=professional&returnTo=/professional">
+                  Switch to GLOHAUS PRO sign in
+                </Link>
+              </>
+            )}
+          </nav>
+          <EmailAuthForm mode="sign-in" redirectTo={safeReturnTo(returnTo, defaultTarget)} audience={audience} />
+          <p className="auth-switch">
+            Owner/Admin accounts are detected automatically and open the Owner/Admin control centre.
+          </p>
+          {authError && <p className="form-error" role="alert">We couldn’t complete that email confirmation. Please sign in with your email and password.</p>}
+        </>
       ) : (
         <>
           <AccessMessage />

@@ -4,7 +4,7 @@
 CREATE TABLE beauty.external_booking_refunds (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   provider_ref text NOT NULL UNIQUE CHECK(provider_ref LIKE 're_%'),
-  booking_id uuid NOT NULL REFERENCES beauty.bookings(id),
+  booking_id uuid NOT NULL,
   payment_intent_id text NOT NULL,
   amount_pence integer NOT NULL CHECK(amount_pence>0),
   status text NOT NULL CHECK(status IN('pending','succeeded','failed','canceled','requires_action')),
@@ -14,26 +14,6 @@ CREATE TABLE beauty.external_booking_refunds (
 
 ALTER TABLE beauty.external_booking_refunds ENABLE ROW LEVEL SECURITY;
 ALTER TABLE beauty.external_booking_refunds FORCE ROW LEVEL SECURITY;
-
--- The payment worker is already the trusted owner for verified Stripe booking
--- payment/refund application. Ensure the booking SELECT boundary required by
--- this reconciliation exists in environments that were built from migrations
--- rather than the live managed schema.
-GRANT SELECT ON beauty.bookings TO beauty_payment_worker;
-DO $policy$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1
-    FROM pg_policies
-    WHERE schemaname='beauty'
-      AND tablename='bookings'
-      AND cmd IN ('SELECT','ALL')
-      AND roles::text LIKE '%beauty_payment_worker%'
-  ) THEN
-    EXECUTE 'CREATE POLICY external_refund_worker_bookings ON beauty.bookings FOR SELECT TO beauty_payment_worker USING(true)';
-  END IF;
-END
-$policy$;
 
 GRANT SELECT,INSERT,UPDATE ON beauty.external_booking_refunds TO beauty_payment_worker;
 CREATE POLICY external_booking_refunds_worker
@@ -54,8 +34,8 @@ SET search_path=pg_catalog
 AS $fn$
 DECLARE
   payment beauty.payments;
-  booking beauty.bookings;
   external_refund beauty.external_booking_refunds;
+  target_professional uuid;
   remaining integer;
   pending_balance integer:=0;
   available_balance integer:=0;
@@ -86,11 +66,6 @@ BEGIN
     RETURN NULL;
   END IF;
 
-  SELECT * INTO booking
-  FROM beauty.bookings
-  WHERE id=payment.booking_id
-  FOR UPDATE;
-
   SELECT * INTO external_refund
   FROM beauty.external_booking_refunds
   WHERE provider_ref=reconcile_external_booking_refund.provider_ref
@@ -99,10 +74,10 @@ BEGIN
   IF external_refund.id IS NULL THEN
     INSERT INTO beauty.external_booking_refunds(
       provider_ref,booking_id,payment_intent_id,amount_pence,status
-    ) VALUES(provider_ref,booking.id,intent_ref,amount,provider_status)
+    ) VALUES(provider_ref,payment.booking_id,intent_ref,amount,provider_status)
     RETURNING * INTO external_refund;
   ELSE
-    IF external_refund.booking_id IS DISTINCT FROM booking.id
+    IF external_refund.booking_id IS DISTINCT FROM payment.booking_id
        OR external_refund.payment_intent_id IS DISTINCT FROM intent_ref
        OR external_refund.amount_pence IS DISTINCT FROM amount
     THEN
@@ -126,15 +101,17 @@ BEGIN
           ELSE 'partially_refunded'
         END,
         updated_at=now()
-    WHERE booking_id=booking.id;
+    WHERE booking_id=payment.booking_id;
 
     -- Only create recovery accounting when the original booking payment was
-    -- already recorded in the GLOHAUS ledger. Legacy bookings remain accurate
-    -- in payment state without inventing historical journal entries.
-    IF EXISTS(
-      SELECT 1 FROM beauty.financial_ledger_transactions
-      WHERE event_reference='booking-payment:'||booking.id::text
-    ) THEN
+    -- already recorded in the GLOHAUS ledger. The original journal entry also
+    -- gives us the professional identity without widening this worker's access
+    -- to the bookings table.
+    SELECT professional_id INTO target_professional
+    FROM beauty.financial_ledger_transactions
+    WHERE event_reference='booking-payment:'||payment.booking_id::text;
+
+    IF target_professional IS NOT NULL THEN
       SELECT
         greatest(0,coalesce(-sum(e.amount_pence)
           FILTER(WHERE a.code='professional_pending'),0))::integer,
@@ -147,7 +124,7 @@ BEGIN
       INTO pending_balance,available_balance,reserved_balance,disputed_balance
       FROM beauty.financial_ledger_accounts a
       LEFT JOIN beauty.financial_ledger_entries e ON e.account_id=a.id
-      WHERE a.professional_id=booking.professional_id;
+      WHERE a.professional_id=target_professional;
 
       remaining:=amount;
       use_pending:=least(remaining,pending_balance);
@@ -194,9 +171,9 @@ BEGIN
         'refund',
         'refund',
         external_refund.id,
-        booking.professional_id,
+        target_professional,
         jsonb_build_object(
-          'bookingId',booking.id,
+          'bookingId',payment.booking_id,
           'providerRefundId',provider_ref,
           'customerRefundPence',amount,
           'professionalRecoveredPence',amount-obligation,

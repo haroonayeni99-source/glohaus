@@ -2,6 +2,7 @@ import { z } from "zod";
 import { withAccount } from "@/lib/api-account";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
+import { categoryIsActive } from "@/modules/platform/repository";
 import { serviceSchema } from "@/modules/professionals/domain";
 import {
   saveService,
@@ -19,6 +20,8 @@ export async function PUT(
     if (!z.uuid().safeParse(id).success || !parsed.success)
       throw new AccessError("INVALID_REQUEST", 400);
     await withAccount("professional", async (db, account) => {
+      if (!(await categoryIsActive(db, parsed.data.category)))
+        throw new AccessError("INVALID_REQUEST", 400);
       const access = await professionalAccessState(db, account.professionalId!);
       assertStarterServiceAllowed(access, parsed.data);
       return saveService(db, account.professionalId!, parsed.data, id);

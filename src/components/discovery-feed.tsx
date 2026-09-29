@@ -511,9 +511,16 @@ export function DiscoveryFeed({
                         </summary>
                         <p>{post.body}</p>
                       </details>
-                      <Link className="feed-cta" href={`/p/${post.slug}`}>
+                      <Link
+                        className="feed-cta"
+                        href={
+                          post.service_id
+                            ? `/p/${post.slug}?bookService=${encodeURIComponent(post.service_id)}#booking`
+                            : `/p/${post.slug}`
+                        }
+                      >
                         {post.service_name
-                          ? `Explore ${post.service_name}`
+                          ? `Book this look · ${post.service_name}${post.price_pence ? ` · £${(post.price_pence / 100).toFixed(0)}` : ""}`
                           : `Meet the ${labels.Professional.toLowerCase()}`}
                         <ArrowUpRight size={18} />
                       </Link>

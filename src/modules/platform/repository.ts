@@ -1,6 +1,7 @@
 import "server-only";
 import { withIdentity } from "@/lib/db";
 import { defaultLabels, type Labels } from "./domain";
+import type { SqlClient } from "@/modules/accounts/repository";
 export async function publicLabels(): Promise<Labels> {
   if (!process.env.DATABASE_URL) return defaultLabels;
   try {
@@ -50,7 +51,7 @@ export async function publicCategories(): Promise<PublicCategory[]> {
 }
 
 export async function categoryIsActive(
-  db: { query: <T>(text: string, values?: unknown[]) => Promise<{ rows: T[] }> },
+  db: SqlClient,
   name: string,
 ) {
   const row = (

@@ -4,7 +4,6 @@ import { AccessError } from "@/modules/accounts/domain";
 import { categoryIsActive } from "@/modules/platform/repository";
 import { profileSchema } from "@/modules/professionals/domain";
 import { updateProfile } from "@/modules/professionals/repository";
-import { assertProfilePublishingAllowed, professionalAccessState } from "@/modules/professionals/verification";
 export async function PUT(request: Request) {
   try {
     assertSameOrigin(request);
@@ -13,8 +12,6 @@ export async function PUT(request: Request) {
     await withAccount("professional", async (db, account) => {
       if (!(await categoryIsActive(db, parsed.data.category)))
         throw new AccessError("INVALID_REQUEST", 400);
-      const access = await professionalAccessState(db, account.professionalId!);
-      assertProfilePublishingAllowed(access, parsed.data.publicationStatus);
       return updateProfile(db, account.professionalId!, parsed.data);
     });
     return json({ saved: true });

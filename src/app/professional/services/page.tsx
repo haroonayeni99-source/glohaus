@@ -5,6 +5,7 @@ import { AccessMessage } from "@/components/access-message";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { ProfessionalEditor } from "@/components/professional-editor";
 import type { Service } from "@/modules/professionals/domain";
+import { publicCategories } from "@/modules/platform/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Services & prices · GLOHAUS PRO" };
 export default async function ServicesPage() {
@@ -16,7 +17,8 @@ export default async function ServicesPage() {
       </div>
     );
   const account = result.account;
-  const data = await withIdentity(account.authId, async (db) => ({
+  const [data, marketplaceCategories] = await Promise.all([
+    withIdentity(account.authId, async (db) => ({
     access: (
       await db.query<{
         data: {
@@ -39,7 +41,9 @@ export default async function ServicesPage() {
         [account.professionalId],
       )
     ).rows,
-  }));
+    })),
+    publicCategories(),
+  ]);
   return (
     <div className="pro-app">
       <ProfessionalNavigation active="more" displayName={account.displayName} />
@@ -59,6 +63,7 @@ export default async function ServicesPage() {
             assets={data.assets}
             verificationStatus={data.access.status}
             starterBookingsRemaining={data.access.starterBookingsRemaining}
+            marketplaceCategories={marketplaceCategories}
           />
         </section>
       </main>

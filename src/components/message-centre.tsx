@@ -36,6 +36,8 @@ export function MessageCentre({
   activeConversation,
   initialMessages,
   initialCursor,
+  initialPrevious,
+  initialHasMore = false,
   bookingId,
   professionalId,
   draftRecipientName,
@@ -46,6 +48,8 @@ export function MessageCentre({
   activeConversation: ConversationDetails | null;
   initialMessages: ConversationMessage[];
   initialCursor: string | null;
+  initialPrevious: string | null;
+  initialHasMore?: boolean;
   bookingId: string | null;
   professionalId: string | null;
   draftRecipientName: string | null;
@@ -56,6 +60,9 @@ export function MessageCentre({
   const conversations = initialConversations;
   const [messages, setMessages] = useState(initialMessages);
   const [cursor, setCursor] = useState(initialCursor);
+  const [olderCursor, setOlderCursor] = useState(initialPrevious);
+  const [hasOlder, setHasOlder] = useState(initialHasMore);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -134,6 +141,37 @@ export function MessageCentre({
     endRef.current?.scrollIntoView({ block: "end" });
   }, [messages.length, activeId]);
 
+  async function loadOlder() {
+    if (!activeId || !olderCursor || loadingOlder) return;
+    setLoadingOlder(true);
+    setNotice("");
+    try {
+      const response = await fetch(
+        `/api/v1/messages/${activeId}?before=${encodeURIComponent(olderCursor)}`,
+        { cache: "no-store" },
+      );
+      if (!response.ok) throw new Error();
+      const data = (await response.json()) as {
+        messages: ConversationMessage[];
+        previous?: string | null;
+        hasMore: boolean;
+      };
+      setMessages((current) => {
+        const known = new Set(current.map((message) => message.id));
+        return [
+          ...data.messages.filter((message) => !known.has(message.id)),
+          ...current,
+        ];
+      });
+      setOlderCursor(data.previous ?? null);
+      setHasOlder(data.hasMore);
+    } catch {
+      setNotice("Earlier messages could not be loaded.");
+    } finally {
+      setLoadingOlder(false);
+    }
+  }
+
   async function send(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const clean = body.trim();
@@ -163,7 +201,9 @@ export function MessageCentre({
         throw new Error(
           data.error?.code === "FORBIDDEN"
             ? "This conversation is not available to this account."
-            : "Your message could not be sent. Please try again.",
+            : data.error?.code === "TOO_MANY_ATTEMPTS"
+              ? "You’ve sent several messages recently. Try again later."
+              : "Your message could not be sent. Please try again.",
         );
 
       setBody("");
@@ -278,6 +318,17 @@ export function MessageCentre({
             </header>
 
             <div className="message-thread-body" aria-live="polite">
+              {activeConversation && hasOlder && (
+                <div className="message-load-older">
+                  <button
+                    type="button"
+                    disabled={loadingOlder}
+                    onClick={() => void loadOlder()}
+                  >
+                    {loadingOlder ? "Loading earlier messages…" : "Load earlier messages"}
+                  </button>
+                </div>
+              )}
               {!activeConversation && (
                 <div className="message-start-note">
                   <MessageCircle size={22} aria-hidden />

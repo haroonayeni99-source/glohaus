@@ -3,7 +3,7 @@ import {
   depositLimitMessage,
   isRequiredDepositWithinLimit,
 } from "@/modules/bookings/deposit-policy";
-export const categories = [
+export const fallbackCategories = [
   "Hair",
   "Nails",
   "Makeup",
@@ -47,7 +47,7 @@ export const profileSchema = z
     businessName: z.string().trim().min(2).max(100),
     bio: z.string().trim().min(20).max(600),
     city: z.string().trim().min(2).max(80),
-    category: z.enum(categories),
+    category: z.string().trim().min(2).max(60),
     publicationStatus: z.enum(["draft", "published", "hidden"]),
     businessDescription: z.string().trim().max(3000).optional(),
     locationDetails: z.string().trim().max(180).optional(),
@@ -103,6 +103,7 @@ export const serviceSchema = z
       }),
     active: z.boolean(),
     assetId: z.uuid().nullable().optional(),
+    category: z.string().trim().min(2).max(60),
   })
   .strict()
   .superRefine((value, context) => {
@@ -136,7 +137,7 @@ export type PublicProfessional = {
   business_name: string;
   bio: string;
   city: string;
-  category: (typeof categories)[number];
+  category: string;
   verification_status?: "unverified" | "pending" | "verified" | "restricted";
 };
 export type Service = {
@@ -150,6 +151,7 @@ export type Service = {
   price_pence: number;
   deposit_pence: number;
   active?: boolean;
+  category: string;
 };
 export const money = (pence: number) =>
   new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(

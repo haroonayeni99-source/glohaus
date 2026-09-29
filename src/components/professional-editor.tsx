@@ -300,13 +300,20 @@ export function ProfessionalEditor({
                 defaultValue={initial.publicationStatus}
               >
                 <option value="draft">Draft — only you can see it</option>
-                <option value="published">
-                  Published — visible to everyone
-                </option>
+                {verificationStatus === "verified" && (
+                  <option value="published">
+                    Published — visible to everyone
+                  </option>
+                )}
                 <option value="hidden">
                   Hidden — temporarily off discovery
                 </option>
               </select>
+              {verificationStatus !== "verified" && (
+                <small>
+                  Complete professional verification before publishing your page publicly.
+                </small>
+              )}
             </label>
             <div className="editor-actions">
               <button className="button" disabled={busy}>

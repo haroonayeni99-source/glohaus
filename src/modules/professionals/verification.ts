@@ -32,6 +32,8 @@ export function assertStarterServiceAllowed(
   if (!input.active) return;
   if (access.status === "restricted")
     throw new AccessError("PROFESSIONAL_RESTRICTED", 403);
+  if (!access.verified && (input.pricePence > 20000 || input.depositPence > 0))
+    throw new AccessError("VERIFICATION_REQUIRED", 409);
 }
 
 export function assertProductPublishingAllowed(
@@ -57,18 +59,11 @@ export function assertBookingAllowed(
 ) {
   if (access.status === "restricted")
     throw new AccessError("PROFESSIONAL_RESTRICTED", 403);
-  if (!access.verified)
-    throw new AccessError("VERIFICATION_REQUIRED", 409);
-}
-
-
-export function assertProfilePublishingAllowed(
-  access: ProfessionalAccessState,
-  publicationStatus: string,
-) {
-  if (publicationStatus !== "published") return;
-  if (access.status === "restricted")
-    throw new AccessError("PROFESSIONAL_RESTRICTED", 403);
-  if (!access.verified)
+  if (
+    !access.verified &&
+    (service.pricePence > 20000 ||
+      service.depositPence > 0 ||
+      (access.starterBookingsRemaining ?? 0) <= 0)
+  )
     throw new AccessError("VERIFICATION_REQUIRED", 409);
 }

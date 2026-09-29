@@ -8,13 +8,32 @@ function pool(): Pool {
   if (!process.env.DATABASE_URL) throw new AccessError("UNAVAILABLE", 503);
   const connectionString = process.env.DATABASE_URL!;
 
-  return (globalDb.beautyPool ??= new Pool({
-    connectionString,
-    ssl: { rejectUnauthorized: false },
-    max: 3,
-    connectionTimeoutMillis: 5000,
-    idleTimeoutMillis: 10000,
-  }));
+  if (!globalDb.beautyPool) {
+    const dbPool = new Pool({
+      connectionString,
+      ssl: { rejectUnauthorized: false },
+      max: 1,
+      connectionTimeoutMillis: 5000,
+      idleTimeoutMillis: 5000,
+      allowExitOnIdle: true,
+    });
+
+    // Supavisor may close idle transaction-pooler sockets. Handle those
+    // errors so an idle client cannot crash the whole serverless process.
+    dbPool.on("error", (error) => {
+      console.warn("Database pool idle connection closed", {
+        type: error.name,
+        code:
+          typeof error === "object" && error !== null && "code" in error
+            ? String((error as { code?: unknown }).code ?? "")
+            : "",
+      });
+    });
+
+    globalDb.beautyPool = dbPool;
+  }
+
+  return globalDb.beautyPool;
 }
 
 async function connectWithRetry() {
@@ -62,6 +81,6 @@ export async function withIdentity<T>(
     await db.query("ROLLBACK");
     throw error;
   } finally {
-    db.release();
+    db.release(true);
   }
 }

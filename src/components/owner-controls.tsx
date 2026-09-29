@@ -28,6 +28,7 @@ export function OwnerControls({
   const router = useRouter();
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [adminCandidate, setAdminCandidate] = useState("");
   const [selected, setSelected] = useState<OwnerControls["staff"][number] | null>(null);
   const [delegation, setDelegation] = useState<{
     id: string;
@@ -60,6 +61,46 @@ export function OwnerControls({
   return (
     <>
       {notice && <p className="form-notice" role="status">{notice}</p>}
+      <form
+        className="editor-form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const form = new FormData(event.currentTarget);
+          const user = users.find((item) => item.id === adminCandidate);
+          if (!user) {
+            setNotice("Choose a user first.");
+            return;
+          }
+          void submit({
+            type: "role",
+            userId: user.id,
+            role: "admin",
+            enabled: true,
+            reason: form.get("reason"),
+          });
+        }}
+      >
+        <h3>Add administrator</h3>
+        <p className="lead">Choose an existing active GLOHAUS user and grant admin access. Only the owner can do this.</p>
+        <label>
+          User
+          <select value={adminCandidate} onChange={(event) => setAdminCandidate(event.target.value)} required>
+            <option value="">Select a user</option>
+            {users
+              .filter((user) => !user.roles.includes("owner") && !user.roles.includes("admin") && user.status === "active")
+              .map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.display_name} · {user.email}
+                </option>
+              ))}
+          </select>
+        </label>
+        <label>
+          Reason
+          <input name="reason" required minLength={5} maxLength={500} placeholder="e.g. Platform operations administrator" />
+        </label>
+        <button className="button" disabled={busy || !adminCandidate}>Add admin</button>
+      </form>
       {delegation && (
         <form
           className="editor-form"

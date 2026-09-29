@@ -173,6 +173,7 @@ export default async function EditProfile() {
             services={data.services}
             assets={data.assets}
             marketplaceCategories={marketplaceCategories}
+            verificationStatus={data.access.status}
           />
           <ConnectButton status={data.access.status} />
         </section>

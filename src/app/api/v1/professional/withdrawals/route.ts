@@ -30,7 +30,8 @@ export async function POST(request: Request) {
 
   try {
     assertSameOrigin(request);
-    if (!paymentReady()) throw new AccessError("UNAVAILABLE", 503);
+    if (!paymentReady() || !process.env.STRIPE_CONNECT_WEBHOOK_SECRET)
+      throw new AccessError("UNAVAILABLE", 503);
 
     const body = (await request.json()) as {
       kind?: "standard" | "instant";

@@ -157,3 +157,96 @@ describe.sequential("private in-app notifications", () => {
     ).not.toBeNull();
   });
 });
+
+
+describe.sequential("product-order in-app notifications", () => {
+  let orderId = "";
+
+  it("notifies both customer and professional when a product order is paid", async () => {
+    orderId = (
+      await db.query<{ id: string }>(
+        `INSERT INTO beauty.product_orders(
+          checkout_reference,provider_payment_intent_id,customer_id,
+          professional_id,professional_name,subtotal_pence,delivery_pence,
+          total_pence,recipient_name,address_line1,city,postcode,country_code,
+          professional_proceeds_pence
+        ) VALUES(
+          gen_random_uuid(),'pi_notification_order',$1,$2,'Professional Studio',
+          2000,0,2000,'Customer','1 Beauty Road','London','SE1 1AA','GB',1800
+        ) RETURNING id`,
+        [customerId, professionalId],
+      )
+    ).rows[0].id;
+
+    expect(await asUser("customer", inAppNotifications)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          product_order_id: orderId,
+          kind: "order_paid",
+          title: "Order confirmed",
+        }),
+      ]),
+    );
+    expect(await asUser("professional", inAppNotifications)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          product_order_id: orderId,
+          kind: "order_paid",
+          title: "New Shop order",
+        }),
+      ]),
+    );
+  });
+
+  it("notifies the customer when the product order ships", async () => {
+    await db.query(
+      `UPDATE beauty.product_orders
+       SET status='shipped',tracking_carrier='Royal Mail',
+           tracking_number='RM123456',shipped_at=now()
+       WHERE id=$1`,
+      [orderId],
+    );
+
+    expect(await asUser("customer", inAppNotifications)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          product_order_id: orderId,
+          kind: "order_shipped",
+          title: "Order shipped",
+        }),
+      ]),
+    );
+  });
+
+  it("notifies both sides when a product refund is confirmed", async () => {
+    await db.query(
+      "UPDATE beauty.product_orders SET status='refund_pending' WHERE id=$1",
+      [orderId],
+    );
+    await db.query(
+      "UPDATE beauty.product_orders SET status='refunded' WHERE id=$1",
+      [orderId],
+    );
+
+    expect(await asUser("customer", inAppNotifications)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          product_order_id: orderId,
+          kind: "order_refund_pending",
+        }),
+        expect.objectContaining({
+          product_order_id: orderId,
+          kind: "order_refunded",
+        }),
+      ]),
+    );
+    expect(await asUser("professional", inAppNotifications)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          product_order_id: orderId,
+          kind: "order_refunded",
+        }),
+      ]),
+    );
+  });
+});

@@ -225,6 +225,31 @@ export function ProductOrderList({
             </span>
           </div>
 
+          {(order.refundStatus || order.status === "refund_pending" || order.status === "refunded") && (
+            <div className="product-order-refund">
+              <strong>
+                {order.status === "refunded" || order.refundStatus === "succeeded"
+                  ? "Refund completed"
+                  : order.refundStatus === "failed"
+                    ? "Refund needs attention"
+                    : "Refund in progress"}
+              </strong>
+              <span>
+                {order.refundAmountPence
+                  ? `${money(order.refundAmountPence)} customer refund`
+                  : "Customer refund"}
+                {order.refundReason ? ` · ${order.refundReason}` : ""}
+              </span>
+              {mode === "customer" && (
+                <small>
+                  {order.status === "refunded"
+                    ? "The refund has been confirmed by the payment provider. Your bank may still take time to show it."
+                    : "GLOHAUS is waiting for the payment provider to finish processing this refund."}
+                </small>
+              )}
+            </div>
+          )}
+
           {(order.trackingCarrier || order.trackingNumber) && (
             <div className="product-order-tracking">
               <Truck size={17} aria-hidden />

@@ -318,6 +318,34 @@ describe.sequential("booking transactions and verified deposits", () => {
       ),
     ).rejects.toThrow("INVALID_TRANSITION");
   });
+  it("rejects cancellation after the appointment has started", async () => {
+    const original = (
+      await db.query<{ starts_at: Date; ends_at: Date }>(
+        "SELECT starts_at,ends_at FROM beauty.bookings WHERE id=$1",
+        [booking],
+      )
+    ).rows[0];
+
+    await db.query(
+      "UPDATE beauty.bookings SET starts_at=now()-interval '30 minutes',ends_at=now()+interval '30 minutes' WHERE id=$1",
+      [booking],
+    );
+
+    await expect(
+      asUser("alice", (sql) =>
+        sql.query(
+          "SELECT beauty.change_booking($1,'cancelled','Trying to cancel late')",
+          [booking],
+        ),
+      ),
+    ).rejects.toThrow("INVALID_TRANSITION");
+
+    await db.query(
+      "UPDATE beauty.bookings SET starts_at=$2,ends_at=$3 WHERE id=$1",
+      [booking, original.starts_at, original.ends_at],
+    );
+  });
+
   it("allows customer cancellation while preserving payment and policy snapshots", async () => {
     await asUser("alice", (sql) =>
       sql.query(

@@ -127,11 +127,18 @@ describe.sequential("professional publishing and private ownership", () => {
     serviceId = (
       await asUser("alice", (sql) => saveService(sql, ownerId, service))
     ).id as string;
-    expect(
-      (await asUser("", (sql) => publicProfile(sql, "alice-studio")))
-        ?.services[0].deposit_pence,
-    ).toBe(1500);
+    const publicData = await asUser("", (sql) => publicProfile(sql, "alice-studio"));
+    expect(publicData?.services[0].deposit_pence).toBe(1500);
+    expect(publicData?.services[0].category).toBe("Nails");
   });
+  it("finds professionals by published service category and name", async () => {
+    const byCategory = await asUser("", (sql) =>
+      publicProfessionals(sql, "Nails"),
+    );
+    expect(byCategory).toHaveLength(1);
+    expect(byCategory[0].id).toBe(ownerId);
+  });
+
   it("finds professionals by published service name and shows truthful card data", async () => {
     const rows = await asUser("", (sql) =>
       publicProfessionals(sql, "Gel manicure"),

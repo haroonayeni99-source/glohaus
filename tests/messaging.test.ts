@@ -183,23 +183,17 @@ describe.sequential("private messaging foundation", () => {
   });
 
   it("loads older history when a conversation grows beyond 100 messages", async () => {
-    const values: unknown[] = [];
-    const placeholders: string[] = [];
     for (let index = 0; index < 105; index++) {
-      const offset = values.length;
-      placeholders.push(`(${offset + 1},${offset + 2},'customer',${offset + 3},now()-(${offset + 4}::integer || ' seconds')::interval)`);
-      values.push(
-        conversationId,
-        customerId,
-        `History message ${index + 1}`,
-        500 - index,
+      await db.query(
+        "INSERT INTO beauty.messages(conversation_id,sender_user_id,sender_role,body,created_at) VALUES($1,$2,'customer',$3,now()-($4::integer || ' seconds')::interval)",
+        [
+          conversationId,
+          customerId,
+          `History message ${index + 1}`,
+          500 - index,
+        ],
       );
     }
-    await db.query(
-      `INSERT INTO beauty.messages(conversation_id,sender_user_id,sender_role,body,created_at)
-       VALUES ${placeholders.join(",")}`,
-      values,
-    );
 
     const firstPage = await asUser("message-customer-auth", (sql) =>
       conversationMessagePage(sql, conversationId),

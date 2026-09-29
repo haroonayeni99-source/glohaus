@@ -30,6 +30,14 @@ export async function GET() {
     });
     return json({ conversations: data });
   } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "message" in error &&
+      typeof error.message === "string" &&
+      error.message.includes("TOO_MANY_MESSAGES")
+    )
+      return json({ error: { code: "TOO_MANY_ATTEMPTS" } }, 429);
     return apiError(error);
   }
 }

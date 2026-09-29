@@ -7538,3 +7538,35 @@ svg {
   .professional-gallery.portfolio-layout-feature> :first-child{grid-column:auto;grid-row:auto;height:auto}
   .profile-style-editorial .professional-cover{min-height:150px}
 }
+
+
+/* FAQ */
+.faq-page{max-width:1080px;margin:0 auto;padding:7rem 1.25rem 4rem}
+.faq-hero{max-width:760px;margin-bottom:1.75rem}
+.faq-hero h1{font-size:clamp(2.25rem,5vw,4rem);line-height:1;letter-spacing:-.045em;margin:.45rem 0 .9rem}
+.faq-categories{display:flex;gap:.65rem;overflow-x:auto;padding:.25rem 0 1.25rem;margin-bottom:1.4rem;scrollbar-width:thin}
+.faq-categories button{flex:0 0 auto;border:1px solid color-mix(in srgb,currentColor 15%,transparent);border-radius:999px;background:transparent;color:inherit;padding:.7rem 1rem;font:inherit;font-weight:700;cursor:pointer}
+.faq-categories button:hover,.faq-categories button.is-active{background:currentColor;color:var(--background,#fff)}
+.faq-content{display:grid;gap:2.25rem}
+.faq-section h2{font-size:1.2rem;margin:0 0 .8rem}
+.faq-list{display:grid;gap:.7rem}
+.faq-item{border:1px solid color-mix(in srgb,currentColor 14%,transparent);border-radius:1rem;background:color-mix(in srgb,var(--surface,transparent) 96%,transparent);overflow:hidden}
+.faq-item summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.1rem 1.25rem;cursor:pointer;font-weight:800;list-style:none}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary svg{flex:0 0 auto;transition:transform .2s ease}
+.faq-item[open] summary svg{transform:rotate(180deg)}
+.faq-answer{padding:0 1.25rem 1.25rem;line-height:1.7;opacity:.9}
+.faq-answer a{text-decoration:underline;text-underline-offset:3px}
+.faq-footer{margin-top:3rem;padding-top:2rem;border-top:1px solid color-mix(in srgb,currentColor 14%,transparent);display:grid;gap:1rem}
+.faq-wordmark{display:flex;flex-direction:column;gap:.2rem}
+.faq-wordmark strong{font-size:1.35rem;letter-spacing:.08em}
+.faq-wordmark span,.faq-footer p{opacity:.72}
+.faq-footer nav{display:flex;flex-wrap:wrap;gap:.75rem 1rem}
+.faq-footer nav a{text-decoration:underline;text-underline-offset:3px}
+.faq-footer p{margin:0;max-width:820px;line-height:1.6}
+@media (max-width:640px){
+  .faq-page{padding:6rem 1rem 3rem}
+  .faq-hero h1{font-size:2.35rem}
+  .faq-item summary{padding:1rem}
+  .faq-answer{padding:0 1rem 1rem}
+}

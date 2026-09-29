@@ -42,6 +42,9 @@ export function GlohausHeader({
         >
           <Bell size={19} aria-hidden />
         </Link>
+        <Link className="glohaus-policy-link" href="/faq">
+          FAQ
+        </Link>
         <Link className="glohaus-policy-link" href="/terms">
           Terms
         </Link>

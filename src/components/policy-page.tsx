@@ -25,7 +25,8 @@ export function PolicyPage({
 
         <div className="policy-content">{children}</div>
 
-        <nav className="policy-links" aria-label="GLOHAUS policies">
+        <nav className="policy-links" aria-label="GLOHAUS policies and help">
+          <Link href="/faq">FAQ</Link>
           <Link href="/terms">Terms</Link>
           <Link href="/privacy">Privacy</Link>
           <Link href="/refunds">Refunds & cancellations</Link>

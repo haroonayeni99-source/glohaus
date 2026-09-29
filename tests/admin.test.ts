@@ -254,6 +254,91 @@ describe.sequential("owner-only delegation and safety reports", () => {
     ).rejects.toThrow(/user_roles_one_owner|unique/i);
   });
 
+  it("lets the owner grant and remove admin access with an audit trail", async () => {
+    await asUser("owner", true, (sql) =>
+      sql.query(
+        "SELECT beauty.owner_set_privileged_role($1,'admin',true,'Owner approved admin access')",
+        [staff],
+      ),
+    );
+    expect(
+      (
+        await db.query<{ role: string }>(
+          "SELECT role FROM beauty.user_roles WHERE user_id=$1 AND role='admin'",
+          [staff],
+        )
+      ).rows,
+    ).toHaveLength(1);
+
+    await asUser("owner", true, (sql) =>
+      sql.query(
+        "SELECT beauty.owner_set_privileged_role($1,'admin',false,'Owner removed admin access')",
+        [staff],
+      ),
+    );
+    expect(
+      (
+        await db.query(
+          "SELECT role FROM beauty.user_roles WHERE user_id=$1 AND role='admin'",
+          [staff],
+        )
+      ).rows,
+    ).toHaveLength(0);
+
+    const audit = await asUser("owner", true, (sql) =>
+      sql.query<{ data: { audit: { action: string }[] } }>(
+        "SELECT beauty.owner_staff_overview() AS data",
+      ),
+    );
+    expect(
+      audit.rows[0].data.audit.some((entry) =>
+        entry.action.startsWith("privileged_role.admin"),
+      ),
+    ).toBe(true);
+  });
+
+  it("lets verified admins create and hide marketplace categories while customers cannot", async () => {
+    await expect(
+      asUser("customer", true, (sql) =>
+        sql.query(
+          "SELECT beauty.admin_upsert_category(NULL,'Massage','massage',true,60,'Customer should not manage categories')",
+        ),
+      ),
+    ).rejects.toThrow("FORBIDDEN");
+
+    const created = await asUser("admin", true, (sql) =>
+      sql.query<{ id: string }>(
+        "SELECT beauty.admin_upsert_category(NULL,'Massage','massage',true,60,'Add massage category') AS id",
+      ),
+    );
+    const id = created.rows[0].id;
+    expect(
+      (
+        await asUser("", false, (sql) =>
+          sql.query<{ active: boolean }>(
+            "SELECT active FROM beauty.platform_categories WHERE id=$1",
+            [id],
+          ),
+        )
+      ).rows[0].active,
+    ).toBe(true);
+
+    await asUser("admin", true, (sql) =>
+      sql.query(
+        "SELECT beauty.admin_upsert_category($1,'Massage','massage',false,60,'Hide massage category')",
+        [id],
+      ),
+    );
+    expect(
+      (
+        await db.query<{ active: boolean }>(
+          "SELECT active FROM beauty.platform_categories WHERE id=$1",
+          [id],
+        )
+      ).rows[0].active,
+    ).toBe(false);
+  });
+
   it("does not let an administrator promote accounts or alter the owner", async () => {
     await expect(
       asUser("admin", true, (sql) =>

@@ -7784,3 +7784,32 @@ svg {
     justify-self: start;
   }
 }
+
+
+.product-order-refund {
+  display: grid;
+  gap: 4px;
+  margin: 12px 18px 0;
+  padding: 12px 13px;
+  border: 1px solid #ead9df;
+  border-radius: 12px;
+  background: #fff6f8;
+  color: #6b4d58;
+}
+.product-order-refund strong {
+  color: #873455;
+  font-size: .7rem;
+}
+.product-order-refund span,
+.product-order-refund small {
+  font-size: .62rem;
+  line-height: 1.5;
+}
+.product-order-refund small {
+  color: #806c74;
+}
+@media (max-width: 760px) {
+  .product-order-refund {
+    margin-inline: 14px;
+  }
+}

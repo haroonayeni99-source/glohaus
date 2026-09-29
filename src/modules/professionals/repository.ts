@@ -64,14 +64,15 @@ export async function saveService(
     input.depositPence,
     input.active,
     input.assetId ?? null,
+    input.category,
   ];
   const result = id
     ? await db.query(
-        `UPDATE beauty.services SET name=$2,description=$3,duration_minutes=$4,price_pence=$5,deposit_pence=$6,active=$7,asset_id=$8 WHERE professional_id=$1 AND id=$9 RETURNING id`,
+        `UPDATE beauty.services SET name=$2,description=$3,duration_minutes=$4,price_pence=$5,deposit_pence=$6,active=$7,asset_id=$8,category=$9 WHERE professional_id=$1 AND id=$10 RETURNING id`,
         [...values, id],
       )
     : await db.query(
-        `INSERT INTO beauty.services (professional_id,name,description,duration_minutes,price_pence,deposit_pence,active,asset_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+        `INSERT INTO beauty.services (professional_id,name,description,duration_minutes,price_pence,deposit_pence,active,asset_id,category) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
         values,
       );
   if (!result.rows.length) throw new AccessError("FORBIDDEN", 403);
@@ -86,7 +87,7 @@ export async function publicProfessionals(
     await db.query<PublicProfessional>(
       `SELECT p.*,d.photo_id,d.photo_alt,r.rating,r.review_count,s.from_price_pence
  FROM (SELECT p.id,p.slug,p.business_name,p.bio,p.city,p.category,p.verification_status FROM beauty.public_professionals p
- WHERE (p.business_name ILIKE $1 OR p.city ILIKE $1 OR p.category ILIKE $1 OR EXISTS(SELECT 1 FROM beauty.platform_labels labels WHERE labels.key=p.category AND labels.label ILIKE $1) OR EXISTS(SELECT 1 FROM beauty.public_services svc WHERE svc.professional_id=p.id AND svc.name ILIKE $1))
+ WHERE (p.business_name ILIKE $1 OR p.city ILIKE $1 OR p.category ILIKE $1 OR EXISTS(SELECT 1 FROM beauty.platform_labels labels WHERE labels.key=p.category AND labels.label ILIKE $1) OR EXISTS(SELECT 1 FROM beauty.public_services svc WHERE svc.professional_id=p.id AND (svc.name ILIKE $1 OR svc.category ILIKE $1)))
  ${after ? "AND (p.business_name,p.id)>($2::text,$3::uuid)" : ""}
  ORDER BY p.business_name,p.id LIMIT 25) p
  LEFT JOIN beauty.public_profile_details d ON d.id=p.id

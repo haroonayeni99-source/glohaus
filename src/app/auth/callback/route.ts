@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import type { EmailOtpType } from "@supabase/supabase-js";
 import { publicSupabaseKey } from "@/lib/config";
 import { confirmationPlan } from "@/lib/auth-flow";
 import { withIdentity } from "@/lib/db";
@@ -31,10 +32,35 @@ export async function GET(request: NextRequest) {
   );
 
   const code = url.searchParams.get("code");
-  if (!code)
-    return noStoreRedirect(url.origin, "/sign-in?authError=missing_code");
+  const tokenHash = url.searchParams.get("token_hash");
+  const rawType = url.searchParams.get("type");
+  const allowedTypes = new Set<EmailOtpType>([
+    "signup",
+    "invite",
+    "magiclink",
+    "recovery",
+    "email_change",
+    "email",
+  ]);
 
-  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+  let data;
+  let error;
+
+  if (code) {
+    ({ data, error } = await supabase.auth.exchangeCodeForSession(code));
+  } else if (
+    tokenHash &&
+    rawType &&
+    allowedTypes.has(rawType as EmailOtpType)
+  ) {
+    ({ data, error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: rawType as EmailOtpType,
+    }));
+  } else {
+    return noStoreRedirect(url.origin, "/sign-in?authError=missing_code");
+  }
+
   if (error)
     return noStoreRedirect(
       url.origin,

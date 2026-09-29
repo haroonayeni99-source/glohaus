@@ -7,7 +7,7 @@ import { withIdentity } from "@/lib/db";
 import { discoveryOptions } from "@/modules/professionals/discovery";
 import { discoveryPage } from "@/modules/professionals/repository";
 import type { PublicProfessional } from "@/modules/professionals/domain";
-import { categories } from "@/modules/professionals/domain";
+import { publicCategories } from "@/modules/platform/repository";
 import { publicViewerSignedIn } from "@/lib/public-viewer";
 export const dynamic = "force-dynamic";
 export default async function Explore({
@@ -16,7 +16,7 @@ export default async function Explore({
   searchParams: Promise<{ q?: string; after?: string }>;
 }) {
   const { query: q, after } = discoveryOptions(await searchParams);
-  const viewerSignedIn = await publicViewerSignedIn();
+  const [viewerSignedIn, marketplaceCategories] = await Promise.all([publicViewerSignedIn(), publicCategories()]);
   let next: string | null = null;
   let professionals: PublicProfessional[] = [];
   let unavailable = !process.env.DATABASE_URL;
@@ -58,13 +58,13 @@ export default async function Explore({
           <span className="explore-category-location">
             <MapPin size={15} aria-hidden /> England
           </span>
-          {categories.map((category) => (
+          {marketplaceCategories.map((category) => (
             <Link
-              key={category}
-              className={q.toLowerCase() === category.toLowerCase() ? "active" : undefined}
-              href={`/explore?q=${encodeURIComponent(category)}`}
+              key={category.id}
+              className={q.toLowerCase() === category.name.toLowerCase() ? "active" : undefined}
+              href={`/explore?q=${encodeURIComponent(category.name)}`}
             >
-              {category}
+              {category.name}
             </Link>
           ))}
         </nav>

@@ -7,7 +7,7 @@ export function AdminManager({ data }: { data: AdminOverview }) {
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [selection, setSelection] = useState<{
-    type: "user" | "post" | "review" | "appeal" | "report";
+    type: "user" | "post" | "comment" | "review" | "appeal" | "report";
     id: string;
     name: string;
   } | null>(null);
@@ -432,6 +432,40 @@ export function AdminManager({ data }: { data: AdminOverview }) {
       ) : (
         <p className="lead">The safety report queue will appear after the owner-controls database migration is applied.</p>
       )}
+      <h2 id="comments" className="admin-section-title">Feed comment moderation</h2>
+      <p className="admin-section-intro">
+        Hide inappropriate comments without deleting the moderation record. Every decision requires a reason and is written to the audit log.
+      </p>
+      <div className="service-edit-list">
+        {data.comments?.map((comment) => (
+          <article className="service-edit-row" key={comment.id}>
+            <div>
+              <h3>{comment.author_name} · {comment.post_title}</h3>
+              <p>{comment.body}</p>
+              <small>
+                {comment.moderation_status} ·{" "}
+                {new Date(comment.created_at).toLocaleString("en-GB", {
+                  timeZone: "Europe/London",
+                })}
+              </small>
+            </div>
+            <button
+              onClick={() =>
+                setSelection({
+                  type: "comment",
+                  id: comment.id,
+                  name: `comment by ${comment.author_name}`,
+                })
+              }
+            >
+              Moderate
+            </button>
+          </article>
+        ))}
+        {!data.comments?.length && (
+          <p className="lead">No feed comments need moderation.</p>
+        )}
+      </div>
       <h2 id="content" className="admin-section-title">Content moderation</h2>
       <div className="service-edit-list">
         {data.posts.map((post) => (

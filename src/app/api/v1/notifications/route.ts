@@ -3,10 +3,16 @@ import { getIdentity } from "@/lib/identity";
 import { withIdentity } from "@/lib/db";
 import { authorize } from "@/modules/accounts/domain";
 import { findAccount } from "@/modules/accounts/repository";
-import { markInAppNotificationRead } from "@/modules/notifications/repository";
+import {
+  markAllInAppNotificationsRead,
+  markInAppNotificationRead,
+} from "@/modules/notifications/repository";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 
-const schema = z.object({ id: z.uuid() }).strict();
+const schema = z.union([
+  z.object({ id: z.uuid() }).strict(),
+  z.object({ all: z.literal(true) }).strict(),
+]);
 
 export async function PATCH(request: Request) {
   try {
@@ -16,7 +22,10 @@ export async function PATCH(request: Request) {
     const identity = await getIdentity();
     await withIdentity(identity.authId, async (db) => {
       authorize(await findAccount(db, identity.authId), identity);
-      await markInAppNotificationRead(db, parsed.data.id);
+      if ("all" in parsed.data)
+        await markAllInAppNotificationsRead(db);
+      else
+        await markInAppNotificationRead(db, parsed.data.id);
     });
     return json({ saved: true });
   } catch (error) {

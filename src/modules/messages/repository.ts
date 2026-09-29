@@ -141,3 +141,37 @@ export async function conversationMessagePage(
     hasMore: rows.length > 100,
   };
 }
+
+
+export async function conversationOlderMessagePage(
+  db: SqlClient,
+  id: string,
+  before: MessageCursor,
+) {
+  const rows = (
+    await db.query<ConversationMessage>(
+      `SELECT id,booking_id,sender_role,body,created_at
+       FROM beauty.messages
+       WHERE conversation_id=$1
+         AND (created_at,id)<($2::timestamptz,$3::uuid)
+       ORDER BY created_at DESC,id DESC
+       LIMIT 101`,
+      [id, before.createdAt, before.id],
+    )
+  ).rows;
+
+  const visibleDescending = rows.slice(0, 100);
+  const visible = [...visibleDescending].reverse();
+  const oldest = visible.at(0);
+
+  return {
+    messages: visible,
+    previous: oldest
+      ? encodeMessageCursor({
+          id: oldest.id,
+          createdAt: new Date(oldest.created_at).toISOString(),
+        })
+      : null,
+    hasMore: rows.length > 100,
+  };
+}

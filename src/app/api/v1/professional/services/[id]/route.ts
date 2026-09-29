@@ -20,7 +20,7 @@ export async function PUT(
     if (!z.uuid().safeParse(id).success || !parsed.success)
       throw new AccessError("INVALID_REQUEST", 400);
     await withAccount("professional", async (db, account) => {
-      if (!(await categoryIsActive(db, parsed.data.category)))
+      if (parsed.data.category && !(await categoryIsActive(db, parsed.data.category)))
         throw new AccessError("INVALID_REQUEST", 400);
       const access = await professionalAccessState(db, account.professionalId!);
       assertStarterServiceAllowed(access, parsed.data);

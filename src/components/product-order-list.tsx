@@ -29,6 +29,8 @@ export function ProductOrderList({
   const [shippingOrder, setShippingOrder] = useState<string | null>(null);
   const [carrier, setCarrier] = useState("");
   const [tracking, setTracking] = useState("");
+  const [refundOrder, setRefundOrder] = useState<string | null>(null);
+  const [refundReason, setRefundReason] = useState("");
   const [notice, setNotice] = useState("");
 
   async function confirmDelivery(id: string) {
@@ -61,6 +63,44 @@ export function ProductOrderList({
       setNotice("Delivery confirmed. Professional proceeds remain protected for 48 hours before becoming available.");
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Delivery could not be confirmed.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function refundUnshippedOrder(id: string) {
+    const reason = refundReason.trim();
+    if (reason.length < 5 || busyId) return;
+    setBusyId(id);
+    setNotice("");
+    try {
+      const response = await fetch("/api/v1/professional/orders/refunds", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: id, reason }),
+      });
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(
+          data.error?.code === "INVALID_REQUEST"
+            ? "This order can no longer be refunded from this screen."
+            : "The refund could not be started. Please try again.",
+        );
+
+      setOrders((current) =>
+        current.map((order) =>
+          order.id === id ? { ...order, status: "refund_pending" } : order,
+        ),
+      );
+      setRefundOrder(null);
+      setRefundReason("");
+      setNotice(
+        "Refund started. The customer payment status will update after Stripe confirms the refund.",
+      );
+    } catch (error) {
+      setNotice(
+        error instanceof Error ? error.message : "The refund could not be started.",
+      );
     } finally {
       setBusyId(null);
     }
@@ -229,7 +269,34 @@ export function ProductOrderList({
                       Mark processing
                     </button>
                   )}
-                  {shippingOrder === order.id ? (
+                  {refundOrder === order.id ? (
+                    <div className="shipping-fields product-refund-fields">
+                      <input
+                        aria-label="Refund reason"
+                        placeholder="Reason for cancelling and refunding"
+                        value={refundReason}
+                        maxLength={500}
+                        onChange={(event) => setRefundReason(event.target.value)}
+                      />
+                      <button
+                        type="button"
+                        disabled={busyId !== null || refundReason.trim().length < 5}
+                        onClick={() => void refundUnshippedOrder(order.id)}
+                      >
+                        Confirm full refund
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busyId !== null}
+                        onClick={() => {
+                          setRefundOrder(null);
+                          setRefundReason("");
+                        }}
+                      >
+                        Keep order
+                      </button>
+                    </div>
+                  ) : shippingOrder === order.id ? (
                     <div className="shipping-fields">
                       <input
                         aria-label="Shipping carrier"
@@ -256,13 +323,25 @@ export function ProductOrderList({
                       </button>
                     </div>
                   ) : (
-                    <button
-                      type="button"
-                      disabled={busyId !== null}
-                      onClick={() => setShippingOrder(order.id)}
-                    >
-                      Add tracking & ship
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        disabled={busyId !== null}
+                        onClick={() => setShippingOrder(order.id)}
+                      >
+                        Add tracking & ship
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busyId !== null}
+                        onClick={() => {
+                          setRefundOrder(order.id);
+                          setRefundReason("");
+                        }}
+                      >
+                        Cancel & refund
+                      </button>
+                    </>
                   )}
                 </div>
               )}

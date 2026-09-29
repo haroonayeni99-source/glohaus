@@ -44,10 +44,10 @@ export function ConnectButton({
       <p className="lead">
         {status === "pending"
           ? "Your Stripe verification is in progress. Continue the secure Stripe process if more information is requested."
-          : "Set up your GLOHAUS professional account first, then complete verification before your profile can go public or accept marketplace payments. Stripe may ask for phone/contact details, personal or business information, and government ID or a selfie where required."}
+          : "You can start on GLOHAUS before verification. Starter access allows a public profile, services up to £200 with no online deposit, and up to five starter bookings. Complete verification to unlock deposits, higher-value services, product selling, withdrawals and broader marketplace features. Stripe may ask for phone/contact details, personal or business information, and government ID or a selfie where required."}
       </p>
       <p className="form-help">
-        Before verification you can build your profile, services, availability and portfolio privately. Your professional listing stays off the public marketplace until verification is complete.
+        Before verification you can build and publish your profile under Starter access. Unverified professionals are limited to services up to £200, no online deposit, and five starter bookings.
       </p>
       <label>
         <input

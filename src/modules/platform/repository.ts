@@ -18,3 +18,46 @@ export async function publicLabels(): Promise<Labels> {
     return defaultLabels;
   }
 }
+
+
+export type PublicCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  sort_order: number;
+};
+
+export async function publicCategories(): Promise<PublicCategory[]> {
+  if (!process.env.DATABASE_URL)
+    return [
+      { id: "hair", name: "Hair", slug: "hair", sort_order: 10 },
+      { id: "nails", name: "Nails", slug: "nails", sort_order: 20 },
+      { id: "makeup", name: "Makeup", slug: "makeup", sort_order: 30 },
+      { id: "lashes-brows", name: "Lashes & brows", slug: "lashes-brows", sort_order: 40 },
+      { id: "skin", name: "Skin", slug: "skin", sort_order: 50 },
+    ];
+  try {
+    return await withIdentity("", async (db) =>
+      (
+        await db.query<PublicCategory>(
+          "SELECT id,name,slug,sort_order FROM beauty.platform_categories WHERE active ORDER BY sort_order,name",
+        )
+      ).rows,
+    );
+  } catch {
+    return [];
+  }
+}
+
+export async function categoryIsActive(
+  db: { query: <T>(text: string, values?: unknown[]) => Promise<{ rows: T[] }> },
+  name: string,
+) {
+  const row = (
+    await db.query<{ ok: boolean }>(
+      "SELECT EXISTS(SELECT 1 FROM beauty.platform_categories WHERE active AND name=$1) AS ok",
+      [name],
+    )
+  ).rows[0];
+  return Boolean(row?.ok);
+}

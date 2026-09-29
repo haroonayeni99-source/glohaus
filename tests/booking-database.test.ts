@@ -134,12 +134,17 @@ describe.sequential("booking transactions and verified deposits", () => {
     ).rejects.toThrow("MAXIMUM_DEPOSIT_EXCEEDED");
   });
   it("only the booking customer can retrieve its checkout reference", async () => {
-    await asUser("alice", (sql) =>
-      sql.query("SELECT beauty.attach_checkout($1,'cs_test')", [booking]),
-    );
+    await asUser("alice", async (sql) => {
+      await sql.query("SELECT beauty.prepare_booking_financial_quote($1)", [booking]);
+      await sql.query("SELECT beauty.attach_checkout($1,'cs_test')", [booking]);
+    });
     expect(
       await asUser("alice", (sql) => checkoutReference(sql, booking)),
-    ).toEqual({ bookingId: booking, sessionId: "cs_test", depositPence: 1500 });
+    ).toEqual({
+      bookingId: booking,
+      sessionId: "cs_test",
+      customerTotalPence: 1600,
+    });
     expect(
       await asUser("bob", (sql) => checkoutReference(sql, booking)),
     ).toBeUndefined();

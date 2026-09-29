@@ -46,3 +46,16 @@ export async function markInAppNotificationRead(db: SqlClient, id: string) {
     )
   ).rows[0] ?? null;
 }
+
+
+export async function markAllInAppNotificationsRead(db: SqlClient) {
+  const result = await db.query<{ count: number }>(
+    `WITH updated AS (
+       UPDATE beauty.in_app_notifications
+       SET read_at=coalesce(read_at,now())
+       WHERE read_at IS NULL
+       RETURNING 1
+     ) SELECT count(*)::integer AS count FROM updated`,
+  );
+  return result.rows[0]?.count ?? 0;
+}

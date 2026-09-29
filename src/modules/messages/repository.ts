@@ -127,9 +127,17 @@ export async function conversationMessagePage(
       ).rows;
 
   const visible = rows.slice(0, 100);
+  const first = visible.at(0);
   const last = visible.at(-1);
   return {
     messages: visible,
+    previous:
+      rows.length > 100 && first
+        ? encodeMessageCursor({
+            id: first.id,
+            createdAt: new Date(first.created_at).toISOString(),
+          })
+        : null,
     next: last
       ? encodeMessageCursor({
           id: last.id,

@@ -10,6 +10,7 @@ export const fallbackCategories = [
   "Lashes & brows",
   "Skin",
 ] as const;
+export const categories = fallbackCategories;
 function socialUrl(hosts?: string[]) {
   return z
     .string()

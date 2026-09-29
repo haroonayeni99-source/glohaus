@@ -4,11 +4,18 @@ import type { SqlClient } from "@/modules/accounts/repository";
 export type InAppNotification = {
   id: string;
   booking_id: string | null;
+  product_order_id: string | null;
   kind:
     | "booking_created"
     | "booking_confirmed"
     | "booking_cancelled"
-    | "appointment_completed";
+    | "appointment_completed"
+    | "order_paid"
+    | "order_processing"
+    | "order_shipped"
+    | "order_delivered"
+    | "order_refund_pending"
+    | "order_refunded";
   title: string;
   body: string;
   href: string;
@@ -19,7 +26,7 @@ export type InAppNotification = {
 export async function inAppNotifications(db: SqlClient) {
   return (
     await db.query<InAppNotification>(
-      `SELECT id,booking_id,kind,title,body,href,read_at,created_at
+      `SELECT id,booking_id,product_order_id,kind,title,body,href,read_at,created_at
        FROM beauty.in_app_notifications
        ORDER BY read_at NULLS FIRST,created_at DESC,id DESC
        LIMIT 100`,

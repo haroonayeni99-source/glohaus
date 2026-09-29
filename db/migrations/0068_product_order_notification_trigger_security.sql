@@ -94,7 +94,9 @@ BEGIN
   RETURN NEW;
 END $$;
 
+GRANT CREATE ON SCHEMA beauty TO beauty_order_ops;
 ALTER FUNCTION beauty.record_product_order_activity_notification()
   OWNER TO beauty_order_ops;
+REVOKE CREATE ON SCHEMA beauty FROM beauty_order_ops;
 REVOKE ALL ON FUNCTION beauty.record_product_order_activity_notification()
   FROM PUBLIC;

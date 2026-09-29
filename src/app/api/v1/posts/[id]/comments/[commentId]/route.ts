@@ -22,7 +22,7 @@ export async function DELETE(
     const identity = await getIdentity();
     await withIdentity(identity.authId, async (db) => {
       authorize(await findAccount(db, identity.authId), identity);
-      await deletePostComment(db, commentId);
+      await deletePostComment(db, id, commentId);
     });
 
     return json({ deleted: true });

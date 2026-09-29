@@ -182,10 +182,21 @@ export async function POST(request: Request) {
       error &&
       typeof error === "object" &&
       "message" in error &&
-      typeof error.message === "string" &&
-      error.message.includes("PROFESSIONAL_RESTRICTED")
-    )
-      return json({ error: { code: "PROFESSIONAL_RESTRICTED" } }, 403);
+      typeof error.message === "string"
+    ) {
+      if (error.message.includes("PROFESSIONAL_RESTRICTED"))
+        return json({ error: { code: "PROFESSIONAL_RESTRICTED" } }, 403);
+      if (error.message.includes("TOO_MANY_ATTEMPTS"))
+        return json({ error: { code: "TOO_MANY_ATTEMPTS" } }, 429);
+      if (error.message.includes("PAYMENTS_NOT_READY"))
+        return json({ error: { code: "PAYMENTS_NOT_READY" } }, 409);
+      if (
+        error.message.includes("INVALID_TIME") ||
+        error.message.includes("OUTSIDE_HOURS") ||
+        error.message.includes("UNAVAILABLE_SERVICE")
+      )
+        return json({ error: { code: "INVALID_APPOINTMENT" } }, 409);
+    }
     return apiError(error);
   }
 }

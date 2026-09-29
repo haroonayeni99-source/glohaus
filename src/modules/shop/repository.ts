@@ -165,9 +165,9 @@ async function productOrders(
       o.recipient_name,o.address_line1,o.address_line2,o.city,o.postcode,
       o.country_code,o.tracking_carrier,o.tracking_number,o.shipped_at,
       o.delivered_at,o.created_at,
-      refund.amount_pence AS refund_amount_pence,
-      refund.status AS refund_status,
-      refund.reason AS refund_reason,
+      max(refund.amount_pence) AS refund_amount_pence,
+      max(refund.status) AS refund_status,
+      max(refund.reason) AS refund_reason,
       coalesce(jsonb_agg(
         jsonb_build_object(
           'id',i.id,

@@ -11,6 +11,7 @@ import { paymentReady, stripe } from "@/modules/payments/stripe";
 
 export async function POST(request: Request) {
   let checkoutId: string | null = null;
+  let stripeSessionId: string | null = null;
 
   try {
     assertSameOrigin(request);
@@ -75,6 +76,7 @@ export async function POST(request: Request) {
     );
 
     if (!session.url) throw new AccessError("UNAVAILABLE", 503);
+    stripeSessionId = session.id;
 
     await withAccount("customer", (db) =>
       attachShopCheckoutSession(db, prepared.checkout.id, session.id),
@@ -82,6 +84,14 @@ export async function POST(request: Request) {
 
     return json({ url: session.url }, 201);
   } catch (error) {
+    if (stripeSessionId) {
+      try {
+        await stripe().checkout.sessions.expire(stripeSessionId);
+      } catch {
+        // Stock release still proceeds; an expired or already-completed
+        // provider session is reconciled by the signed Stripe webhook.
+      }
+    }
     if (checkoutId)
       try {
         await withAccount("customer", (db) =>

@@ -137,10 +137,11 @@ const items: FaqItem[] = [
     question: "Do I need to be verified to use GLOHAUS as a professional?",
     answer: (
       <>
-        Not necessarily. GLOHAUS may allow eligible professionals to create and
-        operate a basic professional account before completing full
-        verification. However, unverified professionals will have restrictions
-        compared with verified professionals.
+        You can create a professional account and complete your setup before
+        verification, but your professional listing remains private until
+        verification is complete. Verification is required before your profile
+        can appear publicly or accept marketplace bookings, product sales or
+        withdrawals.
       </>
     ),
   },
@@ -149,11 +150,11 @@ const items: FaqItem[] = [
     question: "What can an unverified professional do?",
     answer: (
       <>
-        Depending on the category and service, an unverified professional may
-        be able to create a professional profile, upload portfolio content, add
-        approved services, set prices, manage availability, receive certain
-        bookings, communicate with customers, and build reviews and profile
-        history. Restrictions may apply until verification is completed.
+        Before verification, a professional can build their profile, add
+        services and prices, manage availability, upload portfolio content and
+        prepare their business information. These setup tools remain private.
+        Public marketplace visibility and paid marketplace activity unlock only
+        after verification is completed.
       </>
     ),
   },
@@ -162,11 +163,10 @@ const items: FaqItem[] = [
     question: "What restrictions can apply to unverified professionals?",
     answer: (
       <>
-        GLOHAUS may restrict higher booking limits, certain higher-risk service
-        categories, increased payout limits, faster withdrawals, verification
-        badges, certain promotional tools, increased marketplace visibility and
-        advanced professional features. Some services may require verification
-        before they can be advertised or booked.
+        An unverified professional cannot publish their professional listing to
+        the public marketplace, accept marketplace bookings, publish products for
+        sale or withdraw marketplace earnings. They can continue preparing their
+        business profile and services while completing verification.
       </>
     ),
   },
@@ -191,9 +191,10 @@ const items: FaqItem[] = [
     question: "What is professional verification?",
     answer: (
       <>
-        Verification helps GLOHAUS confirm information about a professional
-        before giving them access to additional features or displaying a
-        verified status.
+        Professional verification is the marketplace identity and business-check
+        process used before a professional can go live publicly on GLOHAUS. It is
+        designed to confirm key account information without using an
+        employment-style application or skills interview.
       </>
     ),
   },
@@ -202,11 +203,12 @@ const items: FaqItem[] = [
     question: "What may be required for verification?",
     answer: (
       <>
-        Depending on the service being offered, GLOHAUS may request identity
-        verification, age verification, professional information,
-        qualifications, certificates, insurance information, business
-        information, and relevant licences or registrations. Requirements may
-        differ depending on the service category.
+        Verification may include confirming that you are 18 or over, phone or
+        contact information, personal or business information, and identity
+        checks. Stripe may ask for a government-issued ID, selfie or additional
+        information where required. Certain regulated or higher-risk beauty
+        services may also require relevant licences, qualifications,
+        registrations or insurance.
       </>
     ),
   },
@@ -215,11 +217,10 @@ const items: FaqItem[] = [
     question: "What do verified professionals receive?",
     answer: (
       <>
-        Verification may provide benefits including a verified profile badge,
-        increased customer trust, increased booking and payout limits, access
-        to additional professional features, greater marketplace visibility,
-        access to certain restricted service categories, and additional
-        promotional opportunities.
+        Once verification is complete, an eligible professional can publish
+        their profile, appear in marketplace discovery, accept bookings, use
+        eligible payment features, sell approved products and access withdrawals.
+        A verified status may also be displayed on the profile.
       </>
     ),
   },
@@ -228,10 +229,11 @@ const items: FaqItem[] = [
     question: "Does being verified mean GLOHAUS guarantees a professional?",
     answer: (
       <>
-        No. Verification means that certain information or documents have been
-        checked according to GLOHAUS requirements. Customers should still
-        review service information, portfolios, reviews, policies and
-        professional details before making a booking.
+        No. Verification means that required identity or business information
+        has been checked for marketplace access. It is not a guarantee of skill,
+        quality or future conduct. Customers should still review service
+        information, portfolios, reviews, policies and professional details
+        before booking.
       </>
     ),
   },

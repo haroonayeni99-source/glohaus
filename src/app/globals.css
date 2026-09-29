@@ -81,7 +81,7 @@ svg {
   position: fixed;
   right: 1.2rem;
   bottom: 1.2rem;
-  z-index: 80;
+  z-index: 1000;
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;

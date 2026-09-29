@@ -438,3 +438,98 @@ describe.sequential("owner-only delegation and safety reports", () => {
     ).toBe("safety_report.resolved");
   });
 });
+
+
+describe.sequential("admin feed comment moderation", () => {
+  let commentId = "";
+
+  it("lets a verified admin hide and restore a comment with an audit trail", async () => {
+    const professionalUser = (
+      await db.query<{ id: string }>(
+        "SELECT id FROM beauty.users WHERE auth_id='admin'",
+      )
+    ).rows[0].id;
+
+    const professional = (
+      await db.query<{ id: string }>(
+        "INSERT INTO beauty.professional_profiles(user_id,slug,business_name,bio,city,category,publication_status) VALUES($1,'admin-comment-studio','Admin Comment Studio','Admin comment moderation test profile.','London','Hair','published') RETURNING id",
+        [professionalUser],
+      )
+    ).rows[0].id;
+
+    const post = (
+      await db.query<{ id: string }>(
+        "INSERT INTO beauty.posts(professional_id,kind,title,body,publication_status) VALUES($1,'design','Comment moderation post','A published post used to verify comment moderation controls.','published') RETURNING id",
+        [professional],
+      )
+    ).rows[0].id;
+
+    commentId = (
+      await db.query<{ id: string }>(
+        "INSERT INTO beauty.post_comments(post_id,user_id,author_name,body) VALUES($1,$2,'customer','Please moderate this comment') RETURNING id",
+        [post, customer],
+      )
+    ).rows[0].id;
+
+    await expect(
+      asUser("customer", true, (sql) =>
+        sql.query(
+          "UPDATE beauty.post_comments SET moderation_status='hidden' WHERE id=$1",
+          [commentId],
+        ),
+      ),
+    ).rejects.toThrow(/permission denied|row-level security/i);
+
+    await asUser("admin", true, (sql) =>
+      sql.query(
+        "SELECT beauty.admin_moderate_comment($1,'hidden','Comment violates community standards')",
+        [commentId],
+      ),
+    );
+
+    expect(
+      (
+        await db.query<{ moderation_status: string }>(
+          "SELECT moderation_status FROM beauty.post_comments WHERE id=$1",
+          [commentId],
+        )
+      ).rows[0].moderation_status,
+    ).toBe("hidden");
+
+    const overview = await asUser("admin", true, (sql) =>
+      sql.query<{ data: { comments: { id: string; moderation_status: string }[] } }>(
+        "SELECT beauty.admin_comment_overview() AS data",
+      ),
+    );
+    expect(
+      overview.rows[0].data.comments.some(
+        (comment) => comment.id === commentId && comment.moderation_status === "hidden",
+      ),
+    ).toBe(true);
+
+    expect(
+      (
+        await db.query<{ action: string }>(
+          "SELECT action FROM beauty.admin_audit_logs WHERE target_id=$1 ORDER BY created_at DESC LIMIT 1",
+          [commentId],
+        )
+      ).rows[0].action,
+    ).toBe("comment.hidden");
+
+    await asUser("admin", true, (sql) =>
+      sql.query(
+        "SELECT beauty.admin_moderate_comment($1,'visible','Comment reviewed and restored')",
+        [commentId],
+      ),
+    );
+
+    expect(
+      (
+        await db.query<{ moderation_status: string }>(
+          "SELECT moderation_status FROM beauty.post_comments WHERE id=$1",
+          [commentId],
+        )
+      ).rows[0].moderation_status,
+    ).toBe("visible");
+  });
+});

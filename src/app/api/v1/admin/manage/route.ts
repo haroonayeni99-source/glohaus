@@ -29,6 +29,14 @@ const schema = z.discriminatedUnion("type", [
     .strict(),
   z
     .object({
+      type: z.literal("comment"),
+      id: z.uuid(),
+      status: z.enum(["visible", "hidden"]),
+      reason: z.string().trim().min(5).max(500),
+    })
+    .strict(),
+  z
+    .object({
       type: z.literal("professionalTrust"),
       id: z.uuid(),
       verification: z.enum(["unverified", "pending", "verified", "rejected"]),
@@ -62,7 +70,9 @@ export async function POST(request: Request) {
               ? "SELECT beauty.admin_resolve_safety_report($1,$2,$3)"
               : input.type === "professionalTrust"
                 ? "SELECT beauty.admin_set_professional_trust($1,$2,$3,$4,$5)"
-                : "SELECT beauty.admin_moderate_post($1,$2,$3)",
+                : input.type === "comment"
+                  ? "SELECT beauty.admin_moderate_comment($1,$2,$3)"
+                  : "SELECT beauty.admin_moderate_post($1,$2,$3)",
         input.type === "professionalTrust"
           ? [input.id, input.verification, input.standing, input.restrictedUntil, input.reason]
           : [input.id, input.status, input.reason],

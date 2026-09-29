@@ -2,7 +2,7 @@ import { AccessError } from "@/modules/accounts/domain";
 export type CheckoutReference = {
   bookingId: string;
   sessionId: string;
-  depositPence: number;
+  customerTotalPence: number;
 };
 export type CheckoutSessionState = {
   id: string;
@@ -22,7 +22,7 @@ export function resumedCheckoutUrl(
   if (
     session.id !== reference.sessionId ||
     session.metadata?.booking_id !== reference.bookingId ||
-    session.amount_total !== reference.depositPence ||
+    session.amount_total !== reference.customerTotalPence ||
     session.currency !== "gbp"
   )
     throw new AccessError("UNAVAILABLE", 503);

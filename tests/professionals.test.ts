@@ -46,6 +46,7 @@ const service = {
   pricePence: 4500,
   depositPence: 1500,
   active: true,
+  category: "Nails",
 };
 beforeAll(async () => {
   const directory = new URL("../db/migrations/", import.meta.url);

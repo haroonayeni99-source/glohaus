@@ -119,7 +119,7 @@ export async function conversationMessagePage(
              FROM beauty.messages
              WHERE conversation_id=$1
              ORDER BY created_at DESC,id DESC
-             LIMIT 100
+             LIMIT 101
            ) recent
            ORDER BY created_at ASC,id ASC`,
           [id],
@@ -127,9 +127,17 @@ export async function conversationMessagePage(
       ).rows;
 
   const visible = rows.slice(0, 100);
+  const first = visible.at(0);
   const last = visible.at(-1);
   return {
     messages: visible,
+    previous:
+      rows.length > 100 && first
+        ? encodeMessageCursor({
+            id: first.id,
+            createdAt: new Date(first.created_at).toISOString(),
+          })
+        : null,
     next: last
       ? encodeMessageCursor({
           id: last.id,
@@ -138,6 +146,40 @@ export async function conversationMessagePage(
       : after
         ? encodeMessageCursor(after)
         : null,
+    hasMore: rows.length > 100,
+  };
+}
+
+
+export async function conversationOlderMessagePage(
+  db: SqlClient,
+  id: string,
+  before: MessageCursor,
+) {
+  const rows = (
+    await db.query<ConversationMessage>(
+      `SELECT id,booking_id,sender_role,body,created_at
+       FROM beauty.messages
+       WHERE conversation_id=$1
+         AND (created_at,id)<($2::timestamptz,$3::uuid)
+       ORDER BY created_at DESC,id DESC
+       LIMIT 101`,
+      [id, before.createdAt, before.id],
+    )
+  ).rows;
+
+  const visibleDescending = rows.slice(0, 100);
+  const visible = [...visibleDescending].reverse();
+  const oldest = visible.at(0);
+
+  return {
+    messages: visible,
+    previous: oldest
+      ? encodeMessageCursor({
+          id: oldest.id,
+          createdAt: new Date(oldest.created_at).toISOString(),
+        })
+      : null,
     hasMore: rows.length > 100,
   };
 }

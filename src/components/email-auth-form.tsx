@@ -18,6 +18,7 @@ export function EmailAuthForm({
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
 
   async function provisionCustomer() {
     const provision = await fetch("/api/v1/accounts/enrol", {
@@ -72,7 +73,8 @@ export function EmailAuthForm({
       return;
     }
     if (mode === "sign-up" && !result.data.session) {
-      setError("Check your email to confirm your account, then return here to sign in.");
+      setConfirmationEmail(email);
+      setError(null);
       setPending(false);
       return;
     }
@@ -125,6 +127,28 @@ export function EmailAuthForm({
     router.push(account.redirectTo || "/account");
   }
 
+  async function resendConfirmation() {
+    if (!confirmationEmail || pending) return;
+    setPending(true);
+    setError(null);
+    const supabase = createClient();
+    const result = await supabase.auth.resend({
+      type: "signup",
+      email: confirmationEmail,
+      options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+      },
+    });
+    if (result.error) {
+      setError(
+        result.error.status === 429
+          ? "Too many confirmation emails have been requested. Please try again later."
+          : "We couldn’t resend the confirmation email. Please try again.",
+      );
+    }
+    setPending(false);
+  }
+
   const professional = audience === "professional";
   const title =
     mode === "sign-in"
@@ -163,8 +187,20 @@ export function EmailAuthForm({
           <Link href="/forgot-password">Forgot password?</Link>
         </p>
       )}
+      {confirmationEmail && mode === "sign-up" && (
+        <div className="form-notice" role="status">
+          <p>
+            Check <strong>{confirmationEmail}</strong> and use the newest GLOHAUS
+            confirmation email. If the first link has expired or does not open
+            correctly, request a fresh one below.
+          </p>
+          <button type="button" onClick={resendConfirmation} disabled={pending}>
+            {pending ? "Sending…" : "Resend verification email"}
+          </button>
+        </div>
+      )}
       {error && <p role="alert">{error}</p>}
-      <button className="button full-width" disabled={pending}>
+      <button className="button full-width" disabled={pending || Boolean(confirmationEmail)}>
         {pending ? "Please wait…" : mode === "sign-up" ? "Create account" : "Sign in"}
       </button>
       <p className="auth-switch">

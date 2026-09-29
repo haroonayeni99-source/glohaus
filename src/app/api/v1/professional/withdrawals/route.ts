@@ -4,6 +4,7 @@ import { apiError, assertSameOrigin, json } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
 import { paymentReady, stripe } from "@/modules/payments/stripe";
 import { withPaymentWorker } from "@/modules/payments/worker";
+import { connectWebhookReady } from "@/modules/payments/webhook-secrets";
 import {
   assertWithdrawalAllowed,
   professionalAccessState,
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
 
   try {
     assertSameOrigin(request);
-    if (!paymentReady() || !process.env.STRIPE_CONNECT_WEBHOOK_SECRET)
+    if (!paymentReady() || !(await connectWebhookReady()))
       throw new AccessError("UNAVAILABLE", 503);
 
     const body = (await request.json()) as {

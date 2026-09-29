@@ -13,7 +13,7 @@ export function PostActions({
   editorial = false,
   editorialBase = "/",
   signedIn = false,
-  returnTo,
+  returnTo = "/discover",
 }: {
   id: string;
   title: string;
@@ -24,7 +24,7 @@ export function PostActions({
   editorial?: boolean;
   editorialBase?: "/" | "/discover";
   signedIn?: boolean;
-  returnTo: string;
+  returnTo?: string;
 }) {
   const [busy, setBusy] = useState(false);
   const [shareUrl, setShareUrl] = useState("");

@@ -60,7 +60,7 @@ export function EmailAuthForm({
             email,
             password,
             options: {
-              emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+              emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
               data: { glohaus_audience: audience },
             },
           })

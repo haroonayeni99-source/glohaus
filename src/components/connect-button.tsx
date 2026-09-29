@@ -44,11 +44,10 @@ export function ConnectButton({
       <p className="lead">
         {status === "pending"
           ? "Your Stripe verification is in progress. Continue the secure Stripe process if more information is requested."
-          : "Verification is optional for getting started. Complete Stripe identity verification to unlock paid deposits, product selling, payouts and other verified features."}
+          : "Set up your GLOHAUS professional account first, then complete verification before your profile can go public or accept marketplace payments. Stripe may ask for phone/contact details, personal or business information, and government ID or a selfie where required."}
       </p>
       <p className="form-help">
-        Until verified, active services are limited to £200 or less with no online
-        deposit, and your account can use up to five starter bookings.
+        Before verification you can build your profile, services, availability and portfolio privately. Your professional listing stays off the public marketplace until verification is complete.
       </p>
       <label>
         <input
@@ -101,7 +100,7 @@ export function ConnectButton({
           ? "Opening Stripe…"
           : status === "pending"
             ? "Continue verification"
-            : "Verify identity with Stripe"}
+            : "Complete professional verification"}
       </button>
       {message && <p role="status" className="form-notice">{message}</p>}
     </div>

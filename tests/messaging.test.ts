@@ -211,12 +211,12 @@ describe.sequential("private messaging foundation", () => {
     const { parseMessageCursor } = await import(
       "@/modules/messages/pagination"
     );
+    const previous = parseMessageCursor(firstPage.previous);
+    expect(previous).toBeDefined();
+    if (!previous) throw new Error("Expected an older-message cursor");
+
     const olderPage = await asUser("message-customer-auth", (sql) =>
-      conversationOlderMessagePage(
-        sql,
-        conversationId,
-        parseMessageCursor(firstPage.previous),
-      ),
+      conversationOlderMessagePage(sql, conversationId, previous),
     );
     expect(olderPage.messages.length).toBeGreaterThan(0);
   });

@@ -68,9 +68,20 @@ export async function checkoutReference(db: SqlClient, id: string) {
   const result = await db.query<{
     bookingId: string;
     sessionId: string;
-    depositPence: number;
+    customerTotalPence: number;
   }>(
-    `SELECT b.id AS "bookingId",p.stripe_session_id AS "sessionId",b.deposit_pence AS "depositPence" FROM beauty.bookings b JOIN beauty.payments p ON p.booking_id=b.id JOIN beauty.users u ON u.id=b.customer_id WHERE b.id=$1 AND u.auth_id=beauty.auth_id() AND u.status='active' AND b.status='payment_pending' AND b.hold_expires_at>now() AND p.captured_pence=0 AND p.stripe_session_id IS NOT NULL`,
+    `SELECT b.id AS "bookingId",p.stripe_session_id AS "sessionId",q.customer_total_pence AS "customerTotalPence"
+     FROM beauty.bookings b
+     JOIN beauty.payments p ON p.booking_id=b.id
+     JOIN beauty.financial_quotes q ON q.booking_id=b.id
+     JOIN beauty.users u ON u.id=b.customer_id
+     WHERE b.id=$1
+       AND u.auth_id=beauty.auth_id()
+       AND u.status='active'
+       AND b.status='payment_pending'
+       AND b.hold_expires_at>now()
+       AND p.captured_pence=0
+       AND p.stripe_session_id IS NOT NULL`,
     [id],
   );
   return result.rows[0];

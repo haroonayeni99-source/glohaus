@@ -10,6 +10,7 @@ import { ProfessionalEditor } from "@/components/professional-editor";
 import { ProfessionalProfileCustomization } from "@/components/professional-profile-customization";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
 import type { ProfileInput, Service } from "@/modules/professionals/domain";
+import { publicCategories } from "@/modules/platform/repository";
 export default async function EditProfile() {
   const result = await pageAccount("professional");
   if (result.error)
@@ -19,7 +20,8 @@ export default async function EditProfile() {
       </div>
     );
   const account = result.account!;
-  const data = await withIdentity(account.authId, async (db) => {
+  const [data, marketplaceCategories] = await Promise.all([
+    withIdentity(account.authId, async (db) => {
     const profile = (
       await db.query<{
         business_description: string;
@@ -91,7 +93,9 @@ export default async function EditProfile() {
       )
     ).rows[0];
     return { profile, services, photo, assets, pricing, presentation, access };
-  });
+    }),
+    publicCategories(),
+  ]);
   if (!data.profile)
     return (
       <div className="standalone-message">
@@ -168,6 +172,7 @@ export default async function EditProfile() {
             }}
             services={data.services}
             assets={data.assets}
+            marketplaceCategories={marketplaceCategories}
           />
           <ConnectButton status={data.access.status} />
         </section>

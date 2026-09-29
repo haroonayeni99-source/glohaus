@@ -262,6 +262,23 @@ export async function POST(request: Request) {
             refund.metadata!.refund_decision_id,
           ]);
         });
+      else if (refund.metadata?.product_order_refund_id)
+        await withPaymentWorker(async (db) => {
+          await db.query(
+            "SELECT beauty.apply_product_order_refund_result($1,$2,$3,$4,$5)",
+            [
+              refund.metadata!.product_order_refund_id,
+              refund.id,
+              refund.amount,
+              refund.status,
+              intentId,
+            ],
+          );
+          await db.query(
+            "SELECT beauty.record_product_order_refund_finance($1)",
+            [refund.metadata!.product_order_refund_id],
+          );
+        });
       else if (intentId)
         await withPaymentWorker((db) =>
           db.query(

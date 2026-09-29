@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Heart, Bookmark, Share2 } from "lucide-react";
+import { PostComments } from "./post-comments";
 import type { Engagement } from "@/modules/engagement/domain";
 export function PostActions({
   id,
@@ -11,6 +12,8 @@ export function PostActions({
   requireAuth,
   editorial = false,
   editorialBase = "/",
+  signedIn = false,
+  returnTo,
 }: {
   id: string;
   title: string;
@@ -20,6 +23,8 @@ export function PostActions({
   requireAuth?: (id: string, value: Engagement) => void;
   editorial?: boolean;
   editorialBase?: "/" | "/discover";
+  signedIn?: boolean;
+  returnTo: string;
 }) {
   const [busy, setBusy] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
@@ -80,6 +85,13 @@ export function PostActions({
         <Bookmark fill={value.saved ? "currentColor" : "none"} />
         <span>Save</span>
       </button>
+      <PostComments
+        postId={id}
+        title={title}
+        signedIn={signedIn}
+        returnTo={returnTo}
+        onNotice={onNotice}
+      />
       <button
         aria-label={`Share ${title}`}
         aria-expanded={Boolean(shareUrl)}

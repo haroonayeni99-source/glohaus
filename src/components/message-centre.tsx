@@ -137,9 +137,11 @@ export function MessageCentre({
     return () => window.clearInterval(timer);
   }, [activeId, markRead, refreshNew]);
 
+  const latestMessageId = messages.at(-1)?.id ?? null;
+
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
-  }, [messages.length, activeId]);
+  }, [latestMessageId, activeId]);
 
   async function loadOlder() {
     if (!activeId || !olderCursor || loadingOlder) return;

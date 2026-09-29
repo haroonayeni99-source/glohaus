@@ -1,6 +1,7 @@
 import { withAccount } from "@/lib/api-account";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
+import { categoryIsActive } from "@/modules/platform/repository";
 import { profileSchema } from "@/modules/professionals/domain";
 import { updateProfile } from "@/modules/professionals/repository";
 export async function PUT(request: Request) {
@@ -8,9 +9,11 @@ export async function PUT(request: Request) {
     assertSameOrigin(request);
     const parsed = profileSchema.safeParse(await smallJson(request, 32768));
     if (!parsed.success) throw new AccessError("INVALID_REQUEST", 400);
-    await withAccount("professional", (db, account) =>
-      updateProfile(db, account.professionalId!, parsed.data),
-    );
+    await withAccount("professional", async (db, account) => {
+      if (!(await categoryIsActive(db, parsed.data.category)))
+        throw new AccessError("INVALID_REQUEST", 400);
+      return updateProfile(db, account.professionalId!, parsed.data);
+    });
     return json({ saved: true });
   } catch (error) {
     if (

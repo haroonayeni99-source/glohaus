@@ -137,11 +137,12 @@ const items: FaqItem[] = [
     question: "Do I need to be verified to use GLOHAUS as a professional?",
     answer: (
       <>
-        You can create a professional account and complete your setup before
-        verification, but your professional listing remains private until
-        verification is complete. Verification is required before your profile
-        can appear publicly or accept marketplace bookings, product sales or
-        withdrawals.
+        Not immediately. Eligible professionals can start on Starter access
+        before completing full verification. Starter access allows a public
+        professional profile, services priced up to £200 with no online deposit,
+        and up to five marketplace bookings. Verification is required to unlock
+        deposits, higher-value services, product selling, withdrawals and wider
+        marketplace features.
       </>
     ),
   },
@@ -150,11 +151,11 @@ const items: FaqItem[] = [
     question: "What can an unverified professional do?",
     answer: (
       <>
-        Before verification, a professional can build their profile, add
-        services and prices, manage availability, upload portfolio content and
-        prepare their business information. These setup tools remain private.
-        Public marketplace visibility and paid marketplace activity unlock only
-        after verification is completed.
+        Before verification, an eligible professional can create and publish a
+        professional profile, add services priced up to £200, manage availability,
+        upload portfolio content, communicate with customers and accept up to
+        five Starter bookings. Online deposits are not available until
+        verification is complete.
       </>
     ),
   },
@@ -163,10 +164,10 @@ const items: FaqItem[] = [
     question: "What restrictions can apply to unverified professionals?",
     answer: (
       <>
-        An unverified professional cannot publish their professional listing to
-        the public marketplace, accept marketplace bookings, publish products for
-        sale or withdraw marketplace earnings. They can continue preparing their
-        business profile and services while completing verification.
+        Unverified professionals are limited to services priced at £200 or less,
+        cannot require an online deposit, and can accept up to five Starter
+        bookings. Product selling, withdrawals, higher-value services and other
+        verified features remain unavailable until verification is completed.
       </>
     ),
   },
@@ -191,10 +192,11 @@ const items: FaqItem[] = [
     question: "What is professional verification?",
     answer: (
       <>
-        Professional verification is the marketplace identity and business-check
-        process used before a professional can go live publicly on GLOHAUS. It is
-        designed to confirm key account information without using an
-        employment-style application or skills interview.
+        Professional verification is GLOHAUS&apos;s marketplace identity and
+        business-check process. It is designed to confirm key account
+        information without using an employment-style application or skills
+        interview. Professionals can begin with limited Starter access before
+        completing verification.
       </>
     ),
   },
@@ -217,10 +219,11 @@ const items: FaqItem[] = [
     question: "What do verified professionals receive?",
     answer: (
       <>
-        Once verification is complete, an eligible professional can publish
-        their profile, appear in marketplace discovery, accept bookings, use
-        eligible payment features, sell approved products and access withdrawals.
-        A verified status may also be displayed on the profile.
+        Once verification is complete, Starter limits are removed for eligible
+        professionals. They can use approved deposits, higher-value services,
+        product selling, withdrawals and broader marketplace features subject to
+        their plan and account standing. A verified status may also be displayed
+        on the profile.
       </>
     ),
   },

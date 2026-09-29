@@ -21,8 +21,12 @@ export async function POST(request: Request) {
   try {
     verified = await resend.webhooks.verify({
       payload,
-      headers: { id, timestamp, signature },
-      webhookSecret,
+      headers: {
+        "svix-id": id,
+        "svix-timestamp": timestamp,
+        "svix-signature": signature,
+      },
+      secret: webhookSecret,
     });
   } catch {
     return new Response("Invalid webhook", { status: 400 });

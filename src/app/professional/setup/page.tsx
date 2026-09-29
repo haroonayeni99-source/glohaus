@@ -85,15 +85,9 @@ export default async function ProfessionalSetup() {
       progress.portfolio > 0,
     ],
     [
-      "Verify your identity",
-      "Optional to get started. Starter access allows a public profile, services up to £200 with no deposit, and up to five bookings. Verification unlocks higher-value services, deposits, product selling, withdrawals and broader marketplace access.",
-      "/professional/profile#verification",
-      progress.verification.verified,
-    ],
-    [
-      "Share your craft",
-      "Publish your page and create posts and tutorials.",
-      "/professional/posts",
+      "Publish your page",
+      "Make your professional page visible so customers can discover your services and portfolio.",
+      "/professional/profile",
       progress.profile.published,
     ],
   ] as const;
@@ -110,7 +104,7 @@ export default async function ProfessionalSetup() {
           ← Your workspace
         </Link>
         <p className="eyebrow">
-          PROFESSIONAL SETUP · {complete} OF {steps.length} READY
+          PROFESSIONAL SETUP · {complete} OF {steps.length} CORE STEPS READY
         </p>
         <h1>
           Build your page, <em>one simple step at a time.</em>
@@ -168,10 +162,11 @@ export default async function ProfessionalSetup() {
             {progressPercent}%
           </progress>
           <p>
-            You can publish and start using GLOHAUS before verification under
-            Starter access. Unverified services are limited to £200 or less,
-            no online deposit, and up to five starter bookings. Verification
-            unlocks the wider marketplace features.
+            This progress tracks the core steps needed to make your professional
+            page usable. Identity verification is optional for Starter access
+            and does not reduce your setup percentage. Unverified services are
+            limited to £200 or less, no online deposit, and up to five starter
+            bookings. Verification unlocks the wider marketplace features.
           </p>
         </section>
         <section

@@ -107,6 +107,9 @@ export type ProductOrder = {
   shippedAt: Date | string | null;
   deliveredAt: Date | string | null;
   createdAt: Date | string;
+  refundAmountPence?: number | null;
+  refundStatus?: "queued" | "pending" | "succeeded" | "failed" | null;
+  refundReason?: string | null;
   items: ProductOrderItem[];
 };
 

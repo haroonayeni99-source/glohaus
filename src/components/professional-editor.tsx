@@ -7,7 +7,6 @@ import Image from "next/image";
 import { DepositSelector } from "./deposit-selector";
 import { maximumRequiredDepositPence } from "@/modules/bookings/deposit-policy";
 import {
-  categories,
   money,
   profileSchema,
   serviceSchema,
@@ -21,6 +20,7 @@ export function ProfessionalEditor({
   section = "all",
   verificationStatus,
   starterBookingsRemaining,
+  marketplaceCategories = [],
 }: {
   initial?: ProfileInput;
   section?: "all" | "profile" | "services";
@@ -28,6 +28,7 @@ export function ProfessionalEditor({
   assets?: { id: string; alt_text: string }[];
   verificationStatus?: "unverified" | "pending" | "verified" | "restricted";
   starterBookingsRemaining?: number | null;
+  marketplaceCategories?: { name: string; slug: string }[];
 }) {
   const labels = useLabels();
   const router = useRouter();
@@ -181,9 +182,9 @@ export function ProfessionalEditor({
               <label>
                 Speciality
                 <select name="category" defaultValue={initial.category}>
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {labels[category]}
+                  {marketplaceCategories.map((category) => (
+                    <option key={category.slug} value={category.name}>
+                      {labels[category.name as keyof typeof labels] ?? category.name}
                     </option>
                   ))}
                 </select>
@@ -464,6 +465,7 @@ export function ProfessionalEditor({
                 depositPence,
                 active: data.get("active") === "true",
                 assetId: data.get("assetId") || null,
+                category: data.get("category"),
               });
               if (!parsed.success) {
                 setNotice(parsed.error.issues[0].message);
@@ -502,6 +504,14 @@ export function ProfessionalEditor({
                 Upload or manage images →
               </Link>
             </p>
+            <label>
+              Category
+              <select name="category" defaultValue={editing?.category || marketplaceCategories[0]?.name || ""} required>
+                {marketplaceCategories.map((category) => (
+                  <option key={category.slug} value={category.name}>{category.name}</option>
+                ))}
+              </select>
+            </label>
             <label>
               Service name
               <input

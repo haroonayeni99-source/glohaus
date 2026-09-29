@@ -126,7 +126,8 @@ export async function conversationMessagePage(
         )
       ).rows;
 
-  const visible = rows.slice(0, 100);
+  const visible =
+    !after && rows.length > 100 ? rows.slice(1) : rows.slice(0, 100);
   const first = visible.at(0);
   const last = visible.at(-1);
   return {

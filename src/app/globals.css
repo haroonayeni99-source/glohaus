@@ -7570,3 +7570,123 @@ svg {
   .faq-item summary{padding:1rem}
   .faq-answer{padding:0 1rem 1rem}
 }
+
+
+/* Web-only mobile browser polish promoted from development. */
+.message-load-older {
+  display: flex;
+  justify-content: center;
+  padding: 2px 0 10px;
+}
+.message-load-older button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid #e1d2d8;
+  border-radius: 999px;
+  background: #fff;
+  color: #6f3a50;
+  font-size: .66rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.message-load-older button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+.pro-message-page .message-load-older button {
+  border-color: rgb(255 255 255 / 12%);
+  background: #272225;
+  color: #f6dce6;
+}
+
+.product-order-refund {
+  display: grid;
+  gap: 4px;
+  margin: 12px 18px 0;
+  padding: 12px 13px;
+  border: 1px solid #ead9df;
+  border-radius: 12px;
+  background: #fff6f8;
+  color: #6b4d58;
+}
+.product-order-refund strong {
+  color: #873455;
+  font-size: .7rem;
+}
+.product-order-refund span,
+.product-order-refund small {
+  font-size: .62rem;
+  line-height: 1.5;
+}
+.product-order-refund small {
+  color: #806c74;
+}
+
+@media (max-width: 760px) {
+  .message-thread-body {
+    overscroll-behavior: contain;
+    scroll-padding-bottom: 84px;
+  }
+  .message-composer textarea {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  .message-composer > button[type="submit"] {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+  }
+  .message-load-older {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 4px 0 9px;
+    background: linear-gradient(#fdfafb 70%, transparent);
+  }
+  .pro-message-page .message-load-older {
+    background: linear-gradient(#171516 70%, transparent);
+  }
+
+  .product-order-card > header {
+    padding: 14px;
+  }
+  .product-order-items > div {
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    padding: 11px 14px;
+  }
+  .product-order-thumb {
+    width: 48px;
+    height: 48px;
+  }
+  .product-order-address {
+    padding: 13px 14px;
+  }
+  .product-order-tracking,
+  .product-order-refund {
+    margin-inline: 14px;
+  }
+  .product-order-actions > button,
+  .shipping-fields button {
+    min-height: 44px;
+  }
+  .shipping-fields input {
+    min-height: 44px;
+    width: 100%;
+  }
+  .product-order-status {
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 420px) {
+  .product-order-card > header {
+    align-items: flex-start;
+  }
+  .product-order-items > div {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+  .product-order-items > div > strong:last-child {
+    grid-column: 2;
+    justify-self: start;
+  }
+}

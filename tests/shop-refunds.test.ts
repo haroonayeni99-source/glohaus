@@ -8,6 +8,7 @@ import {
   attachShopCheckoutSession,
   prepareShopCheckout,
   saveProduct,
+  customerProductOrders,
 } from "@/modules/shop/repository";
 
 const db = new PGlite();
@@ -209,6 +210,19 @@ describe.sequential("unshipped product refunds", () => {
 
     expect(wallet.pendingPence).toBe(0);
     expect(wallet.outstandingPence).toBe(500);
+  });
+
+  it("shows the confirmed refund in the customer order history", async () => {
+    const orders = await asUser("refund-customer", (sql) =>
+      customerProductOrders(sql, customerId),
+    );
+    const order = orders.find((item) => item.id === orderId);
+    expect(order).toMatchObject({
+      status: "refunded",
+      refundAmountPence: 5000,
+      refundStatus: "succeeded",
+      refundReason: "Unable to fulfil this product order",
+    });
   });
 
   it("is idempotent when Stripe repeats the successful refund event", async () => {

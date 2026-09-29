@@ -234,6 +234,17 @@ describe.sequential(
             request({ ...profile, publicationStatus: "published" }),
           )
         ).status,
+      ).toBe(409);
+      await db.query(
+        "UPDATE beauty.professional_trust_status SET verification_status='verified',standing_status='good' WHERE professional_id=$1",
+        [owner],
+      );
+      expect(
+        (
+          await saveProfile(
+            request({ ...profile, publicationStatus: "published" }),
+          )
+        ).status,
       ).toBe(200);
       const data = await asUser("", (sql) => publicProfile(sql, profile.slug));
       expect(data?.professional.business_name).toBe("Maya Studio");
@@ -303,6 +314,10 @@ describe.sequential(
     });
     it("reports duplicate profile URLs without changing the existing profile", async () => {
       current = identities.other;
+      await db.query(
+        "UPDATE beauty.professional_trust_status SET verification_status='verified',standing_status='good' WHERE professional_id=$1",
+        [other],
+      );
       expect(
         (
           await saveProfile(

@@ -172,7 +172,13 @@ export function BookingPicker({
               ? "This professional has reached an unverified account limit. They need to complete identity verification before taking this booking."
               : result.error?.code === "PROFESSIONAL_RESTRICTED"
                 ? "This professional is temporarily unable to accept new bookings."
-                : "Booking is unavailable right now. Please try again.",
+                : result.error?.code === "TOO_MANY_ATTEMPTS"
+                  ? "You’ve tried several bookings recently. Please try again later."
+                  : result.error?.code === "PAYMENTS_NOT_READY"
+                    ? "This professional is not ready to accept online booking payments yet."
+                    : result.error?.code === "INVALID_APPOINTMENT"
+                      ? "That appointment is no longer available. Please choose another date or time."
+                      : "Booking is unavailable right now. Please try again.",
         );
       }
       window.location.href = result.url;
@@ -325,7 +331,7 @@ export function BookingPicker({
                   ? "This secures the appointment. The remaining " +
                     money(service.price_pence - service.deposit_pence) +
                     " is due for the service."
-                  : "You can confirm this appointment without an online payment."}
+                  : `No service deposit is required. The mandatory ${money(bookingFeePence)} GLOHAUS booking fee is still paid online to secure the appointment.`}
               </span>
               <small>
                 Professional-required deposits can never exceed 40% of the

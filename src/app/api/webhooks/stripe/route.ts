@@ -1,6 +1,7 @@
 import type Stripe from "stripe";
 import { stripe } from "@/modules/payments/stripe";
 import { withPaymentWorker } from "@/modules/payments/worker";
+import { paymentWebhookSecrets } from "@/modules/payments/webhook-secrets";
 
 function paymentIntentId(session: Stripe.Checkout.Session) {
   return typeof session.payment_intent === "string"
@@ -187,10 +188,7 @@ async function applyPayoutEvent(
 
 export async function POST(request: Request) {
   const signature = request.headers.get("stripe-signature");
-  const secrets = [
-    process.env.STRIPE_WEBHOOK_SECRET,
-    process.env.STRIPE_CONNECT_WEBHOOK_SECRET,
-  ].filter((value): value is string => Boolean(value));
+  const secrets = await paymentWebhookSecrets();
   if (!signature || !secrets.length)
     return new Response("Unavailable", { status: 503 });
 

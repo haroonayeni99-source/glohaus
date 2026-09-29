@@ -22,6 +22,7 @@ export function NotificationInbox({
 }) {
   const [notifications, setNotifications] = useState(initialNotifications);
   const [updating, setUpdating] = useState<string | null>(null);
+  const unreadCount = notifications.filter((item) => !item.read_at).length;
   async function markRead(id: string) {
     setUpdating(id);
     try {
@@ -40,6 +41,25 @@ export function NotificationInbox({
       setUpdating(null);
     }
   }
+  async function markAllRead() {
+    if (!unreadCount || updating) return;
+    setUpdating("all");
+    try {
+      const response = await fetch("/api/v1/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ all: true }),
+      });
+      if (!response.ok) return;
+      const now = new Date();
+      setNotifications((items) =>
+        items.map((item) => (item.read_at ? item : { ...item, read_at: now })),
+      );
+    } finally {
+      setUpdating(null);
+    }
+  }
+
   if (!notifications.length)
     return (
       <section className={professional ? "pro-empty-state pro-large-empty" : "catalog-empty"}>
@@ -53,6 +73,19 @@ export function NotificationInbox({
     );
   return (
     <section className={professional ? "pro-notification-list" : "notification-list"} aria-label="Notifications">
+      {unreadCount > 0 && (
+        <div className="notification-toolbar">
+          <span>{unreadCount} unread</span>
+          <button
+            type="button"
+            disabled={updating === "all"}
+            onClick={() => void markAllRead()}
+          >
+            <CheckCheck size={16} aria-hidden />
+            {updating === "all" ? "Updating…" : "Mark all as read"}
+          </button>
+        </div>
+      )}
       {notifications.map((notification) => (
         <article key={notification.id} data-read={Boolean(notification.read_at)}>
           <Link href={notification.href} onClick={() => void markRead(notification.id)}>

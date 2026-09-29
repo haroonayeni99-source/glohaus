@@ -12,7 +12,6 @@ export function stripe() {
 export function paymentReady() {
   return Boolean(
     process.env.STRIPE_SECRET_KEY &&
-    process.env.STRIPE_WEBHOOK_SECRET &&
     process.env.PAYMENT_DATABASE_URL &&
     process.env.NEXT_PUBLIC_APP_URL,
   );

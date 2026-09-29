@@ -6,12 +6,12 @@ import {
 const reference = {
   bookingId: "booking-1",
   sessionId: "cs_1",
-  depositPence: 1500,
+  customerTotalPence: 1600,
 };
 const session: CheckoutSessionState = {
   id: "cs_1",
   metadata: { booking_id: "booking-1" },
-  amount_total: 1500,
+  amount_total: 1600,
   currency: "gbp",
   status: "open",
   payment_status: "unpaid",
@@ -25,7 +25,7 @@ describe("resuming the original hosted deposit checkout", () => {
     for (const change of [
       { id: "cs_other" },
       { metadata: { booking_id: "someone-else" } },
-      { amount_total: 1600 },
+      { amount_total: 1700 },
       { currency: "usd" },
     ])
       expect(() =>

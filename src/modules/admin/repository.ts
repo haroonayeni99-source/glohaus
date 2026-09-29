@@ -377,3 +377,22 @@ export async function ownerEmailDeliveryOverview(): Promise<OwnerEmailDeliveryOv
     return row.data;
   });
 }
+
+
+export type AdminCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  active: boolean;
+  sort_order: number;
+};
+
+export async function adminCategories(): Promise<AdminCategory[]> {
+  return withAdmin(async (db) =>
+    (
+      await db.query<AdminCategory>(
+        "SELECT id,name,slug,active,sort_order FROM beauty.platform_categories ORDER BY sort_order,name",
+      )
+    ).rows,
+  );
+}

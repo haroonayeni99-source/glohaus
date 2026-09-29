@@ -1,6 +1,7 @@
 import { withAccount } from "@/lib/api-account";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
+import { categoryIsActive } from "@/modules/platform/repository";
 import { serviceSchema } from "@/modules/professionals/domain";
 import { saveService } from "@/modules/professionals/repository";
 import { assertStarterServiceAllowed, professionalAccessState } from "@/modules/professionals/verification";
@@ -10,6 +11,8 @@ export async function POST(request: Request) {
     const parsed = serviceSchema.safeParse(await smallJson(request, 4096));
     if (!parsed.success) throw new AccessError("INVALID_REQUEST", 400);
     const service = await withAccount("professional", async (db, account) => {
+      if (!(await categoryIsActive(db, parsed.data.category)))
+        throw new AccessError("INVALID_REQUEST", 400);
       const access = await professionalAccessState(db, account.professionalId!);
       assertStarterServiceAllowed(access, parsed.data);
       return saveService(db, account.professionalId!, parsed.data);

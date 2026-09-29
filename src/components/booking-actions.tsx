@@ -8,11 +8,13 @@ export function BookingActions({
   status,
   professional,
   ended,
+  cancellable,
 }: {
   id: string;
   status: string;
   professional: boolean;
   ended: boolean;
+  cancellable: boolean;
 }) {
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
@@ -46,7 +48,8 @@ export function BookingActions({
           Message about this booking
         </Link>
       </div>
-      {["confirmed", "payment_pending"].includes(status) && (
+      {["confirmed", "payment_pending"].includes(status) &&
+        (cancellable || (professional && status === "confirmed" && ended)) && (
         <div className="editor-form">
           <h2>Manage appointment</h2>
           {!professional && status === "payment_pending" && (
@@ -86,25 +89,29 @@ export function BookingActions({
               Continue secure deposit payment
             </button>
           )}
-          <label>
-            Reason for cancellation
-            <textarea
-              value={reason}
-              onChange={(event) => setReason(event.target.value)}
-              maxLength={500}
-            />
-            <small>
-              Share a brief reason. Please do not include medical details or
-              sensitive documents.
-            </small>
-          </label>
-          <button
-            className="button small"
-            disabled={busy || reason.trim().length < 5}
-            onClick={() => change("cancelled")}
-          >
-            Cancel appointment
-          </button>
+          {cancellable && (
+            <>
+              <label>
+                Reason for cancellation
+                <textarea
+                  value={reason}
+                  onChange={(event) => setReason(event.target.value)}
+                  maxLength={500}
+                />
+                <small>
+                  Share a brief reason. Please do not include medical details or
+                  sensitive documents.
+                </small>
+              </label>
+              <button
+                className="button small"
+                disabled={busy || reason.trim().length < 5}
+                onClick={() => change("cancelled")}
+              >
+                Cancel appointment
+              </button>
+            </>
+          )}
           {professional && status === "confirmed" && ended && (
             <div className="editor-actions">
               <button disabled={busy} onClick={() => change("completed")}>

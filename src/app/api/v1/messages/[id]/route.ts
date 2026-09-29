@@ -7,6 +7,7 @@ import { findAccount } from "@/modules/accounts/repository";
 import {
   conversationDetails,
   conversationMessagePage,
+  conversationOlderMessagePage,
 } from "@/modules/messages/repository";
 import { parseMessageCursor } from "@/modules/messages/pagination";
 
@@ -31,12 +32,16 @@ export async function GET(
     if (!z.uuid().safeParse(id).success)
       throw new AccessError("INVALID_REQUEST", 400);
 
+    const params = new URL(request.url).searchParams;
     let after;
+    let before;
     try {
-      after = parseMessageCursor(new URL(request.url).searchParams.get("after"));
+      after = parseMessageCursor(params.get("after"));
+      before = parseMessageCursor(params.get("before"));
     } catch {
       throw new AccessError("INVALID_REQUEST", 400);
     }
+    if (after && before) throw new AccessError("INVALID_REQUEST", 400);
 
     const identity = await getIdentity();
     const data = await withIdentity(identity.authId, async (db) => {
@@ -53,6 +58,12 @@ export async function GET(
         account.professionalId,
       );
       if (!conversation) throw new AccessError("FORBIDDEN", 403);
+
+      if (before)
+        return {
+          conversation,
+          ...(await conversationOlderMessagePage(db, id, before)),
+        };
 
       return {
         conversation,

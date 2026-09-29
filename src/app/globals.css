@@ -7690,3 +7690,45 @@ svg {
     justify-self: start;
   }
 }
+
+
+.notification-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid #eadde2;
+  border-radius: 12px;
+  background: #fffafc;
+  color: #745b65;
+  font-size: .68rem;
+}
+.notification-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid #e2cfd7;
+  border-radius: 999px;
+  background: #fff;
+  color: #8c3158;
+  font-weight: 800;
+  cursor: pointer;
+}
+.notification-toolbar button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+@media (max-width: 600px) {
+  .notification-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .notification-toolbar button {
+    justify-content: center;
+    min-height: 44px;
+  }
+}

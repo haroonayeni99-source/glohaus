@@ -64,15 +64,15 @@ export async function saveService(
     input.depositPence,
     input.active,
     input.assetId ?? null,
-    input.category,
+    input.category ?? null,
   ];
   const result = id
     ? await db.query(
-        `UPDATE beauty.services SET name=$2,description=$3,duration_minutes=$4,price_pence=$5,deposit_pence=$6,active=$7,asset_id=$8,category=$9 WHERE professional_id=$1 AND id=$10 RETURNING id`,
+        `UPDATE beauty.services SET name=$2,description=$3,duration_minutes=$4,price_pence=$5,deposit_pence=$6,active=$7,asset_id=$8,category=COALESCE($9,category) WHERE professional_id=$1 AND id=$10 RETURNING id`,
         [...values, id],
       )
     : await db.query(
-        `INSERT INTO beauty.services (professional_id,name,description,duration_minutes,price_pence,deposit_pence,active,asset_id,category) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+        `INSERT INTO beauty.services (professional_id,name,description,duration_minutes,price_pence,deposit_pence,active,asset_id,category) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,COALESCE($9,(SELECT category FROM beauty.professional_profiles WHERE id=$1))) RETURNING id`,
         values,
       );
   if (!result.rows.length) throw new AccessError("FORBIDDEN", 403);

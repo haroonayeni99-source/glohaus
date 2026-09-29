@@ -202,14 +202,14 @@ describe.sequential("unshipped product refunds", () => {
         sql.query<{
           data: {
             pendingPence: number;
-            outstandingPence: number;
+            outstandingObligationPence: number;
           };
         }>("SELECT beauty.my_wallet_overview() AS data"),
       )
     ).rows[0].data;
 
     expect(wallet.pendingPence).toBe(0);
-    expect(wallet.outstandingPence).toBe(500);
+    expect(wallet.outstandingObligationPence).toBe(500);
   });
 
   it("shows the confirmed refund in the customer order history", async () => {

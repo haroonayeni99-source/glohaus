@@ -80,7 +80,7 @@ export default async function MessagesPage({
 
     const page = activeConversation
       ? await conversationMessagePage(db, activeConversation.id)
-      : { messages: [], next: null, hasMore: false };
+      : { messages: [], previous: null, next: null, hasMore: false };
 
     let bookingId: string | null = null;
     let professionalId: string | null = null;
@@ -128,6 +128,8 @@ export default async function MessagesPage({
       activeConversation={data.activeConversation}
       initialMessages={data.page.messages}
       initialCursor={data.page.next}
+      initialPrevious={data.page.previous}
+      initialHasMore={data.page.hasMore}
       bookingId={data.bookingId}
       professionalId={data.professionalId}
       draftRecipientName={data.draftRecipientName}

@@ -169,6 +169,7 @@ export default async function Booking({
           status={b.status}
           professional={data.professional}
           ended={b.has_ended}
+          cancellable={new Date(b.starts_at).getTime() > Date.now()}
         />
     </>
   );

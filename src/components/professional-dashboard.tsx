@@ -88,7 +88,7 @@ export function ProfessionalDashboard({
                       ? "Verification in progress."
                       : data.access.status === "restricted"
                         ? "Marketplace access restricted."
-                        : "Build your profile, then verify before going public."}
+                        : "Start free. Verify when you’re ready for more."}
                 </h2>
                 <p>
                   {data.access.status === "verified"
@@ -97,7 +97,7 @@ export function ProfessionalDashboard({
                       ? "Stripe is reviewing your information. Continue verification if more details are requested."
                       : data.access.status === "restricted"
                         ? "Paid marketplace activity is limited while this account is reviewed."
-                        : "You can build your profile, services, availability and portfolio before verification. Your professional listing remains private until verification is complete; public bookings, product selling and withdrawals then unlock subject to account standing."}
+                        : `You can publish your profile and accept Starter bookings before verification. You have ${data.access.starterBookingsRemaining ?? 0} of 5 starter bookings remaining. Unverified services are limited to £200 with no online deposit; verification unlocks deposits, higher-value services, product selling and withdrawals.`}
                 </p>
               </div>
             </div>

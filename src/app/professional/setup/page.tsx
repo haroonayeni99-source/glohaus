@@ -86,7 +86,7 @@ export default async function ProfessionalSetup() {
     ],
     [
       "Verify your identity",
-      "Complete verification before your professional page can appear publicly or accept marketplace bookings. Stripe may request phone/contact details, personal or business information, and government ID or a selfie where required.",
+      "Optional to get started. Starter access allows a public profile, services up to £200 with no deposit, and up to five bookings. Verification unlocks higher-value services, deposits, product selling, withdrawals and broader marketplace access.",
       "/professional/profile#verification",
       progress.verification.verified,
     ],
@@ -147,7 +147,7 @@ export default async function ProfessionalSetup() {
                 ? "Your verification is in progress. Your profile can stay in draft while Stripe completes any required checks."
                 : progress.verification.status === "restricted"
                   ? "New paid marketplace activity is restricted while this account is reviewed."
-                  : "You can build your professional page, services, availability and portfolio before verification. Verification is required before your professional listing becomes public or accepts marketplace bookings, product sales or withdrawals."}
+                  : `You can start on Starter access without verification. You have ${progress.verification.starterBookingsRemaining ?? 0} of 5 starter bookings remaining. Unverified services are limited to £200 or less with no online deposit. Verification unlocks deposits, higher-value services, product selling and withdrawals.`}
           </p>
           {progress.verification.status !== "verified" &&
             progress.verification.status !== "restricted" && (
@@ -168,10 +168,10 @@ export default async function ProfessionalSetup() {
             {progressPercent}%
           </progress>
           <p>
-            You can complete your business setup before verification, but your
-            professional listing remains private until verification is complete.
-            Verification unlocks public marketplace visibility, bookings, product
-            selling and withdrawals.
+            You can publish and start using GLOHAUS before verification under
+            Starter access. Unverified services are limited to £200 or less,
+            no online deposit, and up to five starter bookings. Verification
+            unlocks the wider marketplace features.
           </p>
         </section>
         <section

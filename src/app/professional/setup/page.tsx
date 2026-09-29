@@ -86,7 +86,7 @@ export default async function ProfessionalSetup() {
     ],
     [
       "Verify your identity",
-      "Optional to get started. Verification unlocks paid deposits, product selling, payouts and higher-trust features.",
+      "Complete verification before your professional page can appear publicly or accept marketplace bookings. Stripe may request phone/contact details, personal or business information, and government ID or a selfie where required.",
       "/professional/profile#verification",
       progress.verification.verified,
     ],
@@ -144,10 +144,10 @@ export default async function ProfessionalSetup() {
             {progress.verification.status === "verified"
               ? "Your verified marketplace features are unlocked, subject to your plan and account standing."
               : progress.verification.status === "pending"
-                ? "Your identity check is in progress. Starter limits remain until verification is complete."
+                ? "Your verification is in progress. Your profile can stay in draft while Stripe completes any required checks."
                 : progress.verification.status === "restricted"
                   ? "New paid marketplace activity is restricted while this account is reviewed."
-                  : `You can start on the free Starter plan without verification. You have ${progress.verification.starterBookingsRemaining ?? 0} of 5 Starter bookings remaining. Verification unlocks deposits, higher-value services, product selling and withdrawals.`}
+                  : "You can build your professional page, services, availability and portfolio before verification. Verification is required before your professional listing becomes public or accepts marketplace bookings, product sales or withdrawals."}
           </p>
           {progress.verification.status !== "verified" &&
             progress.verification.status !== "restricted" && (
@@ -168,9 +168,10 @@ export default async function ProfessionalSetup() {
             {progressPercent}%
           </progress>
           <p>
-            You can publish and start using GLOHAUS before identity verification.
-            Verification unlocks paid deposits, product selling, payouts and other
-            higher-trust marketplace features.
+            You can complete your business setup before verification, but your
+            professional listing remains private until verification is complete.
+            Verification unlocks public marketplace visibility, bookings, product
+            selling and withdrawals.
           </p>
         </section>
         <section

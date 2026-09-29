@@ -54,11 +54,12 @@ export async function addPostComment(
 
 export async function deletePostComment(
   db: SqlClient,
+  postId: string,
   commentId: string,
 ) {
   const result = await db.query(
-    "DELETE FROM beauty.post_comments WHERE id=$1 RETURNING id",
-    [commentId],
+    "DELETE FROM beauty.post_comments WHERE id=$1 AND post_id=$2 RETURNING id",
+    [commentId, postId],
   );
   if (!result.rows.length) throw new AccessError("FORBIDDEN", 403);
 }

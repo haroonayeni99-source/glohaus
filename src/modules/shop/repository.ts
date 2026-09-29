@@ -154,6 +154,9 @@ async function productOrders(
     shipped_at: Date | null;
     delivered_at: Date | null;
     created_at: Date;
+    refund_amount_pence: number | null;
+    refund_status: ProductOrder["refundStatus"];
+    refund_reason: string | null;
     items: ProductOrder["items"];
   }>(
     `SELECT
@@ -162,6 +165,9 @@ async function productOrders(
       o.recipient_name,o.address_line1,o.address_line2,o.city,o.postcode,
       o.country_code,o.tracking_carrier,o.tracking_number,o.shipped_at,
       o.delivered_at,o.created_at,
+      refund.amount_pence AS refund_amount_pence,
+      refund.status AS refund_status,
+      refund.reason AS refund_reason,
       coalesce(jsonb_agg(
         jsonb_build_object(
           'id',i.id,
@@ -175,6 +181,7 @@ async function productOrders(
         ORDER BY i.id
       ) FILTER (WHERE i.id IS NOT NULL),'[]'::jsonb) AS items
      FROM beauty.product_orders o
+     LEFT JOIN beauty.product_order_refund_decisions refund ON refund.order_id=o.id
      LEFT JOIN beauty.product_order_items i ON i.order_id=o.id
      WHERE o.${column}=$1
      GROUP BY o.id
@@ -202,6 +209,9 @@ async function productOrders(
     shippedAt: row.shipped_at,
     deliveredAt: row.delivered_at,
     createdAt: row.created_at,
+    refundAmountPence: row.refund_amount_pence,
+    refundStatus: row.refund_status,
+    refundReason: row.refund_reason,
     items: row.items,
   }));
 }

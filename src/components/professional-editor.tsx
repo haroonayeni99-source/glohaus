@@ -56,7 +56,7 @@ export function ProfessionalEditor({
           code === "SLUG_UNAVAILABLE"
             ? "That profile address is already taken. Choose another."
             : code === "VERIFICATION_REQUIRED"
-              ? "Verification is required for this change. Unverified professionals can use active services up to £200 with no deposit and up to five starter bookings."
+              ? "Complete professional verification before publishing your profile or using paid marketplace features."
               : code === "PROFESSIONAL_RESTRICTED"
                 ? "This professional account is currently restricted. Paid marketplace changes are unavailable while the restriction is reviewed."
                 : "Could not save. Check your details and try again.",
@@ -85,7 +85,7 @@ export function ProfessionalEditor({
               ? "Your identity is verified. Your active services appear on your published profile and can use verified marketplace features."
               : verificationStatus === "restricted"
                 ? "This account is restricted. You can review existing services, but new paid marketplace activity may be blocked."
-                : `Starter access: active services can be up to £200 with no deposit. ${starterBookingsRemaining ?? 0} of 5 starter bookings remain before verification is required.`
+                : "You can prepare services before verification. They become publicly bookable only after your professional verification is complete."
             : "Your profile is private until you choose Published. Only your business details appear publicly.")}
       </p>
       {section !== "services" && initial && (

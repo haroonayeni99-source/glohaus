@@ -36,6 +36,16 @@ export type AdminOverview = {
     moderation_status: string;
     business_name: string;
   }[];
+  comments?: {
+    id: string;
+    post_id: string;
+    user_id: string;
+    author_name: string;
+    body: string;
+    moderation_status: string;
+    created_at: string;
+    post_title: string;
+  }[];
   appeals?: {
     id: string;
     service_name: string;
@@ -213,13 +223,24 @@ export async function adminOverview() {
       shopOrders = null;
     }
 
+    let comments: NonNullable<AdminOverview["comments"]> = [];
+    try {
+      comments = (
+        await db.query<{ overview: { comments: NonNullable<AdminOverview["comments"]> } }>(
+          "SELECT beauty.admin_comment_overview() AS overview",
+        )
+      ).rows[0]?.overview.comments ?? [];
+    } catch {
+      comments = [];
+    }
+
     let professionalTrust: NonNullable<AdminOverview["professionalTrust"]> = [];
     try {
       professionalTrust = (await db.query<NonNullable<AdminOverview["professionalTrust"]>[number]>(
         "SELECT p.id,p.user_id,p.business_name,coalesce(t.verification_status,'unverified') verification_status,coalesce(t.standing_status,'good') standing_status,t.live_restricted_until::text FROM beauty.professional_profiles p LEFT JOIN beauty.professional_trust_status t ON t.professional_id=p.id ORDER BY p.business_name,p.id LIMIT 100"
       )).rows;
     } catch { professionalTrust = []; }
-    return { ...base, ...extra, safety, shopOrders, professionalTrust };
+    return { ...base, ...extra, safety, shopOrders, comments, professionalTrust };
   });
 }
 

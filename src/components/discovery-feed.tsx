@@ -537,6 +537,8 @@ export function DiscoveryFeed({
                         accountMode ? undefined : requireAuthForEngagement
                       }
                       editorialBase={routeBase}
+                      signedIn={viewerSignedIn}
+                      returnTo={routeBase + "#post-" + post.id}
                     />
                   </article>
                 ))}
@@ -607,6 +609,8 @@ export function DiscoveryFeed({
                         accountMode ? undefined : requireAuthForEngagement
                       }
                       editorialBase={routeBase}
+                      signedIn={viewerSignedIn}
+                      returnTo={routeBase + "#post-" + post.id}
                     />
 
                     <span className="feed-page">

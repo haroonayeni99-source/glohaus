@@ -1,4 +1,5 @@
 import { AdminLabelEditor } from "@/components/admin-label-editor";
+import { AdminCategoryManager } from "@/components/admin-category-manager";
 import { publicLabels } from "@/modules/platform/repository";
 import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
@@ -8,7 +9,7 @@ import { AdminFinancePanel } from "@/components/admin-finance-panel";
 import { AdminNavigation } from "@/components/admin-navigation";
 import { ShopFeeControl } from "@/components/shop-fee-control";
 import { OwnerControls } from "@/components/owner-controls";
-import { adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, paymentLaunchReadiness } from "@/modules/admin/repository";
+import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, paymentLaunchReadiness } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
@@ -20,9 +21,10 @@ export default async function Page() {
       </AuthFrame>
     );
   const isOwner = result.account.roles.includes("owner");
-  const [data, labels, owner, productFee, finance, paymentReadiness, emailDelivery] = await Promise.all([
+  const [data, labels, categories, owner, productFee, finance, paymentReadiness, emailDelivery] = await Promise.all([
     adminOverview(),
     publicLabels(),
+    adminCategories().catch(() => []),
     isOwner ? ownerControls().catch(() => null) : Promise.resolve(null),
     isOwner ? ownerProductFeeRule().catch(() => null) : Promise.resolve(null),
     adminFinanceOverview().catch(() => null),
@@ -56,6 +58,12 @@ export default async function Page() {
             <h2>Platform labels</h2>
             <p className="lead">Set the professional title and the category language that customers see across GLOHAUS.</p>
             <AdminLabelEditor initial={labels} />
+          </section>
+          <section id="categories" className="admin-workspace-section">
+            <p className="eyebrow">DISCOVERY & SERVICES</p>
+            <h2>Categories</h2>
+            <p className="lead">Add new beauty categories, rename them, control their order, or hide them without deleting existing data.</p>
+            <AdminCategoryManager initial={categories} />
           </section>
           {owner && (
             <section id="shop-fees" className="admin-workspace-section">

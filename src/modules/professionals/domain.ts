@@ -103,7 +103,7 @@ export const serviceSchema = z
       }),
     active: z.boolean(),
     assetId: z.uuid().nullable().optional(),
-    category: z.string().trim().min(2).max(60),
+    category: z.string().trim().min(2).max(60).optional(),
   })
   .strict()
   .superRefine((value, context) => {
@@ -151,7 +151,7 @@ export type Service = {
   price_pence: number;
   deposit_pence: number;
   active?: boolean;
-  category: string;
+  category?: string;
 };
 export const money = (pence: number) =>
   new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(

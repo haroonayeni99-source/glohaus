@@ -119,7 +119,7 @@ export async function conversationMessagePage(
              FROM beauty.messages
              WHERE conversation_id=$1
              ORDER BY created_at DESC,id DESC
-             LIMIT 100
+             LIMIT 101
            ) recent
            ORDER BY created_at ASC,id ASC`,
           [id],

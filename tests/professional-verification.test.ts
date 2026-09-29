@@ -3,7 +3,6 @@ import {
   assertBookingAllowed,
   assertProductPublishingAllowed,
   assertStarterServiceAllowed,
-  assertProfilePublishingAllowed,
   assertWithdrawalAllowed,
   type ProfessionalAccessState,
 } from "@/modules/professionals/verification";
@@ -25,26 +24,32 @@ const verified: ProfessionalAccessState = {
 };
 
 describe("professional verification limits", () => {
-  it("allows professionals to prepare services before verification", () => {
+  it("allows a starter service up to £200 with no deposit", () => {
     expect(() =>
       assertStarterServiceAllowed(unverified, {
         active: true,
-        pricePence: 50000,
-        depositPence: 10000,
+        pricePence: 20000,
+        depositPence: 0,
       }),
     ).not.toThrow();
   });
 
-  it("requires verification before publishing the professional profile", () => {
+  it("requires verification for deposits or higher-value starter services", () => {
     expect(() =>
-      assertProfilePublishingAllowed(unverified, "published"),
+      assertStarterServiceAllowed(unverified, {
+        active: true,
+        pricePence: 20001,
+        depositPence: 0,
+      }),
     ).toThrow("VERIFICATION_REQUIRED");
+
     expect(() =>
-      assertProfilePublishingAllowed(unverified, "draft"),
-    ).not.toThrow();
-    expect(() =>
-      assertProfilePublishingAllowed(verified, "published"),
-    ).not.toThrow();
+      assertStarterServiceAllowed(unverified, {
+        active: true,
+        pricePence: 10000,
+        depositPence: 1000,
+      }),
+    ).toThrow("VERIFICATION_REQUIRED");
   });
 
   it("requires verification to publish products", () => {
@@ -56,13 +61,20 @@ describe("professional verification limits", () => {
     ).not.toThrow();
   });
 
-  it("requires verification for marketplace bookings and unlocks verified accounts", () => {
+  it("stops starter bookings after the allowance and unlocks verified accounts", () => {
+    expect(() =>
+      assertBookingAllowed(
+        { ...unverified, starterBookingsRemaining: 0 },
+        { pricePence: 10000, depositPence: 0 },
+      ),
+    ).toThrow("VERIFICATION_REQUIRED");
+
     expect(() =>
       assertBookingAllowed(
         unverified,
         { pricePence: 10000, depositPence: 0 },
       ),
-    ).toThrow("VERIFICATION_REQUIRED");
+    ).not.toThrow();
 
     expect(() =>
       assertBookingAllowed(verified, {

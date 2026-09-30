@@ -234,15 +234,10 @@ export async function adminOverview() {
     let bookingDisputes: NonNullable<AdminOverview["bookingDisputes"]> = [];
     try {
       bookingDisputes = (
-        await db.query<NonNullable<AdminOverview["bookingDisputes"]>[number]>(
-          `SELECT id,booking_id,status,reason,amount_pence,
-                  reserved_pending_pence,reserved_available_pence,
-                  reserve_shortfall_pence,evidence_due_at::text,updated_at::text
-           FROM beauty.booking_disputes
-           ORDER BY updated_at DESC,id DESC
-           LIMIT 100`,
-        )
-      ).rows;
+        await db.query<{
+          overview: NonNullable<AdminOverview["bookingDisputes"]>;
+        }>("SELECT beauty.admin_booking_dispute_overview() AS overview")
+      ).rows[0]?.overview ?? [];
     } catch {
       bookingDisputes = [];
     }

@@ -139,3 +139,42 @@ export async function releaseMatureBookingProceeds(db: SqlClient) {
   );
   return result.rows[0]?.released ?? 0;
 }
+
+
+export type ProfessionalDisputeOverview = {
+  counts: { open: number; won: number; lost: number };
+  disputes: {
+    id: string;
+    bookingId: string;
+    serviceName: string;
+    startsAt: Date | string;
+    status:
+      | "warning_needs_response"
+      | "warning_under_review"
+      | "warning_closed"
+      | "needs_response"
+      | "under_review"
+      | "won"
+      | "lost";
+    reason: string | null;
+    amountPence: number;
+    reservedPence: number;
+    reserveShortfallPence: number;
+    evidenceDueAt: Date | string | null;
+    updatedAt: Date | string;
+  }[];
+};
+
+export async function professionalDisputeOverview(
+  db: SqlClient,
+): Promise<ProfessionalDisputeOverview> {
+  const result = await db.query<{ data: ProfessionalDisputeOverview }>(
+    "SELECT beauty.my_booking_dispute_overview() AS data",
+  );
+  return (
+    result.rows[0]?.data ?? {
+      counts: { open: 0, won: 0, lost: 0 },
+      disputes: [],
+    }
+  );
+}

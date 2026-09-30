@@ -282,6 +282,60 @@ export function AdminManager({ data }: { data: AdminOverview }) {
           </article>
         ))}
       </div>
+      <h2 id="payment-disputes" className="admin-section-title">Booking payment disputes</h2>
+      <p className="admin-section-intro">
+        Read-only Stripe dispute oversight. Provider outcomes are synchronized
+        from signed payment events and cannot be manually overridden here.
+      </p>
+      <div className="service-edit-list">
+        {data.bookingDisputes?.map((dispute) => {
+          const booking = data.bookings?.find(
+            (item) => item.id === dispute.booking_id,
+          );
+          const reserved =
+            dispute.reserved_pending_pence + dispute.reserved_available_pence;
+          return (
+            <article className="service-edit-row" key={dispute.id}>
+              <div>
+                <h3>
+                  {booking
+                    ? `${booking.service_name} · ${booking.professional_name}`
+                    : `Booking ${dispute.booking_id.slice(0, 8)}`}
+                </h3>
+                <p>
+                  {booking ? `${booking.customer_name} · ` : ""}
+                  {dispute.status.replaceAll("_", " ")}
+                </p>
+                <small>
+                  Disputed: £{(dispute.amount_pence / 100).toFixed(2)} ·
+                  Reserved: £{(reserved / 100).toFixed(2)}
+                  {dispute.reserve_shortfall_pence > 0
+                    ? ` · Shortfall: £${(dispute.reserve_shortfall_pence / 100).toFixed(2)}`
+                    : ""}
+                </small>
+                {dispute.reason && (
+                  <small>Reason: {dispute.reason.replaceAll("_", " ")}</small>
+                )}
+                {dispute.evidence_due_at && (
+                  <small>
+                    Evidence due:{" "}
+                    {new Date(dispute.evidence_due_at).toLocaleString("en-GB", {
+                      timeZone: "Europe/London",
+                    })}
+                  </small>
+                )}
+              </div>
+              <span className={`admin-status admin-status-${dispute.status}`}>
+                {dispute.status.replaceAll("_", " ")}
+              </span>
+            </article>
+          );
+        })}
+        {!data.bookingDisputes?.length && (
+          <p className="lead">No booking payment disputes are recorded.</p>
+        )}
+      </div>
+
       <h2 id="orders" className="admin-section-title">Shop order oversight</h2>
       <p className="admin-section-intro">
         Read-only marketplace oversight for support and operational review.

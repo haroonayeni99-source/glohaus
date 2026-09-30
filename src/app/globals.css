@@ -7741,3 +7741,12 @@ svg {
     min-height: 44px;
   }
 }
+
+
+/* Keep the global web theme control tappable above all responsive page shells. */
+body > .theme-toggle {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+  pointer-events: auto !important;
+  isolation: isolate;
+}

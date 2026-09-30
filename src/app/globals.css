@@ -7782,3 +7782,74 @@ body > .theme-toggle {
     transform: none;
   }
 }
+
+
+/* Professional wallet dispute visibility */
+.pro-dispute-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+.pro-dispute-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 16px;
+  padding: 14px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 14px;
+  background: rgb(255 255 255 / 4%);
+}
+.pro-dispute-list article > div {
+  display: grid;
+  gap: 3px;
+}
+.pro-dispute-list article > div:nth-child(2) {
+  justify-items: end;
+}
+.pro-dispute-list article p,
+.pro-dispute-list article > small,
+.pro-dispute-list article a {
+  grid-column: 1 / -1;
+}
+.pro-dispute-list article small,
+.pro-dispute-list article p {
+  color: #b9adb2;
+  font-size: .72rem;
+  line-height: 1.55;
+}
+.pro-dispute-list article a {
+  display: inline-flex;
+  width: max-content;
+  align-items: center;
+  gap: 5px;
+  color: #ff9ec5;
+  font-size: .72rem;
+  font-weight: 800;
+}
+.pro-dispute-open,
+.pro-dispute-closed {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: .6rem;
+  font-weight: 850;
+  text-transform: capitalize;
+}
+.pro-dispute-open {
+  background: #5b3420;
+  color: #ffd2a8;
+}
+.pro-dispute-closed {
+  background: #21372a;
+  color: #b8efc9;
+}
+.pro-dispute-warning {
+  color: #ffd2a8 !important;
+}
+@media (max-width: 620px) {
+  .pro-dispute-list article {
+    grid-template-columns: 1fr;
+  }
+  .pro-dispute-list article > div:nth-child(2) {
+    justify-items: start;
+  }
+}

@@ -54,8 +54,8 @@ export default async function RootLayout({
         />
       </head>
       <body>
-        <ThemeToggle />
         {content}
+        <ThemeToggle />
       </body>
     </html>
   );

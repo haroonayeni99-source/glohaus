@@ -60,6 +60,7 @@ export function ExploreMapExperience({
   query: string;
 }) {
   const nearby = professionals.slice(0, 6);
+  const selected = query.trim().toLowerCase();
 
   return (
     <div className="map-explore-page">
@@ -94,7 +95,13 @@ export function ExploreMapExperience({
             <Link
               key={area.name}
               href={area.name === "All London" ? "/explore" : `/explore?q=${encodeURIComponent(area.name)}`}
-              className={`map-area-card ${area.className}`}
+              className={`map-area-card ${area.className} ${
+                (area.name === "All London" && !selected) ||
+                selected === area.name.toLowerCase() ||
+                selected === area.street.toLowerCase()
+                  ? "active"
+                  : ""
+              }`}
             >
               <span>{area.name}</span>
               <small>{area.street}</small>
@@ -109,7 +116,11 @@ export function ExploreMapExperience({
             <Link
               key={filter}
               href={filter === "All Services" ? "/explore" : `/explore?q=${encodeURIComponent(filter)}`}
-              className={index === 0 ? "active" : undefined}
+              className={
+                (index === 0 && !selected) || selected === filter.toLowerCase()
+                  ? "active"
+                  : undefined
+              }
             >
               {filter}
               {index === 0 && <ChevronDown size={14} aria-hidden />}
@@ -161,7 +172,7 @@ export function ExploreMapExperience({
             <div>
               <strong>Rye Lane, Peckham</strong>
               <span>Beauty professionals nearby</span>
-              <Link href="/explore?q=Peckham">View this area →</Link>
+              <Link href="/explore?q=Rye%20Lane">View this street →</Link>
             </div>
           </div>
 

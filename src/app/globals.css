@@ -137,7 +137,16 @@ svg {
 }
 :root[data-theme="night"] .setup-progress progress { background: #43383b; }
 :root[data-theme="night"] .setup-progress progress::-webkit-progress-bar { background: #43383b; }
-@media (max-width: 620px) { .theme-toggle { right: 0.9rem; bottom: 4.8rem; } }
+@media (max-width: 620px) {
+  body > .theme-toggle {
+    right: 0.9rem;
+    bottom: calc(4.8rem + env(safe-area-inset-bottom));
+    z-index: 2147483647;
+    pointer-events: auto;
+    isolation: isolate;
+    transform: translateZ(0);
+  }
+}
 .eyebrow {
   font-size: 0.75rem;
   font-weight: 650;

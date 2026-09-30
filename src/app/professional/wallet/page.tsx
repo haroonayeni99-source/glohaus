@@ -66,9 +66,10 @@ export default async function ProfessionalWalletPage() {
         <p className="pro-kicker">GLOHAUS WALLET</p>
         <h1>Money, made clear.</h1>
         <p className="pro-page-lead">
-          Your balance is calculated from protected transaction records. Pending
-          money becomes available only after the relevant booking or dispute
-          protection period.
+          Your balance is calculated from protected transaction records. If a
+          booking is disputed, only the money connected to that booking is held
+          by default. Unrelated available earnings remain withdrawable unless a
+          wider risk or account review restriction is required.
         </p>
 
         <section className="pro-stat-grid pro-wallet-balances" aria-label="Wallet balances">
@@ -186,9 +187,10 @@ export default async function ProfessionalWalletPage() {
               Service deposit proceeds begin as pending and become eligible
               after a completed appointment has remained clear for 24 hours.
               Product proceeds remain pending until tracked delivery is confirmed
-              by the customer, then become eligible after 48 hours. Disputes,
-              refunds, reserves and provider reviews can hold funds while they
-              are reviewed.
+              by the customer, then become eligible after 48 hours. A booking
+              dispute ring-fences the amount connected to that booking in your
+              disputed balance; unrelated available earnings stay available
+              unless a wider account review is required.
             </p>
           </div>
           <WalletCards className="pro-wallet-symbol" aria-hidden />

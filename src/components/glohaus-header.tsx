@@ -27,13 +27,23 @@ export function GlohausHeader({
   return (
     <header className="glohaus-header">
       <Brand pro={professional} inverse />
-      <p className="glohaus-header-tagline">
-        {professional ? "WORK • GROW • BELONG" : "LOOK GOOD • FEEL GOOD • BELONG"}
-      </p>
-      <nav aria-label="Main navigation">
-        <Link className="glohaus-search-link" href="/explore">
+      {!professional ? (
+        <nav className="glohaus-main-links" aria-label="Main navigation">
+          <Link href="/">Home</Link>
+          <Link href="/explore">Find a Professional</Link>
+          <Link href="/faq">How It Works</Link>
+          <Link href="/professional">For Professionals</Link>
+          <Link href="/shop">Shop</Link>
+          <Link href="/about">About</Link>
+          <Link href="/faq">FAQ</Link>
+        </nav>
+      ) : (
+        <p className="glohaus-header-tagline">WORK • GROW • BELONG</p>
+      )}
+      <nav className="glohaus-header-actions" aria-label="Account navigation">
+        <Link className="glohaus-search-link" href="/explore" aria-label="Search beauty">
           <Search size={17} aria-hidden />
-          <span>Search beauty</span>
+          <span>Search</span>
         </Link>
         <Link
           className="glohaus-notification-link"
@@ -42,15 +52,14 @@ export function GlohausHeader({
         >
           <Bell size={19} aria-hidden />
         </Link>
-        <Link className="glohaus-policy-link" href="/faq">
-          FAQ
-        </Link>
-        <Link className="glohaus-policy-link" href="/terms">
-          Terms
-        </Link>
         <Link className="glohaus-sign-in" href={accountHref}>
           {accountLabel}
         </Link>
+        {!signedIn && !professional && (
+          <Link className="glohaus-sign-up" href="/sign-up">
+            Sign up
+          </Link>
+        )}
       </nav>
     </header>
   );

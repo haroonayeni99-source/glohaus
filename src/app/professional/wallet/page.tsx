@@ -5,6 +5,7 @@ import { withIdentity } from "@/lib/db";
 import { AccessMessage } from "@/components/access-message";
 import {
   professionalWallet,
+  professionalDisputeOverview,
   releaseMatureBookingProceeds,
   releaseMatureProductProceeds,
 } from "@/modules/finance/repository";
@@ -32,6 +33,7 @@ export default async function ProfessionalWalletPage() {
     await releaseMatureBookingProceeds(db);
     await db.query("SELECT beauty.recover_my_outstanding_obligation()");
     const wallet = await professionalWallet(db);
+    const disputes = await professionalDisputeOverview(db);
     const pricing = (
       await db.query<{
         data: {
@@ -52,12 +54,13 @@ export default async function ProfessionalWalletPage() {
     ).rows[0];
     return {
       wallet,
+      disputes,
       pricing,
       access,
       hasStripeAccount: Boolean(paymentAccount?.stripe_account_id),
     };
   });
-  const { wallet, pricing, access, hasStripeAccount } = finance;
+  const { wallet, disputes, pricing, access, hasStripeAccount } = finance;
   const restricted = wallet.withdrawalsBlocked || wallet.instantPayoutBlocked;
   return (
     <div className="pro-app">
@@ -98,6 +101,77 @@ export default async function ProfessionalWalletPage() {
             <span>Outstanding obligations</span>
           </article>
         </section>
+
+        {disputes.disputes.length > 0 && (
+          <section className="pro-panel">
+            <div className="pro-panel-title">
+              <h2>Booking disputes</h2>
+              <span className="pro-status pro-status-confirmed">
+                {disputes.counts.open} open
+              </span>
+            </div>
+            <p>
+              Money linked to a disputed booking is ring-fenced while the
+              payment provider reviews the case. Other available earnings stay
+              withdrawable unless a wider account review is required.
+            </p>
+            <div className="pro-dispute-list">
+              {disputes.disputes.map((dispute) => {
+                const open = [
+                  "warning_needs_response",
+                  "warning_under_review",
+                  "needs_response",
+                  "under_review",
+                ].includes(dispute.status);
+                const statusLabel = dispute.status.replaceAll("_", " ");
+                return (
+                  <article key={dispute.id}>
+                    <div>
+                      <strong>{dispute.serviceName}</strong>
+                      <small>
+                        {new Intl.DateTimeFormat("en-GB", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                          timeZone: "Europe/London",
+                        }).format(new Date(dispute.startsAt))}
+                      </small>
+                    </div>
+                    <div>
+                      <span className={open ? "pro-dispute-open" : "pro-dispute-closed"}>
+                        {statusLabel}
+                      </span>
+                      <strong>{money(dispute.reservedPence)} held</strong>
+                    </div>
+                    <p>
+                      Disputed payment: {money(dispute.amountPence)}
+                      {dispute.reason ? ` · Reason: ${dispute.reason.replaceAll("_", " ")}` : ""}
+                    </p>
+                    {dispute.reserveShortfallPence > 0 && (
+                      <p className="pro-dispute-warning">
+                        {money(dispute.reserveShortfallPence)} could not be
+                        fully ring-fenced, so wider withdrawal controls may
+                        apply.
+                      </p>
+                    )}
+                    {open && dispute.evidenceDueAt && (
+                      <small>
+                        Evidence deadline:{" "}
+                        {new Intl.DateTimeFormat("en-GB", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                          timeZone: "Europe/London",
+                        }).format(new Date(dispute.evidenceDueAt))}
+                      </small>
+                    )}
+                    <Link href={`/professional/bookings/${dispute.bookingId}`}>
+                      View booking <ArrowUpRight size={15} aria-hidden />
+                    </Link>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {restricted && (
           <section className="pro-finance-notice" role="status">

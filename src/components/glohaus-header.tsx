@@ -31,9 +31,10 @@ export function GlohausHeader({
         <nav className="glohaus-main-links" aria-label="Main navigation">
           <Link href="/">Home</Link>
           <Link href="/explore">Find a Professional</Link>
-          <Link href="/faq">How It Works</Link>
+          <Link href="/how-it-works">How It Works</Link>
           <Link href="/professional">For Professionals</Link>
           <Link href="/shop">Shop</Link>
+          <Link href="/about">About</Link>
           <Link href="/faq">FAQ</Link>
         </nav>
       ) : (

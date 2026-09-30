@@ -7750,3 +7750,23 @@ body > .theme-toggle {
   pointer-events: auto !important;
   isolation: isolate;
 }
+
+
+/* Dedicated hit-test layer for the global web theme control. The layer itself
+   never blocks the page; only the actual toggle accepts pointer input. */
+.theme-toggle-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+}
+.theme-toggle-layer .theme-toggle {
+  pointer-events: auto;
+}
+@media (max-width: 620px) {
+  .theme-toggle-layer .theme-toggle {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transform: none;
+  }
+}

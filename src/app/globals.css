@@ -7853,3 +7853,512 @@ body > .theme-toggle {
     justify-items: start;
   }
 }
+
+
+/* GLOHAUS map-first professional discovery */
+.map-explore-page {
+  background: #f7f6f6;
+  color: #171315;
+  min-height: calc(100vh - 76px);
+}
+.map-explore-hero {
+  background: linear-gradient(180deg,#111012 0%,#171416 100%);
+  color: #fff;
+  padding: 22px clamp(18px,3.4vw,54px) 12px;
+}
+.map-explore-title-row {
+  display: grid;
+  grid-template-columns: minmax(0,1.35fr) minmax(320px,.65fr);
+  gap: 28px;
+  align-items: start;
+}
+.map-explore-title-row h1 {
+  font-family: "Manrope",Arial,sans-serif;
+  font-size: clamp(2rem,3.4vw,3.3rem);
+  font-weight: 800;
+  letter-spacing: -.045em;
+}
+.map-explore-title-row h1 em {
+  color: #f24d98;
+  font-style: normal;
+}
+.map-explore-title-row p {
+  color: #dfd7da;
+  margin-top: 8px;
+  font-size: 1rem;
+}
+.map-explore-search {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  margin-top: 8px;
+  padding: 0 16px;
+  min-height: 52px;
+  background: #242126;
+  border: 1px solid #343036;
+  border-radius: 13px;
+}
+.map-explore-search input {
+  background: transparent !important;
+  color: #fff !important;
+  border: 0 !important;
+  outline: 0 !important;
+  min-width: 0;
+}
+.map-explore-search input::placeholder { color: #9e969a; }
+.map-explore-search button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #fff;
+}
+.map-area-strip {
+  margin-top: 20px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(150px,1fr);
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.map-area-strip::-webkit-scrollbar { display:none; }
+.map-area-card {
+  position: relative;
+  min-height: 114px;
+  overflow: hidden;
+  border: 1px solid #49434a;
+  border-radius: 13px;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  padding: 16px;
+  isolation: isolate;
+  background:
+    linear-gradient(180deg,transparent 20%,rgba(10,8,9,.88) 100%),
+    radial-gradient(circle at 72% 18%,rgba(255,255,255,.23),transparent 28%),
+    linear-gradient(135deg,#6b5143,#2d2629 55%,#171416);
+}
+.map-area-card::before,
+.map-area-card::after {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  opacity:.34;
+}
+.map-area-card::before {
+  width:140%;
+  height:2px;
+  background:#fff;
+  left:-20%;
+  top:37%;
+  transform:rotate(-11deg);
+  box-shadow: 0 25px 0 rgba(255,255,255,.55), 0 52px 0 rgba(255,255,255,.3);
+}
+.map-area-card::after {
+  width:2px;
+  height:140%;
+  background:#fff;
+  right:26%;
+  top:-15%;
+  transform:rotate(18deg);
+}
+.map-area-card span { font-weight:800; font-size:1.04rem; }
+.map-area-card small { color:#eee5e9; }
+.map-area-card.peckham { background-color:#594536; }
+.map-area-card.brixton { background-color:#655849; }
+.map-area-card.shoreditch { background-color:#6a493c; }
+.map-area-card.soho { background-color:#633f3f; }
+.map-area-card.camden { background-color:#5d4546; }
+.map-area-card.notting-hill { background-color:#745d52; }
+.map-area-card.greenwich { background-color:#4e5e5a; }
+
+.map-filter-shell {
+  background:#fff;
+  padding: 13px clamp(18px,3.4vw,54px) 14px;
+  border-bottom:1px solid #e6e0e2;
+}
+.map-service-filters,
+.map-secondary-filters {
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.map-service-filters::-webkit-scrollbar,
+.map-secondary-filters::-webkit-scrollbar { display:none; }
+.map-service-filters a,
+.map-secondary-filters span,
+.map-secondary-filters button {
+  white-space:nowrap;
+  border:1px solid #ddd7da;
+  background:#fff;
+  border-radius:999px;
+  min-height:40px;
+  padding:8px 16px;
+  display:inline-flex;
+  gap:7px;
+  align-items:center;
+  justify-content:center;
+  font-weight:650;
+  color:#262123;
+}
+.map-service-filters a.active {
+  background:#f44e99;
+  color:#fff;
+  border-color:#f44e99;
+}
+.map-secondary-filters { margin-top:10px; }
+.map-secondary-filters span,
+.map-secondary-filters button {
+  min-height:36px;
+  font-size:.86rem;
+  padding:7px 13px;
+}
+.map-secondary-filters button { cursor:pointer; }
+
+.map-results-layout {
+  min-height: 640px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(360px,420px);
+  align-items:stretch;
+}
+.glohaus-map {
+  position:relative;
+  overflow:hidden;
+  min-height:640px;
+  background:
+    radial-gradient(circle at 21% 23%,#dfe9d8 0 10%,transparent 10.5%),
+    radial-gradient(circle at 79% 72%,#e5eddc 0 9%,transparent 9.5%),
+    linear-gradient(35deg,transparent 48%,#d5d1ca 49%,#d5d1ca 50%,transparent 51%) 0 0/130px 130px,
+    linear-gradient(145deg,transparent 48%,#e0ddd6 49%,#e0ddd6 50%,transparent 51%) 0 0/95px 95px,
+    #f4f1e9;
+  border-right:1px solid #ddd6d8;
+}
+.map-river {
+  position:absolute;
+  width:120%;
+  height:100px;
+  left:-10%;
+  top:58%;
+  border-radius:50%;
+  border-top:22px solid #a7d7ef;
+  transform:rotate(-5deg);
+  opacity:.9;
+}
+.map-road {
+  position:absolute;
+  height:5px;
+  background:#e9c189;
+  border-radius:999px;
+  opacity:.9;
+  box-shadow:0 0 0 2px rgba(255,255,255,.8);
+}
+.map-road-a { width:95%; top:28%; left:3%; transform:rotate(-8deg); }
+.map-road-b { width:88%; top:67%; left:4%; transform:rotate(10deg); }
+.map-road-c { width:72%; top:47%; left:14%; transform:rotate(24deg); }
+.map-city-label {
+  position:absolute;
+  left:45%;
+  top:41%;
+  font-size:2rem;
+  font-weight:800;
+  color:#242022;
+}
+.map-borough-label {
+  position:absolute;
+  color:#6b6366;
+  letter-spacing:.08em;
+  font-size:.73rem;
+  font-weight:800;
+}
+.map-label-hackney { left:61%; top:8%; }
+.map-label-westminster { left:34%; top:50%; }
+.map-label-lewisham { left:74%; top:83%; }
+.map-controls {
+  position:absolute;
+  z-index:4;
+  left:20px;
+  top:20px;
+  display:grid;
+  gap:8px;
+}
+.map-controls button {
+  width:42px;
+  height:42px;
+  border:1px solid #e2dcde;
+  background:#fff;
+  border-radius:10px;
+  font-size:1.45rem;
+  display:grid;
+  place-items:center;
+  box-shadow:0 6px 18px rgba(46,31,37,.08);
+}
+.map-cluster {
+  position:absolute;
+  z-index:3;
+  width:120px;
+  height:120px;
+  border-radius:50%;
+  background:rgba(246,78,154,.84);
+  color:#1f171b;
+  border:3px solid rgba(255,255,255,.85);
+  box-shadow:0 12px 28px rgba(149,37,88,.22);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  line-height:1.1;
+  backdrop-filter:blur(3px);
+}
+.map-cluster strong { font-size:.95rem; }
+.map-cluster small { margin-top:5px; font-size:.68rem; font-weight:700; }
+.map-cluster-camden { left:25%; top:7%; }
+.map-cluster-notting { left:10%; top:28%; }
+.map-cluster-soho { left:38%; top:28%; }
+.map-cluster-shoreditch { left:63%; top:20%; }
+.map-cluster-brixton { left:39%; top:66%; }
+.map-cluster-peckham { left:62%; top:69%; }
+.map-cluster-greenwich { right:7%; top:56%; }
+
+.map-street-card {
+  position:absolute;
+  z-index:5;
+  left:56%;
+  top:48%;
+  transform:translate(-50%,-50%);
+  width:min(310px,38%);
+  padding:12px;
+  display:grid;
+  grid-template-columns:74px 1fr;
+  gap:12px;
+  background:#fff;
+  border:1px solid #e7e0e2;
+  border-radius:14px;
+  box-shadow:0 14px 38px rgba(35,24,28,.18);
+}
+.map-street-thumb {
+  min-height:88px;
+  border-radius:10px;
+  background:linear-gradient(145deg,#493d39,#7d6659);
+  color:#fff;
+  display:grid;
+  place-items:center;
+}
+.map-street-card strong,
+.map-street-card span,
+.map-street-card a { display:block; }
+.map-street-card strong { font-size:.9rem; }
+.map-street-card span { font-size:.76rem; color:#746b6f; margin:2px 0 8px; }
+.map-street-card a {
+  background:#f44e99;
+  color:#fff;
+  border-radius:8px;
+  padding:7px 9px;
+  font-size:.75rem;
+  font-weight:750;
+  text-align:center;
+}
+.map-legend {
+  position:absolute;
+  left:22px;
+  bottom:22px;
+  z-index:4;
+  display:grid;
+  gap:8px;
+  padding:14px 17px;
+  border-radius:12px;
+  background:#fff;
+  border:1px solid #e5dfe1;
+  box-shadow:0 12px 30px rgba(40,26,32,.1);
+  font-size:.77rem;
+}
+.map-legend span { display:flex;align-items:center;gap:9px; }
+.map-legend i { display:inline-block;background:#f44e99; }
+.map-legend .dot { width:10px;height:10px;border-radius:50%; }
+.map-legend .bubble { width:22px;height:22px;border-radius:50%;opacity:.8; }
+.map-legend .square { width:20px;height:20px;border-radius:4px;opacity:.25; }
+
+.map-pro-results {
+  background:#fff;
+  padding:18px 18px 22px;
+  overflow:hidden;
+}
+.map-pro-heading h2 {
+  font-family:"Manrope",Arial,sans-serif;
+  font-size:1.25rem;
+  font-weight:800;
+}
+.map-pro-heading p { color:#766d71;font-size:.88rem;margin-top:2px; }
+.map-pro-list { margin-top:12px; display:grid; }
+.map-pro-row {
+  position:relative;
+  min-height:100px;
+  display:grid;
+  grid-template-columns:72px minmax(0,1fr) auto;
+  gap:12px;
+  align-items:center;
+  border-bottom:1px solid #eee9eb;
+  padding:10px 0;
+}
+.map-pro-avatar {
+  width:72px;
+  height:72px;
+  position:relative;
+  overflow:hidden;
+  border-radius:10px;
+  background:#2b2528;
+  color:#fff;
+  display:grid;
+  place-items:center;
+  font-size:1.5rem;
+  font-weight:800;
+}
+.map-pro-avatar img { object-fit:cover; }
+.map-pro-copy { min-width:0; padding-right:4px; }
+.map-pro-name {
+  display:block;
+  font-weight:800;
+  line-height:1.25;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.map-pro-rating {
+  color:#292225;
+  font-size:.78rem;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  margin-top:4px;
+}
+.map-pro-rating svg { color:#f5a623; }
+.map-pro-tags { display:flex;gap:5px;flex-wrap:wrap;margin-top:7px; }
+.map-pro-tags span {
+  font-size:.66rem;
+  padding:4px 7px;
+  background:#f3f0f1;
+  border-radius:5px;
+  color:#5f565a;
+}
+.map-heart {
+  position:absolute;
+  right:3px;
+  top:11px;
+  border:0;
+  background:transparent;
+  color:#3c3438;
+  padding:3px;
+}
+.map-book-button {
+  align-self:end;
+  background:#f44e99;
+  color:#fff;
+  min-width:72px;
+  padding:8px 13px;
+  border-radius:8px;
+  text-align:center;
+  font-size:.78rem;
+  font-weight:800;
+  margin-bottom:5px;
+}
+.map-view-all {
+  margin-top:12px;
+  border:1.5px solid #f44e99;
+  border-radius:10px;
+  padding:11px;
+  text-align:center;
+  color:#f13f8f;
+  font-size:.84rem;
+  font-weight:800;
+}
+.map-pro-empty {
+  margin-top:18px;
+  padding:40px 20px;
+  border:1px dashed #ded6d9;
+  border-radius:14px;
+  text-align:center;
+}
+.map-pro-empty svg { color:#f44e99; }
+.map-pro-empty h3 { margin-top:8px; }
+.map-pro-empty p { color:#756c70;margin-top:5px;font-size:.88rem; }
+.map-pagination {
+  padding:16px clamp(18px,3.4vw,54px);
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  background:#fff;
+  border-top:1px solid #eee7e9;
+}
+.map-pagination a { color:#d73d81;font-weight:750; }
+
+:root[data-theme="night"] .map-explore-page {
+  background:#171415;
+  color:#f8f2f4;
+}
+:root[data-theme="night"] .map-filter-shell,
+:root[data-theme="night"] .map-pro-results,
+:root[data-theme="night"] .map-pagination {
+  background:#211c1e;
+  color:#f8f2f4;
+  border-color:#41373b;
+}
+:root[data-theme="night"] .map-service-filters a,
+:root[data-theme="night"] .map-secondary-filters span,
+:root[data-theme="night"] .map-secondary-filters button {
+  background:#2a2426;
+  color:#f5edef;
+  border-color:#473d41;
+}
+:root[data-theme="night"] .map-service-filters a.active { background:#f44e99;border-color:#f44e99; }
+:root[data-theme="night"] .map-pro-row { border-color:#3e3538; }
+:root[data-theme="night"] .map-pro-rating { color:#f8f2f4; }
+:root[data-theme="night"] .map-pro-tags span { background:#352d30;color:#d9cdd1; }
+
+@media (max-width: 980px) {
+  .map-explore-title-row { grid-template-columns:1fr; }
+  .map-explore-search { margin-top:0; }
+  .map-results-layout { grid-template-columns:1fr; }
+  .glohaus-map { min-height:560px;border-right:0;border-bottom:1px solid #ddd6d8; }
+  .map-pro-results { padding-bottom:90px; }
+}
+
+@media (max-width: 620px) {
+  .map-explore-hero { padding:18px 14px 10px; }
+  .map-explore-title-row h1 { font-size:2rem; }
+  .map-explore-title-row p { font-size:.88rem; }
+  .map-explore-search { min-height:48px; }
+  .map-area-strip { grid-auto-columns:142px; }
+  .map-area-card { min-height:96px;padding:12px; }
+  .map-filter-shell { padding:10px 12px 12px; }
+  .map-service-filters a { min-height:36px;padding:7px 13px;font-size:.82rem; }
+  .map-secondary-filters span,
+  .map-secondary-filters button { font-size:.76rem; }
+  .glohaus-map { min-height:475px; }
+  .map-cluster { width:88px;height:88px; }
+  .map-cluster strong { font-size:.75rem; }
+  .map-cluster small { font-size:.58rem; }
+  .map-cluster-camden { left:23%; }
+  .map-cluster-notting { left:4%;top:31%; }
+  .map-cluster-soho { left:34%;top:30%; }
+  .map-cluster-shoreditch { left:63%;top:19%; }
+  .map-cluster-brixton { left:28%;top:68%; }
+  .map-cluster-peckham { left:58%;top:70%; }
+  .map-cluster-greenwich { right:2%;top:53%; }
+  .map-street-card {
+    left:52%;
+    top:53%;
+    width:240px;
+    grid-template-columns:56px 1fr;
+  }
+  .map-street-thumb { min-height:76px; }
+  .map-legend { left:12px;bottom:12px;padding:10px 12px; }
+  .map-city-label { left:41%;top:43%;font-size:1.5rem; }
+  .map-pro-results { padding:16px 12px 90px; }
+  .map-pro-row { grid-template-columns:62px minmax(0,1fr) auto; }
+  .map-pro-avatar { width:62px;height:62px; }
+  .map-book-button { min-width:62px;padding:7px 10px; }
+}

@@ -76,6 +76,18 @@ export type AdminOverview = {
       }[];
     }[];
   } | null;
+  bookingDisputes?: {
+    id: string;
+    booking_id: string;
+    status: string;
+    reason: string | null;
+    amount_pence: number;
+    reserved_pending_pence: number;
+    reserved_available_pence: number;
+    reserve_shortfall_pence: number;
+    evidence_due_at: string | null;
+    updated_at: string;
+  }[];
   safety?: {
     counts: {
       open: number;
@@ -219,7 +231,23 @@ export async function adminOverview() {
         "SELECT p.id,p.user_id,p.business_name,coalesce(t.verification_status,'unverified') verification_status,coalesce(t.standing_status,'good') standing_status,t.live_restricted_until::text FROM beauty.professional_profiles p LEFT JOIN beauty.professional_trust_status t ON t.professional_id=p.id ORDER BY p.business_name,p.id LIMIT 100"
       )).rows;
     } catch { professionalTrust = []; }
-    return { ...base, ...extra, safety, shopOrders, professionalTrust };
+    let bookingDisputes: NonNullable<AdminOverview["bookingDisputes"]> = [];
+    try {
+      bookingDisputes = (
+        await db.query<NonNullable<AdminOverview["bookingDisputes"]>[number]>(
+          `SELECT id,booking_id,status,reason,amount_pence,
+                  reserved_pending_pence,reserved_available_pence,
+                  reserve_shortfall_pence,evidence_due_at::text,updated_at::text
+           FROM beauty.booking_disputes
+           ORDER BY updated_at DESC,id DESC
+           LIMIT 100`,
+        )
+      ).rows;
+    } catch {
+      bookingDisputes = [];
+    }
+
+    return { ...base, ...extra, safety, shopOrders, professionalTrust, bookingDisputes };
   });
 }
 

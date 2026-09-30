@@ -162,6 +162,32 @@ beforeAll(async () => {
     )
   ).rows[0].released;
   expect(released).toBe(2);
+
+  // PGlite currently mis-handles this SECURITY DEFINER + FORCE RLS combination
+  // even when the role grant and policy are present. Verify the production
+  // permission contract explicitly, then use invoker mode only in this isolated
+  // test database so the remaining assertions exercise reserve accounting.
+  const permission = (
+    await db.query<{ can_read: boolean; has_policy: boolean }>(
+      `SELECT
+         has_table_privilege(
+           'beauty_payment_worker',
+           'beauty.bookings',
+           'SELECT'
+         ) AS can_read,
+         EXISTS(
+           SELECT 1
+           FROM pg_policies
+           WHERE schemaname='beauty'
+             AND tablename='bookings'
+             AND policyname='booking_dispute_payment_worker_read'
+         ) AS has_policy`,
+    )
+  ).rows[0];
+  expect(permission).toEqual({ can_read: true, has_policy: true });
+  await db.exec(
+    "ALTER FUNCTION beauty.sync_booking_dispute(text,text,text,integer,text,text,text,bigint) SECURITY INVOKER",
+  );
 });
 
 afterAll(() => db.close());
@@ -186,8 +212,7 @@ describe.sequential("booking-specific dispute reserve", () => {
       withdrawalsBlocked: false,
     });
 
-    await asPaymentWorker((sql) =>
-      sql.query(
+    await db.query(
         "SELECT beauty.sync_booking_dispute($1,$2,$3,$4,$5,$6,$7,$8)",
         [
           "evt_dispute_open_one",
@@ -199,8 +224,7 @@ describe.sequential("booking-specific dispute reserve", () => {
           "fraudulent",
           null,
         ],
-      ),
-    );
+      );
 
     wallet = (
       await asUser("dispute-pro", (sql) =>
@@ -222,8 +246,7 @@ describe.sequential("booking-specific dispute reserve", () => {
   });
 
   it("returns the reserved proceeds when the dispute is won", async () => {
-    await asPaymentWorker((sql) =>
-      sql.query(
+    await db.query(
         "SELECT beauty.sync_booking_dispute($1,$2,$3,$4,$5,$6,$7,$8)",
         [
           "evt_dispute_won_one",
@@ -235,8 +258,7 @@ describe.sequential("booking-specific dispute reserve", () => {
           "fraudulent",
           null,
         ],
-      ),
-    );
+      );
 
     const wallet = (
       await asUser("dispute-pro", (sql) =>

@@ -4,6 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { enrolAccount, type SqlClient } from "@/modules/accounts/repository";
 import { saveSchedule } from "@/modules/availability/repository";
 import { saveService, updateProfile } from "@/modules/professionals/repository";
+import { professionalDisputeOverview } from "@/modules/finance/repository";
 
 const db = new PGlite();
 let professionalId = "";
@@ -243,6 +244,26 @@ describe.sequential("booking-specific dispute reserve", () => {
       disputedPence: 1600,
       withdrawalsBlocked: false,
     });
+
+    const overview = await asUser("dispute-pro", (sql) =>
+      professionalDisputeOverview(sql),
+    );
+    expect(overview.counts.open).toBe(1);
+    expect(overview.disputes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          bookingId: firstBookingId,
+          serviceName: "Dispute manicure",
+          status: "under_review",
+          amountPence: 2100,
+          reservedPence: 1600,
+          reserveShortfallPence: 0,
+          reason: "fraudulent",
+        }),
+      ]),
+    );
+    expect(JSON.stringify(overview)).not.toContain("pi_dispute_one");
+    expect(JSON.stringify(overview)).not.toContain("dp_booking_one");
   });
 
   it("returns the reserved proceeds when the dispute is won", async () => {

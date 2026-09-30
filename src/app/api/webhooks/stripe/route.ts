@@ -285,6 +285,33 @@ export async function POST(request: Request) {
           ),
         );
     } else if (
+      event.type === "charge.dispute.created" ||
+      event.type === "charge.dispute.updated" ||
+      event.type === "charge.dispute.closed"
+    ) {
+      const dispute = event.data.object;
+      const intentId =
+        typeof dispute.payment_intent === "string"
+          ? dispute.payment_intent
+          : dispute.payment_intent?.id;
+
+      if (intentId)
+        await withPaymentWorker((db) =>
+          db.query(
+            "SELECT beauty.sync_booking_dispute($1,$2,$3,$4,$5,$6,$7,$8)",
+            [
+              event.id,
+              dispute.id,
+              intentId,
+              dispute.amount,
+              dispute.currency,
+              dispute.status,
+              dispute.reason ?? null,
+              dispute.evidence_details?.due_by ?? null,
+            ],
+          ),
+        );
+    } else if (
       event.type === "customer.subscription.updated" ||
       event.type === "customer.subscription.deleted"
     ) {

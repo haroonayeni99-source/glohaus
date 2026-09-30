@@ -84,6 +84,26 @@ describe.sequential(
       expect(result.rows[0].data.counts.users).toBe(4);
       expect(result.rows[0].data.users).toHaveLength(4);
     });
+    it("protects booking dispute oversight behind verified admin access", async () => {
+      await expect(
+        asUser("customer", true, (sql) =>
+          sql.query("SELECT beauty.admin_booking_dispute_overview()"),
+        ),
+      ).rejects.toThrow("FORBIDDEN");
+      await expect(
+        asUser("admin", false, (sql) =>
+          sql.query("SELECT beauty.admin_booking_dispute_overview()"),
+        ),
+      ).rejects.toThrow("FORBIDDEN");
+
+      const result = await asUser("admin", true, (sql) =>
+        sql.query<{ data: unknown[] }>(
+          "SELECT beauty.admin_booking_dispute_overview() AS data",
+        ),
+      );
+      expect(Array.isArray(result.rows[0].data)).toBe(true);
+    });
+
     it("does not leak verified context into another transaction", async () => {
       await expect(
         asUser("admin", false, (sql) =>

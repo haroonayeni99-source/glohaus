@@ -79,16 +79,6 @@ export function EmailAuthForm({
       return;
     }
 
-    // Bootstrap owner routing fallback only. /admin still performs the real
-    // server-side role and MFA authorization before showing privileged data.
-    if (
-      mode === "sign-in" &&
-      result.data.user?.id === "78302631-b174-4c4c-9373-0cd4938b03a1"
-    ) {
-      router.push("/admin");
-      return;
-    }
-
     if (mode === "sign-up") {
       if (audience === "professional") {
         router.push("/onboarding?intent=professional");
@@ -111,6 +101,17 @@ export function EmailAuthForm({
       router.push(
         signedInDestination(me?.account?.roles, audience, redirectTo),
       );
+      return;
+    }
+
+    const trustedRoles = Array.isArray(result.data.user?.app_metadata?.glohaus_roles)
+      ? result.data.user.app_metadata.glohaus_roles.filter(
+          (role: unknown): role is string => typeof role === "string",
+        )
+      : [];
+
+    if (trustedRoles.includes("owner") || trustedRoles.includes("admin")) {
+      router.push("/admin");
       return;
     }
 
@@ -152,13 +153,17 @@ export function EmailAuthForm({
   const professional = audience === "professional";
   const title =
     mode === "sign-in"
-      ? "Welcome back"
+      ? professional
+        ? "GLOHAUS PRO sign in"
+        : "Customer sign in"
       : professional
         ? "Create your professional account"
         : "Create your account";
   const description =
     mode === "sign-in"
-      ? "Sign in to continue your GLOHAUS journey."
+      ? professional
+        ? "Sign in to manage your professional dashboard, bookings, clients and earnings."
+        : "Sign in to your customer account to discover, book, shop and manage appointments."
       : professional
         ? "Start building your GLOHAUS PRO storefront today."
         : "Discover, save and book beauty that feels like you.";
@@ -201,7 +206,13 @@ export function EmailAuthForm({
       )}
       {error && <p role="alert">{error}</p>}
       <button className="button full-width" disabled={pending || Boolean(confirmationEmail)}>
-        {pending ? "Please wait…" : mode === "sign-up" ? "Create account" : "Sign in"}
+        {pending
+          ? "Please wait…"
+          : mode === "sign-up"
+            ? "Create account"
+            : professional
+              ? "Sign in to GLOHAUS PRO"
+              : "Sign in as customer"}
       </button>
       <p className="auth-switch">
         {mode === "sign-in" ? (

@@ -19,7 +19,7 @@ export function PostActions({
   onNotice: (message: string) => void;
   requireAuth?: (id: string, value: Engagement) => void;
   editorial?: boolean;
-  editorialBase?: "/" | "/discover";
+  editorialBase?: "/" | "/discover" | "/share";
 }) {
   const [busy, setBusy] = useState(false);
   const [shareUrl, setShareUrl] = useState("");

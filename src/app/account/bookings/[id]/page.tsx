@@ -174,7 +174,7 @@ export default async function Booking({
         />
         {data.professional &&
           b.status === "cancelled" &&
-          new Date(b.starts_at).getTime() > Date.now() && (
+          b.cancellable && (
             <section className="form-notice">
               <strong>This appointment time is free again.</strong>
               <p>

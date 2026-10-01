@@ -23,14 +23,14 @@ export function LastMinuteEditor({
   const [serviceId, setServiceId] = useState(services[0]?.id || "");
   const [date, setDate] = useState("");
   const [available, setAvailable] = useState<string[]>([]);
-  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [loadedKey, setLoadedKey] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
     if (!serviceId || !date) return;
     const controller = new AbortController();
-    setLoadingSlots(true);
+    const queryKey = `${serviceId}|${date}`;
     fetch(
       `/api/v1/availability?serviceId=${encodeURIComponent(serviceId)}&date=${encodeURIComponent(date)}`,
       { signal: controller.signal },
@@ -39,13 +39,13 @@ export function LastMinuteEditor({
         if (!response.ok) throw new Error();
         const data = await response.json();
         setAvailable(Array.isArray(data.slots) ? data.slots : []);
+        setLoadedKey(queryKey);
       })
       .catch(() => {
-        if (!controller.signal.aborted)
+        if (!controller.signal.aborted) {
+          setLoadedKey(queryKey);
           setNotice("Could not load available times.");
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoadingSlots(false);
+        }
       });
     return () => controller.abort();
   }, [serviceId, date]);
@@ -139,6 +139,7 @@ export function LastMinuteEditor({
             setNotice("Last-minute slot is now live.");
             form.reset();
             setAvailable([]);
+            setLoadedKey("");
             setDate("");
             router.refresh();
           } catch (error) {
@@ -157,6 +158,7 @@ export function LastMinuteEditor({
             onChange={(event) => {
               setServiceId(event.target.value);
               setAvailable([]);
+              setLoadedKey("");
             }}
             required
           >
@@ -176,19 +178,25 @@ export function LastMinuteEditor({
             onChange={(event) => {
               setDate(event.target.value);
               setAvailable([]);
+              setLoadedKey("");
             }}
             required
           />
         </label>
         <label>
           Available time
-          <select name="startsAt" disabled={!date || loadingSlots} required defaultValue="">
+          <select
+            name="startsAt"
+            disabled={!date || loadedKey !== `${serviceId}|${date}`}
+            required
+            defaultValue=""
+          >
             <option value="">
-              {loadingSlots
+              {date && loadedKey !== `${serviceId}|${date}`
                 ? "Checking availability…"
                 : available.length
                   ? "Choose a free time"
-                  : "No free times loaded"}
+                  : "No free times available"}
             </option>
             {available.map((slot) => (
               <option key={slot} value={slot}>

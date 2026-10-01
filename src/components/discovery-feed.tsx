@@ -324,7 +324,7 @@ export function DiscoveryFeed({
             onClick={() => filter("For you")}
           >
             <Compass size={22} />
-            Discover
+            Share
           </button>
           <Link className="discovery-nav" href="/explore">
             <Search size={22} />
@@ -369,7 +369,7 @@ export function DiscoveryFeed({
             <Brand />
           </div>
           <div className="discovery-heading">
-            <p className="eyebrow">DISCOVER. BOOK. GET INSPIRED.</p>
+            <p className="eyebrow">SHARE. BOOK. GET INSPIRED.</p>
             <h1>
               Real beauty. Real people. <em>Real results.</em>
             </h1>

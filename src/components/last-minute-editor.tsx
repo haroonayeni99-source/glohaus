@@ -28,10 +28,7 @@ export function LastMinuteEditor({
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
-    if (!serviceId || !date) {
-      setAvailable([]);
-      return;
-    }
+    if (!serviceId || !date) return;
     const controller = new AbortController();
     setLoadingSlots(true);
     fetch(
@@ -157,7 +154,10 @@ export function LastMinuteEditor({
           Service
           <select
             value={serviceId}
-            onChange={(event) => setServiceId(event.target.value)}
+            onChange={(event) => {
+              setServiceId(event.target.value);
+              setAvailable([]);
+            }}
             required
           >
             {services.map((service) => (
@@ -173,7 +173,10 @@ export function LastMinuteEditor({
             type="date"
             value={date}
             min={new Date().toISOString().slice(0, 10)}
-            onChange={(event) => setDate(event.target.value)}
+            onChange={(event) => {
+              setDate(event.target.value);
+              setAvailable([]);
+            }}
             required
           />
         </label>

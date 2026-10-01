@@ -61,7 +61,7 @@ export function LastMinuteEditor({
     }).format(new Date(value));
 
   return (
-    <section className="last-minute-editor">
+    <section className="last-minute-editor" id="last-minute">
       <div className="last-minute-heading">
         <p className="pro-kicker">FILL A CANCELLATION OR FREE SLOT</p>
         <h2>Last-minute availability</h2>

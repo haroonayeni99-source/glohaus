@@ -27,7 +27,7 @@ export type ProfilePresentation = {
   professional: PublicProfessional;
   details: ProfileDetails;
   services: Service[];
-  assets: { id: string; alt_text: string; media_type: "image" | "video" }[];
+  assets: { id: string; alt_text: string; media_type?: "image" | "video" }[];
   reviews: { id: string; rating: number; body: string; public_name: string }[];
   hours: Rule[];
   rating: number | null;

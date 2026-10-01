@@ -33,7 +33,7 @@ export type ProfilePresentation = {
   rating: number | null;
   reviewCount: number;
   booking: ReactNode;
-  live: ReactNode;
+  live?: ReactNode;
   follow: { following: boolean; followerCount: number; signedIn: boolean };
   messageHref: string | null;
   bookingFeePence: number;

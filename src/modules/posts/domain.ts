@@ -12,6 +12,8 @@ export const postSchema = z
 export type PostInput = z.infer<typeof postSchema>;
 export type PublicPost = {
   asset_id?: string | null;
+  asset_media_type?: "image" | "video" | null;
+  asset_mime_type?: string | null;
   id: string;
   title: string;
   body: string;

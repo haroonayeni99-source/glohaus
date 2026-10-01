@@ -11,7 +11,7 @@ import {
 
 const items = [
   { id: "home", href: "/", label: "Home", icon: Home },
-  { id: "discover", href: "/discover", label: "Discover", icon: Compass },
+  { id: "discover", href: "/share", label: "Share", icon: Compass },
   { id: "bookings", href: "/account/bookings", label: "Bookings", icon: CalendarDays },
   { id: "messages", href: "/messages", label: "Messages", icon: MessageSquare },
   { id: "profile", href: "/workspace", label: "Profile", icon: UserRound },

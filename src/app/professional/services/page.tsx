@@ -37,7 +37,7 @@ export default async function ServicesPage() {
     ).rows,
     assets: (
       await db.query<{ id: string; alt_text: string }>(
-        "SELECT id,alt_text FROM beauty.portfolio_assets WHERE professional_id=$1 ORDER BY created_at DESC",
+        "SELECT id,alt_text FROM beauty.portfolio_assets WHERE professional_id=$1 AND media_type='image' ORDER BY created_at DESC",
         [account.professionalId],
       )
     ).rows,

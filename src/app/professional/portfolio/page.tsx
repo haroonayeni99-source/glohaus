@@ -23,7 +23,7 @@ export default async function Portfolio() {
     async (db) =>
       (
         await db.query<PortfolioAsset>(
-          "SELECT id,alt_text,publication_status FROM beauty.portfolio_assets WHERE professional_id=$1 ORDER BY created_at DESC",
+          "SELECT id,alt_text,publication_status,media_type,mime_type FROM beauty.portfolio_assets WHERE professional_id=$1 ORDER BY created_at DESC",
           [account.professionalId],
         )
       ).rows,
@@ -36,7 +36,7 @@ export default async function Portfolio() {
         <p className="pro-kicker">A LITTLE OF WHAT YOU DO BEST</p>
         <h1>Your portfolio, your signature.</h1>
         <p className="pro-page-lead">
-          Uploaded images stay private until you publish them. Your professional
+          Uploaded images and videos stay private until you publish them. Your professional
           profile must also be published.
         </p>
         <section className="pro-editor-surface">

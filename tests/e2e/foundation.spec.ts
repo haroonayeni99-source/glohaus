@@ -114,7 +114,7 @@ test("signed-out mobile navigation preserves private return routes", async ({ pa
     "/sign-in?returnTo=%2Fnotifications",
   );
 
-  await page.goto("/discover");
+  await page.goto("/share");
   await expect(page.getByRole("link", { name: "Your notifications" })).toHaveAttribute(
     "href",
     "/sign-in?returnTo=%2Fnotifications",
@@ -182,7 +182,7 @@ test("missing pages offer a working route home", async ({ page }, testInfo) => {
 });
 
 
-test("dedicated Discover route behaves like a full-screen mobile feed", async ({ page }) => {
+test("dedicated Share route behaves like a full-screen mobile feed", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/discover");
 
@@ -203,20 +203,20 @@ test("dedicated Discover route behaves like a full-screen mobile feed", async ({
 
   await expect(
     page.locator('.glohaus-bottom-nav [aria-current="page"]'),
-  ).toHaveText("Discover");
+  ).toHaveText("Share");
 
   const firstShare = page.getByRole("button", { name: /^Share / }).first();
   await firstShare.click();
-  await expect(page.getByLabel("Post link")).toHaveValue(/\/discover#post-/);
+  await expect(page.getByLabel("Post link")).toHaveValue(/\/share#post-/);
 });
 
 
-test("Following requires a customer session on Discover", async ({ page }) => {
+test("Following requires a customer session on Share", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/discover");
+  await page.goto("/share");
 
   await page.getByRole("button", { name: "Following", exact: true }).click();
-  await expect(page).toHaveURL(/\/sign-in\?returnTo=.*discover.*feed.*following/);
+  await expect(page).toHaveURL(/\/sign-in\?returnTo=.*share.*feed.*following/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "Your GLOHAUS account is nearly ready.",
   );

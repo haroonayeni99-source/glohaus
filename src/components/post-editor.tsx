@@ -19,9 +19,7 @@ export function PostEditor({
   return (
     <>
       <p className="form-notice">
-        Publish a design story or a written tutorial. Your professional profile
-        must also be published for posts to appear in discovery. You can attach
-        a published portfolio image. Video uploads are not available yet.
+        Publish a photo or video of your work, a design story, or a written tutorial. Your professional profile must also be published for posts to appear in Share. Attach any published portfolio media.
       </p>
       <div className="service-edit-list">
         {posts.map((post) => (
@@ -124,9 +122,9 @@ export function PostEditor({
           </select>
         </label>
         <label>
-          Portfolio image (optional)
+          Portfolio media (optional)
           <select name="assetId" defaultValue={editing?.asset_id || ""}>
-            <option value="">No image</option>
+            <option value="">No media</option>
             {assets.map((asset) => (
               <option key={asset.id} value={asset.id}>
                 {asset.alt_text}

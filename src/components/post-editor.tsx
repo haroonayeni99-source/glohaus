@@ -10,7 +10,7 @@ export function PostEditor({
 }: {
   posts: OwnPost[];
   services: Service[];
-  assets: { id: string; alt_text: string }[];
+  assets: { id: string; alt_text: string; media_type?: "image" | "video" }[];
 }) {
   const [editing, setEditing] = useState<OwnPost | null>(null);
   const [notice, setNotice] = useState("");
@@ -127,7 +127,7 @@ export function PostEditor({
             <option value="">No media</option>
             {assets.map((asset) => (
               <option key={asset.id} value={asset.id}>
-                {asset.alt_text}
+                {asset.media_type === "video" ? "Video" : "Photo"} · {asset.alt_text}
               </option>
             ))}
           </select>

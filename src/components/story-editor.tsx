@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Service } from "@/modules/professionals/domain";
@@ -55,7 +56,7 @@ export function StoryEditor({
                   preload="metadata"
                 />
               ) : (
-                <img src={`/api/media/${story.asset_id}`} alt="" />
+                <Image src={`/api/media/${story.asset_id}`} width={72} height={72} unoptimized alt="" />
               )}
               <div>
                 <strong>{story.caption || "Your Story"}</strong>

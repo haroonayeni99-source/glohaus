@@ -65,8 +65,8 @@ export default async function Profile({
       }>("SELECT beauty.professional_access_state($1) AS data", [id])
     ).rows[0].data;
     const assets = (
-      await db.query<{ id: string; alt_text: string }>(
-        "SELECT id,alt_text FROM beauty.public_portfolio WHERE professional_id=$1 ORDER BY created_at DESC LIMIT 100",
+      await db.query<{ id: string; alt_text: string; media_type: "image" | "video" }>(
+        "SELECT id,alt_text,media_type FROM beauty.public_media_assets WHERE professional_id=$1 ORDER BY created_at DESC LIMIT 100",
         [id],
       )
     ).rows;

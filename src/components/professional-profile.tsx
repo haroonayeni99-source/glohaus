@@ -33,6 +33,7 @@ export type ProfilePresentation = {
   rating: number | null;
   reviewCount: number;
   booking: ReactNode;
+  live: ReactNode;
   follow: { following: boolean; followerCount: number; signedIn: boolean };
   messageHref: string | null;
   bookingFeePence: number;
@@ -52,6 +53,7 @@ export function ProfessionalProfile({
   rating,
   reviewCount,
   booking,
+  live,
   follow,
   messageHref,
   bookingFeePence,
@@ -166,6 +168,7 @@ export function ProfessionalProfile({
           Book an appointment <ArrowUpRight size={18} aria-hidden />
         </a>
       </header>
+      {live}
       <nav className="profile-section-nav" aria-label="Profile sections">
         <a href="#about">About</a>
         <a href="#portfolio">Portfolio</a>

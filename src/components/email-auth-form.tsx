@@ -91,8 +91,12 @@ export function EmailAuthForm({
     }
 
     let verified = await serverAccount();
-    if (!verified.ok) {
-      await supabase.auth.refreshSession();
+    if (!verified.ok && verified.status === 401) {
+      // A fresh browser login may reach the server before its auth cookies are
+      // fully visible to the next request. Let the browser session settle and
+      // retry once instead of forcing a refresh token rotation.
+      await supabase.auth.getSession();
+      await new Promise((resolve) => window.setTimeout(resolve, 150));
       verified = await serverAccount();
     }
 

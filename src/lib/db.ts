@@ -50,6 +50,10 @@ async function connectWithRetry() {
         typeof error === "object" && error !== null && "code" in error
           ? String((error as { code?: unknown }).code ?? "")
           : "";
+      console.error("Database connection attempt failed", {
+        type: error instanceof Error ? error.name : "UnknownError",
+        code,
+      });
       if (code !== "28P01") throw error;
     }
   }

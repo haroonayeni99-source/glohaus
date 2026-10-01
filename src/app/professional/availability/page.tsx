@@ -6,6 +6,8 @@ import { withIdentity } from "@/lib/db";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { AccessMessage } from "@/components/access-message";
 import { AvailabilityCalendar } from "@/components/availability-calendar";
+import { LastMinuteEditor } from "@/components/last-minute-editor";
+import type { Service } from "@/modules/professionals/domain";
 import { calendarDate } from "@/modules/availability/calendar";
 import type { TimeOff, Rule } from "@/modules/availability/domain";
 export default async function Availability() {
@@ -23,6 +25,33 @@ export default async function Availability() {
       (
         await db.query<Rule>(
           'SELECT weekday,start_minute AS "startMinute",end_minute AS "endMinute" FROM beauty.availability_rules WHERE professional_id=$1 ORDER BY weekday',
+          [account.professionalId],
+        )
+      ).rows,
+  );
+  const services = await withIdentity(
+    account.authId,
+    async (db) =>
+      (
+        await db.query<Service>(
+          "SELECT * FROM beauty.services WHERE professional_id=$1 AND active=true ORDER BY name",
+          [account.professionalId],
+        )
+      ).rows,
+  );
+  const lastMinuteSlots = await withIdentity(
+    account.authId,
+    async (db) =>
+      (
+        await db.query<{ id: string; service_id: string; starts_at: string; ends_at: string; caption: string; service_name: string }>(
+          `SELECT slot.id,slot.service_id,slot.starts_at,slot.ends_at,slot.caption,service.name AS service_name
+           FROM beauty.last_minute_slots slot
+           JOIN beauty.services service ON service.id=slot.service_id
+           WHERE slot.professional_id=$1
+             AND slot.status='active'
+             AND slot.expires_at>now()
+             AND slot.starts_at>now()
+           ORDER BY slot.starts_at`,
           [account.professionalId],
         )
       ).rows,
@@ -52,6 +81,9 @@ export default async function Availability() {
               endsAt: new Date(block.endsAt).toISOString(),
             }))}
           />
+        </section>
+        <section className="pro-editor-surface">
+          <LastMinuteEditor services={services} slots={lastMinuteSlots} />
         </section>
       </main>
     </div>

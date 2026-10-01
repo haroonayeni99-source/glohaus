@@ -49,7 +49,7 @@ export async function saveService(
     input.assetId &&
     !(
       await db.query(
-        "SELECT id FROM beauty.portfolio_assets WHERE id=$1 AND professional_id=$2",
+        "SELECT id FROM beauty.portfolio_assets WHERE id=$1 AND professional_id=$2 AND media_type='image'",
         [input.assetId, professionalId],
       )
     ).rows.length

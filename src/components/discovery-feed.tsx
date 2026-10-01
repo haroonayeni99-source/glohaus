@@ -28,6 +28,9 @@ import {
 import { Brand } from "./brand";
 import { BottomNavigation } from "./bottom-navigation";
 import type { PublicPost } from "@/modules/posts/domain";
+import type { PublicStory } from "@/modules/stories/domain";
+import type { LastMinuteSlot } from "@/modules/last-minute/domain";
+import { DiscoveryLiveStrip } from "./discovery-live-strip";
 import { categories } from "@/modules/professionals/domain";
 import { inspiration } from "@/modules/discovery/inspiration";
 const emptyEngagement: EngagementMap = {};
@@ -64,6 +67,8 @@ export function DiscoveryFeed({
   hasMoreSaved = false,
   hideEditorial = false,
   routeBase = "/",
+  stories = [],
+  lastMinute = [],
 }: {
   publishedPosts?: PublicPost[];
   initialNext?: string | null;
@@ -77,7 +82,9 @@ export function DiscoveryFeed({
   savedPage?: number;
   hasMoreSaved?: boolean;
   hideEditorial?: boolean;
-  routeBase?: "/" | "/discover";
+  routeBase?: "/" | "/discover" | "/share";
+  stories?: PublicStory[];
+  lastMinute?: LastMinuteSlot[];
 }) {
   const labels = useLabels();
   const [feedPosts, setFeedPosts] = useState(publishedPosts);
@@ -401,6 +408,7 @@ export function DiscoveryFeed({
             </button>
           ))}
         </div>
+        <DiscoveryLiveStrip stories={stories} lastMinute={lastMinute} />
         <div className="feed-layout">
           <div
             className="feed-scroll"
@@ -453,16 +461,25 @@ export function DiscoveryFeed({
                   >
                     {post.asset_id && (
                       <>
-                        {}
-                        <Image
-                          width={1600}
-                          height={2000}
-                          unoptimized
-                          className="feed-image"
-                          src={`/api/media/${post.asset_id}`}
-                          alt={post.title}
-                          loading="lazy"
-                        />
+                        {post.asset_media_type === "video" ? (
+                          <video
+                            className="feed-image feed-video"
+                            src={`/api/media/${post.asset_id}`}
+                            controls
+                            playsInline
+                            preload="metadata"
+                          />
+                        ) : (
+                          <Image
+                            width={1600}
+                            height={2000}
+                            unoptimized
+                            className="feed-image"
+                            src={`/api/media/${post.asset_id}`}
+                            alt={post.title}
+                            loading="lazy"
+                          />
+                        )}
                         <div className="feed-shade" />
                       </>
                     )}

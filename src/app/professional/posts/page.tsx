@@ -20,7 +20,7 @@ export default async function Posts() {
   const account = result.account!;
   const data = await withIdentity(account.authId, async (db) => ({
     assets: (
-      await db.query<{ id: string; alt_text: string }>(
+      await db.query<{ id: string; alt_text: string; media_type: "image" | "video" }>(
         "SELECT id,alt_text,media_type FROM beauty.portfolio_assets WHERE professional_id=$1 AND publication_status='published' ORDER BY created_at DESC",
         [account.professionalId],
       )

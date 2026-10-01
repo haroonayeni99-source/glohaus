@@ -27,7 +27,7 @@ export type ProfilePresentation = {
   professional: PublicProfessional;
   details: ProfileDetails;
   services: Service[];
-  assets: { id: string; alt_text: string }[];
+  assets: { id: string; alt_text: string; media_type: "image" | "video" }[];
   reviews: { id: string; rating: number; body: string; public_name: string }[];
   hours: Rule[];
   rating: number | null;
@@ -241,21 +241,32 @@ export function ProfessionalProfile({
             <h2>A closer look.</h2>
             {assets.length ? (
               <div className={`professional-gallery portfolio-layout-${presentation.portfolio_layout}`}>
-                {assets.map((asset) => (
-                  <Image
-                    key={asset.id}
-                    src={`/api/media/${asset.id}`}
-                    width={600}
-                    height={750}
-                    unoptimized
-                    alt={asset.alt_text}
-                    loading="lazy"
-                  />
-                ))}
+                {assets.map((asset) =>
+                  asset.media_type === "video" ? (
+                    <video
+                      key={asset.id}
+                      src={`/api/media/${asset.id}`}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      aria-label={asset.alt_text}
+                    />
+                  ) : (
+                    <Image
+                      key={asset.id}
+                      src={`/api/media/${asset.id}`}
+                      width={600}
+                      height={750}
+                      unoptimized
+                      alt={asset.alt_text}
+                      loading="lazy"
+                    />
+                  ),
+                )}
               </div>
             ) : (
               <p className="profile-empty">
-                Portfolio images are on their way.
+                Portfolio media is on its way.
               </p>
             )}
           </section>

@@ -13,6 +13,8 @@ import {
 } from "@/modules/follows/repository";
 import type { PublicPost } from "@/modules/posts/domain";
 import type { EngagementMap } from "@/modules/engagement/domain";
+import type { PublicStory } from "@/modules/stories/domain";
+import type { LastMinuteSlot } from "@/modules/last-minute/domain";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +29,8 @@ type FeedData = {
   hasMore: boolean;
   viewer: string;
   next: string | null;
+  stories: PublicStory[];
+  lastMinute: LastMinuteSlot[];
 };
 
 const emptyFeedData: FeedData = {
@@ -39,6 +43,8 @@ const emptyFeedData: FeedData = {
   hasMore: false,
   viewer: "",
   next: null,
+  stories: [],
+  lastMinute: [],
 };
 
 export default async function Discover({
@@ -92,6 +98,16 @@ export default async function Discover({
             ? await savedPosts(db, page)
             : pageData?.posts || [];
         const posts = rows.slice(0, 40);
+        const stories = (
+          await db.query<PublicStory>(
+            "SELECT * FROM beauty.public_stories ORDER BY created_at DESC LIMIT 30",
+          )
+        ).rows;
+        const lastMinute = (
+          await db.query<LastMinuteSlot>(
+            "SELECT * FROM beauty.public_last_minute_slots ORDER BY starts_at ASC LIMIT 20",
+          )
+        ).rows;
 
         return {
           posts,
@@ -114,6 +130,8 @@ export default async function Discover({
             Boolean((followingView || (!savedView && !postId.success)) && pageData?.next),
           viewer: account?.id || "",
           next: pageData?.next || null,
+          stories,
+          lastMinute,
         } satisfies FeedData;
       });
     } catch {
@@ -136,7 +154,9 @@ export default async function Discover({
       savedPage={page}
       hasMoreSaved={savedView && data.hasMore}
       hideEditorial={postId.success}
-      routeBase="/discover"
+      routeBase="/share"
+      stories={data.stories}
+      lastMinute={data.lastMinute}
     />
   );
 }

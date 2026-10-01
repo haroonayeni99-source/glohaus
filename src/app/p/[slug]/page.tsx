@@ -3,6 +3,9 @@ import { PublicHeader } from "@/components/public-header";
 import { ProfessionalProfile } from "@/components/professional-profile";
 import { BookingPicker } from "@/components/booking-picker";
 import { BottomNavigation } from "@/components/bottom-navigation";
+import { DiscoveryLiveStrip } from "@/components/discovery-live-strip";
+import type { PublicStory } from "@/modules/stories/domain";
+import type { LastMinuteSlot } from "@/modules/last-minute/domain";
 import { withIdentity } from "@/lib/db";
 import { publicProfile } from "@/modules/professionals/repository";
 import { paymentReady } from "@/modules/payments/stripe";
@@ -92,6 +95,18 @@ export default async function Profile({
         [id],
       )
     ).rows;
+    const stories = (
+      await db.query<PublicStory>(
+        "SELECT * FROM beauty.public_stories WHERE professional_id=$1 ORDER BY created_at DESC LIMIT 20",
+        [id],
+      )
+    ).rows;
+    const lastMinute = (
+      await db.query<LastMinuteSlot>(
+        "SELECT * FROM beauty.public_last_minute_slots WHERE professional_id=$1 ORDER BY starts_at ASC LIMIT 12",
+        [id],
+      )
+    ).rows;
     const presentation = (
       await db.query<{
         profile_style: "signature" | "minimal" | "editorial";
@@ -117,6 +132,8 @@ export default async function Profile({
       follow,
       signedIn: Boolean(viewer),
       bookingFeePence,
+      stories,
+      lastMinute,
       presentation,
       access,
       messageHref: viewer?.roles.includes("customer")
@@ -143,6 +160,7 @@ export default async function Profile({
         messageHref={data.messageHref}
         bookingFeePence={data.bookingFeePence}
         presentation={data.presentation}
+        live={<DiscoveryLiveStrip stories={data.stories} lastMinute={data.lastMinute} />}
         booking={
           <BookingPicker
             services={data.services}

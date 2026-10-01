@@ -3,6 +3,7 @@ import "server-only";
 import type { SqlClient } from "@/modules/accounts/repository";
 import { AccessError } from "@/modules/accounts/domain";
 import type { PostInput, PublicPost } from "./domain";
+
 export async function savePost(
   db: SqlClient,
   professionalId: string,
@@ -29,6 +30,7 @@ export async function savePost(
     ).rows.length
   )
     throw new AccessError("FORBIDDEN", 403);
+
   const values = [
     professionalId,
     input.serviceId,
@@ -47,6 +49,7 @@ export async function savePost(
         values,
       );
   if (!result.rows.length) throw new AccessError("FORBIDDEN", 403);
+
   if (input.assetId !== undefined)
     await db.query("UPDATE beauty.posts SET asset_id=$2 WHERE id=$1", [
       result.rows[0].id,
@@ -54,10 +57,25 @@ export async function savePost(
     ]);
   return result.rows[0];
 }
+
+const postSelect = `
+  feed.id,feed.title,feed.body,feed.kind,feed.slug,feed.business_name,
+  feed.category,feed.city,feed.service_id,feed.service_name,feed.price_pence,
+  to_jsonb(feed)->>'asset_id' AS asset_id,
+  media.media_type AS asset_media_type,
+  media.mime_type AS asset_mime_type,
+  feed.professional_id
+`;
+
 export async function publicPosts(db: SqlClient) {
   return (
     await db.query<PublicPost>(
-      "SELECT id,title,body,kind,slug,business_name,category,city,service_id,service_name,price_pence,to_jsonb(feed)->>'asset_id' AS asset_id,professional_id FROM beauty.public_posts feed ORDER BY created_at DESC,id DESC LIMIT 40",
+      `SELECT ${postSelect}
+       FROM beauty.public_posts feed
+       LEFT JOIN beauty.public_media_assets media
+         ON media.id=(to_jsonb(feed)->>'asset_id')::uuid
+       ORDER BY feed.created_at DESC,feed.id DESC
+       LIMIT 40`,
     )
   ).rows;
 }
@@ -68,14 +86,18 @@ export async function publicPostPage(
 ) {
   const rows = (
     await db.query<PublicPost & { cursor_created_at: string }>(
-      `SELECT id,title,body,kind,slug,business_name,category,city,service_id,service_name,price_pence,to_jsonb(feed)->>'asset_id' AS asset_id,professional_id,
-   to_char(created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_created_at
-   FROM beauty.public_posts feed
-   WHERE ($1::timestamptz IS NULL OR (created_at,id)<($1::timestamptz,$2::uuid))
-   ORDER BY created_at DESC,id DESC LIMIT 41`,
+      `SELECT ${postSelect},
+       to_char(feed.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_created_at
+       FROM beauty.public_posts feed
+       LEFT JOIN beauty.public_media_assets media
+         ON media.id=(to_jsonb(feed)->>'asset_id')::uuid
+       WHERE ($1::timestamptz IS NULL OR (feed.created_at,feed.id)<($1::timestamptz,$2::uuid))
+       ORDER BY feed.created_at DESC,feed.id DESC
+       LIMIT 41`,
       [after?.createdAt ?? null, after?.id ?? null],
     )
   ).rows;
+
   const visible = rows.slice(0, 40);
   const last = visible.at(-1);
   return {
@@ -90,7 +112,6 @@ export async function publicPostPage(
   };
 }
 
-
 export async function followedPostPage(
   db: SqlClient,
   customerId: string,
@@ -98,11 +119,11 @@ export async function followedPostPage(
 ) {
   const rows = (
     await db.query<PublicPost & { cursor_created_at: string }>(
-      `SELECT feed.id,feed.title,feed.body,feed.kind,feed.slug,feed.business_name,
-        feed.category,feed.city,feed.service_id,feed.service_name,feed.price_pence,
-        to_jsonb(feed)->>'asset_id' AS asset_id,feed.professional_id,
-        to_char(feed.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_created_at
+      `SELECT ${postSelect},
+       to_char(feed.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_created_at
        FROM beauty.public_posts feed
+       LEFT JOIN beauty.public_media_assets media
+         ON media.id=(to_jsonb(feed)->>'asset_id')::uuid
        WHERE EXISTS (
          SELECT 1
          FROM beauty.professional_follows f
@@ -114,6 +135,7 @@ export async function followedPostPage(
       [customerId, after?.createdAt ?? null, after?.id ?? null],
     )
   ).rows;
+
   const visible = rows.slice(0, 40);
   const last = visible.at(-1);
   return {

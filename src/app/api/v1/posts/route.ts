@@ -79,7 +79,14 @@ export async function GET(request: Request) {
       async (db) =>
         (
           await db.query<PublicPost>(
-            "SELECT * FROM beauty.public_posts WHERE id=ANY($1::uuid[]) ORDER BY created_at DESC,id DESC",
+            `SELECT p.*,
+              media.media_type AS asset_media_type,
+              media.mime_type AS asset_mime_type
+             FROM beauty.public_posts p
+             LEFT JOIN beauty.public_media_assets media
+               ON media.id=(to_jsonb(p)->>'asset_id')::uuid
+             WHERE p.id=ANY($1::uuid[])
+             ORDER BY p.created_at DESC,p.id DESC`,
             [parsed.data],
           )
         ).rows,

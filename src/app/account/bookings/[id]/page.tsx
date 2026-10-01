@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { RefundForm } from "@/components/refund-form";
 import { RefundAppealForm } from "@/components/refund-appeal-form";
 import { ReviewForm } from "@/components/review-form";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { pageAccount } from "@/lib/page-access";
@@ -171,6 +172,20 @@ export default async function Booking({
           ended={b.has_ended}
           cancellable={b.cancellable}
         />
+        {data.professional &&
+          b.status === "cancelled" &&
+          new Date(b.starts_at).getTime() > Date.now() && (
+            <section className="form-notice">
+              <strong>This appointment time is free again.</strong>
+              <p>
+                If you still want to work this time, promote it as a last-minute
+                slot so customers can find and book it quickly.
+              </p>
+              <Link className="text-link" href="/professional/availability#last-minute">
+                Promote a last-minute slot →
+              </Link>
+            </section>
+          )}
     </>
   );
 

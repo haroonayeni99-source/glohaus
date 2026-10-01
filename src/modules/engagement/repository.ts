@@ -44,7 +44,16 @@ export async function viewerEngagement(
 export async function savedPosts(db: SqlClient, page: number) {
   return (
     await db.query<PublicPost>(
-      `SELECT p.* FROM beauty.public_posts p JOIN beauty.post_engagement e ON e.post_id=p.id WHERE e.saved ORDER BY e.created_at DESC,e.post_id DESC LIMIT 41 OFFSET $1`,
+      `SELECT p.*,
+        media.media_type AS asset_media_type,
+        media.mime_type AS asset_mime_type
+       FROM beauty.public_posts p
+       JOIN beauty.post_engagement e ON e.post_id=p.id
+       LEFT JOIN beauty.public_media_assets media
+         ON media.id=(to_jsonb(p)->>'asset_id')::uuid
+       WHERE e.saved
+       ORDER BY e.created_at DESC,e.post_id DESC
+       LIMIT 41 OFFSET $1`,
       [(page - 1) * 40],
     )
   ).rows;

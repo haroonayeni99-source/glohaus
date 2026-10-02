@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Heart, Bookmark, Share2 } from "lucide-react";
+import { ContentReportButton } from "./content-report-button";
 import type { Engagement } from "@/modules/engagement/domain";
 export function PostActions({
   id,
@@ -88,6 +89,7 @@ export function PostActions({
         <Share2 />
         <span>Share</span>
       </button>
+      {!editorial && <ContentReportButton targetType="post" targetId={id} />}
       {shareUrl && (
         <div
           className="post-share-panel"

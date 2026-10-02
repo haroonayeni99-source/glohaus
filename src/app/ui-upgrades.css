@@ -95,3 +95,6 @@
 .pro-header .brand-pro { color: #ff9dc5; }
 .pro-header .brand-crown { color: #ff9dc5; }
 .pro-header-account button { color: #fff; }
+
+/* Keep account-type navigation, form and status messages in reading order. */
+.auth-body { flex-direction: column; gap: 16px; }

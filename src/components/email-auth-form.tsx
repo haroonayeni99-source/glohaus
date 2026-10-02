@@ -18,7 +18,9 @@ export function EmailAuthForm({
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
+  const [confirmationEmail, setConfirmationEmail] = useState<string | null>(
+    null,
+  );
 
   async function provisionCustomer() {
     const provision = await fetch("/api/v1/accounts/enrol", {
@@ -58,106 +60,123 @@ export function EmailAuthForm({
   async function submit(formData: FormData) {
     setPending(true);
     setError(null);
-    const email = String(formData.get("email") || "").trim();
-    const password = String(formData.get("password") || "");
-    const supabase = createClient();
-    const result =
-      mode === "sign-up"
-        ? await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              emailRedirectTo: authCallbackUrl(redirectTo),
-              data: { glohaus_audience: audience },
-            },
-          })
-        : await supabase.auth.signInWithPassword({ email, password });
+    try {
+      const email = String(formData.get("email") || "").trim();
+      const password = String(formData.get("password") || "");
+      const supabase = createClient();
+      const result =
+        mode === "sign-up"
+          ? await supabase.auth.signUp({
+              email,
+              password,
+              options: {
+                emailRedirectTo: authCallbackUrl(redirectTo),
+                data: { glohaus_audience: audience },
+              },
+            })
+          : await supabase.auth.signInWithPassword({ email, password });
 
-    if (result.error) {
-      setError(result.error.message);
-      setPending(false);
-      return;
-    }
-    if (mode === "sign-up" && !result.data.session) {
-      setConfirmationEmail(email);
-      setError(null);
-      setPending(false);
-      return;
-    }
+      if (result.error) {
+        setError(result.error.message);
+        setPending(false);
+        return;
+      }
+      if (mode === "sign-up" && !result.data.session) {
+        setConfirmationEmail(email);
+        setError(null);
+        setPending(false);
+        return;
+      }
 
-    if (mode === "sign-up") {
+      if (mode === "sign-up") {
+        if (audience === "professional") {
+          router.push("/onboarding?intent=professional");
+          return;
+        }
+        const account = await provisionCustomer();
+        if (!account) return;
+        router.push(redirectTo || account.redirectTo || "/account");
+        return;
+      }
+
+      // A Supabase user can predate the GLOHAUS application account. After a
+      // successful password sign-in, bootstrap the internal account first so it
+      // appears in Owner/Admin and role routing has a real application record.
+      // This adds only the baseline customer role; professional access still
+      // requires the 18+ and Professional Terms onboarding flow.
+      const provisioned = await provisionCustomer();
+      if (!provisioned) return;
+
+      let verified = await serverAccount();
+      if (!verified.ok && verified.status === 401) {
+        await supabase.auth.getSession();
+        await new Promise((resolve) => window.setTimeout(resolve, 150));
+        verified = await serverAccount();
+      }
+
+      if (verified.ok) {
+        const me = await verified.json();
+        router.push(
+          signedInDestination(me?.account?.roles, audience, redirectTo),
+        );
+        return;
+      }
+
+      const trustedRoles = Array.isArray(
+        result.data.user?.app_metadata?.glohaus_roles,
+      )
+        ? result.data.user.app_metadata.glohaus_roles.filter(
+            (role: unknown): role is string => typeof role === "string",
+          )
+        : [];
+
+      if (trustedRoles.includes("owner") || trustedRoles.includes("admin")) {
+        router.push("/admin");
+        return;
+      }
+
       if (audience === "professional") {
         router.push("/onboarding?intent=professional");
         return;
       }
-      const account = await provisionCustomer();
-      if (!account) return;
-      router.push(redirectTo || account.redirectTo || "/account");
-      return;
-    }
 
-    // A Supabase user can predate the GLOHAUS application account. After a
-    // successful password sign-in, bootstrap the internal account first so it
-    // appears in Owner/Admin and role routing has a real application record.
-    // This adds only the baseline customer role; professional access still
-    // requires the 18+ and Professional Terms onboarding flow.
-    const provisioned = await provisionCustomer();
-    if (!provisioned) return;
-
-    let verified = await serverAccount();
-    if (!verified.ok && verified.status === 401) {
-      await supabase.auth.getSession();
-      await new Promise((resolve) => window.setTimeout(resolve, 150));
-      verified = await serverAccount();
-    }
-
-    if (verified.ok) {
-      const me = await verified.json();
-      router.push(
-        signedInDestination(me?.account?.roles, audience, redirectTo),
+      router.push(provisioned.redirectTo || "/account");
+    } catch {
+      setError(
+        "We couldn’t connect to GLOHAUS. Check your connection and try again. Your details have been kept in this form.",
       );
-      return;
+    } finally {
+      setPending(false);
     }
-
-    const trustedRoles = Array.isArray(result.data.user?.app_metadata?.glohaus_roles)
-      ? result.data.user.app_metadata.glohaus_roles.filter(
-          (role: unknown): role is string => typeof role === "string",
-        )
-      : [];
-
-    if (trustedRoles.includes("owner") || trustedRoles.includes("admin")) {
-      router.push("/admin");
-      return;
-    }
-
-    if (audience === "professional") {
-      router.push("/onboarding?intent=professional");
-      return;
-    }
-
-    router.push(provisioned.redirectTo || "/account");
   }
 
   async function resendConfirmation() {
     if (!confirmationEmail || pending) return;
     setPending(true);
     setError(null);
-    const supabase = createClient();
-    const result = await supabase.auth.resend({
-      type: "signup",
-      email: confirmationEmail,
-      options: {
-        emailRedirectTo: authCallbackUrl(redirectTo),
-      },
-    });
-    if (result.error) {
+    try {
+      const supabase = createClient();
+      const result = await supabase.auth.resend({
+        type: "signup",
+        email: confirmationEmail,
+        options: {
+          emailRedirectTo: authCallbackUrl(redirectTo),
+        },
+      });
+      if (result.error) {
+        setError(
+          result.error.status === 429
+            ? "Too many confirmation emails have been requested. Please try again later."
+            : "We couldn’t resend the confirmation email. Please try again.",
+        );
+      }
+    } catch {
       setError(
-        result.error.status === 429
-          ? "Too many confirmation emails have been requested. Please try again later."
-          : "We couldn’t resend the confirmation email. Please try again.",
+        "We couldn’t send the confirmation email. Check your connection and try again.",
       );
+    } finally {
+      setPending(false);
     }
-    setPending(false);
   }
 
   const professional = audience === "professional";
@@ -179,7 +198,14 @@ export function EmailAuthForm({
         : "Discover, save and book beauty that feels like you.";
 
   return (
-    <form action={submit} className="auth-email-form">
+    <form
+      onSubmit={async (event) => {
+        event.preventDefault();
+        if (!pending) await submit(new FormData(event.currentTarget));
+      }}
+      className="auth-email-form"
+      aria-busy={pending}
+    >
       <p className="eyebrow">{professional ? "GLOHAUS PRO" : "GLOHAUS"}</p>
       <h1>{title}</h1>
       <p className="auth-email-intro">{description}</p>
@@ -192,8 +218,10 @@ export function EmailAuthForm({
         <input
           name="password"
           type="password"
-          autoComplete={mode === "sign-up" ? "new-password" : "current-password"}
-          minLength={8}
+          autoComplete={
+            mode === "sign-up" ? "new-password" : "current-password"
+          }
+          minLength={mode === "sign-up" ? 8 : undefined}
           required
         />
       </label>
@@ -205,9 +233,9 @@ export function EmailAuthForm({
       {confirmationEmail && mode === "sign-up" && (
         <div className="form-notice" role="status">
           <p>
-            Check <strong>{confirmationEmail}</strong> and use the newest GLOHAUS
-            confirmation email. If the first link has expired or does not open
-            correctly, request a fresh one below.
+            Check <strong>{confirmationEmail}</strong> and use the newest
+            GLOHAUS confirmation email. If the first link has expired or does
+            not open correctly, request a fresh one below.
           </p>
           <button type="button" onClick={resendConfirmation} disabled={pending}>
             {pending ? "Sending…" : "Resend verification email"}
@@ -215,7 +243,10 @@ export function EmailAuthForm({
         </div>
       )}
       {error && <p role="alert">{error}</p>}
-      <button className="button full-width" disabled={pending || Boolean(confirmationEmail)}>
+      <button
+        className="button full-width"
+        disabled={pending || Boolean(confirmationEmail)}
+      >
         {pending
           ? "Please wait…"
           : mode === "sign-up"
@@ -254,7 +285,10 @@ export function EmailAuthForm({
         )}
       </p>
       {professional && (
-        <Link className="auth-professional-preview" href="/professional-preview">
+        <Link
+          className="auth-professional-preview"
+          href="/professional-preview"
+        >
           Preview GLOHAUS PRO without signing in
         </Link>
       )}

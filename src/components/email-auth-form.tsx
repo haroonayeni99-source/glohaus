@@ -49,6 +49,12 @@ export function EmailAuthForm({
     return fetch("/api/v1/me", { cache: "no-store" });
   }
 
+  function authCallbackUrl(next: string) {
+    const url = new URL("/auth/callback", window.location.origin);
+    url.searchParams.set("next", next);
+    return url.toString();
+  }
+
   async function submit(formData: FormData) {
     setPending(true);
     setError(null);
@@ -61,7 +67,7 @@ export function EmailAuthForm({
             email,
             password,
             options: {
-              emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+              emailRedirectTo: authCallbackUrl(redirectTo),
               data: { glohaus_audience: audience },
             },
           })
@@ -92,9 +98,6 @@ export function EmailAuthForm({
 
     let verified = await serverAccount();
     if (!verified.ok && verified.status === 401) {
-      // A fresh browser login may reach the server before its auth cookies are
-      // fully visible to the next request. Let the browser session settle and
-      // retry once instead of forcing a refresh token rotation.
       await supabase.auth.getSession();
       await new Promise((resolve) => window.setTimeout(resolve, 150));
       verified = await serverAccount();
@@ -141,7 +144,7 @@ export function EmailAuthForm({
       type: "signup",
       email: confirmationEmail,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+        emailRedirectTo: authCallbackUrl(redirectTo),
       },
     });
     if (result.error) {

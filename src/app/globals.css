@@ -7990,6 +7990,8 @@ body > .theme-toggle {
 .map-service-filters::-webkit-scrollbar,
 .map-secondary-filters::-webkit-scrollbar { display:none; }
 .map-service-filters a,
+.map-secondary-filters a,
+.map-secondary-filters a,
 .map-secondary-filters span,
 .map-secondary-filters button {
   white-space:nowrap;
@@ -8036,6 +8038,37 @@ body > .theme-toggle {
     linear-gradient(145deg,transparent 48%,#e0ddd6 49%,#e0ddd6 50%,transparent 51%) 0 0/95px 95px,
     #f4f1e9;
   border-right:1px solid #ddd6d8;
+}
+.map-canvas {
+  position:absolute;
+  inset:0;
+  transform:scale(var(--map-scale,1));
+  transform-origin:center;
+  transition:transform .22s ease;
+}
+.map-controls button:disabled {
+  opacity:.42;
+  cursor:not-allowed;
+}
+.map-location-notice {
+  position:absolute;
+  z-index:6;
+  left:74px;
+  top:22px;
+  max-width:min(330px,calc(100% - 96px));
+  padding:10px 12px;
+  border:1px solid #e2dcde;
+  border-radius:10px;
+  background:rgba(255,255,255,.95);
+  color:#40363a;
+  box-shadow:0 8px 24px rgba(46,31,37,.1);
+  font-size:.76rem;
+  font-weight:650;
+}
+.map-secondary-filters a.active {
+  background:#f44e99;
+  color:#fff;
+  border-color:#f44e99;
 }
 .map-river {
   position:absolute;
@@ -8307,6 +8340,7 @@ body > .theme-toggle {
   border-color:#41373b;
 }
 :root[data-theme="night"] .map-service-filters a,
+:root[data-theme="night"] .map-secondary-filters a,
 :root[data-theme="night"] .map-secondary-filters span,
 :root[data-theme="night"] .map-secondary-filters button {
   background:#2a2426;
@@ -8335,6 +8369,7 @@ body > .theme-toggle {
   .map-area-card { min-height:96px;padding:12px; }
   .map-filter-shell { padding:10px 12px 12px; }
   .map-service-filters a { min-height:36px;padding:7px 13px;font-size:.82rem; }
+  .map-secondary-filters a,
   .map-secondary-filters span,
   .map-secondary-filters button { font-size:.76rem; }
   .glohaus-map { min-height:475px; }
@@ -8911,4 +8946,10 @@ body > .theme-toggle {
   border-radius: 50%;
   background: transparent;
   color: var(--ink);
+}
+
+:root[data-theme="night"] .map-location-notice {
+  background:rgba(42,36,38,.96);
+  color:#f5edef;
+  border-color:#473d41;
 }

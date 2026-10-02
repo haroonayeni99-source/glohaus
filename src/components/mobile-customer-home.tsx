@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, ShieldCheck } from "lucide-react";
 import { Brand } from "./brand";
 import { BottomNavigation } from "./bottom-navigation";
 
@@ -12,7 +12,7 @@ const mobileCategories = [
   ["Makeup", "https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=240&q=82"],
 ] as const;
 
-export function MobileCustomerHome({ signedIn = false }: { signedIn?: boolean }) {
+export function MobileCustomerHome({ signedIn = false, canAccessAdmin = false }: { signedIn?: boolean; canAccessAdmin?: boolean }) {
   const notificationHref = signedIn
     ? "/notifications"
     : "/sign-in?returnTo=%2Fnotifications";
@@ -25,13 +25,20 @@ export function MobileCustomerHome({ signedIn = false }: { signedIn?: boolean })
             <Brand inverse />
             <span>Beauty. Book. Shop. Belong.</span>
           </div>
-          <Link
-            className="mobile-home-bell"
-            href={notificationHref}
-            aria-label="Notifications"
-          >
-            <Bell size={21} aria-hidden />
-          </Link>
+          <div className="mobile-home-header-actions">
+            {canAccessAdmin && (
+              <Link className="mobile-home-bell" href="/admin" aria-label="Owner/Admin" title="Owner/Admin">
+                <ShieldCheck size={20} aria-hidden />
+              </Link>
+            )}
+            <Link
+              className="mobile-home-bell"
+              href={notificationHref}
+              aria-label="Notifications"
+            >
+              <Bell size={21} aria-hidden />
+            </Link>
+          </div>
         </header>
 
         <form className="mobile-home-search" action="/explore" role="search">

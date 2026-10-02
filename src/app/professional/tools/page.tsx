@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Star,
   Bell,
+  Clock3,
   Compass,
   MessageSquare,
   PackageCheck,
@@ -46,6 +47,12 @@ const tools = [
     "Weekly hours, breaks and time off",
     "/professional/availability",
     CalendarDays,
+  ],
+  [
+    "Last-minute slots",
+    "Promote cancelled or newly free appointments to customers",
+    "/professional/availability#last-minute",
+    Clock3,
   ],
   [
     "Portfolio",
@@ -91,6 +98,12 @@ const tools = [
     BadgePoundSterling,
   ],
   ["Notifications", "Keep up with your appointments", "/notifications?view=professional", Bell],
+  [
+    "Protection centre",
+    "Disputes, evidence, safety and client protection tools",
+    "/professional/protection",
+    ShieldCheck,
+  ],
   [
     "Account & security",
     "Manage your session and verification",

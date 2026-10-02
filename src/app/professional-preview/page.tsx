@@ -58,7 +58,7 @@ export default async function ProfessionalPreviewPage({
           </Link>
         </nav>
       </div>
-      <main id="main" className="pro-main">
+      <main id="main" className="pro-main pro-preview-main">
         <section className="pro-welcome">
           <div>
             <p className="pro-kicker">GLOHAUS PRO</p>

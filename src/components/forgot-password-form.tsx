@@ -4,6 +4,23 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
+function passwordRecoveryCallbackUrl() {
+  const configuredOrigin = process.env.NEXT_PUBLIC_APP_URL?.trim();
+
+  try {
+    const origin = configuredOrigin
+      ? new URL(configuredOrigin).origin
+      : window.location.origin;
+    const callbackUrl = new URL("/auth/callback", origin);
+    callbackUrl.searchParams.set("next", "/reset-password");
+    return callbackUrl.toString();
+  } catch {
+    const callbackUrl = new URL("/auth/callback", window.location.origin);
+    callbackUrl.searchParams.set("next", "/reset-password");
+    return callbackUrl.toString();
+  }
+}
+
 export function ForgotPasswordForm() {
   const [pending, setPending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -19,11 +36,12 @@ export function ForgotPasswordForm() {
 
     const email = String(formData.get("email") || "").trim();
     const supabase = createClient();
-    const callbackUrl = new URL("/auth/callback", window.location.origin);
-    callbackUrl.searchParams.set("next", "/reset-password");
 
     const result = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: callbackUrl.toString(),
+      // Always send recovery emails back through the canonical production
+      // callback. Preview/alias origins are commonly rejected by Supabase's
+      // redirect allow-list, which makes Auth fall back to the Site URL.
+      redirectTo: passwordRecoveryCallbackUrl(),
     });
 
     setPending(false);

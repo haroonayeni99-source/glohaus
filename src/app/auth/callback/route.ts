@@ -7,7 +7,8 @@ import { withIdentity } from "@/lib/db";
 import { ensureCustomerAccount } from "@/modules/accounts/repository";
 import { workspacePath, type Identity } from "@/modules/accounts/domain";
 
-const CANONICAL_PRODUCTION_ORIGIN = "https://glohaus.shop";
+const PRODUCTION_HOSTS = new Set(["glohaus.shop", "www.glohaus.shop"]);
+const FALLBACK_PRODUCTION_ORIGIN = "https://www.glohaus.shop";
 
 function noStoreRedirect(origin: string, path: string) {
   const response = NextResponse.redirect(new URL(path, origin));
@@ -19,11 +20,11 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const next = url.searchParams.get("next");
 
-  // Recovery codes are tied to the browser-origin flow that created them.
-  // If Supabase or an older email points at a Vercel alias, move the untouched
-  // callback to the canonical production host before exchanging/verifying it.
-  if (next === "/reset-password" && url.origin !== CANONICAL_PRODUCTION_ORIGIN) {
-    const canonical = new URL(url.pathname + url.search, CANONICAL_PRODUCTION_ORIGIN);
+  // Both apex and www are valid production origins. Do not redirect between
+  // them or Vercel's domain canonicalisation can create a loop. Only move
+  // recovery callbacks off deployment/preview aliases.
+  if (next === "/reset-password" && !PRODUCTION_HOSTS.has(url.hostname)) {
+    const canonical = new URL(url.pathname + url.search, FALLBACK_PRODUCTION_ORIGIN);
     const redirect = NextResponse.redirect(canonical);
     redirect.headers.set("Cache-Control", "private, no-store");
     return redirect;

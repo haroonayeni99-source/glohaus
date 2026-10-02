@@ -24,7 +24,7 @@ export default async function Explore({
 
   if (process.env.DATABASE_URL) {
     try {
-      const result = await withIdentity("", (db) => discoveryPage(db, q, filters, after));
+      const result = await withIdentity("", (db) => discoveryPage(db, q, after, filters));
       professionals = result.professionals;
       next = result.next;
     } catch {

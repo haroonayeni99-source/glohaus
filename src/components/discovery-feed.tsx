@@ -324,7 +324,7 @@ export function DiscoveryFeed({
             onClick={() => filter("For you")}
           >
             <Compass size={22} />
-            Share
+            {routeBase === "/share" ? "Share" : "Discover"}
           </button>
           <Link className="discovery-nav" href="/explore">
             <Search size={22} />
@@ -369,7 +369,7 @@ export function DiscoveryFeed({
             <Brand />
           </div>
           <div className="discovery-heading">
-            <p className="eyebrow">SHARE. BOOK. GET INSPIRED.</p>
+            <p className="eyebrow">{routeBase === "/share" ? "SHARE. CONNECT. BOOK." : "DISCOVER. BOOK. GET INSPIRED."}</p>
             <h1>
               Real beauty. Real people. <em>Real results.</em>
             </h1>
@@ -408,7 +408,7 @@ export function DiscoveryFeed({
             </button>
           ))}
         </div>
-        <DiscoveryLiveStrip stories={stories} lastMinute={lastMinute} />
+        {routeBase === "/share" && <DiscoveryLiveStrip stories={stories} lastMinute={lastMinute} />}
         <div className="feed-layout">
           <div
             className="feed-scroll"
@@ -728,7 +728,7 @@ export function DiscoveryFeed({
           </div>
         )}
       </main>
-      <BottomNavigation active="discover" signedIn={viewerSignedIn} />
+      <BottomNavigation active={routeBase === "/share" ? "share" : "discover"} signedIn={viewerSignedIn} />
     </div>
   );
 }

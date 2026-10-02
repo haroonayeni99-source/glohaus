@@ -7,6 +7,7 @@ import { withIdentity } from "@/lib/db";
 import { AccessError, workspacePath } from "@/modules/accounts/domain";
 import { findAccount } from "@/modules/accounts/repository";
 import { safeReturnTo } from "@/lib/return-to";
+import { accountDatabaseUnavailable, supabaseAccount } from "@/lib/account-supabase-fallback";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Choose your workspace" };
 export default async function Page({
@@ -18,9 +19,15 @@ export default async function Page({
   let code: AccessError["code"] | null = null;
   try {
     const identity = await getIdentity();
-    const account = await withIdentity(identity.authId, (db) =>
-      findAccount(db, identity.authId),
-    );
+    let account;
+    try {
+      account = await withIdentity(identity.authId, (db) =>
+        findAccount(db, identity.authId),
+      );
+    } catch (error) {
+      if (!accountDatabaseUnavailable(error)) throw error;
+      account = await supabaseAccount();
+    }
     if (account && account.status !== "active") code = "ACCOUNT_INACTIVE";
     if (account?.status === "active") {
       const needsProfessionalSetup =

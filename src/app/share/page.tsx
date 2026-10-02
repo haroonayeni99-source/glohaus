@@ -1,5 +1,14 @@
-import ShareFeedPage from "../discover/page";
+import { FeedPage } from "../discover/page";
 
 export const dynamic = "force-dynamic";
 
-export default ShareFeedPage;
+export default async function SharePage(props: {
+  searchParams: Promise<{
+    view?: string;
+    feed?: string;
+    page?: string;
+    post?: string;
+  }>;
+}) {
+  return FeedPage({ ...props, mode: "share" });
+}

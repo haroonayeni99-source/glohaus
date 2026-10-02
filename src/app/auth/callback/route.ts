@@ -90,44 +90,42 @@ export async function GET(request: NextRequest) {
     new URL(plan.redirectTo, url.origin).toString(),
   );
 
-  if (plan.audience === "customer") {
-    if (!user?.id || !user.email) {
+  if (!user?.id || !user.email) {
+    response.headers.set(
+      "Location",
+      new URL("/sign-in?authError=confirmation_failed", url.origin).toString(),
+    );
+    return response;
+  }
+
+  const identity: Identity = {
+    authId: user.id,
+    email: user.email,
+    displayName: user.email.split("@")[0]?.slice(0, 120) || "Your account",
+    secondFactorAge: null,
+  };
+
+  try {
+    // Every confirmed Supabase identity gets a baseline GLOHAUS account so it
+    // is visible to Owner/Admin immediately. Professional privileges are still
+    // granted only through the separate 18+ / Professional Terms onboarding.
+    const account = await withIdentity(identity.authId, (db) =>
+      ensureCustomerAccount(db, identity),
+    );
+    if (plan.audience === "customer" && !account.roles.includes("customer")) {
       response.headers.set(
         "Location",
-        new URL(
-          "/sign-in?authError=confirmation_failed",
-          url.origin,
-        ).toString(),
-      );
-      return response;
-    }
-
-    const identity: Identity = {
-      authId: user.id,
-      email: user.email,
-      displayName: user.email.split("@")[0]?.slice(0, 120) || "Your account",
-      secondFactorAge: null,
-    };
-
-    try {
-      const account = await withIdentity(identity.authId, (db) =>
-        ensureCustomerAccount(db, identity),
-      );
-      if (!account.roles.includes("customer")) {
-        response.headers.set(
-          "Location",
-          new URL(workspacePath(account), url.origin).toString(),
-        );
-      }
-    } catch {
-      response.headers.set(
-        "Location",
-        new URL(
-          `/onboarding?returnTo=${encodeURIComponent(plan.redirectTo)}`,
-          url.origin,
-        ).toString(),
+        new URL(workspacePath(account), url.origin).toString(),
       );
     }
+  } catch {
+    response.headers.set(
+      "Location",
+      new URL(
+        `/onboarding?returnTo=${encodeURIComponent(plan.redirectTo)}`,
+        url.origin,
+      ).toString(),
+    );
   }
 
   return response;

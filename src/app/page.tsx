@@ -34,8 +34,9 @@ export default async function Home({
   let viewer: {
     signedIn: boolean;
     displayName: string;
+    canAccessAdmin: boolean;
     summary: CustomerHomeSummary | null;
-  } = { signedIn: false, displayName: "", summary: null };
+  } = { signedIn: false, displayName: "", canAccessAdmin: false, summary: null };
   let professionals: PublicProfessional[] = [];
 
   if (process.env.DATABASE_URL) {
@@ -48,6 +49,7 @@ export default async function Home({
       viewer = {
         signedIn: true,
         displayName: identity.displayName,
+        canAccessAdmin: false,
         summary: null,
       };
     } catch {}
@@ -68,6 +70,9 @@ export default async function Home({
         return {
           signedIn: Boolean(authId),
           displayName: account?.displayName || viewer.displayName,
+          canAccessAdmin: Boolean(
+            account?.roles.includes("owner") || account?.roles.includes("admin"),
+          ),
           summary,
         };
       });
@@ -111,9 +116,13 @@ export default async function Home({
         professionals={professionals}
         signedIn={viewer.signedIn}
         displayName={viewer.displayName}
+        canAccessAdmin={viewer.canAccessAdmin}
         summary={viewer.summary}
       />
-      <MobileCustomerHome signedIn={viewer.signedIn} />
+      <MobileCustomerHome
+        signedIn={viewer.signedIn}
+        canAccessAdmin={viewer.canAccessAdmin}
+      />
     </>
   );
 }

@@ -1100,6 +1100,8 @@ svg {
   color: var(--plum);
 }
 .auth-preview-link {
+  position: relative;
+  z-index: 5;
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -1107,6 +1109,7 @@ svg {
   color: var(--plum);
   font-size: 0.78rem;
   font-weight: 750;
+  pointer-events: auto;
 }
 .auth-preview-link:hover { color: var(--ink); }
 .auth-body {

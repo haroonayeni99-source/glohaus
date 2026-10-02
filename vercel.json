@@ -5,6 +5,7 @@
       "main": true
     }
   },
+  "regions": ["lhr1"],
   "crons": [
     {
       "path": "/api/cron/notifications",

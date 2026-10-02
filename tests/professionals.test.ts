@@ -92,6 +92,7 @@ describe.sequential("professional publishing and private ownership", () => {
       "rating",
       "review_count",
       "slug",
+      "travels_to_you",
       "verification_status",
     ]);
   });
@@ -286,6 +287,13 @@ it("resets pagination for changed searches and malformed cursors", () => {
   );
   expect(discoveryOptions({ q: "Hair", after: cursor })).toEqual({
     query: "Hair",
+    filters: {
+      verified: false,
+      under50: false,
+      topRated: false,
+      travels: false,
+      availableToday: false,
+    },
     after: undefined,
   });
   expect(discoveryOptions({ q: ["Nails"], after: "broken" })).toEqual({

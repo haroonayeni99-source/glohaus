@@ -1,5 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import {
   BadgeCheck,
   ChevronDown,
@@ -39,18 +43,31 @@ const serviceFilters = [
 ];
 
 const clusters = [
-  { name: "Camden", pos: "map-cluster-camden" },
-  { name: "Notting Hill", pos: "map-cluster-notting" },
-  { name: "Soho", pos: "map-cluster-soho" },
-  { name: "Shoreditch", pos: "map-cluster-shoreditch" },
-  { name: "Brixton", pos: "map-cluster-brixton" },
-  { name: "Peckham", pos: "map-cluster-peckham" },
-  { name: "Greenwich", pos: "map-cluster-greenwich" },
+  { name: "Camden", pos: "map-cluster-camden", lat: 51.539, lng: -0.143 },
+  { name: "Notting Hill", pos: "map-cluster-notting", lat: 51.509, lng: -0.204 },
+  { name: "Soho", pos: "map-cluster-soho", lat: 51.513, lng: -0.133 },
+  { name: "Shoreditch", pos: "map-cluster-shoreditch", lat: 51.524, lng: -0.078 },
+  { name: "Brixton", pos: "map-cluster-brixton", lat: 51.462, lng: -0.115 },
+  { name: "Peckham", pos: "map-cluster-peckham", lat: 51.474, lng: -0.069 },
+  { name: "Greenwich", pos: "map-cluster-greenwich", lat: 51.482, lng: 0.006 },
 ];
 
 function ratingText(pro: PublicProfessional) {
   if (pro.rating == null) return "New";
   return `${pro.rating.toFixed(1)} (${pro.review_count ?? 0})`;
+}
+
+function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const earthKm = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) ** 2;
+  return earthKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 export function ExploreMapExperience({
@@ -62,6 +79,10 @@ export function ExploreMapExperience({
   query: string;
   filters: DiscoveryFilters;
 }) {
+  const router = useRouter();
+  const [zoom, setZoom] = useState(1);
+  const [locationNotice, setLocationNotice] = useState("");
+  const [locating, setLocating] = useState(false);
   const nearby = professionals.slice(0, 6);
   const selected = query.trim().toLowerCase();
   const filterPairs = [
@@ -85,6 +106,49 @@ export function ExploreMapExperience({
     return value ? `/explore?${value}` : "/explore";
   };
   const anySecondaryFilter = filterPairs.some(([, active]) => active);
+
+  function useMyLocation() {
+    if (!("geolocation" in navigator)) {
+      setLocationNotice("Location is not available in this browser.");
+      return;
+    }
+    setLocating(true);
+    setLocationNotice("Checking your nearest GLOHAUS area…");
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const nearest = clusters
+          .map((cluster) => ({
+            ...cluster,
+            distance: distanceKm(
+              coords.latitude,
+              coords.longitude,
+              cluster.lat,
+              cluster.lng,
+            ),
+          }))
+          .sort((a, b) => a.distance - b.distance)[0];
+
+        if (!nearest || nearest.distance > 35) {
+          setLocationNotice(
+            "You appear to be outside the current London discovery area.",
+          );
+          setLocating(false);
+          return;
+        }
+
+        setLocationNotice(`Nearest area: ${nearest.name}`);
+        setLocating(false);
+        router.push(hrefFor(nearest.name));
+      },
+      () => {
+        setLocationNotice(
+          "Location permission was not granted. You can still search by area or street.",
+        );
+        setLocating(false);
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 },
+    );
+  }
 
   return (
     <div className="map-explore-page">
@@ -186,6 +250,10 @@ export function ExploreMapExperience({
 
       <section className="map-results-layout">
         <div className="glohaus-map" aria-label="Stylised London beauty discovery map">
+          <div
+            className="map-canvas"
+            style={{ "--map-scale": zoom } as React.CSSProperties}
+          >
           <div className="map-road map-road-a" />
           <div className="map-road map-road-b" />
           <div className="map-road map-road-c" />
@@ -195,11 +263,38 @@ export function ExploreMapExperience({
           <span className="map-borough-label map-label-westminster">WESTMINSTER</span>
           <span className="map-borough-label map-label-lewisham">LEWISHAM</span>
 
-          <div className="map-controls">
-            <button type="button" aria-label="Zoom in">+</button>
-            <button type="button" aria-label="Zoom out">−</button>
-            <button type="button" aria-label="Use my location"><LocateFixed size={17} /></button>
           </div>
+          <div className="map-controls">
+            <button
+              type="button"
+              aria-label="Zoom in"
+              disabled={zoom >= 1.35}
+              onClick={() => setZoom((value) => Math.min(1.35, +(value + 0.1).toFixed(2)))}
+            >
+              +
+            </button>
+            <button
+              type="button"
+              aria-label="Zoom out"
+              disabled={zoom <= 0.85}
+              onClick={() => setZoom((value) => Math.max(0.85, +(value - 0.1).toFixed(2)))}
+            >
+              −
+            </button>
+            <button
+              type="button"
+              aria-label="Use my location"
+              aria-busy={locating}
+              onClick={useMyLocation}
+            >
+              <LocateFixed size={17} />
+            </button>
+          </div>
+          {locationNotice && (
+            <div className="map-location-notice" role="status">
+              {locationNotice}
+            </div>
+          )}
 
           {clusters.map((cluster) => (
             <Link

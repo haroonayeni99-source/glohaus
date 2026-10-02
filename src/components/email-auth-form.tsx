@@ -52,9 +52,20 @@ export function EmailAuthForm({
   }
 
   function authCallbackUrl(next: string) {
-    const url = new URL("/auth/callback", window.location.origin);
+    const productionHosts = new Set(["glohaus.shop", "www.glohaus.shop"]);
+    const current = new URL(window.location.href);
+    const origin = productionHosts.has(current.hostname)
+      ? current.origin
+      : "https://www.glohaus.shop";
+    const url = new URL("/auth/callback", origin);
     url.searchParams.set("next", next);
     return url.toString();
+  }
+
+  function confirmationDestination() {
+    return audience === "professional"
+      ? "/onboarding?intent=professional"
+      : "/account";
   }
 
   async function submit(formData: FormData) {
@@ -70,7 +81,7 @@ export function EmailAuthForm({
               email,
               password,
               options: {
-                emailRedirectTo: authCallbackUrl(redirectTo),
+                emailRedirectTo: authCallbackUrl(confirmationDestination()),
                 data: { glohaus_audience: audience },
               },
             })
@@ -160,7 +171,7 @@ export function EmailAuthForm({
         type: "signup",
         email: confirmationEmail,
         options: {
-          emailRedirectTo: authCallbackUrl(redirectTo),
+          emailRedirectTo: authCallbackUrl(confirmationDestination()),
         },
       });
       if (result.error) {

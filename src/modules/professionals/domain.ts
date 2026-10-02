@@ -134,6 +134,7 @@ export type PublicProfessional = {
   rating?: number | null;
   review_count?: number;
   from_price_pence?: number | null;
+  travels_to_you?: boolean;
   id: string;
   slug: string;
   business_name: string;

@@ -17,7 +17,7 @@ export async function updateProfile(
   input: ProfileInput,
 ) {
   const result = await db.query(
-    `UPDATE beauty.professional_profiles SET slug=$2,business_name=$3,bio=$4,city=$5,category=$6,publication_status=$7,business_description=$8,location_details=$9,contact_preference=$10,contact_email=$11,contact_phone=$12,instagram_url=$13,tiktok_url=$14,website_url=$15 WHERE id=$1 RETURNING id`,
+    `UPDATE beauty.professional_profiles SET slug=$2,business_name=$3,bio=$4,city=$5,category=$6,publication_status=$7,business_description=$8,location_details=$9,travels_to_you=$10,contact_preference=$11,contact_email=$12,contact_phone=$13,instagram_url=$14,tiktok_url=$15,website_url=$16 WHERE id=$1 RETURNING id`,
     [
       id,
       input.slug,
@@ -28,6 +28,7 @@ export async function updateProfile(
       input.publicationStatus,
       input.businessDescription ?? "",
       input.locationDetails ?? "",
+      input.travelsToYou ?? false,
       input.contactPreference ?? "booking",
       input.contactEmail ?? "",
       input.contactPhone ?? "",

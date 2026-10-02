@@ -5,6 +5,7 @@ import {
   MessageSquare, Search, ShoppingBag, UserRound, WalletCards, Crown, Gift, ShieldCheck,
 } from "lucide-react";
 import { Brand } from "./brand";
+import { SiteFooter } from "./site-footer";
 import { money, type PublicProfessional } from "@/modules/professionals/domain";
 import type { CustomerHomeSummary } from "@/modules/home/repository";
 
@@ -182,6 +183,7 @@ export function DesktopCustomerHome({
       </section>
       <Link className="desktop-shop-banner" href="/shop"><div><strong>Shop Beauty<br/>Essentials</strong><span>Curated products from trusted professionals.</span><b>Shop Now →</b></div><Image fill sizes="320px" src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=85" alt="Beauty products"/></Link>
     </aside>
+    <div className="desktop-site-footer-wrap"><SiteFooter /></div>
     <footer className="desktop-status"><Brand/><span>v1.0.0</span><span className="status-right">GloHaus beta&nbsp; • &nbsp;Features unlock as they are validated</span></footer>
   </div>;
 }

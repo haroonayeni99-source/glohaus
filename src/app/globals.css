@@ -9641,3 +9641,278 @@ body {
     align-self: end;
   }
 }
+
+
+/* GLOHAUS PRO readability + theme correction.
+   PRO keeps its own high-contrast workspace identity in both global themes,
+   so global customer-theme rules cannot turn individual cards light while
+   leaving professional text light. */
+.pro-app,
+.pro-app .pro-main {
+  color: #fdf8fa;
+}
+.pro-app .pro-panel,
+.pro-app .pro-stat-grid article,
+.pro-app .pro-client-list article,
+.pro-app .pro-review-list article,
+.pro-app .pro-notification-list article,
+.pro-app .service-edit-row:not(.setup-step),
+.pro-app .pro-live-card {
+  color: #fdf8fa;
+}
+.pro-app .pro-panel > p,
+.pro-app .pro-panel p,
+.pro-app .pro-page-lead,
+.pro-app .pro-welcome p:not(.pro-kicker),
+.pro-app .pro-setup-card p:not(.pro-kicker),
+.pro-app .pro-profile-panel p:not(.pro-kicker),
+.pro-app .pro-empty-state p,
+.pro-app .pro-stat-grid span,
+.pro-app .pro-appointment-list time,
+.pro-app .pro-appointment-list div > span,
+.pro-app .pro-footnote,
+.pro-app .pro-live-card > p,
+.pro-app .pro-live-card small {
+  color: #c9bdc1;
+}
+.pro-app .pro-panel h2,
+.pro-app .pro-panel h3,
+.pro-app .pro-setup-card h2,
+.pro-app .pro-stat-grid strong,
+.pro-app .pro-appointment-list strong,
+.pro-app .pro-management-page h1,
+.pro-app .pro-list-page h1,
+.pro-app .pro-welcome h1 {
+  color: #fffafb;
+}
+.pro-app .pro-editor-surface {
+  background: #fcfbfa;
+  color: #241e20;
+}
+.pro-app .pro-editor-surface .editor-form,
+.pro-app .pro-editor-surface .availability-editor,
+.pro-app .pro-editor-surface .portfolio-editor,
+.pro-app .pro-editor-surface .service-edit-row,
+.pro-app .pro-editor-surface input,
+.pro-app .pro-editor-surface textarea,
+.pro-app .pro-editor-surface select,
+.pro-app .pro-editor-surface button {
+  color: #241e20;
+}
+.pro-app .pro-editor-surface p,
+.pro-app .pro-editor-surface small {
+  color: #6f6368;
+}
+.pro-app .pro-editor-surface input,
+.pro-app .pro-editor-surface textarea,
+.pro-app .pro-editor-surface select {
+  background: #fff;
+  border-color: #ded4d7;
+}
+.pro-app .setup-progress {
+  background: linear-gradient(135deg, #241f21, #1d191b);
+  border-color: #493d41;
+  color: #fffafb;
+}
+.pro-app .setup-progress p {
+  color: #c9bdc1;
+}
+.pro-app .service-edit-row.setup-step {
+  background: #211d1f;
+  border-color: #44393d;
+  color: #fffafb;
+}
+.pro-app .service-edit-row.setup-step.is-complete {
+  background: #1c2820;
+  border-color: #3e5945;
+}
+.pro-app .service-edit-row.setup-step p {
+  color: #c9bdc1;
+}
+.pro-app .service-edit-row.setup-step h2 {
+  color: #fffafb;
+}
+
+/* Prevent global night-mode customer card rules from overriding PRO cards. */
+:root[data-theme="night"] .pro-app .pro-panel,
+:root[data-theme="night"] .pro-app .pro-stat-grid article,
+:root[data-theme="night"] .pro-app .pro-client-list article,
+:root[data-theme="night"] .pro-app .pro-review-list article,
+:root[data-theme="night"] .pro-app .pro-notification-list article,
+:root[data-theme="night"] .pro-app .pro-live-card {
+  border-color: rgb(255 255 255 / 11%);
+  background: rgb(255 255 255 / 4%);
+  color: #fdf8fa;
+}
+:root[data-theme="night"] .pro-app,
+:root[data-theme="night"] .pro-app .pro-main {
+  background-color: transparent;
+  color: #fdf8fa;
+}
+
+/* Professional preview: larger, clearer typography and a self-contained
+   high-contrast surface so both light and night settings remain readable. */
+.pro-preview-auth-bar span {
+  font-size: .78rem;
+  line-height: 1.45;
+}
+.pro-preview-auth-bar nav > a:not(.button) {
+  font-size: .8rem;
+}
+.pro-preview-main {
+  min-height: calc(100vh - 120px);
+  background:
+    radial-gradient(circle at 88% 0%, rgb(235 95 151 / 12%), transparent 25rem),
+    #f8f4f6;
+  color: #241c20;
+}
+.pro-preview-main .pro-kicker {
+  color: #b72f65;
+  font-size: .72rem;
+}
+.pro-preview-main .pro-welcome h1 {
+  color: #20181c;
+}
+.pro-preview-main .pro-welcome p:not(.pro-kicker),
+.pro-preview-main .pro-page-lead {
+  color: #695c62;
+  font-size: 1.04rem;
+}
+.pro-preview-main .pro-setup-card {
+  border-color: #edbfd1;
+  background: linear-gradient(100deg, #fff0f6, #fff);
+  color: #241c20;
+}
+.pro-preview-main .pro-setup-card h2 {
+  color: #241c20;
+  font-size: 1.18rem;
+}
+.pro-preview-main .pro-setup-card p:not(.pro-kicker) {
+  color: #685a60;
+  font-size: .94rem;
+}
+.pro-preview-main .pro-stat-grid article,
+.pro-preview-main .pro-panel,
+.pro-preview-main .pro-quick-actions > a {
+  border-color: #eadde2;
+  background: #fff;
+  color: #241c20;
+}
+.pro-preview-main .pro-stat-grid span,
+.pro-preview-main .pro-quick-actions small,
+.pro-preview-main .pro-panel > p {
+  color: #6e6066;
+}
+.pro-preview-main .pro-stat-grid span {
+  font-size: .82rem;
+}
+.pro-preview-main .pro-quick-actions > a {
+  min-height: 76px;
+  padding: 16px;
+}
+.pro-preview-main .pro-quick-actions strong {
+  font-size: .98rem;
+}
+.pro-preview-main .pro-quick-actions small {
+  margin-top: 3px;
+  font-size: .82rem;
+  line-height: 1.4;
+}
+.pro-preview-main .pro-panel h2 {
+  color: #241c20;
+  font-size: 1.2rem;
+}
+.pro-preview-main .pro-panel > p {
+  font-size: .98rem;
+  line-height: 1.65;
+}
+.pro-preview-main .pro-panel .pro-quick-actions > a {
+  color: #9c2f5b;
+  font-size: .9rem;
+  font-weight: 750;
+}
+
+:root[data-theme="night"] .pro-preview-main {
+  background:
+    radial-gradient(circle at 88% 0%, rgb(235 95 151 / 15%), transparent 25rem),
+    #151415;
+  color: #fdf8fa;
+}
+:root[data-theme="night"] .pro-preview-main .pro-welcome h1,
+:root[data-theme="night"] .pro-preview-main .pro-setup-card h2,
+:root[data-theme="night"] .pro-preview-main .pro-panel h2 {
+  color: #fffafb;
+}
+:root[data-theme="night"] .pro-preview-main .pro-welcome p:not(.pro-kicker),
+:root[data-theme="night"] .pro-preview-main .pro-setup-card p:not(.pro-kicker),
+:root[data-theme="night"] .pro-preview-main .pro-stat-grid span,
+:root[data-theme="night"] .pro-preview-main .pro-quick-actions small,
+:root[data-theme="night"] .pro-preview-main .pro-panel > p {
+  color: #c9bdc1;
+}
+:root[data-theme="night"] .pro-preview-main .pro-setup-card {
+  border-color: #633b4d;
+  background: linear-gradient(100deg, rgb(242 94 149 / 19%), rgb(255 255 255 / 4%));
+  color: #fdf8fa;
+}
+:root[data-theme="night"] .pro-preview-main .pro-stat-grid article,
+:root[data-theme="night"] .pro-preview-main .pro-panel,
+:root[data-theme="night"] .pro-preview-main .pro-quick-actions > a {
+  border-color: rgb(255 255 255 / 11%);
+  background: rgb(255 255 255 / 4%);
+  color: #fdf8fa;
+}
+:root[data-theme="night"] .pro-preview-main .pro-panel .pro-quick-actions > a {
+  color: #ffafd0;
+}
+
+/* Slightly larger operational PRO text throughout. */
+.pro-app .pro-kicker {
+  font-size: .69rem;
+}
+.pro-app .pro-page-lead,
+.pro-app .pro-welcome p:not(.pro-kicker) {
+  font-size: 1rem;
+}
+.pro-app .pro-setup-card p:not(.pro-kicker),
+.pro-app .pro-profile-panel p:not(.pro-kicker),
+.pro-app .pro-wallet-card p,
+.pro-app .pro-empty-state p {
+  font-size: .86rem;
+}
+.pro-app .pro-stat-grid span {
+  font-size: .78rem;
+}
+.pro-app .pro-panel-title > a,
+.pro-app .pro-profile-panel > a,
+.pro-app .pro-empty-state a {
+  font-size: .81rem;
+}
+.pro-app .pro-appointment-list time,
+.pro-app .pro-appointment-list div > span {
+  font-size: .78rem;
+}
+.pro-app .pro-appointment-list strong {
+  font-size: .93rem;
+}
+.pro-app .pro-footnote {
+  font-size: .75rem;
+}
+
+@media (max-width: 700px) {
+  .pro-preview-main,
+  .pro-app .pro-main {
+    padding-inline: 16px;
+  }
+  .pro-preview-auth-bar span {
+    font-size: .8rem;
+  }
+  .pro-preview-main .pro-welcome p:not(.pro-kicker),
+  .pro-app .pro-page-lead,
+  .pro-app .pro-welcome p:not(.pro-kicker) {
+    font-size: 1rem;
+  }
+  .pro-preview-main .pro-quick-actions > a {
+    min-height: 72px;
+  }
+}

@@ -9623,3 +9623,21 @@ body {
     flex-direction: column;
   }
 }
+
+
+/* Footer layout correction: the legacy desktop status strip was removed.
+   Let the homepage grow naturally so the shared footer stays in document flow. */
+@media (min-width:1100px) {
+  .desktop-customer-home {
+    grid-template-rows: auto;
+    align-items: start;
+  }
+  .customer-desktop-sidebar {
+    height: 100vh;
+  }
+  .desktop-site-footer-wrap {
+    grid-column: 2 / 4;
+    grid-row: auto;
+    align-self: end;
+  }
+}

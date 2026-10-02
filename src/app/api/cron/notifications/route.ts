@@ -5,7 +5,12 @@ import {
   notificationEmail,
   type Notification,
 } from "@/modules/notifications/domain";
+
+const DEFAULT_APP_URL = "https://glohaus.shop";
+const DEFAULT_EMAIL_FROM = "GLOHAUS <noreply@glohaus.shop>";
+
 export const maxDuration = 60;
+
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
   const actual = Buffer.from(request.headers.get("authorization") || "");
@@ -16,12 +21,13 @@ export async function GET(request: Request) {
     !timingSafeEqual(actual, expected)
   )
     return new Response("Unauthorized", { status: 401 });
-  if (
-    !process.env.RESEND_API_KEY ||
-    !process.env.EMAIL_FROM ||
-    !process.env.NEXT_PUBLIC_APP_URL
-  )
+
+  if (!process.env.RESEND_API_KEY)
     return new Response("Email not configured", { status: 503 });
+
+  const appUrl = process.env.GLOHAUS_PUBLIC_URL?.trim() || DEFAULT_APP_URL;
+  const from = process.env.EMAIL_FROM?.trim() || DEFAULT_EMAIL_FROM;
+
   try {
     const jobs = await withPaymentWorker(
       async (db) =>
@@ -35,9 +41,9 @@ export async function GET(request: Request) {
     let sent = 0;
     for (const job of jobs) {
       try {
-        const message = notificationEmail(job, process.env.NEXT_PUBLIC_APP_URL);
+        const message = notificationEmail(job, appUrl);
         const result = await resend.emails.send(
-          { from: process.env.EMAIL_FROM, to: job.email, ...message },
+          { from, to: job.email, ...message },
           { idempotencyKey: `glohaus-notification-${job.id}` },
         );
         if (result.error || !result.data?.id) throw new Error("DELIVERY_FAILED");

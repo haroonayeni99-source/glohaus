@@ -108,14 +108,11 @@ export async function FeedPage({
                 )
               ).rows
             : [];
-        const lastMinute =
-          mode === "share"
-            ? (
-                await db.query<LastMinuteSlot>(
-                  "SELECT * FROM beauty.public_last_minute_slots ORDER BY starts_at ASC LIMIT 20",
-                )
-              ).rows
-            : [];
+        const lastMinute = (
+          await db.query<LastMinuteSlot>(
+            "SELECT * FROM beauty.public_last_minute_slots ORDER BY starts_at ASC LIMIT 20",
+          )
+        ).rows;
 
         return {
           posts,

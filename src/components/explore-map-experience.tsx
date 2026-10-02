@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import {
   BadgeCheck,
   ChevronDown,
@@ -252,7 +252,7 @@ export function ExploreMapExperience({
         <div className="glohaus-map" aria-label="Stylised London beauty discovery map">
           <div
             className="map-canvas"
-            style={{ "--map-scale": zoom } as React.CSSProperties}
+            style={{ "--map-scale": zoom } as CSSProperties}
           >
           <div className="map-road map-road-a" />
           <div className="map-road map-road-b" />

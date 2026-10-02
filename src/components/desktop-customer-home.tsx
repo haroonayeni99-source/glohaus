@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Bell, CalendarDays, ChevronRight, Heart, Home, MapPin,
-  MessageSquare, Search, ShoppingBag, UserRound, WalletCards, Crown, Gift,
+  MessageSquare, Search, ShoppingBag, UserRound, WalletCards, Crown, Gift, ShieldCheck,
 } from "lucide-react";
 import { Brand } from "./brand";
 import { money, type PublicProfessional } from "@/modules/professionals/domain";
@@ -45,11 +45,13 @@ export function DesktopCustomerHome({
   professionals = [],
   signedIn = false,
   displayName = "",
+  canAccessAdmin = false,
   summary = null,
 }: {
   professionals?: PublicProfessional[];
   signedIn?: boolean;
   displayName?: string;
+  canAccessAdmin?: boolean;
   summary?: CustomerHomeSummary | null;
 }) {
   const protectedHref = (path: string) =>
@@ -95,6 +97,7 @@ export function DesktopCustomerHome({
         <Link href="/shop"><ShoppingBag size={20}/>Shop</Link>
         <Link href={protectedHref("/wallet")}><WalletCards size={20}/>Wallet</Link>
         <Link href={protectedHref("/workspace")}><UserRound size={20}/>Profile</Link>
+        {canAccessAdmin && <Link href="/admin"><ShieldCheck size={20}/>Owner/Admin</Link>}
       </nav>
       <div className="glohaus-plus-card glohaus-plus-disabled" aria-disabled="true">
         <Crown size={22}/><span><strong>GloHaus+</strong><small>Planned membership perks · Coming soon</small></span>
@@ -104,7 +107,7 @@ export function DesktopCustomerHome({
     <main className="customer-desktop-main">
       <header className="customer-desktop-topbar">
         <span />
-        <div><Link href={protectedHref("/notifications")} aria-label="Notifications"><Bell size={21}/></Link>
+        <div>{canAccessAdmin && <Link href="/admin" aria-label="Owner/Admin" title="Owner/Admin"><ShieldCheck size={20}/></Link>}<Link href={protectedHref("/notifications")} aria-label="Notifications"><Bell size={21}/></Link>
         <Link className="desktop-user-chip" href={signedIn ? "/workspace" : "/sign-in"}><span className="desktop-avatar">{displayName ? displayName[0]?.toUpperCase() : "G"}</span>{signedIn ? displayName || "My workspace" : "Sign in"}<ChevronRight size={15}/></Link></div>
       </header>
 

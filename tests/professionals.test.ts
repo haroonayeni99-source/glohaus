@@ -124,6 +124,16 @@ describe.sequential("professional publishing and private ownership", () => {
       }),
     ).rejects.toThrow(/permission denied/);
   });
+  it("public view owner cannot access raw bookings", async () => {
+    await expect(
+      db.transaction(async (tx) => {
+        await tx.exec("SET LOCAL ROLE beauty_catalog");
+        await tx.query(
+          "SELECT id,customer_id,professional_id,starts_at FROM beauty.bookings",
+        );
+      }),
+    ).rejects.toThrow(/permission denied/);
+  });
   it("creates services tied to the verified owner", async () => {
     serviceId = (
       await asUser("alice", (sql) => saveService(sql, ownerId, service))

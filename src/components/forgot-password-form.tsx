@@ -4,21 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-function passwordRecoveryCallbackUrl() {
-  const configuredOrigin = process.env.NEXT_PUBLIC_APP_URL?.trim();
+const CANONICAL_PRODUCTION_ORIGIN = "https://glohaus.shop";
 
-  try {
-    const origin = configuredOrigin
-      ? new URL(configuredOrigin).origin
-      : window.location.origin;
-    const callbackUrl = new URL("/auth/callback", origin);
-    callbackUrl.searchParams.set("next", "/reset-password");
-    return callbackUrl.toString();
-  } catch {
-    const callbackUrl = new URL("/auth/callback", window.location.origin);
-    callbackUrl.searchParams.set("next", "/reset-password");
-    return callbackUrl.toString();
-  }
+function passwordRecoveryCallbackUrl() {
+  const callbackUrl = new URL("/auth/callback", CANONICAL_PRODUCTION_ORIGIN);
+  callbackUrl.searchParams.set("next", "/reset-password");
+  return callbackUrl.toString();
 }
 
 export function ForgotPasswordForm() {
@@ -38,9 +29,9 @@ export function ForgotPasswordForm() {
     const supabase = createClient();
 
     const result = await supabase.auth.resetPasswordForEmail(email, {
-      // Always send recovery emails back through the canonical production
-      // callback. Preview/alias origins are commonly rejected by Supabase's
-      // redirect allow-list, which makes Auth fall back to the Site URL.
+      // Password recovery must finish on the same canonical origin where the
+      // recovery verifier/session is created. Do not use Vercel deployment
+      // aliases here; cross-origin PKCE completion can fail.
       redirectTo: passwordRecoveryCallbackUrl(),
     });
 

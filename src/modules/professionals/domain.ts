@@ -52,7 +52,7 @@ export const profileSchema = z
     publicationStatus: z.enum(["draft", "published", "hidden"]),
     businessDescription: z.string().trim().max(3000).optional(),
     locationDetails: z.string().trim().max(180).optional(),
-    travelsToYou: z.preprocess((value) => value === true || value === "true", z.boolean()),
+    travelsToYou: z.preprocess((value) => value === true || value === "true", z.boolean()).optional(),
     contactPreference: z
       .enum(["booking", "email", "phone", "instagram"])
       .optional(),
@@ -165,7 +165,7 @@ export type ProfileDetails = {
   id: string;
   business_description: string;
   location_details: string;
-  travels_to_you: boolean;
+  travels_to_you?: boolean;
   contact_preference: "booking" | "email" | "phone" | "instagram";
   contact_email: string;
   contact_phone: string;

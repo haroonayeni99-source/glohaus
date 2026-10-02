@@ -7,6 +7,8 @@ import { withIdentity } from "@/lib/db";
 import { ensureCustomerAccount } from "@/modules/accounts/repository";
 import { workspacePath, type Identity } from "@/modules/accounts/domain";
 
+const CANONICAL_PRODUCTION_ORIGIN = "https://glohaus.shop";
+
 function noStoreRedirect(origin: string, path: string) {
   const response = NextResponse.redirect(new URL(path, origin));
   response.headers.set("Cache-Control", "private, no-store");
@@ -15,6 +17,18 @@ function noStoreRedirect(origin: string, path: string) {
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
+  const next = url.searchParams.get("next");
+
+  // Recovery codes are tied to the browser-origin flow that created them.
+  // If Supabase or an older email points at a Vercel alias, move the untouched
+  // callback to the canonical production host before exchanging/verifying it.
+  if (next === "/reset-password" && url.origin !== CANONICAL_PRODUCTION_ORIGIN) {
+    const canonical = new URL(url.pathname + url.search, CANONICAL_PRODUCTION_ORIGIN);
+    const redirect = NextResponse.redirect(canonical);
+    redirect.headers.set("Cache-Control", "private, no-store");
+    return redirect;
+  }
+
   const response = noStoreRedirect(url.origin, "/account");
 
   const supabase = createServerClient(
@@ -67,7 +81,6 @@ export async function GET(request: NextRequest) {
       "/sign-in?authError=confirmation_failed",
     );
 
-  const next = url.searchParams.get("next");
   if (next === "/reset-password") {
     response.cookies.set("glohaus_password_recovery", "1", {
       httpOnly: true,
@@ -106,9 +119,6 @@ export async function GET(request: NextRequest) {
   };
 
   try {
-    // Every confirmed Supabase identity gets a baseline GLOHAUS account so it
-    // is visible to Owner/Admin immediately. Professional privileges are still
-    // granted only through the separate 18+ / Professional Terms onboarding.
     const account = await withIdentity(identity.authId, (db) =>
       ensureCustomerAccount(db, identity),
     );

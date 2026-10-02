@@ -125,3 +125,8 @@ REVOKE ALL ON FUNCTION public.glohaus_my_account() FROM PUBLIC,anon;
 REVOKE ALL ON FUNCTION public.glohaus_enrol_self(text,boolean,boolean) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.glohaus_my_account() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.glohaus_enrol_self(text,boolean,boolean) TO authenticated;
+
+
+-- The serverless deployment can have many concurrent function instances. The
+-- app pool itself remains capped at one connection per instance.
+ALTER ROLE glohaus_runtime CONNECTION LIMIT 20;

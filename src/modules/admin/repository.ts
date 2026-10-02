@@ -280,6 +280,24 @@ export async function ownerProductFeeRule(): Promise<OwnerProductFeeRule | null>
 }
 
 
+export type OwnerBookingFeeRule = {
+  id: string | null;
+  fixedFeePence: number;
+  effectiveFrom: string | null;
+  usingDefault: boolean;
+};
+
+export async function ownerBookingFeeRule(): Promise<OwnerBookingFeeRule> {
+  return withOwner(async (db) => {
+    const result = await db.query<{ data: OwnerBookingFeeRule }>(
+      "SELECT beauty.owner_active_booking_fee_rule() AS data",
+    );
+    if (!result.rows[0]?.data) throw new Error("Booking fee control is unavailable.");
+    return result.rows[0].data;
+  });
+}
+
+
 export async function adminFinanceOverview(): Promise<AdminFinanceOverview> {
   return withAdmin(async (db) => {
     const row = (

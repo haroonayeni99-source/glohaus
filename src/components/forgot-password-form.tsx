@@ -4,10 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-const CANONICAL_PRODUCTION_ORIGIN = "https://glohaus.shop";
+const PRODUCTION_HOSTS = new Set(["glohaus.shop", "www.glohaus.shop"]);
+const FALLBACK_PRODUCTION_ORIGIN = "https://www.glohaus.shop";
 
 function passwordRecoveryCallbackUrl() {
-  const callbackUrl = new URL("/auth/callback", CANONICAL_PRODUCTION_ORIGIN);
+  const current = new URL(window.location.href);
+  const origin = PRODUCTION_HOSTS.has(current.hostname)
+    ? current.origin
+    : FALLBACK_PRODUCTION_ORIGIN;
+  const callbackUrl = new URL("/auth/callback", origin);
   callbackUrl.searchParams.set("next", "/reset-password");
   return callbackUrl.toString();
 }
@@ -29,9 +34,9 @@ export function ForgotPasswordForm() {
     const supabase = createClient();
 
     const result = await supabase.auth.resetPasswordForEmail(email, {
-      // Password recovery must finish on the same canonical origin where the
-      // recovery verifier/session is created. Do not use Vercel deployment
-      // aliases here; cross-origin PKCE completion can fail.
+      // Keep password recovery on the exact production origin the browser is
+      // already using. This avoids PKCE/cookie problems caused by bouncing
+      // between www and apex domains or Vercel aliases.
       redirectTo: passwordRecoveryCallbackUrl(),
     });
 

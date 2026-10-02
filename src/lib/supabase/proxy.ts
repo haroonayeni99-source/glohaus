@@ -20,11 +20,14 @@ export async function updateSession(request: NextRequest) {
       {
         cookies: {
           getAll: () => request.cookies.getAll(),
-          setAll: (items) => {
+          setAll: (items, headers) => {
             items.forEach(({ name, value }) => request.cookies.set(name, value));
             response = noStore(NextResponse.next({ request }));
             items.forEach(({ name, value, options }) =>
               response.cookies.set(name, value, options),
+            );
+            Object.entries(headers).forEach(([key, value]) =>
+              response.headers.set(key, value),
             );
           },
         },

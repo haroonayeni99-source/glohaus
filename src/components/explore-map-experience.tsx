@@ -12,6 +12,7 @@ import {
   Star,
 } from "lucide-react";
 import type { PublicProfessional } from "@/modules/professionals/domain";
+import type { DiscoveryFilters } from "@/modules/professionals/discovery";
 
 const areas = [
   { name: "All London", street: "Across the city", className: "london" },
@@ -55,12 +56,35 @@ function ratingText(pro: PublicProfessional) {
 export function ExploreMapExperience({
   professionals,
   query,
+  filters,
 }: {
   professionals: PublicProfessional[];
   query: string;
+  filters: DiscoveryFilters;
 }) {
   const nearby = professionals.slice(0, 6);
   const selected = query.trim().toLowerCase();
+  const filterPairs = [
+    ["verified", filters.verified],
+    ["under50", filters.under50],
+    ["topRated", filters.topRated],
+    ["travels", filters.travels],
+    ["today", filters.availableToday],
+  ] as const;
+  const hrefFor = (
+    nextQuery = query,
+    toggle?: (typeof filterPairs)[number][0],
+  ) => {
+    const params = new URLSearchParams();
+    if (nextQuery) params.set("q", nextQuery);
+    for (const [key, active] of filterPairs) {
+      const nextActive = key === toggle ? !active : active;
+      if (nextActive) params.set(key, "1");
+    }
+    const value = params.toString();
+    return value ? `/explore?${value}` : "/explore";
+  };
+  const anySecondaryFilter = filterPairs.some(([, active]) => active);
 
   return (
     <div className="map-explore-page">
@@ -73,6 +97,11 @@ export function ExploreMapExperience({
             <p>Explore by borough, area or street and book trusted professionals.</p>
           </div>
           <form className="map-explore-search" role="search">
+            {filters.verified && <input type="hidden" name="verified" value="1" />}
+            {filters.under50 && <input type="hidden" name="under50" value="1" />}
+            {filters.topRated && <input type="hidden" name="topRated" value="1" />}
+            {filters.travels && <input type="hidden" name="travels" value="1" />}
+            {filters.availableToday && <input type="hidden" name="today" value="1" />}
             <Search size={20} aria-hidden />
             <label htmlFor="map-search" className="sr-only">
               Search by area, borough, street, service or professional
@@ -94,7 +123,7 @@ export function ExploreMapExperience({
           {areas.map((area) => (
             <Link
               key={area.name}
-              href={area.name === "All London" ? "/explore" : `/explore?q=${encodeURIComponent(area.name)}`}
+              href={hrefFor(area.name === "All London" ? "" : area.name)}
               className={`map-area-card ${area.className} ${
                 (area.name === "All London" && !selected) ||
                 selected === area.name.toLowerCase() ||
@@ -115,7 +144,7 @@ export function ExploreMapExperience({
           {serviceFilters.map((filter, index) => (
             <Link
               key={filter}
-              href={filter === "All Services" ? "/explore" : `/explore?q=${encodeURIComponent(filter)}`}
+              href={hrefFor(filter === "All Services" ? "" : filter)}
               className={
                 (index === 0 && !selected) || selected === filter.toLowerCase()
                   ? "active"
@@ -128,14 +157,30 @@ export function ExploreMapExperience({
           ))}
         </div>
         <div className="map-secondary-filters">
-          <span>Available today</span>
-          <span><BadgeCheck size={15} aria-hidden /> Verified only</span>
-          <span>Travels to you</span>
-          <span>Under £50</span>
-          <span><Star size={15} aria-hidden /> Top rated</span>
-          <button type="button">
-            <SlidersHorizontal size={16} aria-hidden /> More filters
-          </button>
+          <Link className={filters.availableToday ? "active" : undefined} href={hrefFor(query, "today")}>
+            Available today
+          </Link>
+          <Link className={filters.verified ? "active" : undefined} href={hrefFor(query, "verified")}>
+            <BadgeCheck size={15} aria-hidden /> Verified only
+          </Link>
+          <Link className={filters.travels ? "active" : undefined} href={hrefFor(query, "travels")}>
+            Travels to you
+          </Link>
+          <Link className={filters.under50 ? "active" : undefined} href={hrefFor(query, "under50")}>
+            Under £50
+          </Link>
+          <Link className={filters.topRated ? "active" : undefined} href={hrefFor(query, "topRated")}>
+            <Star size={15} aria-hidden /> Top rated
+          </Link>
+          {anySecondaryFilter ? (
+            <Link href={query ? `/explore?q=${encodeURIComponent(query)}` : "/explore"}>
+              <SlidersHorizontal size={16} aria-hidden /> Clear filters
+            </Link>
+          ) : (
+            <Link href="/explore?verified=1&topRated=1">
+              <SlidersHorizontal size={16} aria-hidden /> Trusted picks
+            </Link>
+          )}
         </div>
       </section>
 
@@ -219,6 +264,7 @@ export function ExploreMapExperience({
                       <span>{pro.category}</span>
                       <span>{pro.city}</span>
                       {pro.verification_status === "verified" && <span>Verified</span>}
+                      {pro.travels_to_you && <span>Travels to you</span>}
                     </div>
                   </div>
                   <button type="button" className="map-heart" aria-label={`Save ${pro.business_name}`}>

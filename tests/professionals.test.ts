@@ -298,6 +298,13 @@ it("resets pagination for changed searches and malformed cursors", () => {
   });
   expect(discoveryOptions({ q: ["Nails"], after: "broken" })).toEqual({
     query: "",
+    filters: {
+      verified: false,
+      under50: false,
+      topRated: false,
+      travels: false,
+      availableToday: false,
+    },
     after: undefined,
   });
   expect(discoveryOptions({ q: " Nails ", after: cursor }).after?.name).toBe(

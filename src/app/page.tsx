@@ -79,8 +79,15 @@ export default async function Home({
       professionals = (
         await withIdentity("", (db) => discoveryPage(db, ""))
       ).professionals;
-    } catch {
-      console.error("Professional recommendations unavailable");
+    } catch (error) {
+      const code =
+        typeof error === "object" && error !== null && "code" in error
+          ? String((error as { code?: unknown }).code ?? "")
+          : "";
+      console.error("Professional recommendations unavailable", {
+        type: error instanceof Error ? error.name : "UnknownError",
+        code,
+      });
     }
   }
 

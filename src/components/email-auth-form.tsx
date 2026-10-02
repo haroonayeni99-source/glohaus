@@ -97,17 +97,24 @@ export function EmailAuthForm({
       const email = String(formData.get("email") || "").trim();
       const password = String(formData.get("password") || "");
       const supabase = createClient();
-      const result =
-        mode === "sign-up"
-          ? await supabase.auth.signUp({
-              email,
-              password,
-              options: {
-                emailRedirectTo: authCallbackUrl(confirmationDestination()),
-                data: { glohaus_audience: audience },
-              },
-            })
-          : await supabase.auth.signInWithPassword({ email, password });
+      let result;
+      if (mode === "sign-up") {
+        result = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: authCallbackUrl(confirmationDestination()),
+            data: { glohaus_audience: audience },
+          },
+        });
+      } else {
+        // The sign-in form is a safe place to clear only this browser's current
+        // Supabase session before creating a new one. This removes leftover
+        // auth-cookie chunks from earlier writes without signing the user out
+        // on other devices.
+        await supabase.auth.signOut({ scope: "local" }).catch(() => undefined);
+        result = await supabase.auth.signInWithPassword({ email, password });
+      }
 
       if (result.error) {
         setError(result.error.message);

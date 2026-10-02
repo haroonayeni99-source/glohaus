@@ -8,10 +8,11 @@ import { AdminManager } from "@/components/admin-manager";
 import { AdminFinancePanel } from "@/components/admin-finance-panel";
 import { AdminNavigation } from "@/components/admin-navigation";
 import { ShopFeeControl } from "@/components/shop-fee-control";
+import { BookingFeeControl } from "@/components/booking-fee-control";
 import { OwnerControls } from "@/components/owner-controls";
 import { OwnerAuthAccounts } from "@/components/owner-auth-accounts";
 import { ProfessionalCommissionControl } from "@/components/professional-commission-control";
-import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, paymentLaunchReadiness } from "@/modules/admin/repository";
+import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, paymentLaunchReadiness } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
@@ -23,12 +24,13 @@ export default async function Page() {
       </AuthFrame>
     );
   const isOwner = result.account.roles.includes("owner");
-  const [data, labels, categories, owner, productFee, finance, paymentReadiness, emailDelivery, authAccounts, commissions] = await Promise.all([
+  const [data, labels, categories, owner, productFee, bookingFee, finance, paymentReadiness, emailDelivery, authAccounts, commissions] = await Promise.all([
     adminOverview(),
     publicLabels(),
     adminCategories().catch(() => []),
     isOwner ? ownerControls().catch(() => null) : Promise.resolve(null),
     isOwner ? ownerProductFeeRule().catch(() => null) : Promise.resolve(null),
+    isOwner ? ownerBookingFeeRule().catch(() => null) : Promise.resolve(null),
     adminFinanceOverview().catch(() => null),
     isOwner ? paymentLaunchReadiness().catch(() => null) : Promise.resolve(null),
     isOwner ? ownerEmailDeliveryOverview().catch(() => null) : Promise.resolve(null),
@@ -69,6 +71,16 @@ export default async function Page() {
             <p className="lead">Add new beauty categories, rename them, control their order, or hide them without deleting existing data.</p>
             <AdminCategoryManager initial={categories} />
           </section>
+          {isOwner && bookingFee && (
+            <section id="booking-fee" className="admin-workspace-section">
+              <p className="eyebrow">CUSTOMER BOOKING FEE</p>
+              <h2>Booking fee control</h2>
+              <p className="lead">
+                Change the customer-facing booking fee used by new service bookings. Existing paid bookings keep the fee recorded when they checked out, and every Owner change is added to the financial audit log.
+              </p>
+              <BookingFeeControl initial={bookingFee} />
+            </section>
+          )}
           {owner && (
             <section id="shop-fees" className="admin-workspace-section">
               <p className="eyebrow">MARKETPLACE MONEY</p>

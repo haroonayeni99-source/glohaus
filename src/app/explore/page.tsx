@@ -14,9 +14,9 @@ export const metadata = { title: "Find a Professional | GLOHAUS" };
 export default async function Explore({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; after?: string }>;
+  searchParams: Promise<{ q?: string; after?: string; verified?: string; under50?: string; topRated?: string; travels?: string; today?: string }>;
 }) {
-  const { query: q, after } = discoveryOptions(await searchParams);
+  const { query: q, filters, after } = discoveryOptions(await searchParams);
   const viewerSignedIn = await publicViewerSignedIn();
 
   let next: string | null = null;
@@ -24,7 +24,7 @@ export default async function Explore({
 
   if (process.env.DATABASE_URL) {
     try {
-      const result = await withIdentity("", (db) => discoveryPage(db, q, after));
+      const result = await withIdentity("", (db) => discoveryPage(db, q, filters, after));
       professionals = result.professionals;
       next = result.next;
     } catch {
@@ -36,18 +36,36 @@ export default async function Explore({
     <>
       <PublicHeader signedIn={viewerSignedIn} />
       <main id="main">
-        <ExploreMapExperience professionals={professionals} query={q} />
+        <ExploreMapExperience professionals={professionals} query={q} filters={filters} />
         {(after || next) && (
           <nav className="map-pagination" aria-label="Professional search pages">
             {after && (
-              <Link href={`/explore?q=${encodeURIComponent(q)}`}>
+              <Link href={(() => {
+                const params = new URLSearchParams();
+                if (q) params.set("q", q);
+                if (filters.verified) params.set("verified", "1");
+                if (filters.under50) params.set("under50", "1");
+                if (filters.topRated) params.set("topRated", "1");
+                if (filters.travels) params.set("travels", "1");
+                if (filters.availableToday) params.set("today", "1");
+                const value = params.toString();
+                return value ? `/explore?${value}` : "/explore";
+              })()}>
                 ← Back to first results
               </Link>
             )}
             {next && (
-              <Link
-                href={`/explore?q=${encodeURIComponent(q)}&after=${encodeURIComponent(next)}`}
-              >
+              <Link href={(() => {
+                const params = new URLSearchParams();
+                if (q) params.set("q", q);
+                if (filters.verified) params.set("verified", "1");
+                if (filters.under50) params.set("under50", "1");
+                if (filters.topRated) params.set("topRated", "1");
+                if (filters.travels) params.set("travels", "1");
+                if (filters.availableToday) params.set("today", "1");
+                params.set("after", next);
+                return `/explore?${params.toString()}`;
+              })()}>
                 More professionals →
               </Link>
             )}

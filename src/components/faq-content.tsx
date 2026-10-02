@@ -140,9 +140,9 @@ const items: FaqItem[] = [
         Not immediately. Eligible professionals can start on Starter access
         before completing full verification. Starter access allows a public
         professional profile, services priced up to £200 with no online deposit,
-        and up to five marketplace bookings. Verification is required to unlock
-        deposits, higher-value services, product selling, withdrawals and wider
-        marketplace features.
+        and up to five marketplace bookings per calendar month. Verification is
+        required to unlock deposits, higher-value services, product selling,
+        withdrawals and wider marketplace features.
       </>
     ),
   },
@@ -154,8 +154,9 @@ const items: FaqItem[] = [
         Before verification, an eligible professional can create and publish a
         professional profile, add services priced up to £200, manage availability,
         upload portfolio content, communicate with customers and accept up to
-        five Starter bookings. Online deposits are not available until
-        verification is complete.
+        five Trial bookings per calendar month. Trial Pro uses the Starter
+        commission rate of 8%. Online deposits and the wider verified feature
+        set remain unavailable until verification is complete.
       </>
     ),
   },
@@ -165,9 +166,10 @@ const items: FaqItem[] = [
     answer: (
       <>
         Unverified professionals are limited to services priced at £200 or less,
-        cannot require an online deposit, and can accept up to five Starter
-        bookings. Product selling, withdrawals, higher-value services and other
-        verified features remain unavailable until verification is completed.
+        cannot require a professional-selected online deposit, and can accept
+        up to five Trial bookings per calendar month. Product selling,
+        withdrawals, LIVE access, higher-value services and other verified
+        features remain unavailable until verification is completed.
       </>
     ),
   },
@@ -280,7 +282,9 @@ const items: FaqItem[] = [
         Yes, where deposits are enabled. A professional&apos;s booking deposit
         cannot be more than <strong>40% of the service price</strong>. The
         remaining amount will be handled according to the booking and payment
-        rules shown to the customer.
+        rules shown to the customer. GLOHAUS may require a minimum online
+        booking payment toward the service so the platform commission due on
+        the full listed service price is secured before the appointment.
       </>
     ),
   },
@@ -323,6 +327,20 @@ const items: FaqItem[] = [
   },
   {
     category: "Messages & Notifications",
+    question: "Should I keep booking conversations on GLOHAUS?",
+    answer: (
+      <>
+        Yes. Customers and professionals are strongly encouraged to keep
+        booking-related messages, price changes, appointment arrangements and
+        payment discussions inside GLOHAUS. If a conversation moves to another
+        app or a payment is made outside GLOHAUS, the platform may have less
+        evidence available to investigate a dispute or scam and may be unable
+        to help recover money paid outside the platform.
+      </>
+    ),
+  },
+  {
+    category: "Messages & Notifications",
     question: "What notifications will I receive?",
     answer: (
       <>
@@ -349,8 +367,12 @@ const items: FaqItem[] = [
     question: "How do payments work?",
     answer: (
       <>
-        Customers pay through GLOHAUS when completing eligible bookings or
-        purchases. Payments are processed using approved payment providers.
+        Customers can pay eligible booking amounts through GLOHAUS. Where a
+        professional offers cash for the remaining service balance, customers
+        may choose cash, but cash and other off-platform payments are at the
+        customer&apos;s own risk. GLOHAUS may have limited or no ability to
+        trace, reverse or recover money paid outside its payment system.
+        Payments processed on GLOHAUS use approved payment providers, and
         GLOHAUS does not directly store customers&apos; full payment card
         details.
       </>
@@ -436,6 +458,33 @@ const items: FaqItem[] = [
         professional transactions. Professionals will be shown applicable
         GLOHAUS commission and fees within their professional account and
         transaction information.
+      </>
+    ),
+  },
+  {
+    category: "Fees & Commission",
+    question: "What commission does a Trial Pro pay?",
+    answer: (
+      <>
+        Trial Pro is £0 per month and uses the Starter service commission rate
+        of <strong>8%</strong>. Eligible Trial Pros can accept up to five
+        marketplace bookings per calendar month while Trial restrictions
+        remain in place.
+      </>
+    ),
+  },
+  {
+    category: "Fees & Commission",
+    question: "Can a professional list a low price and ask for the rest in cash?",
+    answer: (
+      <>
+        No. The price shown on GLOHAUS must reflect the genuine price the
+        customer is expected to pay for the booked service. A professional must
+        not deliberately list an artificially low price and then require an
+        undisclosed mandatory cash or off-platform top-up to avoid GLOHAUS
+        commission. Optional extras requested after booking should be agreed
+        clearly. Deliberate or repeated fee circumvention can result in
+        restrictions.
       </>
     ),
   },

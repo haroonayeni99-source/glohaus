@@ -96,6 +96,14 @@ export function EmailAuthForm({
       return;
     }
 
+    // A Supabase user can predate the GLOHAUS application account. After a
+    // successful password sign-in, bootstrap the internal account first so it
+    // appears in Owner/Admin and role routing has a real application record.
+    // This adds only the baseline customer role; professional access still
+    // requires the 18+ and Professional Terms onboarding flow.
+    const provisioned = await provisionCustomer();
+    if (!provisioned) return;
+
     let verified = await serverAccount();
     if (!verified.ok && verified.status === 401) {
       await supabase.auth.getSession();
@@ -123,16 +131,11 @@ export function EmailAuthForm({
     }
 
     if (audience === "professional") {
-      router.push("/professional-preview");
+      router.push("/onboarding?intent=professional");
       return;
     }
 
-    const account = await provisionCustomer();
-    if (!account) {
-      router.push("/customer-preview");
-      return;
-    }
-    router.push(account.redirectTo || "/account");
+    router.push(provisioned.redirectTo || "/account");
   }
 
   async function resendConfirmation() {

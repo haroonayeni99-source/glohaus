@@ -50,11 +50,22 @@ export function accountDatabaseUnavailable(error: unknown) {
     typeof error === "object" && error !== null && "code" in error
       ? String((error as { code?: unknown }).code ?? "")
       : "";
+  const message = error instanceof Error ? error.message : String(error ?? "");
   if (
     code.startsWith("08") ||
     ["28000", "28P01", "53300", "57P01", "57P02", "57P03"].includes(code)
   ) return true;
-  const message = error instanceof Error ? error.message : String(error ?? "");
+
+  // The runtime database role can authenticate successfully while still
+  // missing a grant on one of the private application tables. Treat that as a
+  // runtime-database outage for account reads/writes so the authenticated
+  // Supabase RPC path can complete the request instead of trapping a signed-in
+  // user on the auth form.
+  if (
+    code === "42501" &&
+    /permission denied for (table|schema|sequence|function)/i.test(message)
+  ) return true;
+
   return /PAM authentication failed|password authentication failed|too many connections|connection terminated|server closed the connection/i.test(
     message,
   );

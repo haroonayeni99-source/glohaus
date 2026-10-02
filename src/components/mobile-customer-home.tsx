@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Bell, Search, ShieldCheck } from "lucide-react";
 import { Brand } from "./brand";
 import { BottomNavigation } from "./bottom-navigation";
+import { SiteFooter } from "./site-footer";
 
 const mobileCategories = [
   ["Hair", "https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=240&q=82"],
@@ -91,6 +92,7 @@ export function MobileCustomerHome({ signedIn = false, canAccessAdmin = false }:
           Discover more beauty inspiration
           <span aria-hidden>→</span>
         </Link>
+        <SiteFooter />
       </main>
       <BottomNavigation active="home" signedIn={signedIn} />
     </div>

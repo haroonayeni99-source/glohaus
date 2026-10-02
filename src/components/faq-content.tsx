@@ -154,8 +154,7 @@ const items: FaqItem[] = [
         Before verification, an eligible professional can create and publish a
         professional profile, add services priced up to £200, manage availability,
         upload portfolio content, communicate with customers and accept up to
-        five Trial bookings per calendar month. Trial Pro uses the Starter
-        commission rate of 8%. Online deposits and the wider verified feature
+        five Trial bookings per calendar month. Trial Pro uses a 10% service commission rate. Online deposits and the wider verified feature
         set remain unavailable until verification is complete.
       </>
     ),
@@ -432,8 +431,10 @@ const items: FaqItem[] = [
     answer: (
       <>
         Yes. GLOHAUS currently plans to charge customers a{" "}
-        <strong>£1 booking fee</strong> on applicable service bookings. The
-        booking fee must be shown clearly before the customer confirms payment.
+        customer booking fee on applicable service bookings. The current fee
+        is shown before the customer commits to a booking and may be updated by
+        GLOHAUS over time. Any change applies to new bookings rather than
+        changing an amount already agreed for a paid booking.
       </>
     ),
   },
@@ -443,9 +444,10 @@ const items: FaqItem[] = [
     answer: (
       <>
         No. The total payable price should be visible before final checkout.
-        For example, a £50 service plus the £1 GLOHAUS booking fee should be
-        presented as <strong>£51 total</strong>. The customer should be able to
-        see the booking fee before committing to the booking.
+        No. The service price, online booking payment and current GLOHAUS
+        booking fee should be shown before the customer commits. The customer
+        should not discover a platform fee for the first time after confirming
+        the booking.
       </>
     ),
   },
@@ -466,8 +468,8 @@ const items: FaqItem[] = [
     question: "What commission does a Trial Pro pay?",
     answer: (
       <>
-        Trial Pro is £0 per month and uses the Starter service commission rate
-        of <strong>8%</strong>. Eligible Trial Pros can accept up to five
+        Trial Pro is £0 per month with a <strong>10%</strong> GLOHAUS service
+        commission. Eligible Trial Pros can accept up to five
         marketplace bookings per calendar month while Trial restrictions
         remain in place.
       </>

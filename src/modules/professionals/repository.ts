@@ -132,55 +132,7 @@ export async function publicProfessionals(
        )
        AND (
          NOT $6::boolean
-         OR EXISTS (
-           SELECT 1
-           FROM beauty.availability_rules ar
-           JOIN LATERAL (
-             SELECT min(ps.duration_minutes)::integer AS duration_minutes
-             FROM beauty.public_services ps
-             WHERE ps.professional_id=p.id
-           ) svc ON svc.duration_minutes IS NOT NULL
-           JOIN LATERAL generate_series(
-             ar.start_minute,
-             ar.end_minute - svc.duration_minutes,
-             15
-           ) slot(start_minute) ON true
-           CROSS JOIN LATERAL (
-             SELECT
-               (((now() AT TIME ZONE 'Europe/London')::date
-                 + make_interval(mins => slot.start_minute))
-                 AT TIME ZONE 'Europe/London') AS starts_at,
-               (((now() AT TIME ZONE 'Europe/London')::date
-                 + make_interval(mins => slot.start_minute + svc.duration_minutes))
-                 AT TIME ZONE 'Europe/London') AS ends_at
-           ) candidate
-           WHERE ar.professional_id=p.id
-             AND ar.weekday=extract(
-               dow FROM (now() AT TIME ZONE 'Europe/London')
-             )::integer
-             AND candidate.starts_at >= now() + interval '1 hour'
-             AND NOT EXISTS (
-               SELECT 1
-               FROM beauty.availability_blocks block
-               WHERE block.professional_id=p.id
-                 AND block.starts_at < candidate.ends_at
-                 AND block.ends_at > candidate.starts_at
-             )
-             AND NOT EXISTS (
-               SELECT 1
-               FROM beauty.bookings booking
-               WHERE booking.professional_id=p.id
-                 AND booking.starts_at < candidate.ends_at
-                 AND booking.ends_at > candidate.starts_at
-                 AND (
-                   booking.status='confirmed'
-                   OR (
-                     booking.status='payment_pending'
-                     AND booking.hold_expires_at>now()
-                   )
-                 )
-             )
-         )
+         OR beauty.public_professional_available_today(p.id)
        )
        AND (
          $7::text IS NULL

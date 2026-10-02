@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Clock3, X } from "lucide-react";
 import type { PublicStory } from "@/modules/stories/domain";
 import type { LastMinuteSlot } from "@/modules/last-minute/domain";
+import { ContentReportButton } from "./content-report-button";
 
 function londonDate(value: string) {
   const parts = Object.fromEntries(
@@ -150,6 +151,7 @@ export function DiscoveryLiveStrip({
               <span>{activeStory.city}</span>
             </Link>
             {activeStory.caption && <p>{activeStory.caption}</p>}
+            <ContentReportButton targetType="media" targetId={activeStory.asset_id} label="Report Story" />
             {activeStory.service_id && (
               <Link
                 className="button"

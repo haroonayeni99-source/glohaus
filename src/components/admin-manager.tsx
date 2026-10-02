@@ -6,11 +6,27 @@ export function AdminManager({ data }: { data: AdminOverview }) {
   const router = useRouter();
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [accountSearch, setAccountSearch] = useState("");
   const [selection, setSelection] = useState<{
     type: "user" | "post" | "review" | "appeal" | "report";
     id: string;
     name: string;
   } | null>(null);
+  const normalizedSearch = accountSearch.trim().toLowerCase();
+  const visibleUsers = normalizedSearch
+    ? data.users.filter((user) =>
+        [
+          user.display_name,
+          user.email,
+          user.status,
+          ...(user.roles || []),
+        ].some((value) => String(value || "").toLowerCase().includes(normalizedSearch)),
+      )
+    : data.users;
+  const visibleProfessionals = visibleUsers.filter((user) =>
+    user.roles.includes("professional"),
+  );
+
   return (
     <>
       <div className="analytics-grid">
@@ -132,6 +148,27 @@ export function AdminManager({ data }: { data: AdminOverview }) {
         </form>
       )}
       <h2 id="users" className="admin-section-title">App Users</h2>
+      <div className="admin-account-search">
+        <label htmlFor="admin-account-search">Find a customer or professional</label>
+        <div>
+          <input
+            id="admin-account-search"
+            type="search"
+            value={accountSearch}
+            onChange={(event) => setAccountSearch(event.target.value)}
+            placeholder="Search name, email, role or status"
+            autoComplete="off"
+          />
+          {accountSearch && (
+            <button type="button" onClick={() => setAccountSearch("")}>Clear</button>
+          )}
+        </div>
+        <small>
+          {normalizedSearch
+            ? `${visibleUsers.length} matching account${visibleUsers.length === 1 ? "" : "s"}`
+            : "Search covers both clients and GLOHAUS PRO accounts below."}
+        </small>
+      </div>
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>
@@ -144,7 +181,7 @@ export function AdminManager({ data }: { data: AdminOverview }) {
             </tr>
           </thead>
           <tbody>
-            {data.users.map((user) => (
+            {visibleUsers.map((user) => (
               <tr key={user.id}>
                 <td>{user.display_name}</td>
                 <td>{user.email}</td>
@@ -169,6 +206,9 @@ export function AdminManager({ data }: { data: AdminOverview }) {
                 </td>
               </tr>
             ))}
+            {!visibleUsers.length && (
+              <tr><td colSpan={5}>No accounts match your search.</td></tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -188,9 +228,7 @@ export function AdminManager({ data }: { data: AdminOverview }) {
             </tr>
           </thead>
           <tbody>
-            {data.users
-              .filter((user) => user.roles.includes("professional"))
-              .map((user) => (
+            {visibleProfessionals.map((user) => (
                 <tr key={user.id}>
                   <td>{user.display_name}</td>
                   <td>{user.email}</td>
@@ -207,8 +245,8 @@ export function AdminManager({ data }: { data: AdminOverview }) {
                   </td>
                 </tr>
               ))}
-            {!data.users.some((user) => user.roles.includes("professional")) && (
-              <tr><td colSpan={5}>No professional accounts have been created yet.</td></tr>
+            {!visibleProfessionals.length && (
+              <tr><td colSpan={5}>{normalizedSearch ? "No professionals match your search." : "No professional accounts have been created yet."}</td></tr>
             )}
           </tbody>
         </table>

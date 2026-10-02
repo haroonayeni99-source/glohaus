@@ -65,7 +65,7 @@ export function ProfessionalCommissionControl({
                   name="percentage"
                   type="number"
                   min={0}
-                  max={50}
+                  max={40}
                   step="0.01"
                   defaultValue={pro.overrideBasisPoints === null ? "" : percent(pro.overrideBasisPoints)}
                   placeholder={`Leave blank for normal ${percent(pro.defaultBasisPoints)}%`}

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   Bell, Bookmark, CalendarDays, ChevronRight, Compass, PackageCheck,
@@ -21,15 +22,15 @@ const views = {
 } as const;
 
 const links = [
-  ["Upcoming bookings","Your next moment of self-care","bookings",CalendarDays],
-  ["Booking history","Past visits, reviews and rebooking","history",CalendarDays],
-  ["Wallet & payments","Deposits, refunds and payment activity","wallet",WalletCards],
-  ["Following","Professionals you want to keep up with","following",Users],
-  ["Saved looks","All the inspiration you want to keep","saved",Bookmark],
-  ["My reviews","Feedback from your verified appointments","reviews",Star],
-  ["Shop orders","Track product purchases and delivery","orders",PackageCheck],
-  ["Notifications","Keep up with your appointments","notifications",Bell],
-  ["Account & security","Manage your sign-in and verification","security",ShieldCheck],
+  ["Upcoming bookings","Your next moment of self-care","bookings",CalendarDays,"https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=240&q=82"],
+  ["Booking history","Past visits, reviews and rebooking","history",CalendarDays,"https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=240&q=82"],
+  ["Wallet & payments","Deposits, refunds and payment activity","wallet",WalletCards,"https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=240&q=82"],
+  ["Following","Professionals you want to keep up with","following",Users,"https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=240&q=82"],
+  ["Saved looks","All the inspiration you want to keep","saved",Bookmark,"https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=240&q=82"],
+  ["My reviews","Feedback from your verified appointments","reviews",Star,"https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=240&q=82"],
+  ["Shop orders","Track product purchases and delivery","orders",PackageCheck,"https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=240&q=82"],
+  ["Notifications","Keep up with your appointments","notifications",Bell,"https://images.unsplash.com/photo-1526045478516-99145907023c?auto=format&fit=crop&w=240&q=82"],
+  ["Account & security","Manage your sign-in and verification","security",ShieldCheck,"https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?auto=format&fit=crop&w=240&q=82"],
 ] as const;
 
 export default async function CustomerPreviewPage({
@@ -76,9 +77,12 @@ export default async function CustomerPreviewPage({
           </section>
         ) : (
           <nav className="account-menu" aria-label="Customer preview">
-            {links.map(([label, description, key, Icon]) => (
+            {links.map(([label, description, key, Icon, thumbnail]) => (
               <Link href={"/customer-preview?view="+key} key={key}>
-                <Icon size={21} aria-hidden />
+                <span className="customer-menu-thumb">
+                  <Image fill sizes="72px" src={thumbnail} alt="" />
+                  <span className="customer-menu-icon"><Icon size={15} aria-hidden /></span>
+                </span>
                 <span><strong>{label}</strong><small>{description}</small></span>
                 <ChevronRight size={18} aria-hidden />
               </Link>

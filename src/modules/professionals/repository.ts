@@ -1,6 +1,6 @@
 import { serviceSchema } from "./domain";
 import "server-only";
-import { discoveryCursor, type DiscoveryCursor } from "./discovery";
+import { discoveryCursor, type DiscoveryCursor, type DiscoveryFilters } from "./discovery";
 import type { SqlClient } from "@/modules/accounts/repository";
 import type {
   ProfileInput,
@@ -82,47 +82,126 @@ export async function saveService(
 export async function publicProfessionals(
   db: SqlClient,
   search = "",
+  filters: DiscoveryFilters,
   after?: DiscoveryCursor,
 ) {
+  const escaped = `%${search.replace(/[\\%_]/g, "\\$&")}%`;
   return (
     await db.query<PublicProfessional>(
-      `SELECT p.*,d.photo_id,d.photo_alt,r.rating,r.review_count,s.from_price_pence
- FROM (SELECT p.id,p.slug,p.business_name,p.bio,p.city,p.category,p.verification_status FROM beauty.public_professionals p
- WHERE (
-   p.business_name ILIKE $1
-   OR p.city ILIKE $1
-   OR p.category ILIKE $1
-   OR EXISTS(
-     SELECT 1
-     FROM beauty.platform_labels labels
-     WHERE labels.key=p.category AND labels.label ILIKE $1
-   )
-   OR EXISTS(
-     SELECT 1
-     FROM beauty.public_services svc
-     WHERE svc.professional_id=p.id
-       AND (svc.name ILIKE $1 OR svc.category ILIKE $1)
-   )
-   OR EXISTS(
-     SELECT 1
-     FROM beauty.public_profile_details details
-     WHERE details.id=p.id
-       AND details.location_details ILIKE $1
-   )
- )
- ${after ? "AND (p.business_name,p.id)>($2::text,$3::uuid)" : ""}
- ORDER BY p.business_name,p.id LIMIT 25) p
- LEFT JOIN beauty.public_profile_details d ON d.id=p.id
- LEFT JOIN LATERAL (SELECT round(avg(rating),1)::float AS rating,count(*)::integer AS review_count FROM beauty.public_reviews WHERE professional_id=p.id) r ON true
- LEFT JOIN LATERAL (SELECT min(price_pence) AS from_price_pence FROM beauty.public_services WHERE professional_id=p.id) s ON true
- ORDER BY p.business_name,p.id`,
+      `SELECT
+         p.id,p.slug,p.business_name,p.bio,p.city,p.category,p.verification_status,
+         d.photo_id,d.photo_alt,d.travels_to_you,
+         r.rating,r.review_count,
+         s.from_price_pence
+       FROM beauty.public_professionals p
+       LEFT JOIN beauty.public_profile_details d ON d.id=p.id
+       LEFT JOIN LATERAL (
+         SELECT round(avg(rating),1)::float AS rating,
+                count(*)::integer AS review_count
+         FROM beauty.public_reviews
+         WHERE professional_id=p.id
+       ) r ON true
+       LEFT JOIN LATERAL (
+         SELECT min(price_pence) AS from_price_pence
+         FROM beauty.public_services
+         WHERE professional_id=p.id
+       ) s ON true
+       WHERE (
+         p.business_name ILIKE $1
+         OR p.city ILIKE $1
+         OR p.category ILIKE $1
+         OR EXISTS(
+           SELECT 1
+           FROM beauty.platform_labels labels
+           WHERE labels.key=p.category AND labels.label ILIKE $1
+         )
+         OR EXISTS(
+           SELECT 1
+           FROM beauty.public_services svc
+           WHERE svc.professional_id=p.id
+             AND (svc.name ILIKE $1 OR svc.category ILIKE $1)
+         )
+         OR d.location_details ILIKE $1
+       )
+       AND (NOT $2::boolean OR p.verification_status='verified')
+       AND (NOT $3::boolean OR s.from_price_pence <= 5000)
+       AND (NOT $4::boolean OR coalesce(d.travels_to_you,false))
+       AND (
+         NOT $5::boolean
+         OR (coalesce(r.rating,0) >= 4.5 AND coalesce(r.review_count,0) >= 3)
+       )
+       AND (
+         NOT $6::boolean
+         OR EXISTS (
+           SELECT 1
+           FROM beauty.availability_rules ar
+           JOIN LATERAL (
+             SELECT min(ps.duration_minutes)::integer AS duration_minutes
+             FROM beauty.public_services ps
+             WHERE ps.professional_id=p.id
+           ) svc ON svc.duration_minutes IS NOT NULL
+           JOIN LATERAL generate_series(
+             ar.start_minute,
+             ar.end_minute - svc.duration_minutes,
+             15
+           ) slot(start_minute) ON true
+           CROSS JOIN LATERAL (
+             SELECT
+               (((now() AT TIME ZONE 'Europe/London')::date
+                 + make_interval(mins => slot.start_minute))
+                 AT TIME ZONE 'Europe/London') AS starts_at,
+               (((now() AT TIME ZONE 'Europe/London')::date
+                 + make_interval(mins => slot.start_minute + svc.duration_minutes))
+                 AT TIME ZONE 'Europe/London') AS ends_at
+           ) candidate
+           WHERE ar.professional_id=p.id
+             AND ar.weekday=extract(
+               dow FROM (now() AT TIME ZONE 'Europe/London')
+             )::integer
+             AND candidate.starts_at >= now() + interval '1 hour'
+             AND NOT EXISTS (
+               SELECT 1
+               FROM beauty.availability_blocks block
+               WHERE block.professional_id=p.id
+                 AND block.starts_at < candidate.ends_at
+                 AND block.ends_at > candidate.starts_at
+             )
+             AND NOT EXISTS (
+               SELECT 1
+               FROM beauty.bookings booking
+               WHERE booking.professional_id=p.id
+                 AND booking.starts_at < candidate.ends_at
+                 AND booking.ends_at > candidate.starts_at
+                 AND (
+                   booking.status='confirmed'
+                   OR (
+                     booking.status='payment_pending'
+                     AND booking.hold_expires_at>now()
+                   )
+                 )
+             )
+         )
+       )
+       AND (
+         $7::text IS NULL
+         OR (p.business_name,p.id)>($7::text,$8::uuid)
+       )
+       ORDER BY p.business_name,p.id
+       LIMIT 25`,
       [
-        `%${search.replace(/[\\%_]/g, "\\$&")}%`,
-        ...(after ? [after.name, after.id] : []),
+        escaped,
+        filters.verified,
+        filters.under50,
+        filters.travels,
+        filters.topRated,
+        filters.availableToday,
+        after?.name ?? null,
+        after?.id ?? null,
       ],
     )
   ).rows;
 }
+
 export async function publicProfile(db: SqlClient, slug: string) {
   const professional = (
     await db.query<PublicProfessional>(
@@ -149,15 +228,16 @@ export async function publicProfile(db: SqlClient, slug: string) {
 export async function discoveryPage(
   db: SqlClient,
   query: string,
+  filters: DiscoveryFilters,
   after?: DiscoveryCursor,
 ) {
-  const rows = await publicProfessionals(db, query, after);
+  const rows = await publicProfessionals(db, query, filters, after);
   const professionals = rows.slice(0, 24);
   return {
     professionals,
     next:
       rows.length > 24
-        ? discoveryCursor(professionals[professionals.length - 1], query)
+        ? discoveryCursor(professionals[professionals.length - 1], query, filters)
         : null,
   };
 }

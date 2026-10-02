@@ -26,6 +26,7 @@ export default async function EditProfile() {
       await db.query<{
         business_description: string;
         location_details: string;
+        travels_to_you: boolean;
         contact_preference: NonNullable<ProfileInput["contactPreference"]>;
         contact_email: string;
         contact_phone: string;
@@ -39,7 +40,7 @@ export default async function EditProfile() {
         category: ProfileInput["category"];
         publication_status: ProfileInput["publicationStatus"];
       }>(
-        "SELECT business_description,location_details,contact_preference,contact_email,contact_phone,instagram_url,tiktok_url,website_url,slug,business_name,bio,city,category,publication_status FROM beauty.professional_profiles WHERE id=$1",
+        "SELECT business_description,location_details,travels_to_you,contact_preference,contact_email,contact_phone,instagram_url,tiktok_url,website_url,slug,business_name,bio,city,category,publication_status FROM beauty.professional_profiles WHERE id=$1",
         [account.professionalId],
       )
     ).rows[0];
@@ -157,6 +158,7 @@ export default async function EditProfile() {
             initial={{
               businessDescription: data.profile.business_description,
               locationDetails: data.profile.location_details,
+              travelsToYou: data.profile.travels_to_you,
               contactPreference: data.profile.contact_preference,
               contactEmail: data.profile.contact_email,
               contactPhone: data.profile.contact_phone,

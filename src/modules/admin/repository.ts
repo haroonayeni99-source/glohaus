@@ -402,6 +402,53 @@ export async function ownerEmailDeliveryOverview(): Promise<OwnerEmailDeliveryOv
 }
 
 
+
+export type OwnerAuthAccount = {
+  authId: string;
+  email: string;
+  createdAt: string;
+  emailConfirmedAt: string | null;
+  lastSignInAt: string | null;
+  appUserId: string | null;
+  appStatus: string | null;
+  roles: string[];
+};
+
+export async function ownerAuthAccountOverview(): Promise<OwnerAuthAccount[]> {
+  return withOwner(async (db) => {
+    const row = (
+      await db.query<{ data: OwnerAuthAccount[] }>(
+        "SELECT beauty.owner_auth_account_overview() AS data",
+      )
+    ).rows[0];
+    return row?.data ?? [];
+  });
+}
+
+export type OwnerProfessionalCommission = {
+  professionalId: string;
+  businessName: string;
+  email: string;
+  planKey: string;
+  defaultBasisPoints: number;
+  effectiveBasisPoints: number;
+  overrideBasisPoints: number | null;
+  overrideReason: string | null;
+  overrideUntil: string | null;
+  overrideUpdatedAt: string | null;
+};
+
+export async function ownerProfessionalCommissionOverview(): Promise<OwnerProfessionalCommission[]> {
+  return withOwner(async (db) => {
+    const row = (
+      await db.query<{ data: OwnerProfessionalCommission[] }>(
+        "SELECT beauty.owner_professional_commission_overview() AS data",
+      )
+    ).rows[0];
+    return row?.data ?? [];
+  });
+}
+
 export type AdminCategory = {
   id: string;
   name: string;

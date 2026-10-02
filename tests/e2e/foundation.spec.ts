@@ -218,7 +218,7 @@ test("Share remains a separate optional social tab", async ({ page }) => {
   await expect(
     page.locator('.glohaus-bottom-nav [aria-current="page"]'),
   ).toHaveText("Share");
-  await expect(page.getByText("SHARE. CONNECT. BOOK.")).toBeVisible();
+  await expect(page.getByText("SHARE. CONNECT. BOOK.")).toHaveCount(1);
   await expect(
     page.getByRole("navigation", { name: "Mobile navigation" }).getByRole("link", { name: "Discover" }),
   ).toHaveAttribute("href", "/discover");

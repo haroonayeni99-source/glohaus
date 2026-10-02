@@ -121,10 +121,21 @@ BEGIN
 END;
 $fn$;
 
-REVOKE ALL ON FUNCTION public.glohaus_my_account() FROM PUBLIC,anon;
-REVOKE ALL ON FUNCTION public.glohaus_enrol_self(text,boolean,boolean) FROM PUBLIC,anon;
-GRANT EXECUTE ON FUNCTION public.glohaus_my_account() TO authenticated;
-GRANT EXECUTE ON FUNCTION public.glohaus_enrol_self(text,boolean,boolean) TO authenticated;
+REVOKE ALL ON FUNCTION public.glohaus_my_account() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.glohaus_enrol_self(text,boolean,boolean) FROM PUBLIC;
+
+DO $grant$
+BEGIN
+  IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='anon') THEN
+    EXECUTE 'REVOKE ALL ON FUNCTION public.glohaus_my_account() FROM anon';
+    EXECUTE 'REVOKE ALL ON FUNCTION public.glohaus_enrol_self(text,boolean,boolean) FROM anon';
+  END IF;
+  IF EXISTS(SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN
+    EXECUTE 'GRANT EXECUTE ON FUNCTION public.glohaus_my_account() TO authenticated';
+    EXECUTE 'GRANT EXECUTE ON FUNCTION public.glohaus_enrol_self(text,boolean,boolean) TO authenticated';
+  END IF;
+END;
+$grant$;
 
 
 -- The serverless deployment can have many concurrent function instances. The

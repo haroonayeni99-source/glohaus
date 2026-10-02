@@ -22,12 +22,32 @@ export function EmailAuthForm({
     null,
   );
 
-  async function provisionCustomer() {
-    const provision = await fetch("/api/v1/accounts/enrol", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: "{}",
-    });
+  async function provisionCustomer(
+    supabase?: ReturnType<typeof createClient>,
+  ) {
+    const requestProvision = () =>
+      fetch("/api/v1/accounts/enrol", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+        cache: "no-store",
+      });
+
+    let provision = await requestProvision();
+
+    // Supabase SSR stores larger sessions across multiple cookie chunks. If a
+    // browser still has chunks from an older write, the client can be signed
+    // in while the server sees an invalid cookie and returns 401. Refresh the
+    // browser session once so @supabase/ssr rewrites a clean cookie set, then
+    // retry the account bootstrap instead of trapping the user on sign-in.
+    if (provision.status === 401 && supabase) {
+      const refreshed = await supabase.auth.refreshSession();
+      if (!refreshed.error && refreshed.data.session) {
+        await new Promise((resolve) => window.setTimeout(resolve, 120));
+        provision = await requestProvision();
+      }
+    }
+
     if (!provision.ok) {
       let code = "";
       try {
@@ -35,11 +55,13 @@ export function EmailAuthForm({
         code = payload?.error?.code || "";
       } catch {}
       setError(
-        code === "FORBIDDEN"
-          ? "You’re signed in, but GLOHAUS couldn’t verify this site for account setup. Please refresh and try again."
-          : code === "UNAVAILABLE"
-            ? "You’re signed in, but GLOHAUS account services are temporarily unavailable. Please try again."
-            : "You’re signed in, but we couldn’t finish opening your GLOHAUS account. Please try again.",
+        provision.status === 401
+          ? "Your sign-in session could not be completed. Please sign in again."
+          : code === "FORBIDDEN"
+            ? "You’re signed in, but GLOHAUS couldn’t verify this site for account setup. Please refresh and try again."
+            : code === "UNAVAILABLE"
+              ? "You’re signed in, but GLOHAUS account services are temporarily unavailable. Please try again."
+              : "You’re signed in, but we couldn’t finish opening your GLOHAUS account. Please try again.",
       );
       setPending(false);
       return null;
@@ -104,7 +126,7 @@ export function EmailAuthForm({
           router.push("/onboarding?intent=professional");
           return;
         }
-        const account = await provisionCustomer();
+        const account = await provisionCustomer(supabase);
         if (!account) return;
         router.push(redirectTo || account.redirectTo || "/account");
         return;
@@ -115,7 +137,7 @@ export function EmailAuthForm({
       // appears in Owner/Admin and role routing has a real application record.
       // This adds only the baseline customer role; professional access still
       // requires the 18+ and Professional Terms onboarding flow.
-      const provisioned = await provisionCustomer();
+      const provisioned = await provisionCustomer(supabase);
       if (!provisioned) return;
 
       let verified = await serverAccount();

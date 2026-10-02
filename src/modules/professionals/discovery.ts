@@ -8,6 +8,14 @@ export type DiscoveryFilters = {
   availableToday: boolean;
 };
 
+export const defaultDiscoveryFilters: DiscoveryFilters = {
+  verified: false,
+  under50: false,
+  topRated: false,
+  travels: false,
+  availableToday: false,
+};
+
 const filtersSchema = z
   .object({
     verified: z.boolean(),
@@ -70,7 +78,7 @@ export function discoveryOptions(params: {
 export function discoveryCursor(
   row: { id: string; business_name: string },
   query: string,
-  filters: DiscoveryFilters,
+  filters: DiscoveryFilters = defaultDiscoveryFilters,
 ) {
   return Buffer.from(
     JSON.stringify({ id: row.id, name: row.business_name, query, filters }),

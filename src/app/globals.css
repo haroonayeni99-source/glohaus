@@ -10021,3 +10021,191 @@ body {
   .pro-protection-list article > small,
   .pro-protection-list article > a { grid-column: 1; }
 }
+
+
+/* Owner/Admin theme cohesion + account search */
+.admin-workspace {
+  background:
+    radial-gradient(circle at 92% 2%, color-mix(in srgb, var(--plum) 10%, transparent), transparent 28rem),
+    var(--paper);
+  color: var(--ink);
+}
+.admin-workspace-content,
+.admin-workspace-section,
+.admin-workspace-heading {
+  color: var(--ink);
+}
+.admin-workspace .lead,
+.admin-section-intro,
+.admin-navigation-identity small,
+.admin-table td,
+.service-edit-row p,
+.service-edit-row small {
+  color: var(--muted);
+}
+.admin-workspace-section,
+.admin-workspace .service-edit-row,
+.admin-workspace .analytics-grid article,
+.admin-table-wrap,
+.admin-account-search {
+  border-color: var(--line);
+  background: var(--white);
+  color: var(--ink);
+}
+.admin-table th {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--paper) 88%, var(--plum) 4%);
+  color: var(--ink);
+}
+.admin-table td {
+  border-color: var(--line);
+}
+.admin-workspace input,
+.admin-workspace select,
+.admin-workspace textarea,
+.admin-workspace button {
+  color: var(--ink);
+}
+.admin-workspace input,
+.admin-workspace select,
+.admin-workspace textarea {
+  border-color: var(--line);
+  background: var(--white);
+}
+.admin-workspace button:not(.button) {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--white) 96%, var(--paper));
+}
+.admin-navigation {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--white) 98%, transparent);
+  color: var(--ink);
+}
+.admin-navigation a {
+  color: var(--ink);
+}
+.admin-navigation a:hover,
+.admin-navigation a[aria-current="page"] {
+  background: color-mix(in srgb, var(--plum) 10%, transparent);
+  color: var(--plum-dark);
+}
+.admin-account-search {
+  margin: 18px 0 16px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.admin-account-search > label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: .82rem;
+  font-weight: 800;
+}
+.admin-account-search > div {
+  display: flex;
+  gap: 9px;
+}
+.admin-account-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font: inherit;
+}
+.admin-account-search button {
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.admin-account-search small {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: .74rem;
+}
+
+:root[data-theme="night"] .admin-workspace {
+  background:
+    radial-gradient(circle at 92% 2%, rgb(221 76 139 / 11%), transparent 28rem),
+    #121011;
+  color: #f8f1f4;
+}
+:root[data-theme="night"] .admin-workspace-content,
+:root[data-theme="night"] .admin-workspace-section,
+:root[data-theme="night"] .admin-workspace-heading,
+:root[data-theme="night"] .admin-section-title {
+  color: #f8f1f4;
+}
+:root[data-theme="night"] .admin-workspace-section,
+:root[data-theme="night"] .admin-workspace .service-edit-row,
+:root[data-theme="night"] .admin-workspace .analytics-grid article,
+:root[data-theme="night"] .admin-table-wrap,
+:root[data-theme="night"] .admin-account-search {
+  border-color: #3b3236;
+  background: #1b181a;
+  color: #f8f1f4;
+}
+:root[data-theme="night"] .admin-navigation {
+  border-color: #342c30;
+  background: #171416;
+  color: #f8f1f4;
+}
+:root[data-theme="night"] .admin-navigation a,
+:root[data-theme="night"] .admin-navigation-brand,
+:root[data-theme="night"] .admin-navigation-identity {
+  color: #f8f1f4;
+}
+:root[data-theme="night"] .admin-navigation a:hover,
+:root[data-theme="night"] .admin-navigation a[aria-current="page"] {
+  background: rgb(255 145 189 / 10%);
+  color: #ffafd0;
+}
+:root[data-theme="night"] .admin-workspace .lead,
+:root[data-theme="night"] .admin-section-intro,
+:root[data-theme="night"] .admin-navigation-identity small,
+:root[data-theme="night"] .admin-table td,
+:root[data-theme="night"] .service-edit-row p,
+:root[data-theme="night"] .service-edit-row small,
+:root[data-theme="night"] .admin-account-search small {
+  color: #c9bdc1;
+}
+:root[data-theme="night"] .admin-table th {
+  border-color: #3b3236;
+  background: #211d1f;
+  color: #f8f1f4;
+}
+:root[data-theme="night"] .admin-table td {
+  border-color: #30292c;
+  color: #eee5e9;
+}
+:root[data-theme="night"] .admin-workspace input,
+:root[data-theme="night"] .admin-workspace select,
+:root[data-theme="night"] .admin-workspace textarea {
+  border-color: #4a3f44;
+  background: #141214;
+  color: #fff8fb;
+}
+:root[data-theme="night"] .admin-workspace input::placeholder,
+:root[data-theme="night"] .admin-workspace textarea::placeholder {
+  color: #9f9197;
+}
+:root[data-theme="night"] .admin-workspace button:not(.button) {
+  border-color: #4a3f44;
+  background: #211d1f;
+  color: #fff8fb;
+}
+:root[data-theme="night"] .owner-control-status {
+  border-color: #553746;
+  background: rgb(221 76 139 / 9%);
+  color: #ffe6f0;
+}
+
+@media (max-width: 720px) {
+  .admin-account-search > div {
+    align-items: stretch;
+  }
+  .admin-account-search input {
+    font-size: 16px;
+  }
+}

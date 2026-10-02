@@ -5,7 +5,7 @@ import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 
 const schema = z.object({
   professionalId: z.uuid(),
-  percentage: z.number().min(0).max(50).nullable(),
+  percentage: z.number().min(0).max(40).nullable(),
   expiresAt: z.string().datetime().nullable(),
   reason: z.string().trim().min(5).max(500),
 }).strict();

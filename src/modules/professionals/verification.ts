@@ -55,15 +55,13 @@ export function assertWithdrawalAllowed(access: ProfessionalAccessState) {
 
 export function assertBookingAllowed(
   access: ProfessionalAccessState,
-  service: { pricePence: number; depositPence: number },
+  _service: { pricePence: number; depositPence: number },
 ) {
   if (access.status === "restricted")
     throw new AccessError("PROFESSIONAL_RESTRICTED", 403);
-  if (
-    !access.verified &&
-    (service.pricePence > 20000 ||
-      service.depositPence > 0 ||
-      (access.starterBookingsRemaining ?? 0) <= 0)
-  )
+  // Current GLOHAUS policy: professionals can build their profile while
+  // unverified, but no customer booking can be accepted until verification
+  // has completed.
+  if (!access.verified)
     throw new AccessError("VERIFICATION_REQUIRED", 409);
 }

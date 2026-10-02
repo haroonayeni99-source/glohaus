@@ -182,7 +182,7 @@ test("missing pages offer a working route home", async ({ page }, testInfo) => {
 });
 
 
-test("dedicated Share route behaves like a full-screen mobile feed", async ({ page }) => {
+test("dedicated Discover route behaves like a full-screen mobile feed", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/discover");
 
@@ -203,11 +203,25 @@ test("dedicated Share route behaves like a full-screen mobile feed", async ({ pa
 
   await expect(
     page.locator('.glohaus-bottom-nav [aria-current="page"]'),
-  ).toHaveText("Share");
+  ).toHaveText("Discover");
 
   const firstShare = page.getByRole("button", { name: /^Share / }).first();
   await firstShare.click();
-  await expect(page.getByLabel("Post link")).toHaveValue(/\/share#post-/);
+  await expect(page.getByLabel("Post link")).toHaveValue(/\/discover#post-/);
+});
+
+
+test("Share remains a separate optional social tab", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/share");
+
+  await expect(
+    page.locator('.glohaus-bottom-nav [aria-current="page"]'),
+  ).toHaveText("Share");
+  await expect(page.getByText("SHARE. CONNECT. BOOK.")).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Mobile navigation" }).getByRole("link", { name: "Discover" }),
+  ).toHaveAttribute("href", "/discover");
 });
 
 

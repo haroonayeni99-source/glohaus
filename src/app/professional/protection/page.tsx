@@ -3,8 +3,8 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import {
   ArrowUpRight,
-  FileShield,
-  MessageSquareWarning,
+  CircleAlert,
+  MessageSquare,
   ShieldCheck,
   WalletCards,
 } from "lucide-react";
@@ -88,7 +88,7 @@ export default async function ProfessionalProtectionPage() {
 
         <section className="pro-protection-grid">
           <article className="pro-panel">
-            <FileShield size={24} aria-hidden />
+            <CircleAlert size={24} aria-hidden />
             <h2>Dispute evidence</h2>
             <p>
               Open the connected booking to review appointment details, payment records,
@@ -99,7 +99,7 @@ export default async function ProfessionalProtectionPage() {
             </Link>
           </article>
           <article className="pro-panel">
-            <MessageSquareWarning size={24} aria-hidden />
+            <MessageSquare size={24} aria-hidden />
             <h2>Safety reporting</h2>
             <p>
               Reports are kept separate from public reviews so serious behaviour can be

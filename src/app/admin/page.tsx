@@ -9,7 +9,9 @@ import { AdminFinancePanel } from "@/components/admin-finance-panel";
 import { AdminNavigation } from "@/components/admin-navigation";
 import { ShopFeeControl } from "@/components/shop-fee-control";
 import { OwnerControls } from "@/components/owner-controls";
-import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, paymentLaunchReadiness } from "@/modules/admin/repository";
+import { OwnerAuthAccounts } from "@/components/owner-auth-accounts";
+import { ProfessionalCommissionControl } from "@/components/professional-commission-control";
+import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, paymentLaunchReadiness } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
@@ -21,7 +23,7 @@ export default async function Page() {
       </AuthFrame>
     );
   const isOwner = result.account.roles.includes("owner");
-  const [data, labels, categories, owner, productFee, finance, paymentReadiness, emailDelivery] = await Promise.all([
+  const [data, labels, categories, owner, productFee, finance, paymentReadiness, emailDelivery, authAccounts, commissions] = await Promise.all([
     adminOverview(),
     publicLabels(),
     adminCategories().catch(() => []),
@@ -30,6 +32,8 @@ export default async function Page() {
     adminFinanceOverview().catch(() => null),
     isOwner ? paymentLaunchReadiness().catch(() => null) : Promise.resolve(null),
     isOwner ? ownerEmailDeliveryOverview().catch(() => null) : Promise.resolve(null),
+    isOwner ? ownerAuthAccountOverview().catch(() => []) : Promise.resolve([]),
+    isOwner ? ownerProfessionalCommissionOverview().catch(() => []) : Promise.resolve([]),
   ]);
   const emailReadiness = isOwner ? emailLaunchReadiness() : null;
   return (
@@ -74,6 +78,27 @@ export default async function Page() {
                 Each paid order keeps an immutable snapshot of the rule used at purchase.
               </p>
               <ShopFeeControl initial={productFee} />
+            </section>
+          )}
+          {isOwner && (
+            <section id="auth-accounts" className="admin-workspace-section">
+              <p className="eyebrow">AUTH & ACCOUNT PROVISIONING</p>
+              <h2>All sign-ups and sign-ins</h2>
+              <p className="lead">
+                Supabase Auth users are shown here even if GLOHAUS account provisioning has not completed yet.
+                This lets the Owner see email-confirmation, app-account linkage, roles and last successful sign-in in one place.
+              </p>
+              <OwnerAuthAccounts accounts={authAccounts} />
+            </section>
+          )}
+          {isOwner && (
+            <section id="professional-commission" className="admin-workspace-section">
+              <p className="eyebrow">PROFESSIONAL COMMISSION</p>
+              <h2>Individual service commission rates</h2>
+              <p className="lead">
+                The normal plan commission remains the default. Use an audited custom rate only when a specific professional needs a commercial rate, such as a high-volume agreement. New booking quotes use the effective rate; existing paid bookings keep their original snapshot.
+              </p>
+              <ProfessionalCommissionControl professionals={commissions} />
             </section>
           )}
           {owner && (

@@ -292,6 +292,33 @@ export function ProfessionalDashboard({
           </Link>
         </section>
 
+        <section className="pro-panel pro-milestones" aria-label="Professional milestones">
+          <div className="pro-panel-title">
+            <div>
+              <p className="pro-kicker">MILESTONES</p>
+              <h2>Build your GLOHAUS track record.</h2>
+            </div>
+            <span className="pro-status pro-status-confirmed">Private to you</span>
+          </div>
+          <div className="pro-milestone-grid">
+            {[
+              ["10 bookings", data.stats.completedBookings, 10],
+              ["25 reviews", data.stats.reviewCount, 25],
+              ["100 followers", data.stats.followerCount, 100],
+              ["500 followers", data.stats.followerCount, 500],
+            ].map(([label, current, target]) => {
+              const progress = Math.min(100, Math.round((Number(current) / Number(target)) * 100));
+              return (
+                <article key={String(label)}>
+                  <div><strong>{label}</strong><span>{Number(current)} / {Number(target)}</span></div>
+                  <progress max={100} value={progress}>{progress}%</progress>
+                  <small>{progress >= 100 ? "Milestone reached" : String(progress) + "% complete"}</small>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
         <section className="pro-dashboard-grid">
           <section className="pro-panel pro-appointments-panel">
             <div className="pro-panel-title">

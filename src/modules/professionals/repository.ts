@@ -1,6 +1,6 @@
 import { serviceSchema } from "./domain";
 import "server-only";
-import { discoveryCursor, type DiscoveryCursor, type DiscoveryFilters } from "./discovery";
+import { discoveryCursor, defaultDiscoveryFilters, type DiscoveryCursor, type DiscoveryFilters } from "./discovery";
 import type { SqlClient } from "@/modules/accounts/repository";
 import type {
   ProfileInput,
@@ -82,8 +82,8 @@ export async function saveService(
 export async function publicProfessionals(
   db: SqlClient,
   search = "",
-  filters: DiscoveryFilters,
   after?: DiscoveryCursor,
+  filters: DiscoveryFilters = defaultDiscoveryFilters,
 ) {
   const escaped = `%${search.replace(/[\\%_]/g, "\\$&")}%`;
   return (
@@ -228,10 +228,10 @@ export async function publicProfile(db: SqlClient, slug: string) {
 export async function discoveryPage(
   db: SqlClient,
   query: string,
-  filters: DiscoveryFilters,
   after?: DiscoveryCursor,
+  filters: DiscoveryFilters = defaultDiscoveryFilters,
 ) {
-  const rows = await publicProfessionals(db, query, filters, after);
+  const rows = await publicProfessionals(db, query, after, filters);
   const professionals = rows.slice(0, 24);
   return {
     professionals,

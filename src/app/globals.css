@@ -8956,3 +8956,137 @@ body > .theme-toggle {
   color:#f5edef;
   border-color:#473d41;
 }
+
+
+/* Owner/Admin responsive hardening.
+   Keep the existing desktop console unchanged while preventing horizontal
+   overflow and cramped controls on tablets and phones. */
+.admin-workspace,
+.admin-workspace-content,
+.admin-workspace-section,
+.admin-table-wrap,
+.service-edit-list,
+.service-edit-row,
+.editor-form {
+  min-width: 0;
+}
+.admin-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.admin-table {
+  width: 100%;
+}
+.admin-workspace-section .editor-form {
+  max-width: 100%;
+}
+.admin-workspace-section .service-edit-row > * {
+  min-width: 0;
+}
+
+@media (max-width: 880px) {
+  .admin-navigation {
+    position: sticky;
+    top: 0;
+    z-index: 80;
+  }
+  .admin-navigation nav {
+    gap: 4px;
+    scrollbar-width: thin;
+    overscroll-behavior-x: contain;
+  }
+  .admin-navigation nav a {
+    flex: 0 0 auto;
+  }
+  .admin-workspace-heading h1 {
+    font-size: clamp(2rem, 10vw, 3rem);
+  }
+  .admin-workspace-section {
+    margin: 22px 0;
+    padding: 20px;
+    border-radius: 16px;
+  }
+  .admin-workspace-section .service-edit-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .admin-workspace-section .service-edit-row > .editor-form,
+  .admin-workspace-section .service-edit-row form.editor-form {
+    width: 100%;
+    margin-top: 8px;
+  }
+  .admin-workspace-section .editor-form {
+    padding: 20px;
+  }
+  .admin-workspace-section .button {
+    max-width: 100%;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 620px) {
+  .admin-navigation {
+    padding: 14px 12px 10px;
+  }
+  .admin-navigation-brand {
+    font-size: .72rem;
+  }
+  .admin-navigation-identity {
+    margin: 11px 2px 8px;
+  }
+  .admin-navigation nav {
+    margin: 0 -4px;
+    padding: 0 4px 5px;
+  }
+  .admin-navigation nav a {
+    padding: 8px 9px;
+    font-size: .7rem;
+  }
+  .admin-workspace-content {
+    padding: 20px 12px 88px;
+  }
+  .admin-workspace-heading {
+    margin-bottom: 24px;
+  }
+  .admin-workspace-heading h1 {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+  .admin-workspace-section {
+    padding: 16px;
+  }
+  .admin-workspace-section > .lead,
+  .admin-workspace-section p,
+  .admin-workspace-section small,
+  .admin-workspace-section td,
+  .admin-workspace-section th {
+    overflow-wrap: anywhere;
+  }
+  .admin-table {
+    min-width: 680px;
+  }
+  .admin-workspace-section .editor-form {
+    padding: 16px;
+    border-radius: 10px;
+  }
+  .admin-workspace-section .field-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .admin-workspace-section .editor-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .admin-workspace-section .editor-actions > * {
+    width: 100%;
+  }
+  .admin-workspace-section .service-edit-row {
+    padding: 15px;
+  }
+  .admin-workspace-section .service-edit-row button,
+  .admin-workspace-section .service-edit-row .button {
+    width: 100%;
+    justify-content: center;
+  }
+}

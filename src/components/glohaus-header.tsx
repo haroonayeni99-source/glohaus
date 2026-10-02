@@ -34,7 +34,7 @@ export function GlohausHeader({
           <Link href="/discover">Discover</Link>
           <Link href="/share">Share</Link>
           <Link href="/how-it-works">How It Works</Link>
-          <Link href="/professional">For Professionals</Link>
+          <Link href="/professional-preview">For Professionals</Link>
           <Link href="/shop">Shop</Link>
           <Link href="/about">About</Link>
           <Link href="/faq">FAQ</Link>

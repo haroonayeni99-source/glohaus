@@ -32,9 +32,22 @@ export default async function Explore({
         typeof error === "object" && error !== null && "code" in error
           ? String((error as { code?: unknown }).code ?? "")
           : "";
+      const details =
+        typeof error === "object" && error !== null
+          ? (error as {
+              table?: unknown;
+              schema?: unknown;
+              routine?: unknown;
+              message?: unknown;
+            })
+          : {};
       console.error("Professional discovery unavailable", {
         type: error instanceof Error ? error.name : "UnknownError",
         code,
+        table: String(details.table ?? ""),
+        schema: String(details.schema ?? ""),
+        routine: String(details.routine ?? ""),
+        message: String(details.message ?? "").slice(0, 180),
       });
     }
   }

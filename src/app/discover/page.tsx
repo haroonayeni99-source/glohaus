@@ -47,9 +47,11 @@ const emptyFeedData: FeedData = {
   lastMinute: [],
 };
 
-export default async function Discover({
+export async function FeedPage({
   searchParams,
+  mode = "discover",
 }: {
+  mode?: "discover" | "share";
   searchParams: Promise<{
     view?: string;
     feed?: string;
@@ -98,16 +100,22 @@ export default async function Discover({
             ? await savedPosts(db, page)
             : pageData?.posts || [];
         const posts = rows.slice(0, 40);
-        const stories = (
-          await db.query<PublicStory>(
-            "SELECT * FROM beauty.public_stories ORDER BY created_at DESC LIMIT 30",
-          )
-        ).rows;
-        const lastMinute = (
-          await db.query<LastMinuteSlot>(
-            "SELECT * FROM beauty.public_last_minute_slots ORDER BY starts_at ASC LIMIT 20",
-          )
-        ).rows;
+        const stories =
+          mode === "share"
+            ? (
+                await db.query<PublicStory>(
+                  "SELECT * FROM beauty.public_stories ORDER BY created_at DESC LIMIT 30",
+                )
+              ).rows
+            : [];
+        const lastMinute =
+          mode === "share"
+            ? (
+                await db.query<LastMinuteSlot>(
+                  "SELECT * FROM beauty.public_last_minute_slots ORDER BY starts_at ASC LIMIT 20",
+                )
+              ).rows
+            : [];
 
         return {
           posts,
@@ -141,7 +149,7 @@ export default async function Discover({
 
   return (
     <DiscoveryFeed
-      key={`${data.posts[0]?.id || ""}:${data.next || ""}:${data.viewer}:${savedView}:${followingView}:${page}:${postId.success ? postId.data : ""}:/discover`}
+      key={`${data.posts[0]?.id || ""}:${data.next || ""}:${data.viewer}:${savedView}:${followingView}:${page}:${postId.success ? postId.data : ""}:${mode}`}
       publishedPosts={data.posts}
       initialNext={data.next}
       initialEngagement={data.initialEngagement}
@@ -153,10 +161,22 @@ export default async function Discover({
       followingView={followingView}
       savedPage={page}
       hasMoreSaved={savedView && data.hasMore}
-      hideEditorial={postId.success}
-      routeBase="/share"
+      hideEditorial={mode === "share" || postId.success}
+      routeBase={mode === "share" ? "/share" : "/discover"}
       stories={data.stories}
       lastMinute={data.lastMinute}
     />
   );
+}
+
+
+export default async function DiscoverPage(props: {
+  searchParams: Promise<{
+    view?: string;
+    feed?: string;
+    page?: string;
+    post?: string;
+  }>;
+}) {
+  return FeedPage({ ...props, mode: "discover" });
 }

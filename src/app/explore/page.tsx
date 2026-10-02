@@ -27,8 +27,15 @@ export default async function Explore({
       const result = await withIdentity("", (db) => discoveryPage(db, q, after, filters));
       professionals = result.professionals;
       next = result.next;
-    } catch {
-      console.error("Professional discovery unavailable");
+    } catch (error) {
+      const code =
+        typeof error === "object" && error !== null && "code" in error
+          ? String((error as { code?: unknown }).code ?? "")
+          : "";
+      console.error("Professional discovery unavailable", {
+        type: error instanceof Error ? error.name : "UnknownError",
+        code,
+      });
     }
   }
 

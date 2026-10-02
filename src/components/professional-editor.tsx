@@ -225,6 +225,19 @@ export function ProfessionalEditor({
                 an address you want to keep private.
               </small>
             </label>
+            <label className="policy-check">
+              <input
+                type="checkbox"
+                name="travelsToYou"
+                value="true"
+                defaultChecked={initial.travelsToYou ?? false}
+              />
+              I travel to clients
+              <small>
+                This adds a “Travels to you” discovery filter to your public profile.
+                Never publish a client’s private address.
+              </small>
+            </label>
             <h3>How clients can reach you</h3>
             <p>
               Only the email or phone number selected as your preferred contact

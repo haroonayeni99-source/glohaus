@@ -12,6 +12,9 @@ export type AdminOverview = {
     email: string;
     status: string;
     roles: string[];
+    restricted_until: string | null;
+    restriction_reason: string | null;
+    deleted_at: string | null;
   }[];
   bookings?: {
     id: string;
@@ -242,7 +245,29 @@ export async function adminOverview() {
       bookingDisputes = [];
     }
 
-    return { ...base, ...extra, safety, shopOrders, professionalTrust, bookingDisputes };
+    const users = (
+      await db.query<AdminOverview["users"][number]>(`
+        SELECT
+          u.id,
+          u.display_name,
+          u.email,
+          u.status,
+          u.restricted_until::text,
+          u.restriction_reason,
+          u.deleted_at::text,
+          ARRAY(
+            SELECT r.role
+            FROM beauty.user_roles r
+            WHERE r.user_id=u.id
+            ORDER BY r.role
+          ) AS roles
+        FROM beauty.users u
+        ORDER BY u.created_at DESC
+        LIMIT 100
+      `)
+    ).rows;
+
+    return { ...base, ...extra, users, safety, shopOrders, professionalTrust, bookingDisputes };
   });
 }
 

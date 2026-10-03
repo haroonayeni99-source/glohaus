@@ -12,7 +12,8 @@ import { BookingFeeControl } from "@/components/booking-fee-control";
 import { OwnerControls } from "@/components/owner-controls";
 import { OwnerAuthAccounts } from "@/components/owner-auth-accounts";
 import { ProfessionalCommissionControl } from "@/components/professional-commission-control";
-import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, paymentLaunchReadiness } from "@/modules/admin/repository";
+import { OwnerReferralOverview } from "@/components/owner-referral-overview";
+import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, ownerProfessionalReferralOverview, paymentLaunchReadiness } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
@@ -24,7 +25,7 @@ export default async function Page() {
       </AuthFrame>
     );
   const isOwner = result.account.roles.includes("owner");
-  const [data, labels, categories, owner, productFee, bookingFee, finance, paymentReadiness, emailDelivery, authAccounts, commissions] = await Promise.all([
+  const [data, labels, categories, owner, productFee, bookingFee, finance, paymentReadiness, emailDelivery, authAccounts, commissions, referrals] = await Promise.all([
     adminOverview(),
     publicLabels(),
     adminCategories().catch(() => []),
@@ -36,6 +37,7 @@ export default async function Page() {
     isOwner ? ownerEmailDeliveryOverview().catch(() => null) : Promise.resolve(null),
     isOwner ? ownerAuthAccountOverview().catch(() => []) : Promise.resolve([]),
     isOwner ? ownerProfessionalCommissionOverview().catch(() => []) : Promise.resolve([]),
+    isOwner ? ownerProfessionalReferralOverview().catch(() => []) : Promise.resolve([]),
   ]);
   const emailReadiness = isOwner ? emailLaunchReadiness() : null;
   return (
@@ -111,6 +113,16 @@ export default async function Page() {
                 The normal plan commission remains the default. Use an audited custom rate only when a specific professional needs a commercial rate, such as a high-volume agreement. New booking quotes use the effective rate; existing paid bookings keep their original snapshot.
               </p>
               <ProfessionalCommissionControl professionals={commissions} />
+            </section>
+          )}
+          {isOwner && (
+            <section id="referrals" className="admin-workspace-section">
+              <p className="eyebrow">PROFESSIONAL REFERRALS</p>
+              <h2>Referral leaderboard</h2>
+              <p className="lead">
+                View every professional referral code and the completed GLOHAUS accounts attributed to it. Raw link clicks do not count toward these totals.
+              </p>
+              <OwnerReferralOverview rows={referrals} />
             </section>
           )}
           {owner && (

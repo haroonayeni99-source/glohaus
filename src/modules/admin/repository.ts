@@ -280,6 +280,24 @@ export async function ownerProductFeeRule(): Promise<OwnerProductFeeRule | null>
 }
 
 
+export type OwnerBookingFeeRule = {
+  id: string | null;
+  fixedFeePence: number;
+  effectiveFrom: string | null;
+  usingDefault: boolean;
+};
+
+export async function ownerBookingFeeRule(): Promise<OwnerBookingFeeRule> {
+  return withOwner(async (db) => {
+    const result = await db.query<{ data: OwnerBookingFeeRule }>(
+      "SELECT beauty.owner_active_booking_fee_rule() AS data",
+    );
+    if (!result.rows[0]?.data) throw new Error("Booking fee control is unavailable.");
+    return result.rows[0].data;
+  });
+}
+
+
 export async function adminFinanceOverview(): Promise<AdminFinanceOverview> {
   return withAdmin(async (db) => {
     const row = (
@@ -465,4 +483,28 @@ export async function adminCategories(): Promise<AdminCategory[]> {
       )
     ).rows,
   );
+}
+
+
+export type OwnerProfessionalReferral = {
+  professionalId: string;
+  businessName: string;
+  email: string;
+  code: string;
+  totalReferrals: number;
+  qualifiedReferrals: number;
+  customerReferrals: number;
+  professionalReferrals: number;
+  lastReferralAt: string | null;
+};
+
+export async function ownerProfessionalReferralOverview(): Promise<OwnerProfessionalReferral[]> {
+  return withOwner(async (db) => {
+    const row = (
+      await db.query<{ data: OwnerProfessionalReferral[] }>(
+        "SELECT beauty.owner_professional_referral_overview() AS data",
+      )
+    ).rows[0];
+    return row?.data ?? [];
+  });
 }

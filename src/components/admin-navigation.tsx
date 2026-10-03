@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BadgeCheck,
   BarChart3,
@@ -52,11 +52,14 @@ export function AdminNavigation({ account }: { account: Account }) {
     [owner],
   );
   const [activeId, setActiveId] = useState("overview");
+  const clickLockRef = useRef<string | null>(null);
+  const clickLockTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const ids: string[] = sections.map(([, id]) => id);
 
     const updateActiveSection = () => {
+      if (clickLockRef.current) return;
       const marker = 145;
       const candidates = ids
         .map((id) => document.getElementById(id))
@@ -106,6 +109,10 @@ export function AdminNavigation({ account }: { account: Account }) {
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
+      if (clickLockTimerRef.current) {
+        window.clearTimeout(clickLockTimerRef.current);
+        clickLockTimerRef.current = null;
+      }
     };
   }, [sections]);
 
@@ -117,12 +124,29 @@ export function AdminNavigation({ account }: { account: Account }) {
   }, [activeId]);
 
   function activate(id: string) {
-    setActiveId(id);
     const target = document.getElementById(id);
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
-      history.replaceState(null, "", `#${id}`);
+    if (!target) return;
+
+    clickLockRef.current = id;
+    setActiveId(id);
+
+    if (clickLockTimerRef.current) {
+      window.clearTimeout(clickLockTimerRef.current);
     }
+
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    history.replaceState(null, "", `#${id}`);
+
+    clickLockTimerRef.current = window.setTimeout(() => {
+      clickLockRef.current = null;
+      clickLockTimerRef.current = null;
+
+      const top = target.getBoundingClientRect().top;
+      if (Math.abs(top) > 180) {
+        target.scrollIntoView({ behavior: "auto", block: "start" });
+      }
+      setActiveId(id);
+    }, 700);
   }
 
   return (

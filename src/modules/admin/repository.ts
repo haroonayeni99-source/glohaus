@@ -484,3 +484,27 @@ export async function adminCategories(): Promise<AdminCategory[]> {
     ).rows,
   );
 }
+
+
+export type OwnerProfessionalReferral = {
+  professionalId: string;
+  businessName: string;
+  email: string;
+  code: string;
+  totalReferrals: number;
+  qualifiedReferrals: number;
+  customerReferrals: number;
+  professionalReferrals: number;
+  lastReferralAt: string | null;
+};
+
+export async function ownerProfessionalReferralOverview(): Promise<OwnerProfessionalReferral[]> {
+  return withOwner(async (db) => {
+    const row = (
+      await db.query<{ data: OwnerProfessionalReferral[] }>(
+        "SELECT beauty.owner_professional_referral_overview() AS data",
+      )
+    ).rows[0];
+    return row?.data ?? [];
+  });
+}

@@ -4,7 +4,7 @@ import {
   CircleDollarSign,
   Clock3,
   Radio,
-  Search,
+
   ShieldAlert,
   ShieldCheck,
   TrendingUp,
@@ -21,6 +21,7 @@ import type {
   OwnerProfessionalReferral,
 } from "@/modules/admin/repository";
 import type { Account } from "@/modules/accounts/domain";
+import { OwnerAdminSearch } from "@/components/owner-admin-search";
 
 function money(pence: number) {
   return new Intl.NumberFormat("en-GB", {
@@ -137,7 +138,19 @@ export function OwnerDashboardOverview({
           <p>Manage your beauty marketplace · Users · Professionals · Bookings · Revenue · Growth</p>
         </div>
         <div className="owner-topbar-actions">
-          <a className="owner-search-shortcut" href="#users"><Search size={17} aria-hidden /> Search users, professionals, bookings…</a>
+          <OwnerAdminSearch
+            users={data.users}
+            professionals={(data.professionalTrust ?? []).map((pro) => ({
+              id: pro.id,
+              business_name: pro.business_name,
+            }))}
+            bookings={bookings.map((booking) => ({
+              id: booking.id,
+              service_name: booking.service_name,
+              professional_name: booking.professional_name,
+              customer_name: booking.customer_name,
+            }))}
+          />
           <div className="owner-date-chip"><CalendarDays size={16} aria-hidden /><span>{new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/London" }).format(new Date())}<small>Owner workspace</small></span></div>
           <div className="owner-profile-chip"><span>{account.displayName.slice(0, 1).toUpperCase()}</span><div><strong>{account.displayName}</strong><small>Owner · GLOHAUS</small></div></div>
         </div>

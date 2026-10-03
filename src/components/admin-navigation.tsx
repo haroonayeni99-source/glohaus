@@ -54,7 +54,7 @@ export function AdminNavigation({ account }: { account: Account }) {
   const [activeId, setActiveId] = useState("overview");
 
   useEffect(() => {
-    const ids = sections.map(([, id]) => id);
+    const ids: string[] = sections.map(([, id]) => id);
 
     const updateActiveSection = () => {
       const marker = 145;

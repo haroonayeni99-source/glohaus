@@ -54,52 +54,75 @@ export function AdminNavigation({ account }: { account: Account }) {
   const [activeId, setActiveId] = useState("overview");
 
   useEffect(() => {
-    const initial = window.location.hash.replace("#", "");
-    if (initial && sections.some(([, id]) => id === initial)) setActiveId(initial);
+    const ids = sections.map(([, id]) => id);
 
-    const targets = sections
-      .map(([, id]) => document.getElementById(id))
-      .filter((node): node is HTMLElement => Boolean(node));
+    const updateActiveSection = () => {
+      const marker = 145;
+      const candidates = ids
+        .map((id) => document.getElementById(id))
+        .filter((node): node is HTMLElement => Boolean(node))
+        .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
 
-    if (!targets.length) return;
+      if (!candidates.length) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => {
-            const aTop = Math.abs(a.boundingClientRect.top - 120);
-            const bTop = Math.abs(b.boundingClientRect.top - 120);
-            return aTop - bTop;
-          });
-        const next = visible[0]?.target.id;
-        if (next) {
-          setActiveId(next);
-          history.replaceState(null, "", `#${next}`);
-        }
-      },
-      {
-        root: null,
-        rootMargin: "-90px 0px -62% 0px",
-        threshold: [0, 0.01, 0.15],
-      },
-    );
+      let current = candidates[0].id;
+      for (const section of candidates) {
+        if (section.getBoundingClientRect().top <= marker) current = section.id;
+        else break;
+      }
 
-    targets.forEach((target) => observer.observe(target));
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 8
+      ) {
+        current = candidates[candidates.length - 1].id;
+      }
 
-    const onScroll = () => {
-      if (window.scrollY < 80) setActiveId("overview");
+      setActiveId((previous) => (previous === current ? previous : current));
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
 
+    const initial = window.location.hash.replace("#", "");
+    if (initial && ids.includes(initial)) {
+      setActiveId(initial);
+      requestAnimationFrame(() => {
+        document.getElementById(initial)?.scrollIntoView({ block: "start" });
+      });
+    } else {
+      updateActiveSection();
+    }
+
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        updateActiveSection();
+        ticking = false;
+      });
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
     return () => {
-      observer.disconnect();
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
     };
   }, [sections]);
 
+  useEffect(() => {
+    const activeLink = document.querySelector<HTMLAnchorElement>(
+      `.admin-navigation nav a[href="#${activeId}"]`,
+    );
+    activeLink?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [activeId]);
+
   function activate(id: string) {
     setActiveId(id);
+    const target = document.getElementById(id);
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      history.replaceState(null, "", `#${id}`);
+    }
   }
 
   return (
@@ -121,7 +144,10 @@ export function AdminNavigation({ account }: { account: Account }) {
               href={`#${id}`}
               className={active ? "is-active" : undefined}
               aria-current={active ? "location" : undefined}
-              onClick={() => activate(id)}
+              onClick={(event) => {
+                event.preventDefault();
+                activate(id);
+              }}
             >
               <Icon size={16} aria-hidden />
               {label}

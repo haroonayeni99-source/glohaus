@@ -10,8 +10,8 @@ export type Account = {
   status: AccountStatus;
   roles: Role[];
   professionalId: string | null;
-  restrictedUntil: string | null;
-  deletedAt: string | null;
+  restrictedUntil?: string | null;
+  deletedAt?: string | null;
 };
 export type Identity = {
   authId: string;
@@ -70,10 +70,10 @@ export function authorize(
   if (account.authId !== identity.authId)
     throw new AccessError("FORBIDDEN", 403);
   const timedRestrictionActive =
-    account.restrictedUntil !== null &&
-    Number.isFinite(Date.parse(account.restrictedUntil)) &&
-    Date.parse(account.restrictedUntil) > Date.now();
-  if (account.status !== "active" || account.deletedAt !== null || timedRestrictionActive)
+    Boolean(account.restrictedUntil) &&
+    Number.isFinite(Date.parse(account.restrictedUntil!)) &&
+    Date.parse(account.restrictedUntil!) > Date.now();
+  if (account.status !== "active" || Boolean(account.deletedAt) || timedRestrictionActive)
     throw new AccessError("ACCOUNT_INACTIVE", 403);
   const hasRequiredRole =
     !role ||

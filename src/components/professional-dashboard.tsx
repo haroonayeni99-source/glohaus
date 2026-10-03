@@ -11,6 +11,7 @@ import {
   Star,
   UserRoundCheck,
   Users,
+  UserPlus,
   Radio,
   LockKeyhole,
   MessageSquare,
@@ -289,6 +290,10 @@ export function ProfessionalDashboard({
           <Link href="/professional/posts">
             <ImagePlus size={18} aria-hidden />
             <span><strong>Create a post</strong><small>Share a look or tutorial</small></span>
+          </Link>
+          <Link href="/professional/referrals">
+            <UserPlus size={18} aria-hidden />
+            <span><strong>Referrals</strong><small>Share your code and track sign-ups</small></span>
           </Link>
         </section>
 

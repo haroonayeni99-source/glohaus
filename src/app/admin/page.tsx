@@ -207,7 +207,7 @@ export default async function Page() {
             </section>
           )}
           <AdminFinancePanel data={finance} />
-          <AdminManager data={data} />
+          <AdminManager data={data} owner={isOwner} />
           {owner && (
             <section id="audit" className="admin-workspace-section admin-detail-card">
               <h2>Owner audit log</h2>

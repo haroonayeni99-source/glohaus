@@ -32,7 +32,7 @@ const messages: Record<
   },
   MFA_REQUIRED: {
     title: "One more layer of security.",
-    text: "Admin access requires a second-factor check within the last 15 minutes. Enable two-step verification in account security, then sign out and sign in again to verify.",
+    text: "Owner and admin access requires a verified authenticator-app session within the last 12 hours. If your secure session has expired, complete the authenticator check again to continue.",
     href: "/security",
     label: "Account security",
   },

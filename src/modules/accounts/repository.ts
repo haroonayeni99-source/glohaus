@@ -20,8 +20,11 @@ export async function findAccount(
     status: Account["status"];
     roles: Role[];
     professional_id: string | null;
+    restricted_until: string | null;
+    deleted_at: string | null;
   }>(
     `SELECT u.id, u.auth_id, u.email, u.display_name, u.status,
+    u.restricted_until::text, u.deleted_at::text,
     ARRAY(SELECT r.role FROM beauty.user_roles r WHERE r.user_id = u.id ORDER BY r.role) AS roles,
     (SELECT p.id FROM beauty.professional_profiles p WHERE p.user_id = u.id) AS professional_id
     FROM beauty.users u WHERE u.auth_id = $1`,
@@ -37,6 +40,8 @@ export async function findAccount(
         status: row.status,
         roles: row.roles,
         professionalId: row.professional_id,
+        restrictedUntil: row.restricted_until,
+        deletedAt: row.deleted_at,
       }
     : null;
 }

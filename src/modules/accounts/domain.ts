@@ -80,7 +80,7 @@ export function authorize(
     (identity.secondFactorAge === null ||
       !Number.isFinite(identity.secondFactorAge) ||
       identity.secondFactorAge < 0 ||
-      identity.secondFactorAge > 15)
+      identity.secondFactorAge > 720)
   ) {
     throw new AccessError("MFA_REQUIRED", 403);
   }

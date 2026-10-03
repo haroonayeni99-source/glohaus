@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { AdminOverview } from "@/modules/admin/repository";
-export function AdminManager({ data }: { data: AdminOverview }) {
+import { OwnerUserActions } from "@/components/owner-user-actions";
+export function AdminManager({ data, owner = false }: { data: AdminOverview; owner?: boolean }) {
   const router = useRouter();
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
@@ -145,27 +146,36 @@ export function AdminManager({ data }: { data: AdminOverview }) {
           </thead>
           <tbody>
             {data.users.map((user) => (
-              <tr key={user.id}>
+              <tr key={user.id} id={`user-${user.id}`}>
                 <td>{user.display_name}</td>
                 <td>{user.email}</td>
                 <td>{user.roles.join(", ")}</td>
-                <td>{user.status}</td>
                 <td>
-                  {user.roles.includes("admin") ? (
-                    "Operator managed"
-                  ) : (
-                    <button
-                      onClick={() =>
-                        setSelection({
-                          type: "user",
-                          id: user.id,
-                          name: user.display_name,
-                        })
-                      }
-                    >
-                      Manage
-                    </button>
-                  )}
+                  {user.deleted_at
+                    ? "deleted"
+                    : user.restricted_until && Date.parse(user.restricted_until) > Date.now()
+                      ? `restricted until ${new Date(user.restricted_until).toLocaleString("en-GB", { timeZone: "Europe/London" })}`
+                      : user.status}
+                </td>
+                <td>
+                  <div className="admin-user-action-stack">
+                    {user.roles.includes("admin") || user.roles.includes("owner") ? (
+                      <span>{user.roles.includes("owner") ? "Owner protected" : "Operator managed"}</span>
+                    ) : (
+                      <button
+                        onClick={() =>
+                          setSelection({
+                            type: "user",
+                            id: user.id,
+                            name: user.display_name,
+                          })
+                        }
+                      >
+                        Manage status
+                      </button>
+                    )}
+                    {owner && <OwnerUserActions user={user} />}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -191,7 +201,7 @@ export function AdminManager({ data }: { data: AdminOverview }) {
             {data.users
               .filter((user) => user.roles.includes("professional"))
               .map((user) => (
-                <tr key={user.id}>
+                <tr key={user.id} id={`professional-user-${user.id}`}>
                   <td>{user.display_name}</td>
                   <td>{user.email}</td>
                   <td>GLOHAUS PRO</td>
@@ -219,7 +229,7 @@ export function AdminManager({ data }: { data: AdminOverview }) {
       </p>
       <div className="service-edit-list">
         {data.professionalTrust?.map((pro) => (
-          <article className="service-edit-row" key={pro.id}>
+          <article className="service-edit-row" id={`professional-${pro.id}`} key={pro.id}>
             <div>
               <h3>{pro.business_name}</h3>
               <p>Verification: {pro.verification_status} · Standing: {pro.standing_status}</p>
@@ -266,7 +276,7 @@ export function AdminManager({ data }: { data: AdminOverview }) {
       <h2 id="bookings" className="admin-section-title">Booking overview</h2>
       <div className="service-edit-list">
         {data.bookings?.map((booking) => (
-          <article className="service-edit-row" key={booking.id}>
+          <article className="service-edit-row" id={`booking-${booking.id}`} key={booking.id}>
             <div>
               <h3>
                 {booking.service_name} · {booking.professional_name}

@@ -10568,3 +10568,127 @@ body {
   .owner-leaderboard { overflow-x:auto; }
   .owner-leaderboard > div { min-width:560px; }
 }
+
+
+
+/* Owner dashboard theme isolation — keep reference design consistent in Light and Night */
+:root[data-theme="night"] .admin-workspace {
+  background: #f5f9ff;
+  color: #0d1c42;
+}
+:root[data-theme="night"] .admin-workspace-content,
+:root[data-theme="night"] .admin-workspace-section,
+:root[data-theme="night"] .admin-workspace-heading,
+:root[data-theme="night"] .admin-section-title {
+  color: #0d1c42;
+}
+:root[data-theme="night"] .admin-navigation {
+  border-color: #e0e9f5;
+  background: rgba(250, 252, 255, 0.98);
+  color: #0d1c42;
+}
+:root[data-theme="night"] .admin-navigation a,
+:root[data-theme="night"] .admin-navigation-brand,
+:root[data-theme="night"] .admin-navigation-identity {
+  color: #2c3c60;
+}
+:root[data-theme="night"] .admin-navigation-brand { color: #0c1a3a; }
+:root[data-theme="night"] .admin-navigation-identity {
+  background: #f2f6fc;
+  color: #172344;
+}
+:root[data-theme="night"] .admin-navigation-identity small { color: #8090aa; }
+:root[data-theme="night"] .admin-navigation a:hover {
+  background: #eef4fc;
+  color: #145bc2;
+}
+:root[data-theme="night"] .admin-navigation a[aria-current="page"] {
+  background: linear-gradient(135deg, #174fba 0%, #2d7ce8 100%);
+  color: #fff;
+}
+:root[data-theme="night"] .owner-topbar {
+  border-color: rgba(224, 233, 245, .8);
+  background: rgba(245, 249, 255, .94);
+}
+:root[data-theme="night"] .owner-topbar h1,
+:root[data-theme="night"] .owner-card-heading strong,
+:root[data-theme="night"] .owner-kpi-card strong,
+:root[data-theme="night"] .owner-big-money,
+:root[data-theme="night"] .owner-auth-rows strong,
+:root[data-theme="night"] .owner-trust-list strong,
+:root[data-theme="night"] .owner-booking-summary strong,
+:root[data-theme="night"] .owner-mini-table strong,
+:root[data-theme="night"] .owner-leaderboard strong,
+:root[data-theme="night"] .owner-staff-list strong {
+  color: #0d1c42;
+}
+:root[data-theme="night"] .owner-topbar p,
+:root[data-theme="night"] .owner-card-heading span,
+:root[data-theme="night"] .owner-kpi-card span,
+:root[data-theme="night"] .owner-kpi-card small,
+:root[data-theme="night"] .owner-auth-rows > div,
+:root[data-theme="night"] .owner-trust-list > div,
+:root[data-theme="night"] .owner-mini-table > div,
+:root[data-theme="night"] .owner-leaderboard > div,
+:root[data-theme="night"] .owner-audit-preview span,
+:root[data-theme="night"] .owner-audit-preview small,
+:root[data-theme="night"] .owner-staff-list small {
+  color: #71809d;
+}
+:root[data-theme="night"] .owner-kpi-card,
+:root[data-theme="night"] .owner-dashboard-card,
+:root[data-theme="night"] .admin-detail-card,
+:root[data-theme="night"] .admin-workspace-section,
+:root[data-theme="night"] .admin-workspace .service-edit-row,
+:root[data-theme="night"] .admin-workspace .analytics-grid article,
+:root[data-theme="night"] .admin-table-wrap,
+:root[data-theme="night"] .admin-account-search {
+  border-color: #e5edf8;
+  background: #fff;
+  color: #0d1c42;
+  box-shadow: 0 7px 25px rgba(47, 84, 132, .055);
+}
+:root[data-theme="night"] .admin-workspace .lead,
+:root[data-theme="night"] .admin-section-intro,
+:root[data-theme="night"] .admin-table td,
+:root[data-theme="night"] .service-edit-row p,
+:root[data-theme="night"] .service-edit-row small,
+:root[data-theme="night"] .admin-account-search small {
+  color: #71809d;
+}
+:root[data-theme="night"] .admin-table th {
+  border-color: #e7edf6;
+  background: #f5f8fc;
+  color: #687895;
+}
+:root[data-theme="night"] .admin-table td {
+  border-color: #edf2f7;
+  color: #4e607d;
+}
+:root[data-theme="night"] .admin-workspace .editor-form {
+  border-color: #e7edf6;
+  background: #fbfdff;
+  color: #0d1c42;
+}
+:root[data-theme="night"] .admin-workspace input,
+:root[data-theme="night"] .admin-workspace select,
+:root[data-theme="night"] .admin-workspace textarea {
+  border-color: #dce6f3;
+  background: #fff;
+  color: #14213e;
+}
+:root[data-theme="night"] .admin-workspace input::placeholder,
+:root[data-theme="night"] .admin-workspace textarea::placeholder {
+  color: #8b98ad;
+}
+:root[data-theme="night"] .admin-workspace button:not(.button) {
+  border-color: #d7e3f3;
+  background: #fff;
+  color: #2b4d7f;
+}
+:root[data-theme="night"] .admin-workspace .admin-section-title {
+  color: #12203f;
+}
+:root[data-theme="night"] .admin-workspace .admin-section-title::before {
+  background: #2d7ce8;
+}

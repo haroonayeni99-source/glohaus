@@ -8,10 +8,13 @@ import { AdminManager } from "@/components/admin-manager";
 import { AdminFinancePanel } from "@/components/admin-finance-panel";
 import { AdminNavigation } from "@/components/admin-navigation";
 import { ShopFeeControl } from "@/components/shop-fee-control";
+import { BookingFeeControl } from "@/components/booking-fee-control";
 import { OwnerControls } from "@/components/owner-controls";
 import { OwnerAuthAccounts } from "@/components/owner-auth-accounts";
 import { ProfessionalCommissionControl } from "@/components/professional-commission-control";
-import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, paymentLaunchReadiness } from "@/modules/admin/repository";
+import { OwnerReferralOverview } from "@/components/owner-referral-overview";
+import { OwnerDashboardOverview } from "@/components/owner-dashboard-overview";
+import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, ownerProfessionalReferralOverview, paymentLaunchReadiness } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
@@ -23,54 +26,59 @@ export default async function Page() {
       </AuthFrame>
     );
   const isOwner = result.account.roles.includes("owner");
-  const [data, labels, categories, owner, productFee, finance, paymentReadiness, emailDelivery, authAccounts, commissions] = await Promise.all([
+  const [data, labels, categories, owner, productFee, bookingFee, finance, paymentReadiness, emailDelivery, authAccounts, commissions, referrals] = await Promise.all([
     adminOverview(),
     publicLabels(),
     adminCategories().catch(() => []),
     isOwner ? ownerControls().catch(() => null) : Promise.resolve(null),
     isOwner ? ownerProductFeeRule().catch(() => null) : Promise.resolve(null),
+    isOwner ? ownerBookingFeeRule().catch(() => null) : Promise.resolve(null),
     adminFinanceOverview().catch(() => null),
     isOwner ? paymentLaunchReadiness().catch(() => null) : Promise.resolve(null),
     isOwner ? ownerEmailDeliveryOverview().catch(() => null) : Promise.resolve(null),
     isOwner ? ownerAuthAccountOverview().catch(() => []) : Promise.resolve([]),
     isOwner ? ownerProfessionalCommissionOverview().catch(() => []) : Promise.resolve([]),
+    isOwner ? ownerProfessionalReferralOverview().catch(() => []) : Promise.resolve([]),
   ]);
   const emailReadiness = isOwner ? emailLaunchReadiness() : null;
   return (
     <main id="main" className="admin-workspace">
         <AdminNavigation account={result.account} />
         <div className="admin-workspace-content">
-          <section id="overview" className="admin-workspace-heading">
-            <p className="eyebrow">{isOwner ? "GLOHAUS OWNER · SUPER ADMIN CONTROL CENTRE" : "PLATFORM ADMINISTRATION"}</p>
-            <h1>
-              {isOwner ? <>Platform control, <em>with guardrails.</em></> : <>Your community, <em>cared for.</em></>}
-            </h1>
-            <p className="lead">
-              {isOwner
-                ? "Owner is the highest application role. Staff and admin access can be delegated here; Owner itself cannot be granted or removed from the web console."
-                : "Every management action is authorised on the server and recorded in the audit trail."}
-            </p>
-            {isOwner && (
-              <div className="owner-control-status" role="status">
-                <strong>OWNER ACCESS ACTIVE</strong>
-                <span>Server-authorised · MFA required · privileged changes audited</span>
-              </div>
-            )}
-          </section>
-          <section id="settings" className="admin-workspace-section">
+          <OwnerDashboardOverview
+            account={result.account}
+            data={data}
+            finance={finance}
+            bookingFee={bookingFee}
+            authAccounts={authAccounts}
+            commissions={commissions}
+            referrals={referrals}
+            owner={owner}
+          />
+          <section id="settings" className="admin-workspace-section admin-detail-card">
             <p className="eyebrow">PLATFORM LANGUAGE</p>
             <h2>Platform labels</h2>
             <p className="lead">Set the professional title and the category language that customers see across GLOHAUS.</p>
             <AdminLabelEditor initial={labels} />
           </section>
-          <section id="categories" className="admin-workspace-section">
+          <section id="categories" className="admin-workspace-section admin-detail-card">
             <p className="eyebrow">DISCOVERY & SERVICES</p>
             <h2>Categories</h2>
             <p className="lead">Add new beauty categories, rename them, control their order, or hide them without deleting existing data.</p>
             <AdminCategoryManager initial={categories} />
           </section>
+          {isOwner && bookingFee && (
+            <section id="booking-fee" className="admin-workspace-section admin-detail-card">
+              <p className="eyebrow">CUSTOMER BOOKING FEE</p>
+              <h2>Booking fee control</h2>
+              <p className="lead">
+                Change the customer-facing booking fee used by new service bookings. Existing paid bookings keep the fee recorded when they checked out, and every Owner change is added to the financial audit log.
+              </p>
+              <BookingFeeControl initial={bookingFee} />
+            </section>
+          )}
           {owner && (
-            <section id="shop-fees" className="admin-workspace-section">
+            <section id="shop-fees" className="admin-workspace-section admin-detail-card">
               <p className="eyebrow">MARKETPLACE MONEY</p>
               <h2>Shop commission</h2>
               <p className="lead">
@@ -81,7 +89,7 @@ export default async function Page() {
             </section>
           )}
           {isOwner && (
-            <section id="auth-accounts" className="admin-workspace-section">
+            <section id="auth-accounts" className="admin-workspace-section admin-detail-card">
               <p className="eyebrow">AUTH & ACCOUNT PROVISIONING</p>
               <h2>All sign-ups and sign-ins</h2>
               <p className="lead">
@@ -92,7 +100,7 @@ export default async function Page() {
             </section>
           )}
           {isOwner && (
-            <section id="professional-commission" className="admin-workspace-section">
+            <section id="professional-commission" className="admin-workspace-section admin-detail-card">
               <p className="eyebrow">PROFESSIONAL COMMISSION</p>
               <h2>Individual service commission rates</h2>
               <p className="lead">
@@ -101,15 +109,25 @@ export default async function Page() {
               <ProfessionalCommissionControl professionals={commissions} />
             </section>
           )}
+          {isOwner && (
+            <section id="referrals" className="admin-workspace-section admin-detail-card">
+              <p className="eyebrow">PROFESSIONAL REFERRALS</p>
+              <h2>Referral leaderboard</h2>
+              <p className="lead">
+                View every professional referral code and the completed GLOHAUS accounts attributed to it. Raw link clicks do not count toward these totals.
+              </p>
+              <OwnerReferralOverview rows={referrals} />
+            </section>
+          )}
           {owner && (
-            <section id="staff" className="admin-workspace-section">
+            <section id="staff" className="admin-workspace-section admin-detail-card">
               <h2>Staff & admins</h2>
               <p className="lead">Only the owner can delegate or remove privileged access. Owner access cannot be granted here.</p>
               <OwnerControls data={owner} users={data.users} />
             </section>
           )}
           {isOwner && paymentReadiness && (
-            <section id="payment-readiness" className="admin-workspace-section">
+            <section id="payment-readiness" className="admin-workspace-section admin-detail-card">
               <p className="eyebrow">LAUNCH READINESS</p>
               <h2>Booking → payment → payout</h2>
               <p className="lead">
@@ -135,7 +153,7 @@ export default async function Page() {
             </section>
           )}
           {isOwner && emailReadiness && (
-            <section id="email-readiness" className="admin-workspace-section">
+            <section id="email-readiness" className="admin-workspace-section admin-detail-card">
               <p className="eyebrow">EMAIL & AUTH READINESS</p>
               <h2>Password reset → booking emails → notifications</h2>
               <p className="lead">
@@ -159,7 +177,7 @@ export default async function Page() {
             </section>
           )}
           {isOwner && emailDelivery && (
-            <section id="email-delivery-health" className="admin-workspace-section">
+            <section id="email-delivery-health" className="admin-workspace-section admin-detail-card">
               <p className="eyebrow">TRANSACTIONAL EMAIL HEALTH</p>
               <h2>Delivery outcomes</h2>
               <p className="lead">
@@ -191,7 +209,7 @@ export default async function Page() {
           <AdminFinancePanel data={finance} />
           <AdminManager data={data} />
           {owner && (
-            <section id="audit" className="admin-workspace-section">
+            <section id="audit" className="admin-workspace-section admin-detail-card">
               <h2>Owner audit log</h2>
               <div className="service-edit-list">
                 {owner.audit.map((entry) => (

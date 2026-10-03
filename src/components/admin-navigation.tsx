@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BadgeCheck,
   BarChart3,
@@ -52,33 +52,30 @@ export function AdminNavigation({ account }: { account: Account }) {
     [owner],
   );
   const [activeId, setActiveId] = useState("overview");
-  const clickLockRef = useRef<string | null>(null);
-  const clickLockTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const ids: string[] = sections.map(([, id]) => id);
 
     const updateActiveSection = () => {
-      if (clickLockRef.current) return;
-      const marker = 145;
-      const candidates = ids
-        .map((id) => document.getElementById(id))
-        .filter((node): node is HTMLElement => Boolean(node))
-        .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+      const marker = 125;
+      let current = ids[0] ?? "overview";
 
-      if (!candidates.length) return;
-
-      let current = candidates[0].id;
-      for (const section of candidates) {
-        if (section.getBoundingClientRect().top <= marker) current = section.id;
+      for (const id of ids) {
+        const section = document.getElementById(id);
+        if (!section) continue;
+        const top = section.getBoundingClientRect().top;
+        if (top <= marker) current = id;
         else break;
       }
 
       if (
         window.innerHeight + window.scrollY >=
-        document.documentElement.scrollHeight - 8
+        document.documentElement.scrollHeight - 4
       ) {
-        current = candidates[candidates.length - 1].id;
+        const lastExisting = [...ids]
+          .reverse()
+          .find((id) => document.getElementById(id));
+        if (lastExisting) current = lastExisting;
       }
 
       setActiveId((previous) => (previous === current ? previous : current));
@@ -86,67 +83,46 @@ export function AdminNavigation({ account }: { account: Account }) {
 
     const initial = window.location.hash.replace("#", "");
     if (initial && ids.includes(initial)) {
-      setActiveId(initial);
       requestAnimationFrame(() => {
-        document.getElementById(initial)?.scrollIntoView({ block: "start" });
+        const target = document.getElementById(initial);
+        if (target) {
+          const top =
+            window.scrollY + target.getBoundingClientRect().top - 96;
+          window.scrollTo({ top: Math.max(0, top), behavior: "auto" });
+          setActiveId(initial);
+        }
       });
     } else {
       updateActiveSection();
     }
 
-    let ticking = false;
+    let frame = 0;
     const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
         updateActiveSection();
-        ticking = false;
+        frame = 0;
       });
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
+
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
-      if (clickLockTimerRef.current) {
-        window.clearTimeout(clickLockTimerRef.current);
-        clickLockTimerRef.current = null;
-      }
+      if (frame) window.cancelAnimationFrame(frame);
     };
   }, [sections]);
-
-  useEffect(() => {
-    const activeLink = document.querySelector<HTMLAnchorElement>(
-      `.admin-navigation nav a[href="#${activeId}"]`,
-    );
-    activeLink?.scrollIntoView({ block: "nearest", inline: "nearest" });
-  }, [activeId]);
 
   function activate(id: string) {
     const target = document.getElementById(id);
     if (!target) return;
 
-    clickLockRef.current = id;
     setActiveId(id);
-
-    if (clickLockTimerRef.current) {
-      window.clearTimeout(clickLockTimerRef.current);
-    }
-
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    const top = window.scrollY + target.getBoundingClientRect().top - 96;
+    window.scrollTo({ top: Math.max(0, top), behavior: "auto" });
     history.replaceState(null, "", `#${id}`);
-
-    clickLockTimerRef.current = window.setTimeout(() => {
-      clickLockRef.current = null;
-      clickLockTimerRef.current = null;
-
-      const top = target.getBoundingClientRect().top;
-      if (Math.abs(top) > 180) {
-        target.scrollIntoView({ behavior: "auto", block: "start" });
-      }
-      setActiveId(id);
-    }, 700);
   }
 
   return (

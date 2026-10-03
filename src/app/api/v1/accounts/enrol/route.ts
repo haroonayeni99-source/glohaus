@@ -3,6 +3,8 @@ import { withIdentity } from "@/lib/db";
 import { enrolAccount, ensureCustomerAccount } from "@/modules/accounts/repository";
 import { AccessError, enrolmentSchema, workspacePath } from "@/modules/accounts/domain";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
+import { cookies } from "next/headers";
+import { attributeProfessionalReferral } from "@/modules/referrals/repository";
 import { accountDatabaseUnavailable, supabaseAccount, supabaseEnrolAccount } from "@/lib/account-supabase-fallback";
 
 export async function POST(request: Request) {
@@ -22,6 +24,18 @@ export async function POST(request: Request) {
         adultConfirmed: parsed.data.adultConfirmed,
         professionalTermsAccepted: parsed.data.professionalTermsAccepted,
       });
+    }
+    const cookieStore = await cookies();
+    const referralCode = cookieStore.get("glohaus_ref")?.value;
+    if (referralCode) {
+      try {
+        await withIdentity(identity.authId, (db) =>
+          attributeProfessionalReferral(db, referralCode, account.id),
+        );
+        cookieStore.delete("glohaus_ref");
+      } catch {
+        console.error("Referral attribution unavailable");
+      }
     }
     return json({ redirectTo: workspacePath(account) });
   } catch (error) {
@@ -44,6 +58,18 @@ export async function PUT(request: Request) {
     } catch (error) {
       if (!accountDatabaseUnavailable(error)) throw error;
       account = (await supabaseAccount()) ?? (await supabaseEnrolAccount("customer"));
+    }
+    const cookieStore = await cookies();
+    const referralCode = cookieStore.get("glohaus_ref")?.value;
+    if (referralCode) {
+      try {
+        await withIdentity(identity.authId, (db) =>
+          attributeProfessionalReferral(db, referralCode, account.id),
+        );
+        cookieStore.delete("glohaus_ref");
+      } catch {
+        console.error("Referral attribution unavailable");
+      }
     }
     return json({ redirectTo: workspacePath(account) });
   } catch (error) {

@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Bell, CalendarDays, ChevronRight, Heart, Home, MapPin,
-  MessageSquare, Search, ShoppingBag, UserRound, WalletCards, Crown, Gift, ShieldCheck,
+  MessageSquare, Search, ShoppingBag, UserRound, WalletCards, Crown, Gift, ShieldCheck, Sparkles, ArrowUpRight,
 } from "lucide-react";
 import { Brand } from "./brand";
 import { SiteFooter } from "./site-footer";
@@ -146,6 +146,24 @@ export function DesktopCustomerHome({
       <section className="desktop-section desktop-trending">
         <div className="desktop-section-title"><h2>Trending near you</h2><Link href="/explore">See all <ChevronRight size={15}/></Link></div>
         <div className="desktop-trend-grid">{trends.map(([title,sub,img])=><Link href="/explore" key={title}><Image fill sizes="300px" src={img} alt=""/><span><strong>{title}</strong><small>{sub}</small></span><i><ChevronRight size={18}/></i></Link>)}</div>
+      </section>
+
+      <section className="desktop-section home-how-it-works">
+        <div className="desktop-section-title"><h2>How GLOHAUS works</h2><Link href="/how-it-works">Learn more <ChevronRight size={15}/></Link></div>
+        <div className="home-how-grid">
+          <article><span>01</span><Search size={20}/><strong>Discover</strong><p>Search by service, location or professional and compare real profiles.</p></article>
+          <article><span>02</span><CalendarDays size={20}/><strong>Book clearly</strong><p>Choose a service and time, then review the price before confirming.</p></article>
+          <article><span>03</span><ShieldCheck size={20}/><strong>Stay connected</strong><p>Keep booking, messaging, reviews and payment records together in GLOHAUS.</p></article>
+        </div>
+      </section>
+
+      <section className="desktop-section home-pro-cta">
+        <div>
+          <p className="eyebrow">FOR BEAUTY PROFESSIONALS</p>
+          <h2>Build your business on GLOHAUS.</h2>
+          <p>Create your profile, manage bookings and grow your client base in one place.</p>
+        </div>
+        <Link href="/professional-preview">Explore GLOHAUS PRO <ArrowUpRight size={17}/></Link>
       </section>
     </main>
 

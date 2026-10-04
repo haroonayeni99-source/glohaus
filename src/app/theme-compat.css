@@ -55,7 +55,10 @@ html[data-theme="night"] {
   }
 
   :root[data-theme="night"] .customer-desktop-sidebar nav a,
-  :root[data-theme="night"] .customer-desktop-sidebar nav .customer-nav-disabled,
+  :root[data-theme="night"]
+    .customer-desktop-sidebar
+    nav
+    .customer-nav-disabled,
   :root[data-theme="night"] .desktop-service-row a,
   :root[data-theme="night"] .customer-desktop-topbar a {
     color: var(--ink);
@@ -89,13 +92,12 @@ html[data-theme="night"] {
   }
 
   :root[data-theme="night"] .desktop-hero::after {
-    background:
-      linear-gradient(
-        90deg,
-        rgb(35 25 29 / 96%) 0%,
-        rgb(35 25 29 / 82%) 42%,
-        rgb(35 25 29 / 12%) 70%
-      );
+    background: linear-gradient(
+      90deg,
+      rgb(35 25 29 / 96%) 0%,
+      rgb(35 25 29 / 82%) 42%,
+      rgb(35 25 29 / 12%) 70%
+    );
   }
 
   :root[data-theme="night"] .desktop-hero-copy {
@@ -161,4 +163,95 @@ html[data-theme="night"] {
 
 :root[data-theme="night"] .auth-email-form [role="alert"] {
   color: #ff9fbd;
+}
+
+/* The professional workspace has dark legacy styles. Resolve its cards and
+   labels together, rather than changing text independently of its surface. */
+:root:not([data-theme="night"]) .pro-app {
+  background: #faf7f8;
+  color: #251c21;
+}
+:root:not([data-theme="night"]) .pro-app .pro-main {
+  color: #251c21;
+}
+:root:not([data-theme="night"])
+  .pro-app
+  :is(
+    .pro-welcome h1,
+    .pro-panel h2,
+    .pro-setup-card h2,
+    .pro-stat-grid strong,
+    .pro-quick-actions strong
+  ) {
+  color: #251c21;
+}
+:root:not([data-theme="night"])
+  .pro-app
+  :is(
+    .pro-panel,
+    .pro-stat-grid article,
+    .pro-quick-actions > a,
+    .pro-client-list article,
+    .pro-review-list article,
+    .pro-setup-card
+  ) {
+  background: #fff;
+  border-color: #e9dce2;
+  color: #251c21;
+}
+:root:not([data-theme="night"])
+  .pro-app
+  :is(
+    .pro-page-lead,
+    .pro-welcome p:not(.pro-kicker),
+    .pro-panel p,
+    .pro-setup-card p:not(.pro-kicker),
+    .pro-stat-grid span,
+    .pro-quick-actions small
+  ) {
+  color: #665761;
+}
+:root[data-theme="night"]
+  .pro-app
+  :is(
+    .service-edit-row,
+    .profile-customization,
+    .profile-photo-editor,
+    .setup-step
+  ) {
+  background: #221d20;
+  color: #fff8fb;
+  border-color: #4b3d44;
+}
+:root[data-theme="night"]
+  .pro-app
+  :is(
+    .service-edit-row,
+    .profile-customization,
+    .profile-photo-editor,
+    .setup-step
+  )
+  :is(h2, h3, label, strong) {
+  color: #fff8fb;
+}
+:root[data-theme="night"] .pro-app :is(input, textarea, select) {
+  background: #161215;
+  color: #fff8fb;
+  border-color: #67505c;
+}
+/* Public/pro headers retain their dark surface in both modes. */
+.glohaus-header .brand.inverse {
+  color: #fffafb;
+}
+:root[data-theme="night"] .customer-desktop-sidebar .brand,
+:root[data-theme="night"] .glohaus-site-footer .brand,
+:root[data-theme="night"] .mobile-home-brand .brand {
+  color: #fffafb;
+}
+:root:not([data-theme="night"]) .mobile-home-brand .brand {
+  color: #241c20;
+}
+:root[data-theme="night"] .pro-preview-main .pro-kicker,
+:root[data-theme="night"] .pro-preview-auth-bar strong {
+  color: #ffafd0;
 }

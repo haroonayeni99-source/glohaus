@@ -1,10 +1,12 @@
 import { PlatformLabelsProvider } from "@/components/platform-labels";
 import { publicLabels } from "@/modules/platform/repository";
 import type { Metadata } from "next";
+import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 import "./globals.css";
 import "./ui-upgrades.css";
 import "./theme-compat.css";
+import "./customer-polish.css";
 
 const themeBootstrap = `(() => {
   try {
@@ -55,6 +57,7 @@ export default async function RootLayout({
       </head>
       <body>
         {content}
+        <SiteFooter />
         <ThemeToggle />
       </body>
     </html>

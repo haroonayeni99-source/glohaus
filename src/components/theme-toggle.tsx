@@ -13,7 +13,12 @@ function applyTheme(theme: "light" | "night") {
 }
 
 function readTheme(): "light" | "night" {
-  const saved = window.localStorage.getItem(storageKey);
+  let saved: string | null = null;
+  try {
+    saved = window.localStorage.getItem(storageKey);
+  } catch {
+    saved = document.documentElement.dataset.theme ?? null;
+  }
   return saved === "night" ||
     (saved !== "light" && window.matchMedia(darkPreference).matches)
     ? "night"
@@ -35,11 +40,7 @@ function subscribeToTheme(onStoreChange: () => void) {
 const serverTheme = () => "light" as const;
 
 export function ThemeToggle() {
-  const theme = useSyncExternalStore(
-    subscribeToTheme,
-    readTheme,
-    serverTheme,
-  );
+  const theme = useSyncExternalStore(subscribeToTheme, readTheme, serverTheme);
 
   useEffect(() => {
     applyTheme(theme);
@@ -47,7 +48,12 @@ export function ThemeToggle() {
 
   function toggle() {
     const next = theme === "night" ? "light" : "night";
-    window.localStorage.setItem(storageKey, next);
+    applyTheme(next);
+    try {
+      window.localStorage.setItem(storageKey, next);
+    } catch {
+      /* Theme remains usable when browser storage is blocked. */
+    }
     window.dispatchEvent(new Event("glohaus-theme-change"));
     applyTheme(next);
   }

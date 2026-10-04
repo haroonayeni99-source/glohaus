@@ -1,18 +1,41 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Bell, Search, ShieldCheck } from "lucide-react";
+import { HomeStory } from "./home-story";
+import { AccountControls } from "./account-controls";
 import { Brand } from "./brand";
 import { BottomNavigation } from "./bottom-navigation";
 
 const mobileCategories = [
-  ["Hair", "https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=240&q=82"],
-  ["Nails", "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=240&q=82"],
-  ["Lashes", "https://images.unsplash.com/photo-1583001931096-959e9a1a6223?auto=format&fit=crop&w=240&q=82"],
-  ["Skin", "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=240&q=82"],
-  ["Makeup", "https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=240&q=82"],
+  [
+    "Hair",
+    "https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=240&q=82",
+  ],
+  [
+    "Nails",
+    "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=240&q=82",
+  ],
+  [
+    "Lashes",
+    "https://images.unsplash.com/photo-1583001931096-959e9a1a6223?auto=format&fit=crop&w=240&q=82",
+  ],
+  [
+    "Skin",
+    "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=240&q=82",
+  ],
+  [
+    "Makeup",
+    "https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=240&q=82",
+  ],
 ] as const;
 
-export function MobileCustomerHome({ signedIn = false, canAccessAdmin = false }: { signedIn?: boolean; canAccessAdmin?: boolean }) {
+export function MobileCustomerHome({
+  signedIn = false,
+  canAccessAdmin = false,
+}: {
+  signedIn?: boolean;
+  canAccessAdmin?: boolean;
+}) {
   const notificationHref = signedIn
     ? "/notifications"
     : "/sign-in?returnTo=%2Fnotifications";
@@ -27,17 +50,31 @@ export function MobileCustomerHome({ signedIn = false, canAccessAdmin = false }:
           </div>
           <div className="mobile-home-header-actions">
             {canAccessAdmin && (
-              <Link className="mobile-home-bell" href="/admin" aria-label="Owner/Admin" title="Owner/Admin">
+              <Link
+                className="mobile-home-bell"
+                href="/admin"
+                aria-label="Owner/Admin"
+                title="Owner/Admin"
+              >
                 <ShieldCheck size={20} aria-hidden />
               </Link>
             )}
-            <Link
-              className="mobile-home-bell"
-              href={notificationHref}
-              aria-label="Notifications"
-            >
-              <Bell size={21} aria-hidden />
-            </Link>
+            {signedIn ? (
+              <>
+                <AccountControls />
+                <Link
+                  className="mobile-home-bell"
+                  href={notificationHref}
+                  aria-label="Notifications"
+                >
+                  <Bell size={21} aria-hidden />
+                </Link>
+              </>
+            ) : (
+              <Link className="home-mobile-signin" href="/sign-in">
+                Sign in
+              </Link>
+            )}
           </div>
         </header>
 
@@ -75,12 +112,13 @@ export function MobileCustomerHome({ signedIn = false, canAccessAdmin = false }:
           <div className="mobile-home-hero-shade" />
           <div className="mobile-home-hero-copy">
             <h1>
-              Real Beauty
+              Discover.
               <br />
-              Real People
+              Book.
               <br />
-              Real Results
+              Get inspired.
             </h1>
+            <p>Find and book beauty professionals near you.</p>
             <Link className="mobile-home-glow" href="/discover">
               Find Your Glow
             </Link>
@@ -91,6 +129,7 @@ export function MobileCustomerHome({ signedIn = false, canAccessAdmin = false }:
           Discover more beauty inspiration
           <span aria-hidden>→</span>
         </Link>
+        <HomeStory />
       </main>
       <BottomNavigation active="home" signedIn={signedIn} />
     </div>

@@ -56,7 +56,7 @@ export default async function Explore({
     <>
       <PublicHeader signedIn={viewerSignedIn} />
       <main id="main">
-        <ExploreMapExperience professionals={professionals} query={q} filters={filters} />
+        <ExploreMapExperience key={q} professionals={professionals} query={q} filters={filters} />
         {(after || next) && (
           <nav className="map-pagination" aria-label="Professional search pages">
             {after && (

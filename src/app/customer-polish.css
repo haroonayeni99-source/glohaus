@@ -1,0 +1,396 @@
+/* Scoped refinements: preserve the existing GLOHAUS layout and identity. */
+.home-story {
+  margin-top: 56px;
+}
+.home-how > h2 {
+  max-width: 650px;
+  font-size: clamp(26px, 3vw, 38px);
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  margin: 12px 0 30px;
+}
+.home-how-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.home-how-grid > a {
+  color: var(--ink);
+  text-decoration: none;
+  border-top: 1px solid var(--line);
+  padding: 26px 0;
+}
+.home-how-grid svg {
+  color: var(--plum);
+}
+.home-how-grid h3 {
+  font-size: 18px;
+  margin: 18px 0 10px;
+}
+.home-how-grid p {
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 14px;
+  max-width: 280px;
+}
+.home-how-grid span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  margin-top: 22px;
+  font-weight: 650;
+}
+.home-pro-invite {
+  margin: 40px 0 24px;
+  padding: 36px;
+  border-radius: 22px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-between;
+}
+.home-pro-invite h2 {
+  font-size: 28px;
+  letter-spacing: -0.03em;
+  max-width: 470px;
+  margin: 12px 0;
+}
+.home-pro-invite p:not(.eyebrow) {
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 490px;
+}
+.home-pro-invite > a,
+.home-join {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 50px;
+  background: #ff91bb;
+  color: #28141c !important;
+  padding: 13px 20px;
+  text-decoration: none;
+  font-weight: 650;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.glohaus-site-footer {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, 1fr);
+  gap: 38px;
+  padding: 60px max(24px, calc((100vw - 1250px) / 2));
+  background: var(--white);
+  color: var(--ink);
+  border-top: 1px solid var(--line);
+}
+.glohaus-site-footer nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 13px;
+}
+.glohaus-site-footer h2 {
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+.glohaus-site-footer a:not(.brand) {
+  color: var(--muted);
+  font-size: 13px;
+  text-decoration: none;
+  line-height: 1.5;
+}
+.glohaus-site-footer a:hover {
+  color: var(--plum);
+  text-decoration: underline;
+}
+.site-footer-brand p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 18px 0;
+}
+.site-footer-brand p:first-of-type {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+.site-footer-bottom {
+  grid-column: 1/-1;
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 12px;
+}
+.home-topline {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+.home-sidebar-note {
+  margin: 45px 18px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 2;
+  letter-spacing: 0.16em;
+}
+.home-pro-initial {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 48px;
+  background: var(--blush);
+  color: var(--ink);
+}
+.home-mobile-signin {
+  color: var(--ink);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  padding: 9px 13px;
+  border-radius: 24px;
+  font-size: 13px;
+}
+@media (min-width: 1100px) {
+  .desktop-customer-home {
+    grid-template-rows: auto;
+    grid-template-columns: 210px minmax(0, 1fr) 300px;
+  }
+  .desktop-customer-home.is-guest {
+    grid-template-columns: 210px minmax(0, 1fr);
+  }
+  .customer-desktop-main {
+    padding: 0 36px 50px;
+    max-width: 1420px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .is-guest .customer-desktop-main {
+    max-width: 1280px;
+    padding: 0 56px 50px;
+  }
+  .customer-desktop-topbar {
+    height: 96px;
+  }
+  .desktop-hero {
+    height: 420px;
+    border-radius: 24px;
+  }
+  .desktop-hero-copy {
+    padding: 56px 48px;
+    max-width: 640px;
+  }
+  .desktop-hero-copy h1 {
+    display: block;
+    font-size: clamp(44px, 4.6vw, 68px);
+    line-height: 1.04;
+    margin: 18px 0;
+    letter-spacing: -0.04em;
+  }
+  .desktop-hero-copy > p:not(.eyebrow) {
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .desktop-hero-copy > .home-browse-note {
+    font-size: 11px !important;
+    margin-top: 14px;
+    opacity: 0.8;
+  }
+  .desktop-hero-search {
+    margin-top: 22px;
+    max-width: 485px;
+  }
+  .desktop-hero-search input {
+    min-width: 0;
+  }
+  .desktop-hero-search button {
+    background: #ff91bb;
+    color: #28141c;
+  }
+  .desktop-service-row {
+    margin: 32px 0 48px;
+    padding: 0;
+    justify-content: space-around;
+    background: transparent;
+    border: 0;
+  }
+  .desktop-section {
+    margin-top: 44px;
+  }
+  .desktop-section-title {
+    margin-bottom: 22px;
+  }
+  .desktop-section-title h2 {
+    font-size: 25px;
+    letter-spacing: -0.025em;
+  }
+  .desktop-pro-grid {
+    gap: 20px;
+  }
+  .desktop-pro-photo {
+    height: 200px;
+  }
+  .desktop-pro-card {
+    border-radius: 16px;
+  }
+  .desktop-pro-card > div {
+    padding: 18px;
+    gap: 8px;
+  }
+  .desktop-trend-grid {
+    gap: 20px;
+  }
+  .desktop-trend-grid > a {
+    height: 250px;
+    border-radius: 16px;
+  }
+  .customer-desktop-rail {
+    padding-top: 96px;
+  }
+}
+@media (max-width: 1099px) {
+  .mobile-home-main {
+    padding: 26px 20px 28px;
+  }
+  .mobile-home-header {
+    margin-bottom: 26px;
+  }
+  .mobile-home-header-actions .text-link {
+    font-size: 11px;
+    color: var(--ink);
+  }
+  .mobile-home-categories {
+    margin: 24px 0;
+  }
+  .mobile-home-hero {
+    border-radius: 20px;
+    height: 480px;
+  }
+  .mobile-home-hero-copy h1 {
+    font-size: clamp(36px, 8vw, 48px);
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+  }
+  .mobile-home-hero-copy p {
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 260px;
+    margin: 16px 0;
+  }
+  .home-story {
+    margin-top: 40px;
+    color: var(--ink);
+  }
+  .home-how-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .home-how-grid > a {
+    padding: 22px 0;
+  }
+  .home-how-grid h3 {
+    margin-top: 12px;
+  }
+  .home-how-grid p {
+    max-width: none;
+  }
+  .home-pro-invite {
+    padding: 26px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .home-pro-invite h2 {
+    font-size: 25px;
+  }
+  .home-pro-invite > a {
+    white-space: normal;
+  }
+  .glohaus-site-footer {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px 20px;
+    padding: 38px 24px 110px;
+  }
+  .site-footer-brand {
+    grid-column: 1/-1;
+  }
+}
+/* A compact control must stay clear of bottom navigation and readable in either theme. */
+.theme-toggle-layer {
+  z-index: 90;
+}
+@media (max-width: 760px) {
+  .theme-toggle-layer {
+    bottom: 82px;
+  }
+}
+
+.map-cluster {
+  cursor: pointer;
+  font: inherit;
+}
+.map-cluster.is-selected {
+  outline: 3px solid #e5377d;
+  outline-offset: 3px;
+  background: #ffe2ee;
+  color: #24151c;
+}
+.map-pan-controls {
+  position: absolute;
+  z-index: 6;
+  bottom: 48px;
+  right: 16px;
+  display: flex;
+  gap: 4px;
+}
+.map-pan-controls button {
+  border: 1px solid #c8b5bf;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #fff;
+  color: #251a20;
+  cursor: pointer;
+}
+.map-street-card {
+  z-index: 5;
+}
+.map-legend {
+  pointer-events: none;
+}
+:root[data-theme="night"]
+  .professional-public
+  :is(.professional-section, .professional-review, .professional-service-card) {
+  background: var(--white);
+  color: var(--ink);
+}
+:root[data-theme="night"] .professional-public :is(h1, h2, h3, label) {
+  color: var(--ink);
+}
+:root[data-theme="night"] .pro-app .editor-form :is(label, h2, h3) {
+  color: #fff8fb;
+}
+.mobile-home-search input {
+  background: transparent;
+  color: #241c20;
+}
+.mobile-home-search input::placeholder {
+  color: #675b61;
+}
+@media (max-width: 1099px) {
+  .glohaus-bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .glohaus-bottom-nav a {
+    min-width: 0;
+  }
+  :root[data-theme="night"] .glohaus-bottom-nav a {
+    color: #d7c8ce;
+  }
+  :root[data-theme="night"] .glohaus-bottom-nav a[aria-current="page"] {
+    color: #ffa4c8;
+  }
+}

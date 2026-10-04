@@ -7,7 +7,7 @@ import { useState, type CSSProperties } from "react";
 import {
   BadgeCheck,
   ChevronDown,
-  Heart,
+  ArrowUpRight,
   LocateFixed,
   MapPin,
   Search,
@@ -25,7 +25,11 @@ const areas = [
   { name: "Shoreditch", street: "Redchurch Street", className: "shoreditch" },
   { name: "Soho", street: "Carnaby Street", className: "soho" },
   { name: "Camden", street: "Camden High Street", className: "camden" },
-  { name: "Notting Hill", street: "Portobello Road", className: "notting-hill" },
+  {
+    name: "Notting Hill",
+    street: "Portobello Road",
+    className: "notting-hill",
+  },
   { name: "Greenwich", street: "Greenwich High Road", className: "greenwich" },
 ];
 
@@ -44,9 +48,19 @@ const serviceFilters = [
 
 const clusters = [
   { name: "Camden", pos: "map-cluster-camden", lat: 51.539, lng: -0.143 },
-  { name: "Notting Hill", pos: "map-cluster-notting", lat: 51.509, lng: -0.204 },
+  {
+    name: "Notting Hill",
+    pos: "map-cluster-notting",
+    lat: 51.509,
+    lng: -0.204,
+  },
   { name: "Soho", pos: "map-cluster-soho", lat: 51.513, lng: -0.133 },
-  { name: "Shoreditch", pos: "map-cluster-shoreditch", lat: 51.524, lng: -0.078 },
+  {
+    name: "Shoreditch",
+    pos: "map-cluster-shoreditch",
+    lat: 51.524,
+    lng: -0.078,
+  },
   { name: "Brixton", pos: "map-cluster-brixton", lat: 51.462, lng: -0.115 },
   { name: "Peckham", pos: "map-cluster-peckham", lat: 51.474, lng: -0.069 },
   { name: "Greenwich", pos: "map-cluster-greenwich", lat: 51.482, lng: 0.006 },
@@ -64,9 +78,7 @@ function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
   const dLng = toRad(lng2 - lng1);
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLng / 2) ** 2;
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
   return earthKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -83,7 +95,14 @@ export function ExploreMapExperience({
   const [zoom, setZoom] = useState(1);
   const [locationNotice, setLocationNotice] = useState("");
   const [locating, setLocating] = useState(false);
-  const nearby = professionals.slice(0, 6);
+  const [selectedArea, setSelectedArea] = useState(
+    () =>
+      clusters.find(
+        (area) => area.name.toLowerCase() === query.trim().toLowerCase(),
+      )?.name ?? "",
+  );
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const nearby = professionals;
   const selected = query.trim().toLowerCase();
   const filterPairs = [
     ["verified", filters.verified],
@@ -158,14 +177,26 @@ export function ExploreMapExperience({
             <h1>
               Find Beauty Professionals <em>Near You</em>
             </h1>
-            <p>Explore by borough, area or street and book trusted professionals.</p>
+            <p>
+              Explore by borough, area or street and book trusted professionals.
+            </p>
           </div>
           <form className="map-explore-search" role="search">
-            {filters.verified && <input type="hidden" name="verified" value="1" />}
-            {filters.under50 && <input type="hidden" name="under50" value="1" />}
-            {filters.topRated && <input type="hidden" name="topRated" value="1" />}
-            {filters.travels && <input type="hidden" name="travels" value="1" />}
-            {filters.availableToday && <input type="hidden" name="today" value="1" />}
+            {filters.verified && (
+              <input type="hidden" name="verified" value="1" />
+            )}
+            {filters.under50 && (
+              <input type="hidden" name="under50" value="1" />
+            )}
+            {filters.topRated && (
+              <input type="hidden" name="topRated" value="1" />
+            )}
+            {filters.travels && (
+              <input type="hidden" name="travels" value="1" />
+            )}
+            {filters.availableToday && (
+              <input type="hidden" name="today" value="1" />
+            )}
             <Search size={20} aria-hidden />
             <label htmlFor="map-search" className="sr-only">
               Search by area, borough, street, service or professional
@@ -221,23 +252,42 @@ export function ExploreMapExperience({
           ))}
         </div>
         <div className="map-secondary-filters">
-          <Link className={filters.availableToday ? "active" : undefined} href={hrefFor(query, "today")}>
+          <Link
+            className={filters.availableToday ? "active" : undefined}
+            href={hrefFor(query, "today")}
+          >
             Available today
           </Link>
-          <Link className={filters.verified ? "active" : undefined} href={hrefFor(query, "verified")}>
+          <Link
+            className={filters.verified ? "active" : undefined}
+            href={hrefFor(query, "verified")}
+          >
             <BadgeCheck size={15} aria-hidden /> Verified only
           </Link>
-          <Link className={filters.travels ? "active" : undefined} href={hrefFor(query, "travels")}>
+          <Link
+            className={filters.travels ? "active" : undefined}
+            href={hrefFor(query, "travels")}
+          >
             Travels to you
           </Link>
-          <Link className={filters.under50 ? "active" : undefined} href={hrefFor(query, "under50")}>
+          <Link
+            className={filters.under50 ? "active" : undefined}
+            href={hrefFor(query, "under50")}
+          >
             Under £50
           </Link>
-          <Link className={filters.topRated ? "active" : undefined} href={hrefFor(query, "topRated")}>
+          <Link
+            className={filters.topRated ? "active" : undefined}
+            href={hrefFor(query, "topRated")}
+          >
             <Star size={15} aria-hidden /> Top rated
           </Link>
           {anySecondaryFilter ? (
-            <Link href={query ? `/explore?q=${encodeURIComponent(query)}` : "/explore"}>
+            <Link
+              href={
+                query ? `/explore?q=${encodeURIComponent(query)}` : "/explore"
+              }
+            >
               <SlidersHorizontal size={16} aria-hidden /> Clear filters
             </Link>
           ) : (
@@ -249,27 +299,55 @@ export function ExploreMapExperience({
       </section>
 
       <section className="map-results-layout">
-        <div className="glohaus-map" aria-label="Stylised London beauty discovery map">
+        <div
+          className="glohaus-map"
+          aria-label="Stylised London beauty discovery map"
+        >
           <div
             className="map-canvas"
-            style={{ "--map-scale": zoom } as CSSProperties}
+            style={
+              {
+                "--map-scale": zoom,
+                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+              } as CSSProperties
+            }
           >
-          <div className="map-road map-road-a" />
-          <div className="map-road map-road-b" />
-          <div className="map-road map-road-c" />
-          <div className="map-river" />
-          <span className="map-city-label">London</span>
-          <span className="map-borough-label map-label-hackney">HACKNEY</span>
-          <span className="map-borough-label map-label-westminster">WESTMINSTER</span>
-          <span className="map-borough-label map-label-lewisham">LEWISHAM</span>
+            <div className="map-road map-road-a" />
+            <div className="map-road map-road-b" />
+            <div className="map-road map-road-c" />
+            <div className="map-river" />
+            <span className="map-city-label">London</span>
+            <span className="map-borough-label map-label-hackney">HACKNEY</span>
+            <span className="map-borough-label map-label-westminster">
+              WESTMINSTER
+            </span>
+            <span className="map-borough-label map-label-lewisham">
+              LEWISHAM
+            </span>
 
+            {clusters.map((cluster) => (
+              <button
+                type="button"
+                key={cluster.name}
+                className={`map-cluster ${cluster.pos} ${selectedArea === cluster.name ? "is-selected" : ""}`}
+                aria-pressed={selectedArea === cluster.name}
+                onClick={() => setSelectedArea(cluster.name)}
+              >
+                <strong>{cluster.name}</strong>
+                <small>
+                  {selectedArea === cluster.name ? "Selected" : "Choose area"}
+                </small>
+              </button>
+            ))}
           </div>
           <div className="map-controls">
             <button
               type="button"
               aria-label="Zoom in"
               disabled={zoom >= 1.35}
-              onClick={() => setZoom((value) => Math.min(1.35, +(value + 0.1).toFixed(2)))}
+              onClick={() =>
+                setZoom((value) => Math.min(1.35, +(value + 0.1).toFixed(2)))
+              }
             >
               +
             </button>
@@ -277,7 +355,9 @@ export function ExploreMapExperience({
               type="button"
               aria-label="Zoom out"
               disabled={zoom <= 0.85}
-              onClick={() => setZoom((value) => Math.max(0.85, +(value - 0.1).toFixed(2)))}
+              onClick={() =>
+                setZoom((value) => Math.max(0.85, +(value - 0.1).toFixed(2)))
+              }
             >
               −
             </button>
@@ -296,38 +376,90 @@ export function ExploreMapExperience({
             </div>
           )}
 
-          {clusters.map((cluster) => (
-            <Link
-              key={cluster.name}
-              className={`map-cluster ${cluster.pos}`}
-              href={`/explore?q=${encodeURIComponent(cluster.name)}`}
+          <div className="map-pan-controls" aria-label="Move map">
+            <button
+              type="button"
+              aria-label="Move map left"
+              onClick={() =>
+                setPan((p) => ({ ...p, x: Math.max(-160, p.x - 60) }))
+              }
             >
-              <strong>{cluster.name}</strong>
-              <small>Explore area</small>
-            </Link>
-          ))}
-
+              ←
+            </button>
+            <button
+              type="button"
+              aria-label="Move map right"
+              onClick={() =>
+                setPan((p) => ({ ...p, x: Math.min(160, p.x + 60) }))
+              }
+            >
+              →
+            </button>
+            <button
+              type="button"
+              aria-label="Move map up"
+              onClick={() =>
+                setPan((p) => ({ ...p, y: Math.max(-160, p.y - 60) }))
+              }
+            >
+              ↑
+            </button>
+            <button
+              type="button"
+              aria-label="Move map down"
+              onClick={() =>
+                setPan((p) => ({ ...p, y: Math.min(160, p.y + 60) }))
+              }
+            >
+              ↓
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPan({ x: 0, y: 0 });
+                setZoom(1);
+                setSelectedArea("");
+              }}
+            >
+              Reset
+            </button>
+          </div>
           <div className="map-street-card">
-            <div className="map-street-thumb"><MapPin size={24} aria-hidden /></div>
+            <div className="map-street-thumb">
+              <MapPin size={24} aria-hidden />
+            </div>
             <div>
-              <strong>Rye Lane, Peckham</strong>
-              <span>Beauty professionals nearby</span>
-              <Link href="/explore?q=Rye%20Lane">View this street →</Link>
+              <strong>{selectedArea || "Explore London"}</strong>
+              <span>Illustrated area guide · select an area to search</span>
+              <Link href={hrefFor(selectedArea)}>
+                {selectedArea ? `Search ${selectedArea}` : "Search all areas"} →
+              </Link>
             </div>
           </div>
 
           <div className="map-legend">
-            <span><i className="dot" /> Professional</span>
-            <span><i className="bubble" /> Area cluster</span>
-            <span><i className="square" /> Borough area</span>
+            <span>
+              <i className="bubble" /> Explore area
+            </span>
+            <span>
+              <i className="square" /> Illustrated guide
+            </span>
           </div>
         </div>
 
         <aside className="map-pro-results">
           <div className="map-pro-heading">
             <div>
-              <h2>{query ? `Professionals for “${query}”` : "Professionals near London"}</h2>
-              <p>{professionals.length ? `${professionals.length} matching profiles` : "Discover independent beauty talent"}</p>
+              <h2>
+                {query
+                  ? `Professionals for “${query}”`
+                  : "Professionals near London"}
+              </h2>
+              <p>
+                {professionals.length
+                  ? `${professionals.length} matching profiles`
+                  : "Discover independent beauty talent"}
+              </p>
             </div>
           </div>
 
@@ -335,7 +467,11 @@ export function ExploreMapExperience({
             <div className="map-pro-list">
               {nearby.map((pro) => (
                 <article className="map-pro-row" key={pro.id}>
-                  <Link href={`/p/${pro.slug}`} className="map-pro-avatar" aria-label={pro.business_name}>
+                  <Link
+                    href={`/p/${pro.slug}`}
+                    className="map-pro-avatar"
+                    aria-label={pro.business_name}
+                  >
                     {pro.photo_id ? (
                       <Image
                         src={`/api/media/${pro.photo_id}`}
@@ -353,32 +489,38 @@ export function ExploreMapExperience({
                       {pro.business_name}
                     </Link>
                     <span className="map-pro-rating">
-                      <Star size={13} fill="currentColor" aria-hidden /> {ratingText(pro)}
+                      <Star size={13} fill="currentColor" aria-hidden />{" "}
+                      {ratingText(pro)}
                     </span>
                     <div className="map-pro-tags">
                       <span>{pro.category}</span>
                       <span>{pro.city}</span>
-                      {pro.verification_status === "verified" && <span>Verified</span>}
+                      {pro.verification_status === "verified" && (
+                        <span>Verified</span>
+                      )}
                       {pro.travels_to_you && <span>Travels to you</span>}
                     </div>
                   </div>
-                  <button type="button" className="map-heart" aria-label={`Save ${pro.business_name}`}>
-                    <Heart size={18} aria-hidden />
-                  </button>
+                  <Link
+                    href={`/p/${pro.slug}`}
+                    className="map-heart"
+                    aria-label={`View profile of ${pro.business_name}`}
+                  >
+                    <ArrowUpRight size={18} aria-hidden />
+                  </Link>
                   <Link className="map-book-button" href={`/p/${pro.slug}`}>
                     Book
                   </Link>
                 </article>
               ))}
-              <Link className="map-view-all" href={query ? `/explore?q=${encodeURIComponent(query)}` : "/explore"}>
-                View all professionals in this area →
-              </Link>
             </div>
           ) : (
             <div className="map-pro-empty">
               <Sparkles size={28} aria-hidden />
               <h3>No matching professionals yet.</h3>
-              <p>Try another area or service while the GLOHAUS directory grows.</p>
+              <p>
+                Try another area or service while the GLOHAUS directory grows.
+              </p>
             </div>
           )}
         </aside>

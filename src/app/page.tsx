@@ -36,30 +36,38 @@ export default async function Home({
     displayName: string;
     canAccessAdmin: boolean;
     summary: CustomerHomeSummary | null;
-  } = { signedIn: false, displayName: "", canAccessAdmin: false, summary: null };
+  } = {
+    signedIn: false,
+    displayName: "",
+    canAccessAdmin: false,
+    summary: null,
+  };
   let professionals: PublicProfessional[] = [];
 
-  if (process.env.DATABASE_URL) {
-    let authId = "";
-    try {
-      const identity = await getIdentity();
-      authId = identity.authId;
-      // Authentication state comes from Supabase, so the home UI must not
-      // show "Sign in" merely because the application database is unavailable.
-      viewer = {
-        signedIn: true,
-        displayName: identity.displayName,
-        canAccessAdmin: false,
-        summary: null,
-      };
-    } catch {}
+  let authId = "";
+  try {
+    const identity = await getIdentity();
+    authId = identity.authId;
+    // Authentication state comes from Supabase, so the home UI must not
+    // show "Sign in" merely because the application database is unavailable.
+    viewer = {
+      signedIn: true,
+      displayName: identity.displayName,
+      canAccessAdmin: false,
+      summary: null,
+    };
+  } catch {}
 
+  if (process.env.DATABASE_URL) {
     try {
       viewer = await withIdentity(authId, async (db) => {
         const account = authId ? await findAccount(db, authId) : null;
         let summary: CustomerHomeSummary | null = null;
 
-        if (account?.status === "active" && account.roles.includes("customer")) {
+        if (
+          account?.status === "active" &&
+          account.roles.includes("customer")
+        ) {
           try {
             summary = await customerHomeSummary(db, account.id);
           } catch {
@@ -71,7 +79,8 @@ export default async function Home({
           signedIn: Boolean(authId),
           displayName: account?.displayName || viewer.displayName,
           canAccessAdmin: Boolean(
-            account?.roles.includes("owner") || account?.roles.includes("admin"),
+            account?.roles.includes("owner") ||
+            account?.roles.includes("admin"),
           ),
           summary,
         };
@@ -81,9 +90,8 @@ export default async function Home({
     }
 
     try {
-      professionals = (
-        await withIdentity("", (db) => discoveryPage(db, ""))
-      ).professionals;
+      professionals = (await withIdentity("", (db) => discoveryPage(db, "")))
+        .professionals;
     } catch (error) {
       const code =
         typeof error === "object" && error !== null && "code" in error

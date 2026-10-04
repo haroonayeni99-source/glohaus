@@ -16,7 +16,7 @@ async function asUser<T>(authId: string, verified: boolean, work: (sql: SqlClien
   });
 }
 beforeAll(async () => {
-  await db.exec(`CREATE ROLE authenticated NOLOGIN; CREATE SCHEMA auth;
+  await db.exec(`CREATE ROLE authenticated NOLOGIN; CREATE ROLE anon NOLOGIN; CREATE SCHEMA auth;
     CREATE TABLE auth.users(id uuid PRIMARY KEY,email text,email_confirmed_at timestamptz);
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $$ SELECT nullif(current_setting('test.auth_id',true),'')::uuid $$;`);
   const directory = new URL("../db/migrations/",import.meta.url);
@@ -37,6 +37,26 @@ describe.sequential("persisted account restrictions and owner controls",()=>{
       await expect(asUser(authId,verified,sql=>sql.query("SELECT beauty.owner_set_user_restriction($1,now()+interval '1 hour','Security test restriction')",[users.customer]))).rejects.toThrow("FORBIDDEN");
     }
     await expect(asUser(ids.owner,true,sql=>sql.query("SELECT beauty.owner_set_user_restriction($1,now()+interval '1 hour','Protect the sole owner')",[users.owner]))).rejects.toThrow("FORBIDDEN");
+  });
+  it("keeps auth wrappers restricted to verified self-service account operations",async()=>{
+    await expect(db.transaction(async tx=>{
+      await tx.exec("SET LOCAL ROLE anon");
+      await tx.query("SELECT public.glohaus_my_account()");
+    })).rejects.toThrow(/permission denied/);
+    await db.transaction(async tx=>{
+      await tx.exec("SET LOCAL ROLE authenticated");
+      await tx.query("SELECT set_config('test.auth_id',$1,true)",[ids.customer]);
+      const row=await tx.query<{account:{authId:string;roles:string[]}}>("SELECT public.glohaus_my_account() AS account");
+      expect(row.rows[0].account.authId).toBe(ids.customer);
+      expect(row.rows[0].account.roles).toEqual(["customer"]);
+    });
+    for (const [role,adult,terms] of [["owner",true,true],["admin",true,true],["professional",false,true]] as const) {
+      await expect(db.transaction(async tx=>{
+        await tx.exec("SET LOCAL ROLE authenticated");
+        await tx.query("SELECT set_config('test.auth_id',$1,true)",[ids.customer]);
+        await tx.query("SELECT public.glohaus_enrol_self($1,$2,$3)",[role,adult,terms]);
+      })).rejects.toThrow("INVALID_REQUEST");
+    }
   });
   it("denies restricted account authorization and both enrollment paths",async()=>{
     await asUser(ids.owner,true,sql=>sql.query("SELECT beauty.owner_set_user_restriction($1,now()+interval '1 hour','Security test restriction')",[users.customer]));

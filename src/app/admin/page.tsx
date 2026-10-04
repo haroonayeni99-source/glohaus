@@ -26,20 +26,20 @@ export default async function Page() {
       </AuthFrame>
     );
   const isOwner = result.account.roles.includes("owner");
-  const [data, labels, categories, owner, productFee, bookingFee, finance, paymentReadiness, emailDelivery, authAccounts, commissions, referrals] = await Promise.all([
-    adminOverview(),
-    publicLabels(),
-    adminCategories().catch(() => []),
-    isOwner ? ownerControls().catch(() => null) : Promise.resolve(null),
-    isOwner ? ownerProductFeeRule().catch(() => null) : Promise.resolve(null),
-    isOwner ? ownerBookingFeeRule().catch(() => null) : Promise.resolve(null),
-    adminFinanceOverview().catch(() => null),
-    isOwner ? paymentLaunchReadiness().catch(() => null) : Promise.resolve(null),
-    isOwner ? ownerEmailDeliveryOverview().catch(() => null) : Promise.resolve(null),
-    isOwner ? ownerAuthAccountOverview().catch(() => []) : Promise.resolve([]),
-    isOwner ? ownerProfessionalCommissionOverview().catch(() => []) : Promise.resolve([]),
-    isOwner ? ownerProfessionalReferralOverview().catch(() => []) : Promise.resolve([]),
-  ]);
+  // The serverless runtime intentionally has a one-connection pool. Avoid
+  // starting a dozen transactions at once and timing out while they queue.
+  const data = await adminOverview();
+  const labels = await publicLabels();
+  const categories = await adminCategories().catch(() => []);
+  const owner = isOwner ? await ownerControls().catch(() => null) : null;
+  const productFee = isOwner ? await ownerProductFeeRule().catch(() => null) : null;
+  const bookingFee = isOwner ? await ownerBookingFeeRule().catch(() => null) : null;
+  const finance = await adminFinanceOverview().catch(() => null);
+  const paymentReadiness = isOwner ? await paymentLaunchReadiness().catch(() => null) : null;
+  const emailDelivery = isOwner ? await ownerEmailDeliveryOverview().catch(() => null) : null;
+  const authAccounts = isOwner ? await ownerAuthAccountOverview().catch(() => []) : [];
+  const commissions = isOwner ? await ownerProfessionalCommissionOverview().catch(() => []) : [];
+  const referrals = isOwner ? await ownerProfessionalReferralOverview().catch(() => []) : [];
   const emailReadiness = isOwner ? emailLaunchReadiness() : null;
   return (
     <main id="main" className="admin-workspace">

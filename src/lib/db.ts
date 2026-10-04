@@ -1,4 +1,5 @@
 import "server-only";
+import { serialSqlClient } from "./serial-sql-client";
 import { Pool, type PoolClient } from "pg";
 import type { SqlClient } from "@/modules/accounts/repository";
 import { AccessError } from "@/modules/accounts/domain";
@@ -93,6 +94,7 @@ async function runWithIdentity<T>(
   };
   db.on("error", onClientError);
 
+  const sql = serialSqlClient(db);
   try {
     await db.query("BEGIN");
     // Refuse owner/bypass credentials, even if an operator misconfigures DATABASE_URL.
@@ -121,11 +123,14 @@ async function runWithIdentity<T>(
     await db.query("SET LOCAL statement_timeout = '5s'");
     await db.query("SELECT set_config('app.auth_id', $1, true)", [authId]);
 
-    const result = await work(db);
+    const result = await work(sql);
+    await sql.drain();
     if (activeConnectionError) throw activeConnectionError;
     await db.query("COMMIT");
     return result;
   } catch (error) {
+    // Drain already queued work before rollback; failed queues skip later queries.
+    await sql.drain().catch(() => {});
     try {
       await db.query("ROLLBACK");
     } catch {

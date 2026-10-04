@@ -16,20 +16,16 @@ server-only operation; tests do not contact Auth or delete production accounts.
 ## Operator rollout
 
 No production migration is executed by the test suite or this repair.
-On your trusted local checkout, with the existing `MIGRATION_DATABASE_URL` securely
-configured in the ignored `.env.local` (never paste or commit its value):
-
-```sh
-git pull --ff-only origin main
-pnpm install --frozen-lockfile
-pnpm db:migrate
-```
-
-The migration runner verifies checksums and applies pending migrations in order.
-Do not rerun individual applied SQL files or change migration history manually.
-Review which migrations are pending before invoking it. Apply 0092 before
-relying on account/owner endpoints in production, then check the existing
-main → glohaus1 deployment. No new environment variables are required.
+Production inspection subsequently found two independent migration histories:
+`public.beauty_schema_migrations` and `supabase_migrations.schema_migrations`.
+The restriction/deletion columns already exist via the Supabase history.
+**Do not run a bulk `pnpm db:migrate` against that existing production database.**
+It could attempt to recreate tables installed through the other history.
+See [the targeted public fee/security repair](public-fee-and-security-repair.md)
+for the reviewed forward patch. The complete repository migration chain remains
+valid for isolated fresh databases, but its legacy history needs a separate,
+reviewed reconciliation before bulk production migrations resume. No history
+rows or applied SQL files should be changed manually.
 
 ## Verification boundaries
 

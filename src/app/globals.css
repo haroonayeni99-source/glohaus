@@ -10692,3 +10692,281 @@ body {
 :root[data-theme="night"] .admin-workspace .admin-section-title::before {
   background: #2d7ce8;
 }
+
+
+
+/* Requested preview polish: public home, footer, interactive map, PRO readability */
+
+/* Homepage: more breathing room and a clearer retail-style hierarchy. */
+@media (min-width: 1100px) {
+  .desktop-customer-home {
+    grid-template-columns: 220px minmax(720px, 1fr) 320px;
+    column-gap: 0;
+    background: #fbf8f5;
+  }
+
+  .customer-desktop-main {
+    padding: 0 34px 56px;
+  }
+
+  .customer-desktop-topbar {
+    height: 88px;
+  }
+
+  .desktop-hero {
+    height: 330px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+  }
+
+  .desktop-hero-copy {
+    padding: 58px 62px;
+  }
+
+  .desktop-service-row {
+    margin: 10px 4px 42px;
+    padding: 0 4px;
+    gap: 22px;
+  }
+
+  .desktop-section {
+    margin: 0 4px 44px;
+  }
+
+  .desktop-section-title {
+    margin-bottom: 20px;
+  }
+
+  .desktop-pro-grid {
+    gap: 20px;
+  }
+
+  .desktop-pro-card {
+    border-radius: 16px;
+  }
+
+  .desktop-pro-photo {
+    height: 170px;
+  }
+
+  .desktop-trend-grid {
+    gap: 18px;
+  }
+
+  .customer-desktop-rail {
+    padding: 88px 24px 44px;
+  }
+
+  .customer-desktop-rail > section {
+    margin-bottom: 26px;
+  }
+
+  .desktop-site-footer-wrap {
+    padding-top: 24px;
+  }
+}
+
+@media (max-width: 1099px) {
+  .mobile-home-main {
+    padding-bottom: 28px;
+  }
+
+  .mobile-home-search,
+  .mobile-home-categories,
+  .mobile-home-hero,
+  .mobile-home-discover-link {
+    margin-bottom: 24px;
+  }
+
+  .mobile-home-hero {
+    border-radius: 22px;
+  }
+}
+
+/* Footer: make legal/company navigation prominent and unmistakably part of Home. */
+.glohaus-site-footer {
+  margin-top: 44px;
+  padding: 54px clamp(24px, 5vw, 72px) 28px;
+  border-top: 1px solid var(--line);
+}
+.glohaus-site-footer-links {
+  gap: clamp(28px, 5vw, 72px);
+}
+.glohaus-site-footer-links section {
+  min-width: 140px;
+}
+.glohaus-site-footer-links h2 {
+  margin-bottom: 14px;
+  font-size: .74rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.glohaus-site-footer-links nav {
+  gap: 9px;
+}
+.glohaus-site-footer-links a {
+  font-size: .82rem;
+}
+.glohaus-site-footer-bottom {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Explore: clusters now select in-place instead of navigating immediately. */
+.map-cluster {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+}
+.map-cluster.is-selected {
+  z-index: 8;
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 0 0 4px rgba(233,95,150,.18), 0 12px 28px rgba(63,31,44,.2);
+}
+.map-area-selection {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  z-index: 12;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(520px, calc(100% - 32px));
+  padding: 12px 14px;
+  border: 1px solid #ead7df;
+  border-radius: 14px;
+  background: rgba(255,253,253,.96);
+  box-shadow: 0 16px 36px rgba(71,39,51,.18);
+  backdrop-filter: blur(14px);
+}
+.map-area-selection > div {
+  min-width: 0;
+  margin-right: auto;
+}
+.map-area-selection strong,
+.map-area-selection span {
+  display: block;
+}
+.map-area-selection strong {
+  color: #2c2026;
+  font-size: .8rem;
+}
+.map-area-selection span {
+  margin-top: 2px;
+  color: #7c6871;
+  font-size: .65rem;
+}
+.map-area-selection > button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #dd5d8f;
+  border-radius: 9px;
+  background: #e95f96;
+  color: #fff;
+  font-size: .66rem;
+  font-weight: 750;
+}
+.map-area-selection > .map-area-clear {
+  border-color: #e4d8dd;
+  background: #fff;
+  color: #725c66;
+}
+:root[data-theme="night"] .map-area-selection {
+  border-color: #4a3940;
+  background: rgba(31,24,27,.96);
+}
+:root[data-theme="night"] .map-area-selection strong {
+  color: #fff5f8;
+}
+:root[data-theme="night"] .map-area-selection span {
+  color: #c6b2bb;
+}
+:root[data-theme="night"] .map-area-selection > .map-area-clear {
+  border-color: #514047;
+  background: #241b1f;
+  color: #e6d4dc;
+}
+
+/* Professional: force readable foreground colours even if theme card rules conflict. */
+.pro-app,
+.pro-app .pro-main,
+.pro-app .pro-welcome,
+.pro-app .pro-panel,
+.pro-app .pro-live-card,
+.pro-app .pro-stat-grid article,
+.pro-app .pro-wallet-card,
+.pro-app .pro-quick-actions a,
+.pro-app .pro-setup-card {
+  color: #fff7fa !important;
+}
+.pro-app .pro-welcome h1,
+.pro-app .pro-panel h2,
+.pro-app .pro-panel h3,
+.pro-app .pro-setup-card h2,
+.pro-app .pro-stat-grid strong,
+.pro-app .pro-quick-actions strong,
+.pro-app .pro-wallet-card h2,
+.pro-app .pro-wallet-total,
+.pro-app .pro-appointment-list strong {
+  color: #fff7fa !important;
+}
+.pro-app .pro-welcome p:not(.pro-kicker),
+.pro-app .pro-panel p,
+.pro-app .pro-setup-card p:not(.pro-kicker),
+.pro-app .pro-stat-grid span,
+.pro-app .pro-quick-actions small,
+.pro-app .pro-live-card > p,
+.pro-app .pro-live-card small,
+.pro-app .pro-footnote,
+.pro-app .pro-appointment-list time,
+.pro-app .pro-appointment-list div > span {
+  color: #d8c7ce !important;
+}
+.pro-app .pro-kicker,
+.pro-app .pro-panel-title > a,
+.pro-app .pro-profile-panel > a,
+.pro-app .pro-empty-state a {
+  color: #ff9fc4 !important;
+}
+
+/* In light mode, retain the dark PRO surface rather than allowing mixed light cards + light text. */
+:root:not([data-theme="night"]) .pro-app {
+  background: #171415 !important;
+}
+:root:not([data-theme="night"]) .pro-app .pro-main {
+  background:
+    radial-gradient(circle at 88% 0%, rgba(235,95,151,.12), transparent 25rem),
+    #171415 !important;
+}
+:root:not([data-theme="night"]) .pro-app .pro-panel,
+:root:not([data-theme="night"]) .pro-app .pro-stat-grid article,
+:root:not([data-theme="night"]) .pro-app .pro-live-card,
+:root:not([data-theme="night"]) .pro-app .pro-quick-actions a {
+  border-color: rgba(255,255,255,.11) !important;
+  background: rgba(255,255,255,.04) !important;
+}
+
+@media (max-width: 700px) {
+  .glohaus-site-footer {
+    margin-top: 32px;
+    padding: 38px 20px 24px;
+  }
+  .glohaus-site-footer-links {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 28px 20px;
+  }
+  .map-area-selection {
+    bottom: 14px;
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+  .map-area-selection > div {
+    width: 100%;
+  }
+  .map-area-selection > button {
+    flex: 1 1 auto;
+  }
+}

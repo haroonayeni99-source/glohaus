@@ -33,6 +33,7 @@ const coreSections = [
 ] as const;
 
 const ownerSections = [
+  ["Site Access", "site-access", ShieldCheck],
   ["Auth Accounts", "auth-accounts", UsersRound],
   ["Pro Commission", "professional-commission", CreditCard],
   ["Booking Fee", "booking-fee", CreditCard],

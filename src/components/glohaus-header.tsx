@@ -32,12 +32,10 @@ export function GlohausHeader({
           <Link href="/">Home</Link>
           <Link href="/explore">Find a Professional</Link>
           <Link href="/discover">Discover</Link>
-          <Link href="/share">Share</Link>
+          <Link href="/shop">Shop</Link>
           <Link href="/how-it-works">How It Works</Link>
           <Link href="/professional-preview">For Professionals</Link>
-          <Link href="/shop">Shop</Link>
           <Link href="/about">About</Link>
-          <Link href="/faq">FAQ</Link>
         </nav>
       ) : (
         <p className="glohaus-header-tagline">WORK • GROW • BELONG</p>

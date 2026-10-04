@@ -56,6 +56,23 @@ export default async function Availability() {
         )
       ).rows,
   );
+  const bookings = await withIdentity(
+    account.authId,
+    async (db) =>
+      (
+        await db.query<{ id:string; service_name:string; customer_name:string; starts_at:string; ends_at:string; status:string }>(
+          `SELECT id,service_name,customer_name,starts_at,ends_at,status
+           FROM beauty.bookings
+           WHERE professional_id=$1
+             AND starts_at >= now() - interval '1 day'
+             AND starts_at < now() + interval '120 days'
+             AND status IN ('payment_pending','confirmed','completed','no_show')
+           ORDER BY starts_at
+           LIMIT 300`,
+          [account.professionalId],
+        )
+      ).rows,
+  );
   const blocks = await withIdentity(
     account.authId,
     async (db) =>
@@ -74,7 +91,14 @@ export default async function Availability() {
         <p className="pro-kicker">MAKE SPACE FOR YOUR CLIENTS</p>
         <h1>Your week, your way.</h1>
         <section className="pro-editor-surface">
-          <AvailabilityCalendar rules={rules} today={calendarDate(new Date())}
+          <AvailabilityCalendar
+            rules={rules}
+            today={calendarDate(new Date())}
+            bookings={bookings.map((booking) => ({
+              ...booking,
+              starts_at: new Date(booking.starts_at).toISOString(),
+              ends_at: new Date(booking.ends_at).toISOString(),
+            }))}
             blocks={blocks.map((block) => ({
               ...block,
               startsAt: new Date(block.startsAt).toISOString(),

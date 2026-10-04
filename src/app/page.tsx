@@ -1,14 +1,9 @@
 import { DesktopCustomerHome } from "@/components/desktop-customer-home";
 import { MobileCustomerHome } from "@/components/mobile-customer-home";
 import { withIdentity } from "@/lib/db";
-import { getIdentity } from "@/lib/identity";
-import { findAccount } from "@/modules/accounts/repository";
 import { discoveryPage } from "@/modules/professionals/repository";
 import type { PublicProfessional } from "@/modules/professionals/domain";
-import {
-  customerHomeSummary,
-  type CustomerHomeSummary,
-} from "@/modules/home/repository";
+import type { CustomerHomeSummary } from "@/modules/home/repository";
 import { redirect } from "next/navigation";
 import { RecoveryRedirect } from "@/components/recovery-redirect";
 
@@ -31,55 +26,18 @@ export default async function Home({
     redirect(`/discover?${params.toString()}`);
   }
 
-  let viewer: {
+  // The homepage is a public storefront. Existing Supabase sessions stay intact,
+  // but the homepage itself always presents signed-out/public navigation.
+  const viewer: {
     signedIn: boolean;
     displayName: string;
     canAccessAdmin: boolean;
     summary: CustomerHomeSummary | null;
   } = { signedIn: false, displayName: "", canAccessAdmin: false, summary: null };
+
   let professionals: PublicProfessional[] = [];
 
   if (process.env.DATABASE_URL) {
-    let authId = "";
-    try {
-      const identity = await getIdentity();
-      authId = identity.authId;
-      // Authentication state comes from Supabase, so the home UI must not
-      // show "Sign in" merely because the application database is unavailable.
-      viewer = {
-        signedIn: true,
-        displayName: identity.displayName,
-        canAccessAdmin: false,
-        summary: null,
-      };
-    } catch {}
-
-    try {
-      viewer = await withIdentity(authId, async (db) => {
-        const account = authId ? await findAccount(db, authId) : null;
-        let summary: CustomerHomeSummary | null = null;
-
-        if (account?.status === "active" && account.roles.includes("customer")) {
-          try {
-            summary = await customerHomeSummary(db, account.id);
-          } catch {
-            console.error("Customer Home summary unavailable");
-          }
-        }
-
-        return {
-          signedIn: Boolean(authId),
-          displayName: account?.displayName || viewer.displayName,
-          canAccessAdmin: Boolean(
-            account?.roles.includes("owner") || account?.roles.includes("admin"),
-          ),
-          summary,
-        };
-      });
-    } catch {
-      console.error("Customer account state unavailable");
-    }
-
     try {
       professionals = (
         await withIdentity("", (db) => discoveryPage(db, ""))

@@ -16,7 +16,7 @@ const sections = {
   portfolio: ["Portfolio","Upload and manage your work, looks and portfolio content."],
   products: ["Products","Create product drafts and, once verified, publish products for sale."],
   wallet: ["Wallet & earnings","Track pending, available, reserved and processing funds, then request withdrawals."],
-  verification: ["Verification","Complete Stripe identity/KYC checks to unlock deposits, higher-value services, products and withdrawals."],
+  verification: ["Verification","Understand Identity Verified, Business Verified and Professional Verified status, plus the checks required to unlock more marketplace features."],
 } as const;
 
 const actions = [
@@ -104,6 +104,29 @@ export default async function ProfessionalPreviewPage({
             <p className="pro-kicker">PROFESSIONAL DEMO VIEW</p>
             <h2>{selected[0]}</h2>
             <p>{selected[1]}</p>
+            {view === "verification" && (
+              <>
+                <div className="pro-verification-levels">
+                  <article>
+                    <BadgeCheck size={19} aria-hidden />
+                    <div><strong>Identity Verified</strong><span>The professional has completed required identity/KYC checks. This does not mean they operate a registered company.</span></div>
+                  </article>
+                  <article>
+                    <BadgeCheck size={19} aria-hidden />
+                    <div><strong>Business Verified</strong><span>Registered company or business-entity details have also been checked where the professional operates through one.</span></div>
+                  </article>
+                  <article>
+                    <BadgeCheck size={19} aria-hidden />
+                    <div><strong>Professional Verified</strong><span>GLOHAUS has additionally checked relevant qualification, licence or professional evidence where a service category requires or supports it.</span></div>
+                  </article>
+                </div>
+                <div className="pro-tax-note">
+                  <strong>Tax responsibility</strong>
+                  <p>Professionals remain responsible for registering with HMRC where required and for reporting and paying their own tax, National Insurance, VAT or other obligations. GLOHAUS records and earnings summaries are not tax advice.</p>
+                  <Link href="/professional-terms">Read Professional Terms →</Link>
+                </div>
+              </>
+            )}
             <div className="pro-quick-actions">
               <Link href="/professional-preview">Back to dashboard</Link>
               {view === "services" && <Link href="/professional-preview?view=availability">Set availability</Link>}

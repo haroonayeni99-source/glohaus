@@ -14,7 +14,8 @@ import { OwnerAuthAccounts } from "@/components/owner-auth-accounts";
 import { ProfessionalCommissionControl } from "@/components/professional-commission-control";
 import { OwnerReferralOverview } from "@/components/owner-referral-overview";
 import { OwnerDashboardOverview } from "@/components/owner-dashboard-overview";
-import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, ownerProfessionalReferralOverview, paymentLaunchReadiness } from "@/modules/admin/repository";
+import { OwnerSiteAccessControl } from "@/components/owner-site-access-control";
+import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, ownerProfessionalReferralOverview, ownerSiteAvailability, paymentLaunchReadiness } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
@@ -26,7 +27,7 @@ export default async function Page() {
       </AuthFrame>
     );
   const isOwner = result.account.roles.includes("owner");
-  const [data, labels, categories, owner, productFee, bookingFee, finance, paymentReadiness, emailDelivery, authAccounts, commissions, referrals] = await Promise.all([
+  const [data, labels, categories, owner, productFee, bookingFee, finance, paymentReadiness, emailDelivery, authAccounts, commissions, referrals, siteAvailability] = await Promise.all([
     adminOverview(),
     publicLabels(),
     adminCategories().catch(() => []),
@@ -39,6 +40,7 @@ export default async function Page() {
     isOwner ? ownerAuthAccountOverview().catch(() => []) : Promise.resolve([]),
     isOwner ? ownerProfessionalCommissionOverview().catch(() => []) : Promise.resolve([]),
     isOwner ? ownerProfessionalReferralOverview().catch(() => []) : Promise.resolve([]),
+    isOwner ? ownerSiteAvailability().catch(() => null) : Promise.resolve(null),
   ]);
   const emailReadiness = isOwner ? emailLaunchReadiness() : null;
   return (
@@ -55,6 +57,16 @@ export default async function Page() {
             referrals={referrals}
             owner={owner}
           />
+          {isOwner && siteAvailability && (
+            <section id="site-access" className="admin-workspace-section admin-detail-card">
+              <p className="eyebrow">PUBLIC ACCESS</p>
+              <h2>Website availability</h2>
+              <p className="lead">
+                Temporarily close the public GLOHAUS website without blocking Owner/Admin access. Use this for maintenance, private demos or pre-launch work.
+              </p>
+              <OwnerSiteAccessControl initial={siteAvailability} />
+            </section>
+          )}
           <section id="settings" className="admin-workspace-section admin-detail-card">
             <p className="eyebrow">PLATFORM LANGUAGE</p>
             <h2>Platform labels</h2>

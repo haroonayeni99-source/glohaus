@@ -92,9 +92,15 @@ export async function publicProfessionals(
          p.id,p.slug,p.business_name,p.bio,p.city,p.category,p.verification_status,
          d.photo_id,d.photo_alt,d.travels_to_you,
          r.rating,r.review_count,
-         s.from_price_pence
+         s.from_price_pence,
+         beauty.public_next_available_at(p.id)::text AS next_available_at,
+         coalesce(ps.popular_services, ARRAY[]::text[]) AS popular_services,
+         coalesce(t.identity_verified,false) AS identity_verified,
+         coalesce(t.business_verified,false) AS business_verified,
+         coalesce(t.professional_verified,false) AS professional_verified
        FROM beauty.public_professionals p
        LEFT JOIN beauty.public_profile_details d ON d.id=p.id
+       LEFT JOIN beauty.professional_trust_status t ON t.professional_id=p.id
        LEFT JOIN LATERAL (
          SELECT round(avg(rating),1)::float AS rating,
                 count(*)::integer AS review_count
@@ -106,6 +112,20 @@ export async function publicProfessionals(
          FROM beauty.public_services
          WHERE professional_id=p.id
        ) s ON true
+       LEFT JOIN LATERAL (
+         SELECT array_agg(name ORDER BY completed_count DESC, price_pence, name) FILTER (WHERE rn <= 2) AS popular_services
+         FROM (
+           SELECT svc.name,svc.price_pence,
+                  count(b.id) FILTER (WHERE b.status='completed') AS completed_count,
+                  row_number() OVER (
+                    ORDER BY count(b.id) FILTER (WHERE b.status='completed') DESC, svc.price_pence, svc.name
+                  ) AS rn
+           FROM beauty.public_services svc
+           LEFT JOIN beauty.bookings b ON b.service_id=svc.id
+           WHERE svc.professional_id=p.id
+           GROUP BY svc.id,svc.name,svc.price_pence
+         ) ranked
+       ) ps ON true
        WHERE (
          p.business_name ILIKE $1
          OR p.city ILIKE $1

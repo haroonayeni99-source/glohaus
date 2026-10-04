@@ -12622,3 +12622,26 @@ body {
     width:max-content;
   }
 }
+
+
+
+/* Tiered verification controls */
+.admin-verification-checks {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 14px;
+  padding:10px 0;
+}
+.admin-verification-checks label {
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  color:var(--muted);
+  font-size:.72rem;
+  font-weight:700;
+}
+.admin-verification-checks input {
+  width:15px;
+  height:15px;
+  accent-color:var(--plum);
+}

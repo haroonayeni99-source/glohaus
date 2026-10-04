@@ -81,6 +81,7 @@ export function ExploreMapExperience({
 }) {
   const router = useRouter();
   const [zoom, setZoom] = useState(1);
+  const [activeArea, setActiveArea] = useState<string | null>(null);
   const [locationNotice, setLocationNotice] = useState("");
   const [locating, setLocating] = useState(false);
   const nearby = professionals.slice(0, 6);
@@ -136,9 +137,9 @@ export function ExploreMapExperience({
           return;
         }
 
-        setLocationNotice(`Nearest area: ${nearest.name}`);
+        setActiveArea(nearest.name);
+        setLocationNotice(`Nearest area: ${nearest.name}. Select “Show professionals” to filter results.`);
         setLocating(false);
-        router.push(hrefFor(nearest.name));
       },
       () => {
         setLocationNotice(
@@ -297,15 +298,35 @@ export function ExploreMapExperience({
           )}
 
           {clusters.map((cluster) => (
-            <Link
+            <button
+              type="button"
               key={cluster.name}
-              className={`map-cluster ${cluster.pos}`}
-              href={`/explore?q=${encodeURIComponent(cluster.name)}`}
+              className={`map-cluster ${cluster.pos} ${activeArea === cluster.name ? "is-selected" : ""}`}
+              onClick={() => {
+                setActiveArea(cluster.name);
+                setLocationNotice(`${cluster.name} selected`);
+              }}
+              aria-pressed={activeArea === cluster.name}
             >
               <strong>{cluster.name}</strong>
-              <small>Explore area</small>
-            </Link>
+              <small>{activeArea === cluster.name ? "Selected" : "Explore area"}</small>
+            </button>
           ))}
+
+          {activeArea && (
+            <div className="map-area-selection" role="status">
+              <div>
+                <strong>{activeArea}</strong>
+                <span>Map area selected</span>
+              </div>
+              <button type="button" onClick={() => router.push(hrefFor(activeArea))}>
+                Show professionals
+              </button>
+              <button type="button" className="map-area-clear" onClick={() => setActiveArea(null)}>
+                Clear
+              </button>
+            </div>
+          )}
 
           <div className="map-street-card">
             <div className="map-street-thumb"><MapPin size={24} aria-hidden /></div>

@@ -135,6 +135,11 @@ export type PublicProfessional = {
   review_count?: number;
   from_price_pence?: number | null;
   travels_to_you?: boolean;
+  next_available_at?: string | null;
+  popular_services?: string[];
+  identity_verified?: boolean;
+  business_verified?: boolean;
+  professional_verified?: boolean;
   id: string;
   slug: string;
   business_name: string;

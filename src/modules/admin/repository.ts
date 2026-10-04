@@ -508,3 +508,34 @@ export async function ownerProfessionalReferralOverview(): Promise<OwnerProfessi
     return row?.data ?? [];
   });
 }
+
+
+export type OwnerSiteAvailability = {
+  publicSiteOpen: boolean;
+  closureMessage: string;
+  updatedAt: string | null;
+};
+
+export async function ownerSiteAvailability(): Promise<OwnerSiteAvailability> {
+  return withOwner(async (db) => {
+    const row = (
+      await db.query<{
+        public_site_open: boolean;
+        closure_message: string;
+        updated_at: string | null;
+      }>(
+        `SELECT public_site_open, closure_message, updated_at::text
+         FROM beauty.platform_runtime_settings
+         WHERE singleton = true`,
+      )
+    ).rows[0];
+
+    return {
+      publicSiteOpen: row?.public_site_open ?? true,
+      closureMessage:
+        row?.closure_message ??
+        "GLOHAUS is temporarily unavailable while we make improvements.",
+      updatedAt: row?.updated_at ?? null,
+    };
+  });
+}

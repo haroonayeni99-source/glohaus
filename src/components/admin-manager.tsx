@@ -261,6 +261,13 @@ export function AdminManager({ data }: { data: AdminOverview }) {
             <div>
               <h3>{pro.business_name}</h3>
               <p>Verification: {pro.verification_status} · Standing: {pro.standing_status}</p>
+              <small>
+                {[
+                  pro.identity_verified ? "Identity Verified" : null,
+                  pro.business_verified ? "Business Verified" : null,
+                  pro.professional_verified ? "Professional Verified" : null,
+                ].filter(Boolean).join(" · ") || "No verification badges active"}
+              </small>
               <small>{pro.live_restricted_until ? `LIVE restricted until ${new Date(pro.live_restricted_until).toLocaleString("en-GB")}` : "No timed LIVE restriction"}</small>
             </div>
             <form onSubmit={async (event) => {
@@ -277,6 +284,9 @@ export function AdminManager({ data }: { data: AdminOverview }) {
                     verification: form.get("verification"),
                     standing: form.get("standing"),
                     restrictedUntil: form.get("restrictedUntil") ? new Date(String(form.get("restrictedUntil"))).toISOString() : null,
+                    identityVerified: form.get("identityVerified") === "on",
+                    businessVerified: form.get("businessVerified") === "on",
+                    professionalVerified: form.get("professionalVerified") === "on",
                     reason: form.get("reason"),
                   }),
                 });
@@ -293,9 +303,14 @@ export function AdminManager({ data }: { data: AdminOverview }) {
               <select name="standing" defaultValue={pro.standing_status} aria-label={`Standing for ${pro.business_name}`}>
                 <option value="good">good</option><option value="restricted">restricted</option>
               </select>
+              <div className="admin-verification-checks">
+                <label><input name="identityVerified" type="checkbox" defaultChecked={pro.identity_verified} /> Identity Verified</label>
+                <label><input name="businessVerified" type="checkbox" defaultChecked={pro.business_verified} /> Business Verified</label>
+                <label><input name="professionalVerified" type="checkbox" defaultChecked={pro.professional_verified} /> Professional Verified</label>
+              </div>
               <input name="restrictedUntil" type="datetime-local" aria-label={`LIVE restriction end for ${pro.business_name}`} />
               <input name="reason" required minLength={5} maxLength={500} placeholder="Reason for decision" aria-label={`Decision reason for ${pro.business_name}`} />
-              <button disabled={busy}>Save LIVE access</button>
+              <button disabled={busy}>Save verification / LIVE access</button>
             </form>
           </article>
         ))}

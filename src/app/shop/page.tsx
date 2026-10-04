@@ -167,9 +167,9 @@ export default async function ShopPage({
                           <ShoppingBag size={34} />
                         </span>
                       )}
-                      <button type="button" className="marketplace-heart" aria-label={`Save ${product.name}`}>
-                        <Heart size={17} aria-hidden />
-                      </button>
+                      <span className="marketplace-heart" aria-hidden>
+                        <Heart size={17} />
+                      </span>
                       <span className={product.in_stock ? "marketplace-stock" : "marketplace-stock is-out"}>
                         {product.in_stock ? "In stock" : "Out of stock"}
                       </span>

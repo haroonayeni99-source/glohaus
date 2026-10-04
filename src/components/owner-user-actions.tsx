@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useCurrentTime } from "@/components/use-current-time";
 import { useRouter } from "next/navigation";
 
 type UserRow = {
@@ -24,13 +25,14 @@ const durations = [
 
 export function OwnerUserActions({ user }: { user: UserRow }) {
   const router = useRouter();
+  const now = useCurrentTime();
   const [mode, setMode] = useState<"restrict" | "delete" | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const restricted =
     user.restricted_until !== null &&
     Number.isFinite(Date.parse(user.restricted_until)) &&
-    Date.parse(user.restricted_until) > Date.now();
+    Date.parse(user.restricted_until) > now;
 
   async function submit(body: unknown) {
     setBusy(true);

@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
+import { useCurrentTime } from "@/components/use-current-time";
 import { useRouter } from "next/navigation";
 import type { AdminOverview } from "@/modules/admin/repository";
 import { OwnerUserActions } from "@/components/owner-user-actions";
 export function AdminManager({ data, owner = false }: { data: AdminOverview; owner?: boolean }) {
   const router = useRouter();
+  const now = useCurrentTime();
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [selection, setSelection] = useState<{
@@ -153,7 +155,7 @@ export function AdminManager({ data, owner = false }: { data: AdminOverview; own
                 <td>
                   {user.deleted_at
                     ? "deleted"
-                    : user.restricted_until && Date.parse(user.restricted_until) > Date.now()
+                    : user.restricted_until && Date.parse(user.restricted_until) > now
                       ? `restricted until ${new Date(user.restricted_until).toLocaleString("en-GB", { timeZone: "Europe/London" })}`
                       : user.status}
                 </td>

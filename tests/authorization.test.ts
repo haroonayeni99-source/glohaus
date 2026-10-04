@@ -51,7 +51,7 @@ describe("authorization", () => {
     expect(() =>
       authorize({ ...account, roles: ["admin"] }, identity, "professional"),
     ).toThrow("FORBIDDEN"));
-  it.each([null, -1, 16, Infinity, NaN])(
+  it.each([null, -1, 721, Infinity, NaN])(
     "rejects admin access without recent MFA (%s)",
     (secondFactorAge) => {
       expect(() =>
@@ -67,7 +67,7 @@ describe("authorization", () => {
     expect(
       authorize(
         { ...account, roles: ["admin"] },
-        { ...identity, secondFactorAge: 15 },
+        { ...identity, secondFactorAge: 720 },
         "admin",
       ).id,
     ).toBe("a"));

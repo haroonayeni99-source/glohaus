@@ -10,6 +10,8 @@ type RpcAccount = {
   status: Account["status"];
   roles: Role[];
   professionalId: string | null;
+  restrictedUntil: string | null;
+  deletedAt: string | null;
 };
 
 function normalizeAccount(data: unknown): Account | null {
@@ -20,7 +22,8 @@ function normalizeAccount(data: unknown): Account | null {
     typeof row.authId !== "string" ||
     typeof row.email !== "string" ||
     typeof row.displayName !== "string" ||
-    !Array.isArray(row.roles)
+    !Array.isArray(row.roles) ||
+    !["active", "suspended", "removed"].includes(String(row.status))
   ) return null;
   return {
     id: row.id,
@@ -39,6 +42,8 @@ function normalizeAccount(data: unknown): Account | null {
         role === "admin" ||
         role === "owner",
     ),
+    restrictedUntil: typeof row.restrictedUntil === "string" ? row.restrictedUntil : null,
+    deletedAt: typeof row.deletedAt === "string" ? row.deletedAt : null,
     professionalId:
       typeof row.professionalId === "string" ? row.professionalId : null,
   };
@@ -93,7 +98,8 @@ export async function supabaseEnrolAccount(
       options?.professionalTermsAccepted ?? false,
   });
   if (error) {
-    if (error.code === "42501") throw new AccessError("FORBIDDEN", 403);
+    if (error.code === "42501")
+      throw new AccessError(error.message === "ACCOUNT_INACTIVE" ? "ACCOUNT_INACTIVE" : "FORBIDDEN", 403);
     if (error.code === "22023") throw new AccessError("INVALID_REQUEST", 400);
     throw error;
   }

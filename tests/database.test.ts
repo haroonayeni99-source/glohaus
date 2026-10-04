@@ -1,5 +1,5 @@
 import { PGlite } from "@electric-sql/pglite";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   enrolAccount,
@@ -33,12 +33,10 @@ async function asUser<T>(
 }
 
 beforeAll(async () => {
-  await db.exec(
-    await readFile(
-      new URL("../db/migrations/0001_accounts.sql", import.meta.url),
-      "utf8",
-    ),
-  );
+  const directory = new URL("../db/migrations/", import.meta.url);
+  for (const file of (await readdir(directory)).filter((file) => file.endsWith(".sql")).sort()) {
+    await db.exec(await readFile(new URL(file, directory), "utf8"));
+  }
 });
 afterAll(async () => {
   await db.close();

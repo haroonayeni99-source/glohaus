@@ -1,6 +1,7 @@
 "use client";
 
 import { Flag, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const categories = [
@@ -21,6 +22,7 @@ export function ContentReportButton({
   targetId: string;
   label?: string;
 }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -68,7 +70,7 @@ export function ContentReportButton({
                     window.location.pathname +
                     window.location.search +
                     window.location.hash;
-                  window.location.assign(
+                  router.push(
                     `/sign-in?returnTo=${encodeURIComponent(returnTo)}`,
                   );
                   return;

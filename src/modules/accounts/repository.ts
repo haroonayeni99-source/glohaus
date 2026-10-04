@@ -1,5 +1,5 @@
 import type { Account, Identity, Role } from "./domain";
-import { AccessError } from "./domain";
+import { AccessError, authorize } from "./domain";
 
 export interface SqlClient {
   query<T extends Record<string, unknown> = Record<string, unknown>>(
@@ -51,7 +51,7 @@ export async function ensureCustomerAccount(
   identity: Identity,
 ): Promise<Account> {
   const existing = await findAccount(db, identity.authId);
-  if (existing) return existing;
+  if (existing) return authorize(existing, identity);
   return enrolAccount(db, identity, "customer");
 }
 
@@ -68,12 +68,13 @@ export async function enrolAccount(
     [identity.authId, identity.email, identity.displayName],
   );
   // Lock serializes repeated/concurrent enrollment for this account, including suspension races.
-  const { rows } = await db.query<{ id: string; status: string }>(
-    `SELECT id, status FROM beauty.users WHERE auth_id = $1 FOR UPDATE`,
+  const { rows } = await db.query<{ id: string; status: string; restricted_until: string | null; deleted_at: string | null }>(
+    `SELECT id, status, restricted_until::text, deleted_at::text FROM beauty.users WHERE auth_id = $1 FOR UPDATE`,
     [identity.authId],
   );
   const user = rows[0];
-  if (!user || user.status !== "active")
+  if (!user || user.status !== "active" || user.deleted_at ||
+    (user.restricted_until && Date.parse(user.restricted_until) > Date.now()))
     throw new AccessError("ACCOUNT_INACTIVE", 403);
   await db.query(
     `INSERT INTO beauty.user_roles (user_id, role) VALUES ($1, $2) ON CONFLICT DO NOTHING`,

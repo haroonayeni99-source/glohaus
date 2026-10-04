@@ -10,19 +10,7 @@ type SearchItem = {
   targetId: string;
 };
 
-export function OwnerAdminSearch({
-  users,
-  professionals,
-  bookings,
-}: {
-  users: { id: string; display_name: string; email: string; roles: string[] }[];
-  professionals: { id: string; business_name: string }[];
-  bookings: { id: string; service_name: string; professional_name: string; customer_name: string }[];
-}) {
-  const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(false);
-
-  const staticItems: SearchItem[] = [
+const staticItems: SearchItem[] = [
     ["overview", "Overview", "Owner dashboard", "overview"],
     ["users", "App Users", "Manage accounts, restrictions and deletion", "users"],
     ["professionals", "Professionals", "Professional account management", "professionals"],
@@ -41,6 +29,20 @@ export function OwnerAdminSearch({
     ["staff", "Staff & Admins", "Delegated access controls", "staff"],
     ["audit", "Audit Log", "Owner action history", "audit"],
   ].map(([key,label,detail,targetId]) => ({ key,label,detail,targetId }));
+
+export function OwnerAdminSearch({
+  users,
+  professionals,
+  bookings,
+}: {
+  users: { id: string; display_name: string; email: string; roles: string[] }[];
+  professionals: { id: string; business_name: string }[];
+  bookings: { id: string; service_name: string; professional_name: string; customer_name: string }[];
+}) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+
+
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();

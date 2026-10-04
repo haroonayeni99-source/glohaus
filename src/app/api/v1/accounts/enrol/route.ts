@@ -1,7 +1,7 @@
 import { getIdentity } from "@/lib/identity";
 import { withIdentity } from "@/lib/db";
 import { enrolAccount, ensureCustomerAccount } from "@/modules/accounts/repository";
-import { AccessError, enrolmentSchema, workspacePath } from "@/modules/accounts/domain";
+import { AccessError, authorize, enrolmentSchema, workspacePath } from "@/modules/accounts/domain";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 import { accountDatabaseUnavailable, supabaseAccount, supabaseEnrolAccount } from "@/lib/account-supabase-fallback";
 
@@ -23,6 +23,7 @@ export async function POST(request: Request) {
         professionalTermsAccepted: parsed.data.professionalTermsAccepted,
       });
     }
+    authorize(account, identity);
     return json({ redirectTo: workspacePath(account) });
   } catch (error) {
     return apiError(error);
@@ -45,6 +46,7 @@ export async function PUT(request: Request) {
       if (!accountDatabaseUnavailable(error)) throw error;
       account = (await supabaseAccount()) ?? (await supabaseEnrolAccount("customer"));
     }
+    authorize(account, identity);
     return json({ redirectTo: workspacePath(account) });
   } catch (error) {
     return apiError(error);

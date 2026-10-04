@@ -7,6 +7,9 @@ const mocks = vi.hoisted(() => ({
   signIn: vi.fn(),
   signUp: vi.fn(),
   resend: vi.fn(),
+  signOut: vi.fn(),
+  refreshSession: vi.fn(),
+  getSession: vi.fn(),
   push: vi.fn(),
   fetch: vi.fn(),
 }));
@@ -25,6 +28,9 @@ vi.mock("@/lib/supabase/client", () => ({
       signInWithPassword: mocks.signIn,
       signUp: mocks.signUp,
       resend: mocks.resend,
+      signOut: mocks.signOut,
+      refreshSession: mocks.refreshSession,
+      getSession: mocks.getSession,
     },
   }),
 }));
@@ -33,7 +39,8 @@ const credentials = new NativeFormData();
 credentials.set("email", "test@example.com");
 credentials.set("password", "test-password");
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
+  mocks.signOut.mockResolvedValue({ error: null });
   mocks.setters.length = 0;
   vi.stubGlobal("React", React);
   vi.stubGlobal(
@@ -45,7 +52,7 @@ beforeEach(() => {
     },
   );
   vi.stubGlobal("fetch", mocks.fetch);
-  vi.stubGlobal("window", { location: { origin: "https://glohaus.example" } });
+  vi.stubGlobal("window", { setTimeout, location: { origin: "https://www.glohaus.shop", href: "https://www.glohaus.shop/sign-up", } });
 });
 afterEach(() => vi.unstubAllGlobals());
 async function submit(
@@ -114,4 +121,33 @@ describe("email authentication submission", () => {
     await submit("sign-in", "professional");
     expect(mocks.push).toHaveBeenCalledWith("/professional");
   });
+  it("rejects provider errors without provisioning or navigating", async () => {
+    mocks.signIn.mockResolvedValue({ data: { session: null }, error: { message: "Invalid login credentials" } });
+    await submit("sign-in");
+    expect(mocks.signOut).toHaveBeenCalledWith({ scope: "local" });
+    expect(mocks.setters[0]).toHaveBeenLastCalledWith("Invalid login credentials");
+    expect(mocks.fetch).not.toHaveBeenCalled();
+    expect(mocks.push).not.toHaveBeenCalled();
+  });
+  it("refreshes the cookie session once before retrying account provisioning", async () => {
+    mocks.signIn.mockResolvedValue({ data: { session: {}, user: {} }, error: null });
+    mocks.refreshSession.mockResolvedValue({ data: { session: {} }, error: null });
+    mocks.fetch.mockResolvedValueOnce({ ok: false, status: 401 })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ redirectTo: "/account" }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ account: { roles: ["customer"] } }) });
+    await submit("sign-in");
+    expect(mocks.refreshSession).toHaveBeenCalledTimes(1);
+    expect(mocks.fetch).toHaveBeenCalledTimes(3);
+    expect(mocks.push).toHaveBeenCalledWith("/account");
+  });
+  it("stops after unsuccessful session repair instead of granting account access", async () => {
+    mocks.signIn.mockResolvedValue({ data: { session: {}, user: {} }, error: null });
+    mocks.refreshSession.mockResolvedValue({ data: { session: null }, error: { message: "Expired" } });
+    mocks.fetch.mockResolvedValue({ ok: false, status: 401, json: async () => ({}) });
+    await submit("sign-in");
+    expect(mocks.fetch).toHaveBeenCalledTimes(1);
+    expect(mocks.push).not.toHaveBeenCalled();
+    expect(mocks.setters[0]).toHaveBeenLastCalledWith(expect.stringContaining("sign in again"));
+  });
+
 });

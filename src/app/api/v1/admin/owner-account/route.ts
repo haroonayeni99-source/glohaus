@@ -61,14 +61,7 @@ export async function POST(request: Request) {
     const authId = await withOwner(async (db) => {
       const row = (
         await db.query<{ auth_id: string }>(
-          `SELECT u.auth_id
-           FROM beauty.users u
-           WHERE u.id=$1
-             AND u.deleted_at IS NULL
-             AND NOT EXISTS (
-               SELECT 1 FROM beauty.user_roles r
-               WHERE r.user_id=u.id AND r.role='owner'
-             )`,
+          "SELECT beauty.owner_account_auth_id($1) AS auth_id",
           [input.userId],
         )
       ).rows[0];

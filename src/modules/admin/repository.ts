@@ -246,26 +246,10 @@ export async function adminOverview() {
     }
 
     const users = (
-      await db.query<AdminOverview["users"][number]>(`
-        SELECT
-          u.id,
-          u.display_name,
-          u.email,
-          u.status,
-          u.restricted_until::text,
-          u.restriction_reason,
-          u.deleted_at::text,
-          ARRAY(
-            SELECT r.role
-            FROM beauty.user_roles r
-            WHERE r.user_id=u.id
-            ORDER BY r.role
-          ) AS roles
-        FROM beauty.users u
-        ORDER BY u.created_at DESC
-        LIMIT 100
-      `)
-    ).rows;
+      await db.query<{ users: AdminOverview["users"] }>(
+        "SELECT beauty.admin_user_overview() AS users",
+      )
+    ).rows[0].users;
 
     return { ...base, ...extra, users, safety, shopOrders, professionalTrust, bookingDisputes };
   });

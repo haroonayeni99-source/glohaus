@@ -57,14 +57,25 @@ export default async function Page() {
             referrals={referrals}
             owner={owner}
           />
-          {isOwner && siteAvailability && (
-            <section id="site-access" className="admin-workspace-section admin-detail-card">
-              <p className="eyebrow">PUBLIC ACCESS</p>
-              <h2>Website availability</h2>
+          {isOwner && (
+            <section id="site-access" className="admin-workspace-section admin-detail-card admin-site-access-priority">
+              <p className="eyebrow">OWNER CONTROL · PUBLIC ACCESS</p>
+              <h2>Website ON / OFF</h2>
               <p className="lead">
-                Temporarily close the public GLOHAUS website without blocking Owner/Admin access. Use this for maintenance, private demos or pre-launch work.
+                Open or close the public GLOHAUS website. Owner/Admin, authentication and required API routes stay available so you can always reopen it.
               </p>
-              <OwnerSiteAccessControl initial={siteAvailability} />
+              {siteAvailability ? (
+                <OwnerSiteAccessControl initial={siteAvailability} />
+              ) : (
+                <div className="owner-site-access-control is-open">
+                  <div className="owner-site-access-status">
+                    <div>
+                      <h3>Site access status could not be loaded</h3>
+                      <p>The control is temporarily unavailable rather than being hidden. Refresh this page or check the Owner database connection.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </section>
           )}
           <section id="settings" className="admin-workspace-section admin-detail-card">

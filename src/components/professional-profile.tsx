@@ -119,17 +119,18 @@ export function ProfessionalProfile({
           </p>
           <h1>{p.business_name}</h1>
           <div className="professional-meta">
-            <span>
-              {p.verification_status === "verified" ? (
-                <><BadgeCheck size={16} aria-hidden /> Identity verified</>
-              ) : p.verification_status === "restricted" ? (
-                <><CircleAlert size={16} aria-hidden /> Account restricted</>
-              ) : p.verification_status === "pending" ? (
-                <><ShieldQuestion size={16} aria-hidden /> Verification pending</>
-              ) : (
-                <><ShieldQuestion size={16} aria-hidden /> Identity not verified</>
-              )}
-            </span>
+            {p.verification_status === "restricted" ? (
+              <span><CircleAlert size={16} aria-hidden /> Account restricted</span>
+            ) : p.verification_status === "pending" ? (
+              <span><ShieldQuestion size={16} aria-hidden /> Verification pending</span>
+            ) : (
+              <>
+                {p.identity_verified && <span className="verification-chip"><BadgeCheck size={16} aria-hidden /> Identity Verified</span>}
+                {p.business_verified && <span className="verification-chip"><BadgeCheck size={16} aria-hidden /> Business Verified</span>}
+                {p.professional_verified && <span className="verification-chip"><BadgeCheck size={16} aria-hidden /> Professional Verified</span>}
+                {!p.identity_verified && <span><ShieldQuestion size={16} aria-hidden /> Identity not verified</span>}
+              </>
+            )}
             <span>
               <MapPin size={16} aria-hidden />
               {p.city}, England
@@ -141,11 +142,9 @@ export function ProfessionalProfile({
                 : `${rating.toFixed(1)} · ${reviewCount} ${reviewCount === 1 ? "review" : "reviews"}`}
             </a>
           </div>
-          {p.verification_status === "verified" && (
+          {(p.identity_verified || p.business_verified || p.professional_verified) && (
             <small className="professional-verification-note">
-              Identity verification confirms the professional completed GLOHAUS
-              identity/payment checks. It is not an endorsement or guarantee of
-              service quality.
+              GLOHAUS verification badges show which checks have been completed: identity, registered-business details where applicable, and professional qualification/licence evidence where applicable. They are not a guarantee of service outcome.
             </small>
           )}
           <p className="professional-bio">{p.bio}</p>
@@ -346,7 +345,7 @@ export function ProfessionalProfile({
                     {review.public_name} · {review.rating}/5
                   </strong>
                   <p>{review.body}</p>
-                  <small>Verified completed appointment</small>
+                  <small className="verified-booking-label"><BadgeCheck size={13} aria-hidden /> Verified booking</small>
                 </article>
               ))
             ) : (

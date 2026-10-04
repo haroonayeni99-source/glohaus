@@ -8,7 +8,6 @@ const groups = [
       ["About", "/about"],
       ["FAQ", "/faq"],
       ["How it works", "/how-it-works"],
-      ["Contact & support", "/contact"],
     ],
   },
   {
@@ -32,9 +31,10 @@ const groups = [
   {
     title: "Legal",
     links: [
-      ["Terms of use", "/terms"],
+      ["Terms & conditions", "/terms"],
       ["Privacy policy", "/privacy"],
-      ["Refund policy", "/refunds"],
+      ["Refunds & cancellations", "/refunds"],
+      ["Professional terms", "/professional-terms"],
       ["Marketplace terms", "/marketplace-terms"],
     ],
   },

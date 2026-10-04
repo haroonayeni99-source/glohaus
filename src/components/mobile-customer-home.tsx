@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Bell, Search, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, Bell, CalendarDays, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { Brand } from "./brand";
 import { BottomNavigation } from "./bottom-navigation";
 import { SiteFooter } from "./site-footer";
@@ -39,6 +39,11 @@ export function MobileCustomerHome({ signedIn = false, canAccessAdmin = false }:
             >
               <Bell size={21} aria-hidden />
             </Link>
+            {!signedIn && (
+              <Link className="mobile-home-sign-in" href="/sign-in">
+                Sign in
+              </Link>
+            )}
           </div>
         </header>
 
@@ -92,6 +97,23 @@ export function MobileCustomerHome({ signedIn = false, canAccessAdmin = false }:
           Discover more beauty inspiration
           <span aria-hidden>→</span>
         </Link>
+
+        <section className="mobile-home-how">
+          <p className="eyebrow">HOW GLOHAUS WORKS</p>
+          <div>
+            <article><Search size={18}/><strong>Discover</strong><span>Find services and professionals near you.</span></article>
+            <article><CalendarDays size={18}/><strong>Book</strong><span>Choose a service and time with clear pricing.</span></article>
+            <article><ShieldCheck size={18}/><strong>Stay connected</strong><span>Keep your booking journey together.</span></article>
+          </div>
+          <Link href="/how-it-works">See how it works <ArrowUpRight size={15}/></Link>
+        </section>
+
+        <section className="mobile-home-pro-cta">
+          <Sparkles size={22}/>
+          <div><strong>Are you a beauty professional?</strong><span>Build your profile and manage your business with GLOHAUS PRO.</span></div>
+          <Link href="/professional-preview">Explore PRO</Link>
+        </section>
+
         <SiteFooter />
       </main>
       <BottomNavigation active="home" signedIn={signedIn} />

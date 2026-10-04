@@ -14,6 +14,7 @@ import {
   SlidersHorizontal,
   Sparkles,
   Star,
+  Clock3,
 } from "lucide-react";
 import type { PublicProfessional } from "@/modules/professionals/domain";
 import type { DiscoveryFilters } from "@/modules/professionals/discovery";
@@ -55,6 +56,20 @@ const clusters = [
 function ratingText(pro: PublicProfessional) {
   if (pro.rating == null) return "New";
   return `${pro.rating.toFixed(1)} (${pro.review_count ?? 0})`;
+}
+
+function nextAvailabilityText(value?: string | null) {
+  if (!value) return "No upcoming slot shown";
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "No upcoming slot shown";
+  return new Intl.DateTimeFormat("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/London",
+  }).format(date);
 }
 
 function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
@@ -377,10 +392,17 @@ export function ExploreMapExperience({
                     <span className="map-pro-rating">
                       <Star size={13} fill="currentColor" aria-hidden /> {ratingText(pro)}
                     </span>
+                    <div className="map-pro-card-facts">
+                      <span><MapPin size={13} aria-hidden /> {pro.city} · distance shown when precise location is available</span>
+                      <span><Clock3 size={13} aria-hidden /> Next: {nextAvailabilityText(pro.next_available_at)}</span>
+                      <span><Sparkles size={13} aria-hidden /> From {pro.from_price_pence != null ? new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"}).format(pro.from_price_pence/100) : "price not set"}</span>
+                    </div>
                     <div className="map-pro-tags">
                       <span>{pro.category}</span>
-                      <span>{pro.city}</span>
-                      {pro.verification_status === "verified" && <span>Verified</span>}
+                      {pro.popular_services?.slice(0,2).map((service) => <span key={service}>{service}</span>)}
+                      {pro.identity_verified && <span className="is-verified">Identity Verified</span>}
+                      {pro.business_verified && <span className="is-verified">Business Verified</span>}
+                      {pro.professional_verified && <span className="is-verified">Professional Verified</span>}
                       {pro.travels_to_you && <span>Travels to you</span>}
                     </div>
                   </div>

@@ -11266,3 +11266,25 @@ body {
     padding:0;
   }
 }
+
+
+
+/* Presentation safety: responsive Explore save control */
+.map-heart {
+  transition: background .16s ease, color .16s ease, border-color .16s ease, transform .16s ease;
+}
+.map-heart:hover {
+  transform: scale(1.04);
+}
+.map-heart.is-saved,
+.map-heart[aria-pressed="true"] {
+  border-color: #e95f96 !important;
+  background: #fff0f6 !important;
+  color: #c63f76 !important;
+}
+:root[data-theme="night"] .map-heart.is-saved,
+:root[data-theme="night"] .map-heart[aria-pressed="true"] {
+  border-color: #ff9fc4 !important;
+  background: #3a232d !important;
+  color: #ff9fc4 !important;
+}

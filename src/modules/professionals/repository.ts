@@ -177,7 +177,13 @@ export async function publicProfessionals(
 export async function publicProfile(db: SqlClient, slug: string) {
   const professional = (
     await db.query<PublicProfessional>(
-      "SELECT id,slug,business_name,bio,city,category,verification_status FROM beauty.public_professionals WHERE slug=$1",
+      `SELECT p.id,p.slug,p.business_name,p.bio,p.city,p.category,p.verification_status,
+              coalesce(t.identity_verified,false) AS identity_verified,
+              coalesce(t.business_verified,false) AS business_verified,
+              coalesce(t.professional_verified,false) AS professional_verified
+       FROM beauty.public_professionals p
+       LEFT JOIN beauty.professional_trust_status t ON t.professional_id=p.id
+       WHERE p.slug=$1`,
       [slug],
     )
   ).rows[0];

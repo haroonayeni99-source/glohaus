@@ -11124,3 +11124,145 @@ body {
 @media (max-width:700px) {
   .home-how-grid { grid-template-columns:1fr; }
 }
+
+
+
+/* Continued consistency polish: simpler public nav and unified PRO cards */
+.glohaus-main-links {
+  justify-content: center;
+  gap: clamp(14px, 1.6vw, 24px) !important;
+  min-width: 0;
+}
+.glohaus-main-links a {
+  position: relative;
+  white-space: nowrap;
+  color: #f3e8ec;
+  font-size: .76rem;
+  font-weight: 650;
+}
+.glohaus-main-links a::after {
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:-7px;
+  height:1px;
+  transform:scaleX(0);
+  background:#ff9fc4;
+  transition:transform .18s ease;
+}
+.glohaus-main-links a:hover::after {
+  transform:scaleX(1);
+}
+.glohaus-header-actions {
+  gap:8px !important;
+}
+.glohaus-sign-up {
+  min-height:40px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 14px;
+  border:1px solid #ffffff36;
+  border-radius:999px;
+  color:#fff;
+  font-size:.75rem;
+  font-weight:750;
+}
+.glohaus-sign-up:hover {
+  background:#ffffff12;
+}
+
+.pro-main {
+  max-width: 1480px;
+  width:100%;
+  margin:0 auto;
+}
+.pro-welcome {
+  padding-bottom: 10px;
+}
+.pro-stat-grid article,
+.pro-panel,
+.pro-live-card,
+.pro-wallet-card,
+.pro-quick-actions a,
+.pro-setup-card {
+  border-radius:16px !important;
+}
+.pro-stat-grid article,
+.pro-panel,
+.pro-live-card,
+.pro-quick-actions a {
+  border:1px solid rgba(255,255,255,.09) !important;
+}
+.pro-panel-title {
+  gap:18px;
+}
+.pro-panel-title h2 {
+  margin-top:5px;
+}
+.pro-quick-actions {
+  gap:12px;
+}
+.pro-quick-actions a {
+  min-height:88px;
+  padding:16px !important;
+}
+.pro-quick-actions a:hover {
+  transform:none !important;
+  border-color:rgba(255,159,196,.45) !important;
+}
+.pro-desktop-nav a,
+.pro-mobile-nav a {
+  transition:background .16s ease,color .16s ease,border-color .16s ease;
+}
+.pro-desktop-nav a:hover {
+  background:rgba(255,255,255,.05);
+}
+.pro-desktop-nav a[aria-current="page"] {
+  background:rgba(255,159,196,.10);
+  border-color:rgba(255,159,196,.22);
+}
+@media (max-width:1180px) {
+  .glohaus-header {
+    grid-template-columns:auto 1fr;
+  }
+  .glohaus-main-links {
+    grid-column:1 / -1;
+    grid-row:2;
+    justify-content:flex-start;
+    overflow-x:auto;
+    padding-top:4px;
+    scrollbar-width:none;
+  }
+  .glohaus-main-links::-webkit-scrollbar { display:none; }
+  .glohaus-header-actions {
+    justify-self:end;
+  }
+}
+@media (max-width:760px) {
+  .glohaus-header {
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px 16px;
+    padding:14px 16px;
+  }
+  .glohaus-header .brand {
+    margin-right:auto;
+  }
+  .glohaus-main-links {
+    order:3;
+    width:100%;
+  }
+  .glohaus-header-actions {
+    margin-left:auto;
+  }
+  .glohaus-search-link span,
+  .glohaus-notification-link {
+    display:none;
+  }
+  .glohaus-search-link {
+    width:40px;
+    padding:0;
+  }
+}

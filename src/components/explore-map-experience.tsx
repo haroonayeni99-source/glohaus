@@ -82,6 +82,7 @@ export function ExploreMapExperience({
   const router = useRouter();
   const [zoom, setZoom] = useState(1);
   const [activeArea, setActiveArea] = useState<string | null>(null);
+  const [savedIds, setSavedIds] = useState<Set<string>>(() => new Set());
   const [locationNotice, setLocationNotice] = useState("");
   const [locating, setLocating] = useState(false);
   const nearby = professionals.slice(0, 6);
@@ -383,8 +384,21 @@ export function ExploreMapExperience({
                       {pro.travels_to_you && <span>Travels to you</span>}
                     </div>
                   </div>
-                  <button type="button" className="map-heart" aria-label={`Save ${pro.business_name}`}>
-                    <Heart size={18} aria-hidden />
+                  <button
+                    type="button"
+                    className={`map-heart ${savedIds.has(pro.id) ? "is-saved" : ""}`}
+                    aria-label={savedIds.has(pro.id) ? `Remove ${pro.business_name} from saved` : `Save ${pro.business_name}`}
+                    aria-pressed={savedIds.has(pro.id)}
+                    onClick={() =>
+                      setSavedIds((current) => {
+                        const next = new Set(current);
+                        if (next.has(pro.id)) next.delete(pro.id);
+                        else next.add(pro.id);
+                        return next;
+                      })
+                    }
+                  >
+                    <Heart size={18} fill={savedIds.has(pro.id) ? "currentColor" : "none"} aria-hidden />
                   </button>
                   <Link className="map-book-button" href={`/p/${pro.slug}`}>
                     Book

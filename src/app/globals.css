@@ -11214,3 +11214,82 @@ body {
     right: 12px;
   }
 }
+
+
+
+/* Owner sidebar stable independent scrolling */
+@media (min-width: 821px) {
+  .admin-navigation {
+    position: sticky !important;
+    top: 0 !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    overflow: hidden !important;
+    overscroll-behavior: none;
+  }
+
+  .admin-navigation-brand,
+  .admin-navigation-identity,
+  .admin-navigation-bottom {
+    flex: 0 0 auto;
+  }
+
+  .admin-navigation nav {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+    scroll-behavior: auto;
+    padding-right: 4px;
+    margin-right: -4px;
+  }
+
+  .admin-navigation nav a,
+  .admin-navigation nav a:hover,
+  .admin-navigation nav a.is-active {
+    transform: none !important;
+  }
+
+  .admin-navigation nav::-webkit-scrollbar {
+    width: 7px;
+  }
+
+  .admin-navigation nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .admin-navigation nav::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+    background-color: rgba(201,63,119,.28);
+  }
+
+  :root[data-theme="night"] .admin-navigation nav::-webkit-scrollbar-thumb {
+    background-color: rgba(255,156,190,.3);
+  }
+
+  .admin-navigation-bottom {
+    margin-top: 10px !important;
+    padding-top: 12px !important;
+    background: inherit;
+  }
+}
+
+@media (max-width: 820px) {
+  .admin-navigation {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: auto !important;
+  }
+
+  .admin-navigation nav {
+    flex: 0 0 auto;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-gutter: auto;
+    overscroll-behavior-x: contain;
+  }
+}

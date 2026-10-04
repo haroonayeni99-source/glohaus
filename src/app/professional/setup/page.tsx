@@ -153,6 +153,16 @@ export default async function ProfessionalSetup() {
             )}
         </section>
 
+        <section className="pro-panel pro-verification-explainer" aria-label="GLOHAUS verification levels">
+          <div className="pro-panel-title"><h2>What each verification badge means</h2></div>
+          <div className="pro-verification-levels">
+            <article><Check size={17} aria-hidden /><div><strong>Identity Verified</strong><span>Your identity/KYC checks have passed. You can be an individual or sole trader; this badge does not mean you have a registered company.</span></div></article>
+            <article><Check size={17} aria-hidden /><div><strong>Business Verified</strong><span>For professionals using a registered company or business entity, the relevant business details have also been checked.</span></div></article>
+            <article><Check size={17} aria-hidden /><div><strong>Professional Verified</strong><span>GLOHAUS has additionally reviewed relevant qualification, licence or professional evidence where applicable to your services.</span></div></article>
+          </div>
+          <p className="pro-tax-note-inline">You remain responsible for registering with HMRC where required and for your own tax, National Insurance, VAT and other obligations. <Link href="/professional-terms">Read Professional Terms →</Link></p>
+        </section>
+
         <section className="setup-progress" aria-label="Setup progress">
           <div>
             <span className="eyebrow">YOUR PAGE PROGRESS</span>

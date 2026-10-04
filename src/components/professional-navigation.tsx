@@ -15,8 +15,8 @@ const items = [
   { id: "dashboard", href: "/professional", label: "Dashboard", icon: LayoutDashboard },
   { id: "bookings", href: "/professional/bookings", label: "Bookings", icon: CalendarDays },
   { id: "clients", href: "/professional/clients", label: "Clients", icon: UsersRound },
-  { id: "wallet", href: "/professional/wallet", label: "Wallet", icon: WalletCards },
-  { id: "more", href: "/professional/tools", label: "More", icon: MoreHorizontal },
+  { id: "wallet", href: "/professional/wallet", label: "Earnings", icon: WalletCards },
+  { id: "more", href: "/professional/tools", label: "More tools", icon: MoreHorizontal },
 ] as const;
 
 export type ProfessionalNavigationItem = (typeof items)[number]["id"];

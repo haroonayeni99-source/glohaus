@@ -14,16 +14,16 @@ export default async function AboutPage() {
       <main id="main" className="public-info-page">
         <section className="public-info-hero">
           <p className="eyebrow">ABOUT GLOHAUS</p>
-          <h1>Beauty, community and independent professionals.</h1>
+          <h1>Beauty, community and independent beauty professionals.</h1>
           <p>
             GLOHAUS is being built as a marketplace where customers can discover
-            beauty talent and professionals can build their business in one connected place.
+            beauty talent and beauty professionals can build their business in one connected place.
           </p>
         </section>
         <section className="public-info-grid public-info-grid-three">
-          <article><Sparkles size={24} /><h2>Discovery first</h2><p>Make it easier to find the right professional by style, service and location—not just by who already has the biggest following.</p></article>
-          <article><Users size={24} /><h2>Built for independents</h2><p>Give professionals tools for profiles, bookings, availability, earnings, products and client relationships.</p></article>
-          <article><HeartHandshake size={24} /><h2>Clearer marketplace trust</h2><p>Bring verification, reviews, booking records and payment history together so customers and professionals have better context.</p></article>
+          <article><Sparkles size={24} /><h2>Discovery first</h2><p>Make it easier to find the right beauty professional by style, service and location—not just by who already has the biggest following.</p></article>
+          <article><Users size={24} /><h2>Built for independents</h2><p>Give beauty professionals tools for profiles, bookings, availability, earnings, products and client relationships.</p></article>
+          <article><HeartHandshake size={24} /><h2>Clearer marketplace trust</h2><p>Bring verification, reviews, booking records and payment history together so customers and beauty professionals have better context.</p></article>
         </section>
         <section className="public-info-cta">
           <div><p className="eyebrow">GLOHAUS</p><h2>Discover the marketplace.</h2></div>

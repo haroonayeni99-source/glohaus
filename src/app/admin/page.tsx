@@ -14,7 +14,8 @@ import { OwnerAuthAccounts } from "@/components/owner-auth-accounts";
 import { ProfessionalCommissionControl } from "@/components/professional-commission-control";
 import { OwnerReferralOverview } from "@/components/owner-referral-overview";
 import { OwnerDashboardOverview } from "@/components/owner-dashboard-overview";
-import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, ownerProfessionalReferralOverview, paymentLaunchReadiness } from "@/modules/admin/repository";
+import { WebsiteStatusControl } from "@/components/website-status-control";
+import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, ownerProfessionalReferralOverview, ownerPublicSiteStatus, paymentLaunchReadiness } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
@@ -41,10 +42,16 @@ export default async function Page() {
   const commissions = isOwner ? await ownerProfessionalCommissionOverview().catch(() => []) : [];
   const referrals = isOwner ? await ownerProfessionalReferralOverview().catch(() => []) : [];
   const emailReadiness = isOwner ? emailLaunchReadiness() : null;
+  const publicSiteEnabled = isOwner ? await ownerPublicSiteStatus().catch(() => true) : true;
   return (
     <main id="main" className="admin-workspace">
         <AdminNavigation account={result.account} />
         <div className="admin-workspace-content">
+          {isOwner && (
+            <section id="website-status" className="admin-workspace-section admin-detail-card owner-website-status-section">
+              <WebsiteStatusControl initialEnabled={publicSiteEnabled} />
+            </section>
+          )}
           <OwnerDashboardOverview
             account={result.account}
             data={data}

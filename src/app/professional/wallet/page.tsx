@@ -71,10 +71,11 @@ export default async function ProfessionalWalletPage() {
         <h1>Money, made clear.</h1>
         <p className="pro-page-lead">
           Your balance is calculated from protected transaction records. If a
-          booking is disputed, GLOHAUS freezes all withdrawals while the dispute
-          is open. Your balances and transaction records remain visible, and the
-          withdrawal freeze is removed automatically once there are no open
-          disputes, unless another account or financial restriction applies.
+          booking is disputed, GLOHAUS normally ring-fences the disputed amount
+          and keeps an additional 50% safety buffer in your wallet while allowing
+          the rest of your eligible balance to remain withdrawable. A full
+          withdrawal freeze is used only when the reserve cannot be covered,
+          multiple disputes are open, or another account risk restriction applies.
         </p>
 
         <section className="pro-stat-grid pro-wallet-balances" aria-label="Wallet balances">
@@ -114,9 +115,11 @@ export default async function ProfessionalWalletPage() {
             </div>
             <p>
               Money linked to a disputed booking is ring-fenced while the
-              payment provider reviews the case. All standard and instant
-              withdrawals are also frozen until there are no open disputes,
-              unless another restriction continues to apply.
+              payment provider reviews the case. For a single ordinary dispute,
+              GLOHAUS also keeps a 50% safety buffer while allowing the remaining
+              eligible balance to be withdrawn. Multiple disputes, an uncovered
+              reserve or another risk restriction can trigger a full withdrawal
+              freeze.
             </p>
             <div className="pro-dispute-list">
               {disputes.disputes.map((dispute) => {
@@ -271,8 +274,9 @@ export default async function ProfessionalWalletPage() {
               Product proceeds remain pending until tracked delivery is confirmed
               by the customer, then become eligible after 48 hours. A booking
               dispute ring-fences the amount connected to that booking in your
-              disputed balance and freezes all withdrawals while the dispute is
-              open.
+              disputed balance. A 50% safety buffer normally remains in the
+              wallet while other eligible earnings stay withdrawable; higher
+              dispute risk can trigger a full freeze.
             </p>
           </div>
           <WalletCards className="pro-wallet-symbol" aria-hidden />

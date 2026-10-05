@@ -56,7 +56,7 @@ export function ProfessionalEditor({
           code === "SLUG_UNAVAILABLE"
             ? "That profile address is already taken. Choose another."
             : code === "VERIFICATION_REQUIRED"
-              ? "Verification is required for this change. Unverified professionals can use active services up to £200 with no deposit and up to five starter bookings."
+              ? "Verification is required for this change. Unverified professionals can use active services up to £200 with full payment through GLOHAUS and up to five starter bookings."
               : code === "PROFESSIONAL_RESTRICTED"
                 ? "This professional account is currently restricted. Paid marketplace changes are unavailable while the restriction is reviewed."
                 : "Could not save. Check your details and try again.",
@@ -85,7 +85,7 @@ export function ProfessionalEditor({
               ? "Your identity is verified. Your active services appear on your published profile and can use verified marketplace features."
               : verificationStatus === "restricted"
                 ? "This account is restricted. You can review existing services, but new paid marketplace activity may be blocked."
-                : `Starter access: active services can be up to £200 with no deposit. ${starterBookingsRemaining ?? 0} of 5 starter bookings remain before verification is required.`
+                : `Starter access: active services can be up to £200 and are paid in full through GLOHAUS. ${starterBookingsRemaining ?? 0} of 5 starter bookings remain before verification is required.`
             : "Your profile is private until you choose Published. Only your business details appear publicly.")}
       </p>
       {section !== "services" && initial && (
@@ -322,7 +322,7 @@ export function ProfessionalEditor({
               </select>
               {verificationStatus !== "verified" && (
                 <small>
-                  You can publish on Starter access. Unverified profiles are limited to services up to £200, no online deposit, and five starter bookings.
+                  You can publish on Starter access. Unverified profiles are limited to services up to £200, with full payment through GLOHAUS, and five starter bookings.
                 </small>
               )}
             </label>
@@ -594,6 +594,7 @@ export function ProfessionalEditor({
               pricePence={servicePricePence}
               initialDepositPence={editing?.deposit_pence || 0}
               onChange={setDepositPence}
+              verified={verificationStatus === "verified"}
             />
             <div className="editor-actions">
               <button className="button" disabled={busy}>

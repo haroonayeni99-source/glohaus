@@ -158,7 +158,7 @@ export function AdminNavigation({ account }: { account: Account }) {
         })}
       </nav>
       <div className="admin-navigation-bottom">
-        <Link href="/workspace">Return to GLOHAUS</Link>
+        <Link href="/">Return to GLOHAUS</Link>
         <AccountControls />
       </div>
     </aside>

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
   depositLimitMessage,
-  isRequiredDepositWithinLimit,
+  isDepositWithinMaximum,
 } from "@/modules/bookings/deposit-policy";
 export const fallbackCategories = [
   "Hair",
@@ -109,7 +109,7 @@ export const serviceSchema = z
   })
   .strict()
   .superRefine((value, context) => {
-    if (!isRequiredDepositWithinLimit(value.pricePence, value.depositPence))
+    if (!isDepositWithinMaximum(value.pricePence, value.depositPence))
       context.addIssue({
         code: "custom",
         path: ["depositPence"],

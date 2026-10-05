@@ -13,17 +13,17 @@ const groups = [
   {
     title: "For customers",
     links: [
-      ["Find a professional", "/explore"],
+      ["Find a beauty professional", "/explore"],
       ["Discover", "/discover"],
       ["Shop", "/shop"],
       ["Refunds & cancellations", "/refunds"],
     ],
   },
   {
-    title: "For professionals",
+    title: "For beauty professionals",
     links: [
       ["Join GLOHAUS PRO", "/sign-up?intent=professional&returnTo=/professional/setup"],
-      ["Professional preview", "/professional-preview"],
+      ["Beauty professional preview", "/professional-preview"],
       ["Professional terms", "/professional-terms"],
       ["Marketplace terms", "/marketplace-terms"],
     ],
@@ -45,7 +45,7 @@ export function SiteFooter() {
     <footer className="glohaus-site-footer">
       <div className="glohaus-site-footer-brand">
         <Brand inverse />
-        <p>Beauty, bookings and business in one connected marketplace.</p>
+        <p>Look good. Feel good. Stand out.</p>
       </div>
       <div className="glohaus-site-footer-links">
         {groups.map((group) => (
@@ -61,7 +61,7 @@ export function SiteFooter() {
       </div>
       <div className="glohaus-site-footer-bottom">
         <span>© 2026 GLOHAUS. All rights reserved.</span>
-        <span>Independent beauty marketplace</span>
+        <span>Beauty professionals, bookings and marketplace</span>
       </div>
     </footer>
   );

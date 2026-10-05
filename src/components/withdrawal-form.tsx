@@ -45,8 +45,10 @@ export function WithdrawalForm({
         const code = data.error?.code;
         throw new Error(
           code === "PAYOUT_RESTRICTED"
-            ? "Withdrawals are temporarily frozen while a dispute or account review is open."
-            : code === "OUTSTANDING_OBLIGATION"
+            ? "Withdrawals are temporarily frozen because there are multiple open disputes, an uncovered dispute reserve, or another account review restriction."
+            : code === "PAYOUT_DISPUTE_BUFFER"
+              ? "A dispute is open, so GLOHAUS must leave a 50% safety buffer in your wallet. Try a smaller withdrawal amount."
+              : code === "OUTSTANDING_OBLIGATION"
               ? "You have an outstanding GLOHAUS balance that must be cleared before withdrawing."
               : code === "INSUFFICIENT_AVAILABLE_BALANCE"
                 ? "That amount is no longer available to withdraw."
@@ -138,7 +140,7 @@ export function WithdrawalForm({
 
       {withdrawalsBlocked && (
         <p className="form-help">
-          All withdrawals are frozen while an open dispute or financial review is active.
+          All withdrawals are frozen because your current dispute or financial risk level requires a full hold.
         </p>
       )}
       {!instantConfigured && (

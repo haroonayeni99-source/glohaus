@@ -59,11 +59,6 @@ export function assertBookingAllowed(
 ) {
   if (access.status === "restricted")
     throw new AccessError("PROFESSIONAL_RESTRICTED", 403);
-  if (
-    !access.verified &&
-    (service.pricePence > 20000 ||
-      service.depositPence > 0 ||
-      (access.starterBookingsRemaining ?? 0) <= 0)
-  )
+  if (!access.verified)
     throw new AccessError("VERIFICATION_REQUIRED", 409);
 }

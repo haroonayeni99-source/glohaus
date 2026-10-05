@@ -9,7 +9,7 @@ import type { PublicProfessional } from "@/modules/professionals/domain";
 import { publicViewerSignedIn } from "@/lib/public-viewer";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Find a Professional | GLOHAUS" };
+export const metadata = { title: "Find a Beauty Professional | GLOHAUS" };
 
 export default async function Explore({
   searchParams,
@@ -58,7 +58,7 @@ export default async function Explore({
       <main id="main">
         <ExploreMapExperience professionals={professionals} query={q} filters={filters} />
         {(after || next) && (
-          <nav className="map-pagination" aria-label="Professional search pages">
+          <nav className="map-pagination" aria-label="Beauty professional search pages">
             {after && (
               <Link href={(() => {
                 const params = new URLSearchParams();
@@ -86,7 +86,7 @@ export default async function Explore({
                 params.set("after", next);
                 return `/explore?${params.toString()}`;
               })()}>
-                More professionals →
+                More beauty professionals →
               </Link>
             )}
           </nav>

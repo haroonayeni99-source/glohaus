@@ -15,6 +15,7 @@ import { ConnectButton } from "@/components/connect-button";
 import { PayoutDashboardButton } from "@/components/payout-dashboard-button";
 import { WithdrawalForm } from "@/components/withdrawal-form";
 import { professionalAccessState } from "@/modules/professionals/verification";
+import { DisputeResponseForm } from "@/components/dispute-response-form";
 import { paymentReady } from "@/modules/payments/stripe";
 
 export const dynamic = "force-dynamic";
@@ -178,15 +179,19 @@ export default async function ProfessionalWalletPage() {
                         apply.
                       </p>
                     )}
-                    {open && dispute.evidenceDueAt && (
-                      <small>
-                        Evidence deadline:{" "}
-                        {new Intl.DateTimeFormat("en-GB", {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                          timeZone: "Europe/London",
-                        }).format(new Date(dispute.evidenceDueAt))}
-                      </small>
+                    {open && (
+                      <DisputeResponseForm
+                        disputeId={dispute.id}
+                        initialStatement={dispute.responseStatement}
+                        deadline={
+                          dispute.evidenceDueAt
+                            ? new Date(dispute.evidenceDueAt).toISOString()
+                            : null
+                        }
+                      />
+                    )}
+                    {!open && dispute.responseStatement && (
+                      <small>Response saved in GLOHAUS for this closed dispute.</small>
                     )}
                     <Link href={`/professional/bookings/${dispute.bookingId}`}>
                       View booking <ArrowUpRight size={15} aria-hidden />

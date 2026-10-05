@@ -2,6 +2,10 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { getIdentity } from "./identity";
 import { withIdentity } from "./db";
+import {
+  accountDatabaseUnavailable,
+  supabaseAccount,
+} from "./account-supabase-fallback";
 import { findAccount } from "@/modules/accounts/repository";
 import {
   AccessError,
@@ -18,10 +22,19 @@ export async function pageAccount(
 > {
   try {
     const identity = await getIdentity();
-    const account = await withIdentity(identity.authId, async (db) =>
-      authorize(await findAccount(db, identity.authId), identity, role),
-    );
-    return { account, error: null };
+    try {
+      const account = await withIdentity(identity.authId, async (db) =>
+        authorize(await findAccount(db, identity.authId), identity, role),
+      );
+
+      return { account, error: null };
+    } catch (error) {
+      if (!accountDatabaseUnavailable(error)) throw error;
+
+      const account = authorize(await supabaseAccount(), identity, role);
+
+      return { account, error: null };
+    }
   } catch (error) {
     if (error instanceof AccessError) {
       if (error.code === "UNAUTHENTICATED") redirect("/sign-in");

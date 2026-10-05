@@ -11,6 +11,7 @@ import { ProfessionalProfileCustomization } from "@/components/professional-prof
 import { ProfessionalNavigation } from "@/components/professional-navigation";
 import type { ProfileInput, Service } from "@/modules/professionals/domain";
 import { publicCategories } from "@/modules/platform/repository";
+import { paymentReady } from "@/modules/payments/stripe";
 export default async function EditProfile() {
   const result = await pageAccount("professional");
   if (result.error)
@@ -177,7 +178,7 @@ export default async function EditProfile() {
             marketplaceCategories={marketplaceCategories}
             verificationStatus={data.access.status}
           />
-          <ConnectButton status={data.access.status} />
+          <ConnectButton status={data.access.status} runtimeReady={paymentReady()} />
         </section>
       </main>
     </div>

@@ -49,12 +49,7 @@ export function assertProductPublishingAllowed(
 export function assertWithdrawalAllowed(access: ProfessionalAccessState) {
   if (access.status === "restricted")
     throw new AccessError("PROFESSIONAL_RESTRICTED", 403);
-  if (
-    !access.verified &&
-    (service.pricePence > 20000 ||
-      service.depositPence > 0 ||
-      (access.starterBookingsRemaining ?? 0) <= 0)
-  )
+  if (!access.verified)
     throw new AccessError("VERIFICATION_REQUIRED", 409);
 }
 
@@ -64,6 +59,11 @@ export function assertBookingAllowed(
 ) {
   if (access.status === "restricted")
     throw new AccessError("PROFESSIONAL_RESTRICTED", 403);
-  if (!access.verified)
+  if (
+    !access.verified &&
+    (service.pricePence > 20000 ||
+      service.depositPence > 0 ||
+      (access.starterBookingsRemaining ?? 0) <= 0)
+  )
     throw new AccessError("VERIFICATION_REQUIRED", 409);
 }

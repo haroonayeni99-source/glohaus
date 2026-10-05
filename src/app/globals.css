@@ -12188,3 +12188,33 @@ body {
     width: 100%;
   }
 }
+
+
+/* Keep the Owner Website Status action visually explicit inside the admin theme. */
+.admin-workspace .website-status-toggle {
+  min-width: 190px;
+  min-height: 46px;
+  display: inline-flex;
+  visibility: visible;
+  opacity: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 0 !important;
+  font-weight: 850;
+  color: #fff !important;
+}
+.admin-workspace .website-status-toggle.is-on {
+  background: #1f8b4c !important;
+  color: #fff !important;
+}
+.admin-workspace .website-status-toggle.is-off {
+  background: #a82f49 !important;
+  color: #fff !important;
+}
+@media (max-width: 820px) {
+  .admin-workspace .website-status-toggle {
+    width: 100%;
+    min-width: 0;
+  }
+}

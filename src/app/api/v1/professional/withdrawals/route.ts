@@ -217,6 +217,8 @@ export async function POST(request: Request) {
     ) {
       if (error.message.includes("PAYOUT_RESTRICTED"))
         return json({ error: { code: "PAYOUT_RESTRICTED" } }, 409);
+      if (error.message.includes("PAYOUT_DISPUTE_BUFFER"))
+        return json({ error: { code: "PAYOUT_DISPUTE_BUFFER" } }, 409);
       if (error.message.includes("OUTSTANDING_OBLIGATION"))
         return json({ error: { code: "OUTSTANDING_OBLIGATION" } }, 409);
       if (error.message.includes("INSUFFICIENT_AVAILABLE_BALANCE"))

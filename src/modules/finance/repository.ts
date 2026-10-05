@@ -161,6 +161,9 @@ export type ProfessionalDisputeOverview = {
     reservedPence: number;
     reserveShortfallPence: number;
     evidenceDueAt: Date | string | null;
+    responseStatement: string | null;
+    responseSubmittedAt: Date | string | null;
+    responseUpdatedAt: Date | string | null;
     updatedAt: Date | string;
   }[];
 };

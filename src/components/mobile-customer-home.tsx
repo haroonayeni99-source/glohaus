@@ -24,7 +24,7 @@ export function MobileCustomerHome({ signedIn = false, canAccessAdmin = false }:
         <header className="mobile-home-header">
           <div className="mobile-home-brand">
             <Brand inverse />
-            <span>Beauty. Book. Shop. Belong.</span>
+            <span>Look good. Feel good. Stand out.</span>
           </div>
           <div className="mobile-home-header-actions">
             {canAccessAdmin && (
@@ -50,12 +50,12 @@ export function MobileCustomerHome({ signedIn = false, canAccessAdmin = false }:
         <form className="mobile-home-search" action="/explore" role="search">
           <Search size={18} aria-hidden />
           <label className="sr-only" htmlFor="mobile-home-query">
-            Search services or professionals
+            Search services or beauty professionals
           </label>
           <input
             id="mobile-home-query"
             name="q"
-            placeholder="Search services, professionals..."
+            placeholder="Search services, beauty professionals..."
           />
         </form>
 
@@ -101,7 +101,7 @@ export function MobileCustomerHome({ signedIn = false, canAccessAdmin = false }:
         <section className="mobile-home-how">
           <p className="eyebrow">HOW GLOHAUS WORKS</p>
           <div>
-            <article><Search size={18}/><strong>Discover</strong><span>Find services and professionals near you.</span></article>
+            <article><Search size={18}/><strong>Discover</strong><span>Find services and beauty professionals near you.</span></article>
             <article><CalendarDays size={18}/><strong>Book</strong><span>Choose a service and time with clear pricing.</span></article>
             <article><ShieldCheck size={18}/><strong>Stay connected</strong><span>Keep your booking journey together.</span></article>
           </div>

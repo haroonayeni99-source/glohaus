@@ -19,7 +19,9 @@ import type {
   OwnerControls,
   OwnerProfessionalCommission,
   OwnerProfessionalReferral,
+  OwnerSiteAvailability,
 } from "@/modules/admin/repository";
+import { OwnerSiteAccessControl } from "@/components/owner-site-access-control";
 import type { Account } from "@/modules/accounts/domain";
 
 function money(pence: number) {
@@ -94,6 +96,7 @@ export function OwnerDashboardOverview({
   commissions,
   referrals,
   owner,
+  siteAvailability,
 }: {
   account: Account;
   data: AdminOverview;
@@ -103,6 +106,7 @@ export function OwnerDashboardOverview({
   commissions: OwnerProfessionalCommission[];
   referrals: OwnerProfessionalReferral[];
   owner: OwnerControls | null;
+  siteAvailability: OwnerSiteAvailability | null;
 }) {
   const bookings = data.bookings ?? [];
   const todayKey = new Intl.DateTimeFormat("en-CA", {
@@ -144,6 +148,30 @@ export function OwnerDashboardOverview({
       </header>
 
       <section id="overview" className="owner-dashboard-overview">
+        <article id="site-access" className="owner-dashboard-card owner-site-toggle-card">
+          <div className="owner-card-heading">
+            <div>
+              <strong>Website ON / OFF</strong>
+              <span>Owner-only control for public GLOHAUS access</span>
+            </div>
+            <span className={`owner-site-state ${siteAvailability?.publicSiteOpen === false ? "is-closed" : "is-open"}`}>
+              {siteAvailability?.publicSiteOpen === false ? "CLOSED" : "OPEN"}
+            </span>
+          </div>
+          {siteAvailability ? (
+            <OwnerSiteAccessControl initial={siteAvailability} />
+          ) : (
+            <div className="owner-site-access-control is-open">
+              <div className="owner-site-access-status">
+                <div>
+                  <h3>Site access status could not be loaded</h3>
+                  <p>The Owner control is visible, but its current database status could not be loaded.</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </article>
+
         <div className="owner-kpi-grid">
           <article className="owner-kpi-card owner-kpi-blue">
             <div className="owner-kpi-icon"><UsersRound size={22} /></div>

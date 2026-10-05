@@ -336,6 +336,22 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
                     })}
                   </small>
                 )}
+                {dispute.response_statement ? (
+                  <details>
+                    <summary>Professional dispute response</summary>
+                    <p>{dispute.response_statement}</p>
+                    {dispute.response_updated_at && (
+                      <small>
+                        Last updated:{" "}
+                        {new Date(dispute.response_updated_at).toLocaleString("en-GB", {
+                          timeZone: "Europe/London",
+                        })}
+                      </small>
+                    )}
+                  </details>
+                ) : (
+                  <small>No professional response has been submitted yet.</small>
+                )}
               </div>
               <span className={`admin-status admin-status-${dispute.status}`}>
                 {dispute.status.replaceAll("_", " ")}

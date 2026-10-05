@@ -50,7 +50,7 @@ const messages: Record<
   },
   VERIFICATION_REQUIRED: {
     title: "Verify your identity to unlock this feature.",
-    text: "You can keep using the free Starter professional account, but this feature requires completed identity verification.",
+    text: "Beauty professionals must complete verification before accepting bookings or using protected marketplace features.",
     href: "/professional/profile#verification",
     label: "Verify identity",
   },

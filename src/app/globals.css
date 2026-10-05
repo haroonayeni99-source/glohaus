@@ -12218,3 +12218,12 @@ body {
     min-width: 0;
   }
 }
+/* LIVE studio: deliberately scoped to preserve the existing site theme. */
+.gh-live-studio { display: grid; gap: 1.25rem; max-width: 760px; margin: 2rem auto; padding: clamp(1rem, 3vw, 2rem); border: 1px solid #d5d5dd; border-radius: 24px; background: #fff; color: #17171d; }
+.gh-live-studio label { display: grid; gap: .5rem; font-weight: 600; }
+.gh-live-studio input { width: 100%; border: 1px solid #d5d5dd; border-radius: 12px; padding: .9rem; background: #fff; color: #17171d; }
+.gh-live-media { display: grid; place-items: center; aspect-ratio: 9 / 12; max-height: 65vh; overflow: hidden; border-radius: 18px; background: #101014; }
+.gh-live-media:empty::after { content: "GLOHAUS LIVE"; color: #ff8fbe; font-weight: 700; letter-spacing: .12em; }
+.gh-live-media video { width: 100%; height: 100%; max-height: 65vh; object-fit: contain; }
+.gh-live-studio [role="alert"] { padding: 1rem; border-radius: 12px; background: #fff0f4; color: #8b1644; }
+.gh-live-studio button:disabled { opacity: .6; cursor: not-allowed; }

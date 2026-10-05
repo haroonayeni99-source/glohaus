@@ -245,9 +245,9 @@ export function ProfessionalDashboard({
               <progress max={10} value={Math.min(data.live?.completedBookings ?? data.stats.completedBookings, data.live?.completedBookingsRequired ?? 10)} />
             </div>
           </div>
-          <button className="pro-dark-button pro-live-locked" type="button" disabled>
-            <LockKeyhole size={16} aria-hidden /> {data.live?.eligible ? "LIVE eligible — streaming setup coming next" : "LIVE locked"}
-          </button>
+          <Link className="pro-dark-button" href="/professional/live">
+            {data.live?.eligible ? <Radio size={16} aria-hidden /> : <LockKeyhole size={16} aria-hidden />} {data.live?.eligible ? "Go LIVE" : "View LIVE requirements"}
+          </Link>
           <small>
             Verification: {data.live?.verified ? "complete" : "required"} · Account standing: {data.live?.goodStanding ? "good" : "restricted"} · Moderation: {data.live?.seriousModerationRestriction ? "restriction active" : "clear"}
           </small>

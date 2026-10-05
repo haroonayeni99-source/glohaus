@@ -2,6 +2,7 @@ import { z } from "zod";
 import { withAccount } from "@/lib/api-account";
 import { apiError, json } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
+import { liveEligibility } from "@/modules/live/repository";
 import {
   createLiveKitJoinToken,
   liveKitReady,
@@ -43,6 +44,8 @@ export async function GET(
       const isBroadcaster =
         account.professionalId === row.session.professionalId &&
         account.roles.includes("professional");
+      if (isBroadcaster && !(await liveEligibility(db, row.session.professionalId)).eligible)
+        throw new AccessError("PROFESSIONAL_RESTRICTED", 403);
 
       return {
         session: row.session,

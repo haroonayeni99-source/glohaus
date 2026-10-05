@@ -1,5 +1,6 @@
 import "server-only";
 import { createHmac } from "node:crypto";
+import { RoomServiceClient } from "livekit-server-sdk";
 
 type LiveKitGrant = {
   roomJoin: true;
@@ -15,17 +16,31 @@ function base64url(value: string) {
 }
 
 export function liveKitReady() {
-  return Boolean(
-    process.env.LIVEKIT_URL &&
-      process.env.LIVEKIT_API_KEY &&
-      process.env.LIVEKIT_API_SECRET,
-  );
+  try {
+    return Boolean(liveKitServerUrl() && process.env.LIVEKIT_API_KEY && process.env.LIVEKIT_API_SECRET);
+  } catch { return false; }
 }
 
 export function liveKitServerUrl() {
   const value = process.env.LIVEKIT_URL;
   if (!value) throw new Error("LIVEKIT_NOT_CONFIGURED");
-  return value;
+  const url = new URL(value);
+  if (url.protocol !== "wss:" || url.username || url.password)
+    throw new Error("LIVEKIT_INVALID_URL");
+  return url.toString();
+}
+
+export async function closeLiveKitRoom(room: string) {
+  const url = new URL(liveKitServerUrl());
+  url.protocol = "https:";
+  const client = new RoomServiceClient(url.toString(), process.env.LIVEKIT_API_KEY, process.env.LIVEKIT_API_SECRET);
+  try {
+    await client.deleteRoom(room);
+  } catch (error) {
+    // An already-empty room may have been removed by LiveKit automatically.
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "not_found") return;
+    throw error;
+  }
 }
 
 export function createLiveKitJoinToken({

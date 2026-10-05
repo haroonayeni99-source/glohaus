@@ -61,6 +61,9 @@ export function OwnerControls({
   return (
     <>
       {notice && <p className="form-notice" role="status">{notice}</p>}
+      <p className="form-notice" role="status">
+        Administrator access is live. Granular staff access is not enabled yet, so the Owner console will not grant new staff roles until a permission-aware staff workspace is available.
+      </p>
       <form
         className="editor-form"
         onSubmit={(event) => {
@@ -179,7 +182,7 @@ export function OwnerControls({
               <small>{member.permissions.length ? member.permissions.join(", ") : "No delegated staff permissions"}</small>
             </div>
             {member.roles.includes("staff") && (
-              <button onClick={() => setSelected(member)}>Permissions</button>
+              <button disabled title="Granular staff workspace access is not enabled yet.">Staff permissions unavailable</button>
             )}
             {member.roles.includes("staff") && (
               <button onClick={() => setDelegation({ id: member.id, name: member.display_name, role: "staff", enabled: false })}>Remove staff</button>
@@ -200,9 +203,6 @@ export function OwnerControls({
               <p>{user.email} · {user.status}</p>
               <small>{user.roles.join(", ") || "No application role"}</small>
             </div>
-            {!user.roles.includes("staff") && (
-              <button onClick={() => setDelegation({ id: user.id, name: user.display_name, role: "staff", enabled: true })}>Grant staff</button>
-            )}
             {!user.roles.includes("admin") && (
               <button onClick={() => setDelegation({ id: user.id, name: user.display_name, role: "admin", enabled: true })}>Grant admin</button>
             )}

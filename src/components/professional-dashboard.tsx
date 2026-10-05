@@ -18,6 +18,8 @@ import {
   ShieldCheck,
   BadgeCheck,
   CircleAlert,
+  Share2,
+  Copy,
 } from "lucide-react";
 import type { Account } from "@/modules/accounts/domain";
 import type { ProfessionalDashboard as DashboardData } from "@/modules/dashboard/repository";
@@ -250,6 +252,31 @@ export function ProfessionalDashboard({
             Verification: {data.live?.verified ? "complete" : "required"} · Account standing: {data.live?.goodStanding ? "good" : "restricted"} · Moderation: {data.live?.seriousModerationRestriction ? "restriction active" : "clear"}
           </small>
         </section>
+
+        {data.referral && (
+          <section className="pro-panel" aria-label="Professional referral code">
+            <div className="pro-panel-title">
+              <div>
+                <p className="pro-kicker">GROW GLOHAUS</p>
+                <h2>Your referral code</h2>
+              </div>
+              <Share2 size={22} aria-hidden />
+            </div>
+            <p>
+              Share your code when inviting clients or other beauty professionals to GLOHAUS.
+            </p>
+            <div className="pro-finance-notice">
+              <Copy size={18} aria-hidden />
+              <strong>{data.referral.code}</strong>
+              <span>
+                {data.referral.totalReferrals} referred · {data.referral.qualifiedReferrals} qualified
+              </span>
+            </div>
+            <p>
+              Referral link: <strong>{`https://www.glohaus.shop/sign-up?ref=${data.referral.code}`}</strong>
+            </p>
+          </section>
+        )}
 
         <section className="pro-quick-actions" aria-label="Professional quick actions">
           <Link href="/professional/bookings">

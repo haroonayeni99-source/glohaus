@@ -4,7 +4,7 @@ import { withIdentity } from "./db";
 import { authorize, type Account, type Role } from "@/modules/accounts/domain";
 import { findAccount, type SqlClient } from "@/modules/accounts/repository";
 export async function withAccount<T>(
-  role: Role,
+  role: Role | undefined,
   work: (db: SqlClient, account: Account) => Promise<T>,
 ) {
   const identity = await getIdentity();

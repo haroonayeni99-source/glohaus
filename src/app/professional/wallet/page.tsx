@@ -206,7 +206,7 @@ export default async function ProfessionalWalletPage() {
           </Link>
         </section>
 
-        {hasStripeAccount && access.verified && (
+        {hasStripeAccount && access.verified && paymentReady() && (
           <section className="pro-panel">
             <div className="pro-panel-title">
               <h2>Withdraw earnings</h2>
@@ -248,8 +248,12 @@ export default async function ProfessionalWalletPage() {
               ? "Your identity is verified. Manage your Stripe payout account or request withdrawals from your released balance."
               : "Your earnings records remain protected in GLOHAUS, but withdrawals stay locked until identity verification is complete."}
           </p>
-          {access.verified && hasStripeAccount ? (
+          {access.verified && hasStripeAccount && paymentReady() ? (
             <PayoutDashboardButton />
+          ) : access.verified && hasStripeAccount ? (
+            <p className="form-notice" role="status">
+              Payout management is temporarily unavailable because the protected Stripe payment runtime is not fully configured. Your GLOHAUS wallet balance remains recorded and protected.
+            </p>
           ) : (
             <ConnectButton status={access.status} runtimeReady={paymentReady()} />
           )}

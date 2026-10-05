@@ -23,26 +23,26 @@ import type { Account } from "@/modules/accounts/domain";
 
 const coreSections = [
   ["Overview", "overview", LayoutDashboard],
+  ["Settings", "settings", Settings],
   ["App Users", "users", UsersRound],
   ["Professionals", "professionals", BadgeCheck],
+  ["LIVE", "live-access", Radio],
   ["Bookings", "bookings", CalendarDays],
   ["Orders", "orders", PackageCheck],
+  ["Reviews", "reviews", MessageSquareWarning],
+  ["Reports", "reports", FileWarning],
+  ["Content", "content", BookOpenCheck],
   ["Payments", "payments", CreditCard],
   ["Analytics", "analytics", BarChart3],
-  ["LIVE", "live-access", Radio],
-  ["Content", "content", BookOpenCheck],
-  ["Reports", "reports", FileWarning],
-  ["Reviews", "reviews", MessageSquareWarning],
-  ["Settings", "settings", Settings],
 ] as const;
 
 const ownerSections = [
   ["Website Status", "website-status", Globe2],
+  ["Booking Fee", "booking-fee", CreditCard],
+  ["Shop Fees", "shop-fees", CreditCard],
   ["Auth Accounts", "auth-accounts", UsersRound],
   ["Pro Commission", "professional-commission", CreditCard],
-  ["Booking Fee", "booking-fee", CreditCard],
   ["Referrals", "referrals", UsersRound],
-  ["Shop Fees", "shop-fees", CreditCard],
   ["Admins & Access", "staff", ShieldCheck],
   ["Audit Log", "audit", BarChart3],
 ] as const;
@@ -50,7 +50,22 @@ const ownerSections = [
 export function AdminNavigation({ account }: { account: Account }) {
   const owner = account.roles.includes("owner");
   const sections = useMemo(
-    () => (owner ? [...coreSections, ...ownerSections] : [...coreSections]),
+    () =>
+      owner
+        ? [
+            ownerSections[0],
+            coreSections[0],
+            coreSections[1],
+            ownerSections[1],
+            ownerSections[2],
+            ownerSections[3],
+            ownerSections[4],
+            ownerSections[5],
+            ownerSections[6],
+            ...coreSections.slice(2),
+            ownerSections[7],
+          ]
+        : [...coreSections],
     [owner],
   );
   const [activeId, setActiveId] = useState("overview");

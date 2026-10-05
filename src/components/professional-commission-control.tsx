@@ -24,14 +24,20 @@ export function ProfessionalCommissionControl({
     setBusyId(professionalId);
     setNotice("");
     try {
+      const rawExpiry = String(form.get("expiresAt") || "").trim();
+      const expiry = rawExpiry ? new Date(rawExpiry) : null;
+      if (expiry && Number.isNaN(expiry.getTime())) {
+        throw new Error("Please choose a valid expiry date and time.");
+      }
+
       const response = await fetch("/api/v1/admin/professional-commission", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           professionalId,
           percentage: raw === "" ? null : Number(raw),
-          expiresAt: String(form.get("expiresAt") || "").trim() || null,
-          reason: form.get("reason"),
+          expiresAt: expiry ? expiry.toISOString() : null,
+          reason: String(form.get("reason") || "").trim(),
         }),
       });
       if (!response.ok) throw new Error("Commission change was not saved.");

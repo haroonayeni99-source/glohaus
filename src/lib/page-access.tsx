@@ -37,8 +37,16 @@ export async function pageAccount(
     }
   } catch (error) {
     if (error instanceof AccessError) {
-      if (error.code === "UNAUTHENTICATED") redirect("/sign-in");
-      if (error.code === "ONBOARDING_REQUIRED") redirect("/onboarding");
+      if (error.code === "UNAUTHENTICATED")
+        redirect(role === "professional" ? "/professional/sign-in" : "/sign-in");
+      if (error.code === "ONBOARDING_REQUIRED")
+        redirect(
+          role === "professional"
+            ? "/onboarding?intent=professional"
+            : role === "customer"
+              ? "/onboarding?intent=customer"
+              : "/onboarding",
+        );
       return { account: null, error: error.code };
     }
     console.error("Workspace unavailable", {

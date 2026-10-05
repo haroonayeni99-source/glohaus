@@ -15,6 +15,7 @@ import { ConnectButton } from "@/components/connect-button";
 import { PayoutDashboardButton } from "@/components/payout-dashboard-button";
 import { WithdrawalForm } from "@/components/withdrawal-form";
 import { professionalAccessState } from "@/modules/professionals/verification";
+import { paymentReady } from "@/modules/payments/stripe";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "GLOHAUS Wallet" };
@@ -250,7 +251,7 @@ export default async function ProfessionalWalletPage() {
           {access.verified && hasStripeAccount ? (
             <PayoutDashboardButton />
           ) : (
-            <ConnectButton status={access.status} />
+            <ConnectButton status={access.status} runtimeReady={paymentReady()} />
           )}
         </section>
 

@@ -14,7 +14,6 @@ import { OwnerAuthAccounts } from "@/components/owner-auth-accounts";
 import { ProfessionalCommissionControl } from "@/components/professional-commission-control";
 import { OwnerReferralOverview } from "@/components/owner-referral-overview";
 import { OwnerDashboardOverview } from "@/components/owner-dashboard-overview";
-import { OwnerSiteAccessControl } from "@/components/owner-site-access-control";
 import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, ownerProfessionalReferralOverview, ownerSiteAvailability, paymentLaunchReadiness } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
@@ -56,28 +55,8 @@ export default async function Page() {
             commissions={commissions}
             referrals={referrals}
             owner={owner}
+            siteAvailability={siteAvailability}
           />
-          {isOwner && (
-            <section id="site-access" className="admin-workspace-section admin-detail-card admin-site-access-priority">
-              <p className="eyebrow">OWNER CONTROL · PUBLIC ACCESS</p>
-              <h2>Website ON / OFF</h2>
-              <p className="lead">
-                Open or close the public GLOHAUS website. Owner/Admin, authentication and required API routes stay available so you can always reopen it.
-              </p>
-              {siteAvailability ? (
-                <OwnerSiteAccessControl initial={siteAvailability} />
-              ) : (
-                <div className="owner-site-access-control is-open">
-                  <div className="owner-site-access-status">
-                    <div>
-                      <h3>Site access status could not be loaded</h3>
-                      <p>The control is temporarily unavailable rather than being hidden. Refresh this page or check the Owner database connection.</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </section>
-          )}
           <section id="settings" className="admin-workspace-section admin-detail-card">
             <p className="eyebrow">PLATFORM LANGUAGE</p>
             <h2>Platform labels</h2>

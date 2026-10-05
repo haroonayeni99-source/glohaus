@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SqlClient } from "@/modules/accounts/repository";
 import { AccessError } from "@/modules/accounts/domain";
+import { isRequiredDepositWithinLimit } from "@/modules/bookings/deposit-policy";
 
 export type ProfessionalAccessState = {
   status: "unverified" | "pending" | "verified" | "restricted";
@@ -34,6 +35,11 @@ export function assertStarterServiceAllowed(
     throw new AccessError("PROFESSIONAL_RESTRICTED", 403);
   if (!access.verified && (input.pricePence > 20000 || input.depositPence > 0))
     throw new AccessError("VERIFICATION_REQUIRED", 409);
+  if (
+    access.verified &&
+    !isRequiredDepositWithinLimit(input.pricePence, input.depositPence)
+  )
+    throw new AccessError("INVALID_REQUEST", 400);
 }
 
 export function assertProductPublishingAllowed(
@@ -66,4 +72,9 @@ export function assertBookingAllowed(
       (access.starterBookingsRemaining ?? 0) <= 0)
   )
     throw new AccessError("VERIFICATION_REQUIRED", 409);
+  if (
+    access.verified &&
+    !isRequiredDepositWithinLimit(service.pricePence, service.depositPence)
+  )
+    throw new AccessError("INVALID_REQUEST", 409);
 }

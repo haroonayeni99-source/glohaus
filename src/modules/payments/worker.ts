@@ -2,17 +2,17 @@ import "server-only";
 import { Pool } from "pg";
 import type { SqlClient } from "@/modules/accounts/repository";
 import { AccessError } from "@/modules/accounts/domain";
+import { paymentDatabaseConfig } from "./database-config";
 let pool: Pool | undefined;
 export async function withPaymentWorker<T>(
   work: (db: SqlClient) => Promise<T>,
 ) {
   if (!process.env.PAYMENT_DATABASE_URL)
     throw new AccessError("UNAVAILABLE", 503);
-  pool ??= new Pool({
-    connectionString: process.env.PAYMENT_DATABASE_URL,
-    max: 2,
-    connectionTimeoutMillis: 5000,
-  });
+  pool ??= new Pool(paymentDatabaseConfig(
+    process.env.PAYMENT_DATABASE_URL,
+    process.env.PAYMENT_DATABASE_CA_CERT,
+  ));
   const db = await pool.connect();
   try {
     await db.query("BEGIN");

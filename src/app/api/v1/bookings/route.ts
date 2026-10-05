@@ -15,6 +15,7 @@ const schema = z
 type Reservation = {
   id: string;
   depositPence: number;
+  pricePence: number;
   serviceName: string;
   professionalName: string;
   status: string;
@@ -58,19 +59,30 @@ export async function POST(request: Request) {
     // before a checkout session is created. This is deliberately separate from
     // form validation and the database trigger, so a forged client request
     // cannot pay an excessive professional-required deposit.
-    const depositWithinLimit = await withAccount("customer", async (db) => {
+    const paymentWithinPolicy = await withAccount("customer", async (db) => {
       const row = (
-        await db.query<{ price_pence: number; deposit_pence: number }>(
-          "SELECT price_pence,deposit_pence FROM beauty.bookings WHERE id=$1",
+        await db.query<{
+          price_pence: number;
+          deposit_pence: number;
+          professional_id: string;
+        }>(
+          "SELECT price_pence,deposit_pence,professional_id FROM beauty.bookings WHERE id=$1",
           [booking.id],
         )
       ).rows[0];
-      return Boolean(
-        row &&
-          isRequiredDepositWithinLimit(row.price_pence, row.deposit_pence),
+      if (!row) return false;
+
+      const access = await professionalAccessState(db, row.professional_id);
+      if (!access.verified) {
+        return row.deposit_pence === row.price_pence;
+      }
+
+      return isRequiredDepositWithinLimit(
+        row.price_pence,
+        row.deposit_pence,
       );
     });
-    if (!depositWithinLimit) throw new AccessError("UNAVAILABLE", 503);
+    if (!paymentWithinPolicy) throw new AccessError("UNAVAILABLE", 503);
     if (booking.status === "confirmed")
       return json({ url: `/account/bookings/${booking.id}` });
 
@@ -102,7 +114,10 @@ export async function POST(request: Request) {
                       currency: "gbp",
                       unit_amount: booking.depositPence,
                       product_data: {
-                        name: `Service deposit: ${booking.serviceName} · ${booking.professionalName}`,
+                        name:
+                          booking.depositPence === booking.pricePence
+                            ? `Service payment: ${booking.serviceName} · ${booking.professionalName}`
+                            : `Service deposit: ${booking.serviceName} · ${booking.professionalName}`,
                       },
                     },
                     quantity: 1,

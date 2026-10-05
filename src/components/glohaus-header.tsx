@@ -21,7 +21,7 @@ export function GlohausHeader({
   const accountLabel = signedIn
     ? "My account"
     : professional
-      ? "Professional sign in"
+      ? "Beauty professional sign in"
       : "Sign in";
 
   return (
@@ -30,15 +30,15 @@ export function GlohausHeader({
       {!professional ? (
         <nav className="glohaus-main-links" aria-label="Main navigation">
           <Link href="/">Home</Link>
-          <Link href="/explore">Find a Professional</Link>
+          <Link href="/explore">Find a Beauty Professional</Link>
           <Link href="/discover">Discover</Link>
           <Link href="/shop">Shop</Link>
           <Link href="/how-it-works">How It Works</Link>
-          <Link href="/professional-preview">For Professionals</Link>
+          <Link href="/professional-preview">For Beauty Professionals</Link>
           <Link href="/about">About</Link>
         </nav>
       ) : (
-        <p className="glohaus-header-tagline">WORK • GROW • BELONG</p>
+        <p className="glohaus-header-tagline">LOOK GOOD • FEEL GOOD • STAND OUT</p>
       )}
       <nav className="glohaus-header-actions" aria-label="Account navigation">
         <Link className="glohaus-search-link" href="/explore" aria-label="Search beauty">

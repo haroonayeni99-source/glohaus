@@ -23,7 +23,7 @@ const durations = [
   ["30 days", 720],
 ] as const;
 
-export function OwnerUserActions({ user }: { user: UserRow }) {
+export function OwnerUserActions({ user, hardDeleteConfigured }: { user: UserRow; hardDeleteConfigured: boolean }) {
   const router = useRouter();
   const now = useCurrentTime();
   const [mode, setMode] = useState<"restrict" | "delete" | null>(null);
@@ -89,12 +89,23 @@ export function OwnerUserActions({ user }: { user: UserRow }) {
         <button
           className="owner-danger-button"
           type="button"
+          disabled={!hardDeleteConfigured || busy}
+          title={
+            hardDeleteConfigured
+              ? "Delete this account"
+              : "Secure Supabase admin deletion is not configured yet."
+          }
           onClick={() => setMode("delete")}
         >
-          Delete
+          {hardDeleteConfigured ? "Delete" : "Delete unavailable"}
         </button>
       </div>
 
+      {!hardDeleteConfigured && (
+        <small className="form-notice">
+          Hard delete needs a server-only Supabase admin key. Restrict and status controls still work normally.
+        </small>
+      )}
       {notice && <small className="form-notice">{notice}</small>}
 
       {mode === "restrict" && (

@@ -214,7 +214,7 @@ export default async function Page() {
             </section>
           )}
           <AdminFinancePanel data={finance} />
-          <AdminManager data={data} owner={isOwner} />
+          <AdminManager data={data} owner={isOwner} hardDeleteConfigured={Boolean(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)} />
           {owner && (
             <section id="audit" className="admin-workspace-section admin-detail-card">
               <h2>Owner audit log</h2>

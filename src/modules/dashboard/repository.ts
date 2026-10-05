@@ -29,6 +29,12 @@ export type ProfessionalDashboard = {
   wallet: WalletOverview | null;
   live: LiveEligibility | null;
   access: ProfessionalAccessState | null;
+  referral: {
+    code: string;
+    totalReferrals: number;
+    qualifiedReferrals: number;
+    lastReferralAt: string | null;
+  } | null;
   plan: "starter" | "pro" | "premium";
   insights: {
     completedServiceValuePence: number;
@@ -128,9 +134,19 @@ export async function professionalDashboard(
   const wallet = profile ? await professionalWallet(db) : null;
   let live: LiveEligibility | null = null;
   let access: ProfessionalAccessState | null = null;
+  let referral: ProfessionalDashboard["referral"] = null;
   if (profile) {
     try { live = await liveEligibility(db, professionalId); } catch { live = null; }
     try { access = await professionalAccessState(db, professionalId); } catch { access = null; }
+    try {
+      referral = (
+        await db.query<{ data: NonNullable<ProfessionalDashboard["referral"]> }>(
+          "SELECT beauty.my_professional_referral_overview() AS data",
+        )
+      ).rows[0]?.data ?? null;
+    } catch {
+      referral = null;
+    }
   }
   const stats = statsResult.rows[0] ?? {
     new_bookings: 0,
@@ -232,6 +248,7 @@ export async function professionalDashboard(
     wallet: wallet ?? null,
     live,
     access,
+    referral,
     plan,
     insights,
   };

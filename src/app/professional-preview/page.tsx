@@ -45,13 +45,13 @@ export default async function ProfessionalPreviewPage({
       <div className="pro-preview-auth-bar">
         <div>
           <strong>GLOHAUS PRO · DEMO WORKSPACE</strong>
-          <span>Professional point of view — navigate the dashboard and tools without needing the live account database.</span>
+          <span>Beauty professional point of view — navigate the dashboard and tools without needing the live account database.</span>
         </div>
         <nav aria-label="Professional preview navigation">
           <Link href="/professional-preview">Dashboard</Link>
           <Link href="/customer-preview">Customer POV</Link>
           <Link href="/sign-in?intent=professional&returnTo=/professional">
-            Professional sign in
+            Beauty professional sign in
           </Link>
           <Link className="button" href="/sign-up?intent=professional&returnTo=/professional/setup">
             Create PRO account
@@ -62,7 +62,7 @@ export default async function ProfessionalPreviewPage({
         <section className="pro-welcome">
           <div>
             <p className="pro-kicker">GLOHAUS PRO</p>
-            <h1>{selected?.[0] ?? "Professional dashboard"}</h1>
+            <h1>{selected?.[0] ?? "Beauty professional dashboard"}</h1>
             <p>{selected?.[1] ?? "Manage bookings, clients, services, content, products and your protected wallet from one workspace."}</p>
           </div>
         </section>
@@ -75,7 +75,7 @@ export default async function ProfessionalPreviewPage({
                 <div>
                   <p className="pro-kicker">IDENTITY & MARKETPLACE ACCESS</p>
                   <h2>Start free. Verify when you’re ready for more.</h2>
-                  <p>Starter professionals can build a profile, post, message clients and accept up to 5 starter bookings. Verification unlocks paid deposits, higher-value services, product selling and withdrawals.</p>
+                  <p>Starter beauty professionals can build a profile, post, message clients and accept up to 5 starter bookings. Verification unlocks paid deposits, higher-value services, product selling and withdrawals.</p>
                 </div>
               </div>
               <Link className="pro-pink-button" href="/professional-preview?view=verification">View verification</Link>
@@ -88,7 +88,7 @@ export default async function ProfessionalPreviewPage({
               <article><Radio size={19} aria-hidden /><strong>186 / 500</strong><span>Followers toward LIVE</span></article>
             </section>
 
-            <section className="pro-quick-actions" aria-label="Professional demo navigation">
+            <section className="pro-quick-actions" aria-label="Beauty professional demo navigation">
               {actions.map(([label, description, key, Icon]) => (
                 <Link href={"/professional-preview?view="+key} key={key}>
                   <Icon size={18} aria-hidden />
@@ -101,7 +101,7 @@ export default async function ProfessionalPreviewPage({
 
         {selected && (
           <section className="pro-panel">
-            <p className="pro-kicker">PROFESSIONAL DEMO VIEW</p>
+            <p className="pro-kicker">BEAUTY PROFESSIONAL DEMO VIEW</p>
             <h2>{selected[0]}</h2>
             <p>{selected[1]}</p>
             {view === "verification" && (
@@ -109,20 +109,20 @@ export default async function ProfessionalPreviewPage({
                 <div className="pro-verification-levels">
                   <article>
                     <BadgeCheck size={19} aria-hidden />
-                    <div><strong>Identity Verified</strong><span>The professional has completed required identity/KYC checks. This does not mean they operate a registered company.</span></div>
+                    <div><strong>Identity Verified</strong><span>The beauty professional has completed required identity/KYC checks. This does not mean they operate a registered company.</span></div>
                   </article>
                   <article>
                     <BadgeCheck size={19} aria-hidden />
-                    <div><strong>Business Verified</strong><span>Registered company or business-entity details have also been checked where the professional operates through one.</span></div>
+                    <div><strong>Business Verified</strong><span>Registered company or business-entity details have also been checked where the beauty professional operates through one.</span></div>
                   </article>
                   <article>
                     <BadgeCheck size={19} aria-hidden />
-                    <div><strong>Professional Verified</strong><span>GLOHAUS has additionally checked relevant qualification, licence or professional evidence where a service category requires or supports it.</span></div>
+                    <div><strong>Professional Verified</strong><span>GLOHAUS has additionally checked relevant qualification, licence or professional evidence where a beauty service category requires or supports it.</span></div>
                   </article>
                 </div>
                 <div className="pro-tax-note">
                   <strong>Tax responsibility</strong>
-                  <p>Professionals remain responsible for registering with HMRC where required and for reporting and paying their own tax, National Insurance, VAT or other obligations. GLOHAUS records and earnings summaries are not tax advice.</p>
+                  <p>Beauty professionals remain responsible for registering with HMRC where required and for reporting and paying their own tax, National Insurance, VAT or other obligations. GLOHAUS records and earnings summaries are not tax advice.</p>
                   <Link href="/professional-terms">Read Professional Terms →</Link>
                 </div>
               </>

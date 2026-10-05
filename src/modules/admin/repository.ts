@@ -517,3 +517,15 @@ export async function ownerProfessionalReferralOverview(): Promise<OwnerProfessi
     return row?.data ?? [];
   });
 }
+
+
+export async function ownerPublicSiteStatus(): Promise<boolean> {
+  return withOwner(async (db) => {
+    const row = (
+      await db.query<{ enabled: boolean }>(
+        "SELECT coalesce((SELECT (value->>'enabled')::boolean FROM beauty.platform_settings WHERE key='public_site'),true) AS enabled",
+      )
+    ).rows[0];
+    return row?.enabled !== false;
+  });
+}

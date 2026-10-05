@@ -12720,3 +12720,106 @@ body {
     align-items:flex-start;
   }
 }
+
+
+
+/* Mobile brand overlap repair */
+@media (max-width: 760px) {
+  .glohaus-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+  .glohaus-header > .brand {
+    min-width: 0;
+    max-width: 100%;
+    font-size: clamp(1.38rem, 6vw, 1.72rem);
+  }
+  .glohaus-header-actions {
+    min-width: 0;
+    flex: 0 0 auto;
+    gap: 5px;
+  }
+  .glohaus-header-actions .glohaus-sign-in,
+  .glohaus-sign-up {
+    white-space: nowrap;
+  }
+
+  .mobile-home-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 8px;
+    padding-inline: 14px;
+  }
+  .mobile-home-brand {
+    min-width: 0;
+  }
+  .mobile-home-brand .brand {
+    max-width: 100%;
+    font-size: clamp(1.45rem, 7vw, 1.75rem);
+  }
+  .mobile-home-brand > span {
+    max-width: 18rem;
+    font-size: .62rem;
+    line-height: 1.25;
+  }
+  .mobile-home-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 0 0 auto;
+    gap: 2px;
+    min-width: 0;
+  }
+  .mobile-home-bell {
+    width: 36px;
+    height: 36px;
+  }
+  .mobile-home-sign-in {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    padding: 0 9px;
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 999px;
+    color: #fff;
+    font-size: .68rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .glohaus-header {
+    padding-inline: 10px;
+  }
+  .glohaus-header-actions .glohaus-search-link {
+    display: none;
+  }
+  .glohaus-header-actions .glohaus-sign-in,
+  .glohaus-sign-up {
+    padding-inline: 8px;
+    font-size: .66rem;
+  }
+  .mobile-home-header {
+    padding-inline: 11px;
+  }
+  .mobile-home-brand > span {
+    font-size: .58rem;
+  }
+}
+
+@media (max-width: 350px) {
+  .glohaus-header .brand {
+    font-size: 1.28rem;
+  }
+  .glohaus-sign-up {
+    display: none;
+  }
+  .mobile-home-brand .brand {
+    font-size: 1.36rem;
+  }
+  .mobile-home-bell {
+    width: 32px;
+  }
+}

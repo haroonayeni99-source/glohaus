@@ -4,7 +4,7 @@ import { useCurrentTime } from "@/components/use-current-time";
 import { useRouter } from "next/navigation";
 import type { AdminOverview } from "@/modules/admin/repository";
 import { OwnerUserActions } from "@/components/owner-user-actions";
-export function AdminManager({ data, owner = false }: { data: AdminOverview; owner?: boolean }) {
+export function AdminManager({ data, owner = false, hardDeleteConfigured = false }: { data: AdminOverview; owner?: boolean; hardDeleteConfigured?: boolean }) {
   const router = useRouter();
   const now = useCurrentTime();
   const [notice, setNotice] = useState("");
@@ -176,7 +176,7 @@ export function AdminManager({ data, owner = false }: { data: AdminOverview; own
                         Manage status
                       </button>
                     )}
-                    {owner && <OwnerUserActions user={user} />}
+                    {owner && <OwnerUserActions user={user} hardDeleteConfigured={hardDeleteConfigured} />}
                   </div>
                 </td>
               </tr>

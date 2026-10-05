@@ -125,7 +125,7 @@ export function DesktopCustomerHome({
       </nav>
 
       <section className="desktop-section">
-        <div className="desktop-section-title"><h2>Recommended professionals</h2><Link href="/explore">See all <ChevronRight size={15}/></Link></div>
+        <div className="desktop-section-title"><h2>Recommended beauty professionals</h2><Link href="/explore">See all <ChevronRight size={15}/></Link></div>
         <div className="desktop-pro-grid">
           {cards.map((card) => (
             <article className="desktop-pro-card" key={card.id}>
@@ -151,7 +151,7 @@ export function DesktopCustomerHome({
       <section className="desktop-section home-how-it-works">
         <div className="desktop-section-title"><h2>How GLOHAUS works</h2><Link href="/how-it-works">Learn more <ChevronRight size={15}/></Link></div>
         <div className="home-how-grid">
-          <article><span>01</span><Search size={20}/><strong>Discover</strong><p>Search by service, location or professional and compare real profiles.</p></article>
+          <article><span>01</span><Search size={20}/><strong>Discover</strong><p>Search by service, location or beauty professional and compare real profiles.</p></article>
           <article><span>02</span><CalendarDays size={20}/><strong>Book clearly</strong><p>Choose a service and time, then review the price before confirming.</p></article>
           <article><span>03</span><ShieldCheck size={20}/><strong>Stay connected</strong><p>Keep booking, messaging, reviews and payment records together in GLOHAUS.</p></article>
         </div>

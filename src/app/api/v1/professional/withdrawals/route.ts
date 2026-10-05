@@ -209,6 +209,21 @@ export async function POST(request: Request) {
         console.error("GLOHAUS payout request rollback failed");
       }
     }
+    if (
+      error &&
+      typeof error === "object" &&
+      "message" in error &&
+      typeof error.message === "string"
+    ) {
+      if (error.message.includes("PAYOUT_RESTRICTED"))
+        return json({ error: { code: "PAYOUT_RESTRICTED" } }, 409);
+      if (error.message.includes("OUTSTANDING_OBLIGATION"))
+        return json({ error: { code: "OUTSTANDING_OBLIGATION" } }, 409);
+      if (error.message.includes("INSUFFICIENT_AVAILABLE_BALANCE"))
+        return json({ error: { code: "INSUFFICIENT_AVAILABLE_BALANCE" } }, 409);
+      if (error.message.includes("PAYOUT_TOO_SMALL"))
+        return json({ error: { code: "PAYOUT_TOO_SMALL" } }, 409);
+    }
     return apiError(error);
   }
 }

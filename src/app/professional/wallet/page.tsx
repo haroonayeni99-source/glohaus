@@ -62,7 +62,26 @@ export default async function ProfessionalWalletPage() {
     };
   });
   const { wallet, disputes, pricing, access, hasStripeAccount } = finance;
-  const restricted = wallet.withdrawalsBlocked || wallet.instantPayoutBlocked;
+  const openDisputes = disputes.disputes.filter((dispute) =>
+    [
+      "warning_needs_response",
+      "warning_under_review",
+      "needs_response",
+      "under_review",
+    ].includes(dispute.status),
+  );
+  const disputeSafetyBufferPence =
+    openDisputes.length === 1
+      ? Math.ceil(openDisputes[0].amountPence * 0.5)
+      : 0;
+  const tieredFullFreeze =
+    wallet.withdrawalsBlocked ||
+    openDisputes.length >= 2 ||
+    openDisputes.some((dispute) => dispute.reserveShortfallPence > 0);
+  const withdrawablePence = tieredFullFreeze
+    ? 0
+    : Math.max(0, wallet.availablePence - disputeSafetyBufferPence);
+  const restricted = tieredFullFreeze || wallet.instantPayoutBlocked;
   return (
     <div className="pro-app">
       <ProfessionalNavigation active="wallet" displayName={result.account.displayName} />
@@ -80,8 +99,8 @@ export default async function ProfessionalWalletPage() {
 
         <section className="pro-stat-grid pro-wallet-balances" aria-label="Wallet balances">
           <article>
-            <strong>{money(wallet.availablePence)}</strong>
-            <span>Available to withdraw</span>
+            <strong>{money(withdrawablePence)}</strong>
+            <span>Available to withdraw now</span>
           </article>
           <article>
             <strong>{money(wallet.pendingPence)}</strong>
@@ -179,6 +198,14 @@ export default async function ProfessionalWalletPage() {
           </section>
         )}
 
+        {disputeSafetyBufferPence > 0 && !tieredFullFreeze && (
+          <section className="pro-finance-notice" role="status">
+            <CircleAlert size={18} aria-hidden />
+            <span>
+              One dispute is open. GLOHAUS is keeping {money(disputeSafetyBufferPence)} as a temporary safety buffer while the rest of your eligible balance remains withdrawable.
+            </span>
+          </section>
+        )}
         {restricted && (
           <section className="pro-finance-notice" role="status">
             <CircleAlert size={18} aria-hidden />
@@ -223,8 +250,8 @@ export default async function ProfessionalWalletPage() {
               push your GLOHAUS wallet below zero.
             </p>
             <WithdrawalForm
-              availablePence={wallet.availablePence}
-              withdrawalsBlocked={wallet.withdrawalsBlocked}
+              availablePence={withdrawablePence}
+              withdrawalsBlocked={tieredFullFreeze}
               instantBlocked={wallet.instantPayoutBlocked}
               instantConfigured={
                 process.env.STRIPE_INSTANT_PAYOUT_FEE_CONFIGURED === "true"

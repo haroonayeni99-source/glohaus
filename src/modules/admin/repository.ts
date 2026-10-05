@@ -89,6 +89,9 @@ export type AdminOverview = {
     reserved_available_pence: number;
     reserve_shortfall_pence: number;
     evidence_due_at: string | null;
+    response_statement: string | null;
+    response_submitted_at: string | null;
+    response_updated_at: string | null;
     updated_at: string;
   }[];
   safety?: {

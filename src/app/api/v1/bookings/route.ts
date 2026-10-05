@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       ).rows[0].booking;
       // Throw before the transaction commits: unavailable paid checkout must not leave a slot held.
       if (reservation.status !== "confirmed" && !paymentReady())
-        throw new AccessError("UNAVAILABLE", 503);
+        throw new Error("PAYMENTS_NOT_READY");
       return reservation;
     });
     // Re-read the immutable snapshot inside the authenticated customer scope

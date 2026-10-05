@@ -220,6 +220,7 @@ export default async function ProfessionalWalletPage() {
             </p>
             <WithdrawalForm
               availablePence={wallet.availablePence}
+              withdrawalsBlocked={wallet.withdrawalsBlocked}
               instantBlocked={wallet.instantPayoutBlocked}
               instantConfigured={
                 process.env.STRIPE_INSTANT_PAYOUT_FEE_CONFIGURED === "true"

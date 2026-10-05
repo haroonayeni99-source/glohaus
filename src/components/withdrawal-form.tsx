@@ -11,10 +11,12 @@ function money(pence: number) {
 
 export function WithdrawalForm({
   availablePence,
+  withdrawalsBlocked,
   instantBlocked,
   instantConfigured,
 }: {
   availablePence: number;
+  withdrawalsBlocked: boolean;
   instantBlocked: boolean;
   instantConfigured: boolean;
 }) {
@@ -42,13 +44,17 @@ export function WithdrawalForm({
       if (!response.ok) {
         const code = data.error?.code;
         throw new Error(
-          code === "INSTANT_PAYOUT_UNAVAILABLE"
-            ? "Instant withdrawal is not available for your current payout account."
-            : code === "INSTANT_PAYOUT_SETUP_REQUIRED"
-              ? "Instant withdrawals are being configured. Standard withdrawal is available."
+          code === "PAYOUT_RESTRICTED"
+            ? "Withdrawals are temporarily frozen while a dispute or account review is open."
+            : code === "OUTSTANDING_OBLIGATION"
+              ? "You have an outstanding GLOHAUS balance that must be cleared before withdrawing."
               : code === "INSUFFICIENT_AVAILABLE_BALANCE"
                 ? "That amount is no longer available to withdraw."
-                : "We could not start this withdrawal. Your available balance has not been lost.",
+                : code === "PAYOUT_TOO_SMALL"
+                  ? "The withdrawal amount is too small after applicable fees."
+                  : code === "UNAVAILABLE"
+                    ? "GLOHAUS payout processing is not fully connected right now. Your wallet balance is unchanged."
+                    : "We could not start this withdrawal. Your available balance has not been lost.",
         );
       }
       setMessage(
@@ -108,7 +114,7 @@ export function WithdrawalForm({
         <button
           type="button"
           className="button"
-          disabled={!valid || busy !== null}
+          disabled={!valid || busy !== null || withdrawalsBlocked}
           onClick={() => void withdraw("standard")}
         >
           {busy === "standard" ? "Starting…" : "Standard withdrawal · Free"}
@@ -119,6 +125,7 @@ export function WithdrawalForm({
           disabled={
             !valid ||
             busy !== null ||
+            withdrawalsBlocked ||
             instantBlocked ||
             !instantConfigured ||
             instantBank < 40
@@ -129,6 +136,11 @@ export function WithdrawalForm({
         </button>
       </div>
 
+      {withdrawalsBlocked && (
+        <p className="form-help">
+          All withdrawals are frozen while an open dispute or financial review is active.
+        </p>
+      )}
       {!instantConfigured && (
         <p className="form-help">
           Instant withdrawal will unlock after GLOHAUS completes Stripe Instant

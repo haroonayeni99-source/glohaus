@@ -84,6 +84,12 @@ export function BookingPicker({
   const [step, setStep] = useState<"appointment" | "summary">("appointment");
 
   const service = services.find((item) => item.id === serviceId);
+  const starterFullPrepayment = verificationStatus !== "verified";
+  const amountDueNowPence = service
+    ? starterFullPrepayment
+      ? service.price_pence + bookingFeePence
+      : service.deposit_pence + bookingFeePence
+    : bookingFeePence;
   const [today] = useState(() => londonDateString());
   const quickDates = useMemo(() => dateChoices(today), [today]);
 
@@ -199,8 +205,8 @@ export function BookingPicker({
               {verificationStatus === "restricted"
                 ? "This professional account is currently restricted from new marketplace activity."
                 : verificationStatus === "pending"
-                  ? "Identity verification is pending. Starter booking limits remain in place until verification is complete."
-                  : `Identity has not yet been verified. Starter bookings are limited to services up to £200 with no online deposit${starterBookingsRemaining === null ? "." : `, with ${starterBookingsRemaining} starter booking${starterBookingsRemaining === 1 ? "" : "s"} remaining.`}`}
+                  ? "Identity verification is pending. Starter bookings remain available within starter limits, and the full service price is paid securely through GLOHAUS."
+                  : `Identity has not yet been verified. Starter bookings are limited to services up to £200 and are paid in full through GLOHAUS${starterBookingsRemaining === null ? "." : `, with ${starterBookingsRemaining} starter booking${starterBookingsRemaining === 1 ? "" : "s"} remaining.`}`}
             </div>
           )}
           <div className="booking-journey-heading">
@@ -322,20 +328,21 @@ export function BookingPicker({
             <CircleHelp size={18} aria-hidden />
             <div>
               <strong>
-                {service.deposit_pence
-                  ? "Deposit required · " + money(service.deposit_pence)
-                  : "No deposit required"}
+                {starterFullPrepayment
+                  ? "Starter booking · full payment online"
+                  : "Deposit required · " + money(service.deposit_pence)}
               </strong>
               <span>
-                {service.deposit_pence
-                  ? "This secures the appointment. The remaining " +
+                {starterFullPrepayment
+                  ? "The full service price is paid securely through GLOHAUS at booking, plus the booking fee. This keeps the booking and GLOHAUS commission protected while the professional is unverified or pending verification."
+                  : "This secures the appointment. The remaining " +
                     money(service.price_pence - service.deposit_pence) +
-                    " is due for the service."
-                  : `No service deposit is required. The mandatory ${money(bookingFeePence)} GLOHAUS booking fee is still paid online to secure the appointment.`}
+                    " is due for the service."}
               </span>
               <small>
-                Professional-required deposits can never exceed 40% of the
-                service price.
+                {starterFullPrepayment
+                  ? "Starter professionals cannot switch this booking to a zero-payment or cash-only booking."
+                  : "Verified professional deposits must be between 15% and 40% of the service price."}
               </small>
             </div>
           </div>
@@ -437,8 +444,7 @@ export function BookingPicker({
           >
             {submitting
               ? "Confirming…"
-              : "Continue to secure " +
-                money(service.deposit_pence + bookingFeePence)}
+              : "Continue to pay " + money(amountDueNowPence)}
           </button>
 
           <p className="booking-secure-note">
@@ -448,8 +454,8 @@ export function BookingPicker({
 
           {!ready && (
             <p className="form-notice">
-              Secure online payment is not connected yet, so paid-deposit
-              bookings remain disabled.
+              Secure online payment is not connected yet, so this booking
+              cannot be paid through GLOHAUS right now.
             </p>
           )}
 

@@ -315,7 +315,7 @@ export function EmailAuthForm({
             <Link
               href={
                 professional
-                  ? "/sign-in?intent=professional&returnTo=/professional"
+                  ? "/professional/sign-in"
                   : "/sign-in"
               }
             >

@@ -22,6 +22,19 @@ export function maximumRequiredDepositPence(pricePence: number) {
   );
 }
 
+export function isDepositWithinMaximum(
+  pricePence: number,
+  depositPence: number,
+) {
+  return (
+    Number.isSafeInteger(pricePence) &&
+    pricePence >= 0 &&
+    Number.isSafeInteger(depositPence) &&
+    depositPence >= 0 &&
+    depositPence <= maximumRequiredDepositPence(pricePence)
+  );
+}
+
 export function isRequiredDepositWithinLimit(
   pricePence: number,
   depositPence: number,

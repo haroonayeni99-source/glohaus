@@ -13,6 +13,7 @@ import {
   MessageSquareWarning,
   PackageCheck,
   Radio,
+  Globe2,
   Settings,
   ShieldCheck,
   UsersRound,
@@ -36,6 +37,7 @@ const coreSections = [
 ] as const;
 
 const ownerSections = [
+  ["Website Status", "website-status", Globe2],
   ["Auth Accounts", "auth-accounts", UsersRound],
   ["Pro Commission", "professional-commission", CreditCard],
   ["Booking Fee", "booking-fee", CreditCard],

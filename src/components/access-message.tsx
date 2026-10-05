@@ -50,7 +50,7 @@ const messages: Record<
   },
   VERIFICATION_REQUIRED: {
     title: "Verify your identity to unlock this feature.",
-    text: "Beauty professionals must complete verification before accepting bookings or using protected marketplace features.",
+    text: "You can start using GLOHAUS with limited professional access. Verification unlocks deposits, higher-value services, more booking capacity and protected marketplace features.",
     href: "/professional/profile#verification",
     label: "Verify identity",
   },

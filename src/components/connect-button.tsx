@@ -7,8 +7,10 @@ type VerificationStatus = "unverified" | "pending" | "verified" | "restricted";
 
 export function ConnectButton({
   status = "unverified",
+  runtimeReady,
 }: {
   status?: VerificationStatus;
+  runtimeReady: boolean;
 }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -44,10 +46,10 @@ export function ConnectButton({
       <p className="lead">
         {status === "pending"
           ? "Your Stripe verification is in progress. Continue the secure Stripe process if more information is requested."
-          : "You can start on GLOHAUS before verification. Starter access allows a public profile, services up to £200 with no online deposit, and up to five starter bookings. Complete verification to unlock deposits, higher-value services, product selling, withdrawals and broader marketplace features. Stripe may ask for phone/contact details, personal or business information, and government ID or a selfie where required."}
+          : "You can start on GLOHAUS before verification. Starter access allows a public profile, services up to £200 and up to five starter bookings. Starter bookings are paid in full through GLOHAUS. Complete verification to unlock 15–40% deposits, higher-value services, product selling, withdrawals and broader marketplace features. Stripe may ask for phone/contact details, personal or business information, and government ID or a selfie where required."}
       </p>
       <p className="form-help">
-        Before verification you can build and publish your profile under Starter access. Unverified professionals are limited to services up to £200, no online deposit, and five starter bookings.
+        Before verification you can build and publish your profile under Starter access. Unverified professionals are limited to services up to £200 and five starter bookings, with the full service price paid through GLOHAUS at booking.
       </p>
       <label>
         <input
@@ -67,7 +69,7 @@ export function ConnectButton({
       </label>
       <button
         className="button"
-        disabled={busy || !adultConfirmed || !termsAccepted}
+        disabled={!runtimeReady || busy || !adultConfirmed || !termsAccepted}
         onClick={async () => {
           setBusy(true);
           setMessage("");
@@ -102,6 +104,11 @@ export function ConnectButton({
             ? "Continue verification"
             : "Complete professional verification"}
       </button>
+      {!runtimeReady && (
+        <p role="status" className="form-notice">
+          Professional verification is temporarily unavailable because the protected Stripe payment runtime is not fully configured yet.
+        </p>
+      )}
       {message && <p role="status" className="form-notice">{message}</p>}
     </div>
   );

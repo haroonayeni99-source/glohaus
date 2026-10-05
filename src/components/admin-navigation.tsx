@@ -43,7 +43,7 @@ const ownerSections = [
   ["Booking Fee", "booking-fee", CreditCard],
   ["Referrals", "referrals", UsersRound],
   ["Shop Fees", "shop-fees", CreditCard],
-  ["Staff & Admins", "staff", ShieldCheck],
+  ["Admins & Access", "staff", ShieldCheck],
   ["Audit Log", "audit", BarChart3],
 ] as const;
 

@@ -625,6 +625,12 @@ export type OwnerBackendHealth = {
     marketingPending: number;
     marketingExhausted: number;
   };
+  integrity: {
+    unbalancedLedgerTransactions: number;
+    negativeProfessionalAvailableBalances: number;
+    bookingsMissingQuote: number;
+    paidOrdersMissingPaymentLedger: number;
+  };
 };
 
 export async function ownerBackendHealth(): Promise<OwnerBackendHealth> {
@@ -647,6 +653,12 @@ export async function ownerBackendHealth(): Promise<OwnerBackendHealth> {
           productEmailExhausted: 0,
           marketingPending: 0,
           marketingExhausted: 0,
+        },
+        integrity: {
+          unbalancedLedgerTransactions: 0,
+          negativeProfessionalAvailableBalances: 0,
+          bookingsMissingQuote: 0,
+          paidOrdersMissingPaymentLedger: 0,
         },
       }
     );

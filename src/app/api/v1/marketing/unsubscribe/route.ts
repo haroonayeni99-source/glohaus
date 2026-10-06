@@ -15,7 +15,7 @@ export async function POST(request:Request){
         "SELECT beauty.unsubscribe_marketing($1) AS ok",[parsed.data.token]
       )
     ).rows[0]?.ok ?? false);
-    if(!changed) throw new AccessError("NOT_FOUND",404);
+    if(!changed) return new Response("Not found", { status: 404 });
     return json({unsubscribed:true});
   }catch(error){return apiError(error);}
 }

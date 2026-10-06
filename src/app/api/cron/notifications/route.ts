@@ -48,6 +48,21 @@ export async function GET(request: Request) {
         ).rows,
     );
 
+    const marketingJobs = await withPaymentWorker(
+      async (db) =>
+        (
+          await db.query<{
+            id: string;
+            campaign_id: string;
+            email: string;
+            subject: string;
+            body: string;
+            cta_url: string;
+            unsubscribe_token: string;
+          }>("SELECT * FROM beauty.claim_marketing_notifications()")
+        ).rows,
+    );
+
     const resend = new Resend(process.env.RESEND_API_KEY);
     let sent = 0;
     for (const job of jobs) {
@@ -99,10 +114,45 @@ export async function GET(request: Request) {
       }
     }
 
+    for (const job of marketingJobs) {
+      try {
+        const cta = new URL(job.cta_url, appUrl).href;
+        const unsubscribe = new URL(
+          `/marketing/unsubscribe?token=${encodeURIComponent(job.unsubscribe_token)}`,
+          appUrl,
+        ).href;
+        const result = await resend.emails.send(
+          {
+            from,
+            to: job.email,
+            subject: job.subject,
+            text: `${job.body}\n\nOpen GLOHAUS: ${cta}\n\nThis is optional GLOHAUS marketing. Unsubscribe: ${unsubscribe}`,
+          },
+          { idempotencyKey: `glohaus-marketing-${job.id}` },
+        );
+        if (result.error || !result.data?.id) throw new Error("DELIVERY_FAILED");
+        await withPaymentWorker((db) =>
+          db.query(
+            "SELECT beauty.finish_marketing_notification($1,true,$2)",
+            [job.id, result.data.id],
+          ),
+        );
+        sent++;
+      } catch {
+        await withPaymentWorker((db) =>
+          db.query(
+            "SELECT beauty.finish_marketing_notification($1,false,$2)",
+            [job.id, null],
+          ),
+        );
+      }
+    }
+
     return Response.json({
-      processed: jobs.length + productJobs.length,
+      processed: jobs.length + productJobs.length + marketingJobs.length,
       bookingJobs: jobs.length,
       productJobs: productJobs.length,
+      marketingJobs: marketingJobs.length,
       sent,
     });
   } catch {

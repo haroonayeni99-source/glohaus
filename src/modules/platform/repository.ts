@@ -62,3 +62,26 @@ export async function categoryIsActive(
   ).rows[0];
   return Boolean(row?.ok);
 }
+
+
+export type HomepageMedia = {
+  desktopHero: string | null;
+  mobileHero: string | null;
+};
+
+export async function publicHomepageMedia(): Promise<HomepageMedia> {
+  const fallback: HomepageMedia = { desktopHero: null, mobileHero: null };
+  if (!process.env.DATABASE_URL) return fallback;
+  try {
+    return await withIdentity("", async (db) => {
+      const row = (
+        await db.query<{ data: HomepageMedia }>(
+          "SELECT beauty.public_homepage_media() AS data",
+        )
+      ).rows[0];
+      return row?.data ?? fallback;
+    });
+  } catch {
+    return fallback;
+  }
+}

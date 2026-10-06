@@ -44,6 +44,9 @@ const ownerSections = [
   ["Pro Commission", "professional-commission", CreditCard],
   ["Referrals", "referrals", UsersRound],
   ["Admins & Access", "staff", ShieldCheck],
+  ["Payment Readiness", "payment-readiness", CreditCard],
+  ["Email Readiness", "email-readiness", ShieldCheck],
+  ["Email Delivery", "email-delivery-health", MessageSquareWarning],
   ["Audit Log", "audit", BarChart3],
 ] as const;
 

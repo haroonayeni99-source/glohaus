@@ -162,21 +162,34 @@ export default async function Page() {
           {isOwner && emailReadiness && (
             <section id="email-readiness" className="admin-workspace-section admin-detail-card">
               <p className="eyebrow">EMAIL & AUTH READINESS</p>
-              <h2>Password reset → booking emails → notifications</h2>
-              <p className="lead">
-                {emailReadiness.ready
-                  ? "Required email delivery and authentication safeguards are marked ready for production."
-                  : "Email delivery still needs configuration before GLOHAUS should rely on password-reset and booking emails in production."}
-              </p>
+              <h2>Transactional email and account security</h2>
+              <div className="admin-readiness-summary">
+                <p className="lead">
+                  <strong>Transactional email:</strong>{" "}
+                  {emailReadiness.transactionalReady
+                    ? "Ready. Booking emails, reminder jobs and Resend delivery tracking are configured."
+                    : "Needs setup before GLOHAUS should rely on automated booking and reminder emails."}
+                </p>
+                <p className="lead">
+                  <strong>Auth security:</strong>{" "}
+                  {emailReadiness.authSecurityReady
+                    ? "Required Supabase Auth safeguards are confirmed."
+                    : "Still needs hardening. This does not stop GLOHAUS transactional emails from sending."}
+                </p>
+              </div>
               <div className="service-edit-list">
                 {emailReadiness.checks.map((check) => (
                   <article className="service-edit-row" key={check.key}>
                     <div>
                       <h3>{check.label}</h3>
-                      <p>{check.ready ? "Ready" : check.required ? "Needs setup" : "Recommended before public launch"}</p>
+                      <p>
+                        {check.group === "transactional" ? "Transactional email" : "Authentication security"}
+                        {" · "}
+                        {check.ready ? "Ready" : check.required ? "Needs setup" : "Recommended"}
+                      </p>
                     </div>
                     <span className={`admin-status ${check.ready ? "admin-status-active" : "admin-status-suspended"}`}>
-                      {check.ready ? "READY" : check.required ? "BLOCKED" : "RECOMMENDED"}
+                      {check.ready ? "READY" : check.required ? "NEEDS SETUP" : "RECOMMENDED"}
                     </span>
                   </article>
                 ))}

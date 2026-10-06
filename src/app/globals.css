@@ -12369,3 +12369,119 @@ body {
   max-height: 360px;
   object-fit: cover;
 }
+
+
+/* Marketing preferences, one-click campaign presets and private feature voting. */
+.marketing-preferences {
+  display: grid;
+  gap: 18px;
+  margin-top: 28px;
+}
+.marketing-preference-row {
+  align-items: center;
+}
+.marketing-preference-row input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--plum);
+  flex: 0 0 auto;
+}
+.feature-vote-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 28px;
+}
+.feature-vote-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--white);
+  color: var(--ink);
+}
+.feature-vote-card h2 {
+  margin: 6px 0 8px;
+  font-size: 1.15rem;
+}
+.feature-vote-card p {
+  color: var(--muted);
+  max-width: 760px;
+}
+.feature-vote-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  min-width: 108px;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 750;
+}
+.feature-vote-button.is-voted {
+  background: var(--plum);
+  border-color: var(--plum);
+  color: #fff;
+}
+.owner-marketing-panel {
+  display: grid;
+  gap: 28px;
+  margin-top: 24px;
+}
+.marketing-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 12px;
+}
+.marketing-preset-card {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--white);
+  color: var(--ink);
+}
+.marketing-preset-card > svg {
+  color: var(--plum);
+}
+.marketing-preset-card h4 {
+  margin: 10px 0 6px;
+}
+.marketing-preset-card p {
+  min-height: 42px;
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.55;
+}
+.marketing-preset-card button {
+  margin-top: 14px;
+  border: 1px solid var(--plum);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--plum);
+  padding: 9px 12px;
+  font-weight: 750;
+}
+.marketing-preset-card button:hover {
+  background: var(--plum);
+  color: #fff;
+}
+:root[data-theme="night"] :is(.feature-vote-card,.marketing-preset-card) {
+  background: var(--white);
+  border-color: var(--line);
+  color: var(--ink);
+}
+@media (max-width: 760px) {
+  .marketing-preset-grid { grid-template-columns: 1fr; }
+  .feature-vote-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .feature-vote-button { width: 100%; }
+}

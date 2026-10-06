@@ -84,12 +84,14 @@ export function DesktopCustomerHome({
   displayName = "",
   canAccessAdmin = false,
   summary = null,
+  homepageMedia = { desktopHero: null, mobileHero: null },
 }: {
   professionals?: PublicProfessional[];
   signedIn?: boolean;
   displayName?: string;
   canAccessAdmin?: boolean;
   summary?: CustomerHomeSummary | null;
+  homepageMedia?: { desktopHero: string | null; mobileHero: string | null };
 }) {
   const protectedHref = (path: string) =>
     signedIn ? path : `/sign-in?returnTo=${encodeURIComponent(path)}`;
@@ -240,7 +242,11 @@ export function DesktopCustomerHome({
             fill
             priority
             sizes="60vw"
-            src="https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=1600&q=88"
+            src={
+              homepageMedia.desktopHero ||
+              "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=1600&q=88"
+            }
+            unoptimized
             alt="Beauty inspiration portrait"
           />
         </section>

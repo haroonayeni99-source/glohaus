@@ -11,11 +11,15 @@ export default async function MarketingPreferencesPage() {
   const result = await pageAccount();
   if (!result.account) return <div className="standalone-message"><AccessMessage code={result.error} /></div>;
   const account = result.account;
-  const preferences = await withIdentity(account.authId, async (db) => (
-    await db.query<{ data: Record<string, boolean> }>(
-      "SELECT beauty.my_marketing_preferences() AS data"
-    )
-  ).rows[0]?.data ?? {};
+  const preferences = await withIdentity(
+    account.authId,
+    async (db) =>
+      (
+        await db.query<{ data: Record<string, boolean> }>(
+          "SELECT beauty.my_marketing_preferences() AS data",
+        )
+      ).rows[0]?.data ?? {},
+  );
 
   const professional = account.roles.includes("professional");
   const content = (

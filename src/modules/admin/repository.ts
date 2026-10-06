@@ -57,6 +57,7 @@ export type AdminOverview = {
       delivered: number;
       refundPending: number;
       refunded: number;
+      awaitingShipmentOver24h: number;
     };
     orders: {
       id: string;
@@ -72,6 +73,7 @@ export type AdminOverview = {
       tracking_carrier: string | null;
       tracking_number: string | null;
       created_at: string;
+      awaiting_shipment_over_24h: boolean;
       items: {
         name: string;
         quantity: number;

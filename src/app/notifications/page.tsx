@@ -34,7 +34,7 @@ export default async function NotificationsPage({
   const content = notifications === null ? (
     <section className={professional ? "pro-empty-state pro-large-empty" : "catalog-empty"}>
       <h2>Notifications are being prepared.</h2>
-      <p>Your private activity feed will appear here once its secure data update is available.</p>
+      <p>GLOHAUS could not load your private activity feed right now. Your notifications remain protected; return and try again shortly.</p>
       <Link href={professional ? "/professional" : "/"}>Go back</Link>
     </section>
   ) : (
@@ -47,7 +47,7 @@ export default async function NotificationsPage({
         <main id="main" className="pro-main pro-list-page">
           <p className="pro-kicker">ACTIVITY</p>
           <h1>Your notifications.</h1>
-          <p className="pro-page-lead">Booking activity appears here as it is recorded for your account.</p>
+          <p className="pro-page-lead">Booking reminders, Shop updates and other account activity appear here as they are recorded.</p>
           {content}
         </main>
       </div>
@@ -58,7 +58,7 @@ export default async function NotificationsPage({
       <main id="main" className="catalog-page notification-page">
         <p className="eyebrow">ACTIVITY</p>
         <h1>Your notifications.</h1>
-        <p className="lead">Booking activity appears here as it is recorded for your account.</p>
+        <p className="lead">Booking reminders, Shop updates and other account activity appear here as they are recorded.</p>
         {content}
       </main>
     </>

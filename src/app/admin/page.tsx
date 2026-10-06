@@ -15,7 +15,8 @@ import { ProfessionalCommissionControl } from "@/components/professional-commiss
 import { OwnerReferralOverview } from "@/components/owner-referral-overview";
 import { OwnerDashboardOverview } from "@/components/owner-dashboard-overview";
 import { WebsiteStatusControl } from "@/components/website-status-control";
-import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, ownerProfessionalReferralOverview, ownerPublicSiteStatus, paymentLaunchReadiness } from "@/modules/admin/repository";
+import { HomepageMediaControl } from "@/components/homepage-media-control";
+import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, ownerProfessionalReferralOverview, ownerPublicSiteStatus, ownerHomepageMedia, paymentLaunchReadiness } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
@@ -43,6 +44,9 @@ export default async function Page() {
   const referrals = isOwner ? await ownerProfessionalReferralOverview().catch(() => []) : [];
   const emailReadiness = isOwner ? emailLaunchReadiness() : null;
   const publicSiteEnabled = isOwner ? await ownerPublicSiteStatus().catch(() => true) : true;
+  const homepageMedia = isOwner
+    ? await ownerHomepageMedia().catch(() => ({ desktopHero: null, mobileHero: null }))
+    : null;
   return (
     <main id="main" className="admin-workspace">
         <AdminNavigation account={result.account} />
@@ -50,6 +54,16 @@ export default async function Page() {
           {isOwner && (
             <section id="website-status" className="admin-workspace-section admin-detail-card owner-website-status-section">
               <WebsiteStatusControl initialEnabled={publicSiteEnabled} />
+            </section>
+          )}
+          {isOwner && homepageMedia && (
+            <section id="homepage-media" className="admin-workspace-section admin-detail-card">
+              <p className="eyebrow">HOMEPAGE IMAGERY</p>
+              <h2>Homepage models</h2>
+              <p className="lead">
+                Change the main homepage model imagery without changing code. Desktop and mobile can use different images.
+              </p>
+              <HomepageMediaControl initial={homepageMedia} />
             </section>
           )}
           <OwnerDashboardOverview

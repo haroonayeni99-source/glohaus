@@ -17,7 +17,8 @@ import { OwnerDashboardOverview } from "@/components/owner-dashboard-overview";
 import { WebsiteStatusControl } from "@/components/website-status-control";
 import { HomepageMediaControl } from "@/components/homepage-media-control";
 import { OwnerMarketingPanel } from "@/components/owner-marketing-panel";
-import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, ownerProfessionalReferralOverview, ownerPublicSiteStatus, ownerHomepageMedia, ownerMarketingOverview, paymentLaunchReadiness } from "@/modules/admin/repository";
+import { OwnerBackendHealthPanel } from "@/components/owner-backend-health-panel";
+import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, ownerProfessionalReferralOverview, ownerPublicSiteStatus, ownerHomepageMedia, ownerMarketingOverview, ownerBackendHealth, paymentLaunchReadiness } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
@@ -54,6 +55,9 @@ export default async function Page() {
         queue: { pending: 0, retrying: 0, exhausted: 0 },
         campaigns: [],
       }))
+    : null;
+  const backendHealth = isOwner
+    ? await ownerBackendHealth().catch(() => null)
     : null;
   return (
     <main id="main" className="admin-workspace">
@@ -163,6 +167,16 @@ export default async function Page() {
               <h2>Staff & admins</h2>
               <p className="lead">Only the owner can delegate or remove privileged access. Owner access cannot be granted here.</p>
               <OwnerControls data={owner} users={data.users} />
+            </section>
+          )}
+          {isOwner && backendHealth && (
+            <section id="backend-health" className="admin-workspace-section admin-detail-card">
+              <p className="eyebrow">BACKEND HEALTH</p>
+              <h2>Jobs, queues and payment runtime</h2>
+              <p className="lead">
+                Operational health for scheduled maintenance, automated emails and launch-critical payment configuration.
+              </p>
+              <OwnerBackendHealthPanel health={backendHealth} payment={paymentReadiness} />
             </section>
           )}
           {isOwner && paymentReadiness && (

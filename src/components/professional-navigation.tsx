@@ -7,6 +7,10 @@ import {
   UsersRound,
   WalletCards,
   ArrowLeftRight,
+  ShoppingBag,
+  PackageCheck,
+  ShieldCheck,
+  Bell,
 } from "lucide-react";
 import { Brand } from "./brand";
 import { AccountControls } from "./account-controls";
@@ -16,7 +20,7 @@ const items = [
   { id: "bookings", href: "/professional/bookings", label: "Bookings", icon: CalendarDays },
   { id: "clients", href: "/professional/clients", label: "Clients", icon: UsersRound },
   { id: "wallet", href: "/professional/wallet", label: "Wallet", icon: WalletCards },
-  { id: "more", href: "/professional/tools", label: "More", icon: MoreHorizontal },
+  { id: "more", href: "/professional/tools", label: "Tools", icon: MoreHorizontal },
 ] as const;
 
 export type ProfessionalNavigationItem = (typeof items)[number]["id"];
@@ -36,6 +40,24 @@ export function ProfessionalNavigation({
           <span>PROFESSIONAL DASHBOARD</span>
         </div>
         <div className="pro-header-account">
+          <nav className="pro-header-shortcuts" aria-label="Professional shortcuts">
+            <Link href="/professional/products">
+              <ShoppingBag size={14} aria-hidden />
+              Products
+            </Link>
+            <Link href="/professional/orders">
+              <PackageCheck size={14} aria-hidden />
+              Orders
+            </Link>
+            <Link href="/professional/profile#verification">
+              <ShieldCheck size={14} aria-hidden />
+              Verification
+            </Link>
+            <Link href="/notifications?view=professional">
+              <Bell size={14} aria-hidden />
+              Notifications
+            </Link>
+          </nav>
           <Link className="pro-create-post" href="/account">
             <ArrowLeftRight size={15} aria-hidden />
             Customer view

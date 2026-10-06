@@ -162,10 +162,14 @@ export function ProductOrderList({
         <h2>No shop orders yet.</h2>
         <p>
           {mode === "customer"
-            ? "Paid product orders will appear here once marketplace checkout is enabled."
-            : "Paid customer product orders will appear here when marketplace checkout goes live."}
+            ? "Your GLOHAUS Shop purchases will appear here after you complete an order."
+            : "Customer Shop orders will appear here after a paid order is confirmed."}
         </p>
-        {mode === "customer" && <Link href="/shop">Browse Shop</Link>}
+        {mode === "customer" ? (
+          <Link href="/shop">Browse Shop</Link>
+        ) : (
+          <Link href="/professional/products">Manage Shop / Products</Link>
+        )}
       </section>
     );
 

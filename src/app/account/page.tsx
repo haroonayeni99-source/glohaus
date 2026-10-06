@@ -11,6 +11,8 @@ import {
   PackageCheck,
   Users,
   WalletCards,
+  Megaphone,
+  ThumbsUp,
 } from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
@@ -64,6 +66,8 @@ const links = [
     PackageCheck,
   ],
   ["Notifications", "Keep up with your appointments", "/notifications", Bell],
+  ["Marketing preferences", "Choose the optional GLOHAUS emails you want", "/preferences", Megaphone],
+  ["Feature votes", "Privately vote on what GLOHAUS should build next", "/feature-votes", ThumbsUp],
   [
     "Account & security",
     "Manage your sign-in and verification",

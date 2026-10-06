@@ -3,7 +3,9 @@ import { Resend } from "resend";
 import { withPaymentWorker } from "@/modules/payments/worker";
 import {
   notificationEmail,
+  productOrderNotificationEmail,
   type Notification,
+  type ProductOrderNotification,
 } from "@/modules/notifications/domain";
 
 const DEFAULT_APP_URL = "https://glohaus.shop";
@@ -37,6 +39,15 @@ export async function GET(request: Request) {
           )
         ).rows,
     );
+    const productJobs = await withPaymentWorker(
+      async (db) =>
+        (
+          await db.query<ProductOrderNotification>(
+            "SELECT * FROM beauty.claim_product_order_notifications()",
+          )
+        ).rows,
+    );
+
     const resend = new Resend(process.env.RESEND_API_KEY);
     let sent = 0;
     for (const job of jobs) {
@@ -63,7 +74,37 @@ export async function GET(request: Request) {
         );
       }
     }
-    return Response.json({ processed: jobs.length, sent });
+    for (const job of productJobs) {
+      try {
+        const message = productOrderNotificationEmail(job, appUrl);
+        const result = await resend.emails.send(
+          { from, to: job.email, ...message },
+          { idempotencyKey: `glohaus-product-notification-${job.id}` },
+        );
+        if (result.error || !result.data?.id) throw new Error("DELIVERY_FAILED");
+        await withPaymentWorker((db) =>
+          db.query(
+            "SELECT beauty.finish_product_order_notification($1,true,$2)",
+            [job.id, result.data.id],
+          ),
+        );
+        sent++;
+      } catch {
+        await withPaymentWorker((db) =>
+          db.query(
+            "SELECT beauty.finish_product_order_notification($1,false,$2)",
+            [job.id, null],
+          ),
+        );
+      }
+    }
+
+    return Response.json({
+      processed: jobs.length + productJobs.length,
+      bookingJobs: jobs.length,
+      productJobs: productJobs.length,
+      sent,
+    });
   } catch {
     console.error("Notification worker failed");
     return new Response("Retry later", { status: 503 });

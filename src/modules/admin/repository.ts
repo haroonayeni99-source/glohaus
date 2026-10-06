@@ -568,6 +568,11 @@ export async function ownerHomepageMedia(): Promise<OwnerHomepageMedia> {
 
 export type OwnerMarketingOverview = {
   optedInUsers: number;
+  queue: {
+    pending: number;
+    retrying: number;
+    exhausted: number;
+  };
   campaigns: {
     id: string;
     name: string;
@@ -590,6 +595,10 @@ export async function ownerMarketingOverview(): Promise<OwnerMarketingOverview> 
         "SELECT beauty.owner_marketing_overview() AS data",
       )
     ).rows[0];
-    return row?.data ?? { optedInUsers: 0, campaigns: [] };
+    return row?.data ?? {
+      optedInUsers: 0,
+      queue: { pending: 0, retrying: 0, exhausted: 0 },
+      campaigns: [],
+    };
   });
 }

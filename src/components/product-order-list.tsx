@@ -17,6 +17,21 @@ function statusLabel(status: ProductOrder["status"]) {
   return status.replace("_", " ");
 }
 
+function trackingUrl(carrier: string | null, trackingNumber: string | null) {
+  if (!carrier || !trackingNumber) return null;
+  const code = encodeURIComponent(trackingNumber.trim());
+  const name = carrier.trim().toLowerCase();
+  if (name.includes("royal mail")) return `https://www.royalmail.com/track-your-item#/tracking-results/${code}`;
+  if (name.includes("parcelforce")) return `https://www.parcelforce.com/track-trace?trackNumber=${code}`;
+  if (name.includes("dpd")) return `https://track.dpd.co.uk/parcels/${code}`;
+  if (name.includes("evri") || name.includes("hermes")) return `https://www.evri.com/track/parcel/${code}`;
+  if (name.includes("yodel")) return `https://www.yodel.co.uk/track/${code}`;
+  if (name.includes("ups")) return `https://www.ups.com/track?tracknum=${code}`;
+  if (name.includes("fedex")) return `https://www.fedex.com/fedextrack/?trknbr=${code}`;
+  if (name.includes("dhl")) return `https://www.dhl.com/gb-en/home/tracking.html?tracking-id=${code}`;
+  return null;
+}
+
 export function ProductOrderList({
   initialOrders,
   mode,
@@ -260,7 +275,24 @@ export function ProductOrderList({
               <span>
                 <strong>{order.trackingCarrier}</strong>
                 <small>{order.trackingNumber}</small>
+                {order.shippedAt && (
+                  <small>
+                    Shipped {new Intl.DateTimeFormat("en-GB", {
+                      dateStyle: "medium",
+                      timeZone: "Europe/London",
+                    }).format(new Date(order.shippedAt))}
+                  </small>
+                )}
               </span>
+              {trackingUrl(order.trackingCarrier, order.trackingNumber) && (
+                <a
+                  href={trackingUrl(order.trackingCarrier, order.trackingNumber)!}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Track parcel
+                </a>
+              )}
             </div>
           )}
 
@@ -334,8 +366,19 @@ export function ProductOrderList({
                         aria-label="Shipping carrier"
                         placeholder="Carrier (required)"
                         value={carrier}
+                        list="glohaus-carriers"
                         onChange={(event) => setCarrier(event.target.value)}
                       />
+                      <datalist id="glohaus-carriers">
+                        <option value="Royal Mail" />
+                        <option value="Parcelforce" />
+                        <option value="DPD" />
+                        <option value="Evri" />
+                        <option value="Yodel" />
+                        <option value="UPS" />
+                        <option value="FedEx" />
+                        <option value="DHL" />
+                      </datalist>
                       <input
                         aria-label="Tracking number"
                         placeholder="Tracking number (required)"

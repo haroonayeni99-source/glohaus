@@ -547,3 +547,20 @@ export async function ownerPublicSiteStatus(): Promise<boolean> {
     return row?.enabled !== false;
   });
 }
+
+
+export type OwnerHomepageMedia = {
+  desktopHero: string | null;
+  mobileHero: string | null;
+};
+
+export async function ownerHomepageMedia(): Promise<OwnerHomepageMedia> {
+  return withOwner(async (db) => {
+    const row = (
+      await db.query<{ data: OwnerHomepageMedia }>(
+        "SELECT beauty.public_homepage_media() AS data",
+      )
+    ).rows[0];
+    return row?.data ?? { desktopHero: null, mobileHero: null };
+  });
+}

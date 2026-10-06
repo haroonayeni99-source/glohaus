@@ -10,12 +10,14 @@ export type InAppNotification = {
     | "booking_confirmed"
     | "booking_cancelled"
     | "appointment_completed"
+    | "booking_reminder"
     | "order_paid"
     | "order_processing"
     | "order_shipped"
     | "order_delivered"
     | "order_refund_pending"
-    | "order_refunded";
+    | "order_refunded"
+    | "order_shipping_reminder";
   title: string;
   body: string;
   href: string;

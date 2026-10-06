@@ -327,15 +327,18 @@ export function ProductOrderList({
                     </div>
                   ) : shippingOrder === order.id ? (
                     <div className="shipping-fields">
+                      <p className="form-help">
+                        Tracking is required before an order can be marked as shipped.
+                      </p>
                       <input
                         aria-label="Shipping carrier"
-                        placeholder="Carrier"
+                        placeholder="Carrier (required)"
                         value={carrier}
                         onChange={(event) => setCarrier(event.target.value)}
                       />
                       <input
                         aria-label="Tracking number"
-                        placeholder="Tracking number"
+                        placeholder="Tracking number (required)"
                         value={tracking}
                         onChange={(event) => setTracking(event.target.value)}
                       />
@@ -348,7 +351,7 @@ export function ProductOrderList({
                         }
                         onClick={() => void advance(order.id, "shipped")}
                       >
-                        Confirm shipped
+                        Confirm shipped with tracking
                       </button>
                     </div>
                   ) : (

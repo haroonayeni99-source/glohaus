@@ -271,6 +271,30 @@ describe.sequential("Shop orders and fulfilment", () => {
     ).rejects.toThrow();
   });
 
+  it("rejects shipped or delivered states without stored tracking details", async () => {
+    await expect(
+      db.query(
+        "UPDATE beauty.product_orders SET tracking_carrier=NULL,tracking_number=NULL WHERE id=$1",
+        [orderId],
+      ),
+    ).rejects.toThrow();
+
+    const row = (
+      await db.query<{
+        status: string;
+        tracking_carrier: string | null;
+        tracking_number: string | null;
+      }>(
+        "SELECT status,tracking_carrier,tracking_number FROM beauty.product_orders WHERE id=$1",
+        [orderId],
+      )
+    ).rows[0];
+
+    expect(row.status).toBe("shipped");
+    expect(row.tracking_carrier).toBe("Royal Mail");
+    expect(row.tracking_number).toBe("TRACK123");
+  });
+
   it("lets only the customer confirm tracked delivery", async () => {
     await expect(
       asUser("order-customer-two", (sql) =>

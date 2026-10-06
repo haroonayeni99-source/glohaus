@@ -564,3 +564,32 @@ export async function ownerHomepageMedia(): Promise<OwnerHomepageMedia> {
     return row?.data ?? { desktopHero: null, mobileHero: null };
   });
 }
+
+
+export type OwnerMarketingOverview = {
+  optedInUsers: number;
+  campaigns: {
+    id: string;
+    name: string;
+    preset_key: string;
+    status: string;
+    recipient_count: number;
+    sent_count: number;
+    failed_count: number;
+    booking_value_pence: number;
+    glohaus_revenue_pence: number;
+    promotion_cost_pence: number;
+    created_at: string;
+  }[];
+};
+
+export async function ownerMarketingOverview(): Promise<OwnerMarketingOverview> {
+  return withOwner(async (db) => {
+    const row = (
+      await db.query<{ data: OwnerMarketingOverview }>(
+        "SELECT beauty.owner_marketing_overview() AS data",
+      )
+    ).rows[0];
+    return row?.data ?? { optedInUsers: 0, campaigns: [] };
+  });
+}

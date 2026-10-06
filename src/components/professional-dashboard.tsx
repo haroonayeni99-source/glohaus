@@ -15,6 +15,7 @@ import {
   LockKeyhole,
   MessageSquare,
   PackageCheck,
+  ShoppingBag,
   ShieldCheck,
   BadgeCheck,
   CircleAlert,
@@ -301,6 +302,13 @@ export function ProfessionalDashboard({
           <Link href="/professional/availability">
             <Clock3 size={18} aria-hidden />
             <span><strong>Availability</strong><small>Set hours and time off</small></span>
+          </Link>
+          <Link href="/professional/products">
+            <ShoppingBag size={18} aria-hidden />
+            <span>
+              <strong>Shop / Products</strong>
+              <small>Create products and manage stock</small>
+            </span>
           </Link>
           <Link href="/professional/orders">
             <PackageCheck size={18} aria-hidden />

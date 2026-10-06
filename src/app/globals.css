@@ -12352,3 +12352,20 @@ body {
     width: 100%;
   }
 }
+
+
+.owner-homepage-media-preview {
+  position: relative;
+  width: min(100%, 560px);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper);
+}
+.owner-homepage-media-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 360px;
+  object-fit: cover;
+}

@@ -12,12 +12,7 @@ const schema = z.object({
 export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
-    const body = await smallJson(request, 4096);
-    const parsed = schema.safeParse({
-      ...body,
-      desktopHero: body?.desktopHero ? String(body.desktopHero).trim() : null,
-      mobileHero: body?.mobileHero ? String(body.mobileHero).trim() : null,
-    });
+    const parsed = schema.safeParse(await smallJson(request, 4096));
     if (!parsed.success) throw new AccessError("INVALID_REQUEST", 400);
 
     const data = await withOwner(async (db) => {

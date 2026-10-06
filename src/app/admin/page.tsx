@@ -16,7 +16,8 @@ import { OwnerReferralOverview } from "@/components/owner-referral-overview";
 import { OwnerDashboardOverview } from "@/components/owner-dashboard-overview";
 import { WebsiteStatusControl } from "@/components/website-status-control";
 import { HomepageMediaControl } from "@/components/homepage-media-control";
-import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, ownerProfessionalReferralOverview, ownerPublicSiteStatus, ownerHomepageMedia, paymentLaunchReadiness } from "@/modules/admin/repository";
+import { OwnerMarketingPanel } from "@/components/owner-marketing-panel";
+import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, ownerProfessionalReferralOverview, ownerPublicSiteStatus, ownerHomepageMedia, ownerMarketingOverview, paymentLaunchReadiness } from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
@@ -47,6 +48,9 @@ export default async function Page() {
   const homepageMedia = isOwner
     ? await ownerHomepageMedia().catch(() => ({ desktopHero: null, mobileHero: null }))
     : null;
+  const marketing = isOwner
+    ? await ownerMarketingOverview().catch(() => ({ optedInUsers: 0, campaigns: [] }))
+    : null;
   return (
     <main id="main" className="admin-workspace">
         <AdminNavigation account={result.account} />
@@ -54,6 +58,16 @@ export default async function Page() {
           {isOwner && (
             <section id="website-status" className="admin-workspace-section admin-detail-card owner-website-status-section">
               <WebsiteStatusControl initialEnabled={publicSiteEnabled} />
+            </section>
+          )}
+          {isOwner && marketing && (
+            <section id="marketing" className="admin-workspace-section admin-detail-card">
+              <p className="eyebrow">MARKETING & FEEDBACK</p>
+              <h2>Preset campaigns and private feature votes</h2>
+              <p className="lead">
+                Launch optional marketing only to users who selected the matching preference. Transactional booking, order and security emails stay separate.
+              </p>
+              <OwnerMarketingPanel initial={marketing} />
             </section>
           )}
           {isOwner && homepageMedia && (

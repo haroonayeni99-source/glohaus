@@ -32,9 +32,11 @@ const mobileCategories = [
 export function MobileCustomerHome({
   signedIn = false,
   canAccessAdmin = false,
+  homepageMedia = { desktopHero: null, mobileHero: null },
 }: {
   signedIn?: boolean;
   canAccessAdmin?: boolean;
+  homepageMedia?: { desktopHero: string | null; mobileHero: string | null };
 }) {
   const notificationHref = signedIn
     ? "/notifications"
@@ -106,7 +108,12 @@ export function MobileCustomerHome({
             fill
             priority
             sizes="(max-width: 760px) calc(100vw - 28px), 100vw"
-            src="https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=1100&q=90"
+            src={
+              homepageMedia.mobileHero ||
+              homepageMedia.desktopHero ||
+              "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=1100&q=90"
+            }
+            unoptimized
             alt="Beauty inspiration portrait"
           />
           <div className="mobile-home-hero-shade" />

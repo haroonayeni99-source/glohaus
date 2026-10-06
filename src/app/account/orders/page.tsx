@@ -30,7 +30,7 @@ export default async function CustomerOrdersPage() {
         <p className="eyebrow">SHOP ORDERS</p>
         <h1>Your product orders.</h1>
         <p className="lead">
-          Track paid marketplace purchases and delivery progress in one place.
+          Track your GLOHAUS Shop purchases, shipping updates, delivery and refunds in one place.
         </p>
         <ProductOrderList initialOrders={orders} mode="customer" />
       </main>

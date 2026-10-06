@@ -155,7 +155,11 @@ describe("verified Admin Shop order overview", () => {
       }>("SELECT beauty.admin_shop_order_overview() AS data"),
     );
 
-    expect(result.rows[0].data.counts).toMatchObject({ total: 1, paid: 1 });
+    expect(result.rows[0].data.counts).toMatchObject({
+      total: 1,
+      paid: 1,
+      awaitingShipmentOver24h: 0,
+    });
     expect(result.rows[0].data.orders[0]).toMatchObject({
       id: orderId,
       professional_name: "Admin Order Studio",
@@ -180,4 +184,26 @@ describe("verified Admin Shop order overview", () => {
     );
     expect(direct.rows).toEqual([]);
   });
+});
+
+
+it("flags paid Shop orders that have waited over 24 hours without shipment", async () => {
+  await db.query(
+    "UPDATE beauty.product_orders SET created_at=now()-interval '25 hours' WHERE id=$1",
+    [orderId],
+  );
+
+  const result = await asUser("shop-admin-user", true, (sql) =>
+    sql.query<{
+      data: {
+        counts: { awaitingShipmentOver24h: number };
+        orders: { id: string; awaiting_shipment_over_24h: boolean }[];
+      };
+    }>("SELECT beauty.admin_shop_order_overview() AS data"),
+  );
+
+  expect(result.rows[0].data.counts.awaitingShipmentOver24h).toBe(1);
+  expect(
+    result.rows[0].data.orders.find((order) => order.id === orderId),
+  ).toMatchObject({ awaiting_shipment_over_24h: true });
 });

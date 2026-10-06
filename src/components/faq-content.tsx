@@ -13,25 +13,25 @@ type FaqItem = {
 
 const categories = [
   "All",
-  "🏠 General",
-  "👤 Accounts",
-  "💇 Professionals",
-  "✅ Professional Verification",
-  "📅 Bookings",
-  "💬 Messages & Notifications",
-  "💰 Payments & Wallet",
-  "💸 Fees & Commission",
-  "⚡ Withdrawals",
-  "📦 Shop & Products",
-  "↩️ Cancellations & Refunds",
-  "⭐ Reviews & Trust",
-  "🔐 Safety & Security",
-  "📩 Support",
+  "General",
+  "Accounts",
+  "Professionals",
+  "Professional Verification",
+  "Bookings",
+  "Messages & Notifications",
+  "Payments & Wallet",
+  "Fees & Commission",
+  "Withdrawals",
+  "Shop & Products",
+  "Cancellations & Refunds",
+  "Reviews & Trust",
+  "Safety & Security",
+  "Support",
 ];
 
 const items: FaqItem[] = [
   {
-    category: "🏠 General",
+    category: "General",
     question: "What is GLOHAUS?",
     answer: (
       <>
@@ -46,7 +46,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "🏠 General",
+    category: "General",
     question: "What types of professionals can use GLOHAUS?",
     answer: (
       <>
@@ -59,7 +59,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "🏠 General",
+    category: "General",
     question: "Is GLOHAUS free to use?",
     answer: (
       <>
@@ -72,7 +72,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "🏠 General",
+    category: "General",
     question: "Does GLOHAUS provide the beauty services itself?",
     answer: (
       <>
@@ -84,7 +84,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "👤 Accounts",
+    category: "Accounts",
     question: "Can I create a customer account or professional account?",
     answer: (
       <>
@@ -98,7 +98,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "👤 Accounts",
+    category: "Accounts",
     question: "Can I have both a customer and professional profile?",
     answer: (
       <>
@@ -109,7 +109,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "👤 Accounts",
+    category: "Accounts",
     question: "How old do I need to be to become a professional?",
     answer: (
       <>
@@ -120,7 +120,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "👤 Accounts",
+    category: "Accounts",
     question: "What happens after I sign up?",
     answer: (
       <>
@@ -133,7 +133,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💇 Professionals",
+    category: "Professionals",
     question: "Do I need to be verified to use GLOHAUS as a professional?",
     answer: (
       <>
@@ -147,7 +147,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💇 Professionals",
+    category: "Professionals",
     question: "What can an unverified professional do?",
     answer: (
       <>
@@ -160,7 +160,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💇 Professionals",
+    category: "Professionals",
     question: "What restrictions can apply to unverified professionals?",
     answer: (
       <>
@@ -172,7 +172,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💇 Professionals",
+    category: "Professionals",
     question: "What are professionals responsible for?",
     answer: (
       <>
@@ -188,7 +188,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "✅ Professional Verification",
+    category: "Professional Verification",
     question: "What is professional verification?",
     answer: (
       <>
@@ -201,7 +201,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "✅ Professional Verification",
+    category: "Professional Verification",
     question: "What may be required for verification?",
     answer: (
       <>
@@ -215,7 +215,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "✅ Professional Verification",
+    category: "Professional Verification",
     question: "What do verified professionals receive?",
     answer: (
       <>
@@ -228,7 +228,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "✅ Professional Verification",
+    category: "Professional Verification",
     question: "Does being verified mean GLOHAUS guarantees a professional?",
     answer: (
       <>
@@ -241,7 +241,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "📅 Bookings",
+    category: "Bookings",
     question: "How do I book a professional?",
     answer: (
       <>
@@ -252,7 +252,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "📅 Bookings",
+    category: "Bookings",
     question: "Can professionals control their own availability?",
     answer: (
       <>
@@ -262,7 +262,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "📅 Bookings",
+    category: "Bookings",
     question: "Can professionals set their own prices?",
     answer: (
       <>
@@ -273,7 +273,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "📅 Bookings",
+    category: "Bookings",
     question: "Can a professional require a deposit?",
     answer: (
       <>
@@ -285,7 +285,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "📅 Bookings",
+    category: "Bookings",
     question: "What happens if I am late to a booking?",
     answer: (
       <>
@@ -298,7 +298,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "📅 Bookings",
+    category: "Bookings",
     question: "Does GLOHAUS track my location when travelling to a booking?",
     answer: (
       <>
@@ -311,7 +311,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💬 Messages & Notifications",
+    category: "Messages & Notifications",
     question: "Can customers and professionals message each other?",
     answer: (
       <>
@@ -322,7 +322,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💬 Messages & Notifications",
+    category: "Messages & Notifications",
     question: "What notifications will I receive?",
     answer: (
       <>
@@ -334,7 +334,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💬 Messages & Notifications",
+    category: "Messages & Notifications",
     question: "Will GLOHAUS send emails as well?",
     answer: (
       <>
@@ -345,7 +345,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💰 Payments & Wallet",
+    category: "Payments & Wallet",
     question: "How do payments work?",
     answer: (
       <>
@@ -357,7 +357,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💰 Payments & Wallet",
+    category: "Payments & Wallet",
     question: "Do professionals have a wallet?",
     answer: (
       <>
@@ -368,7 +368,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💰 Payments & Wallet",
+    category: "Payments & Wallet",
     question: "When does a professional receive booking earnings?",
     answer: (
       <>
@@ -380,7 +380,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💰 Payments & Wallet",
+    category: "Payments & Wallet",
     question: "When does money from a product sale become available?",
     answer: (
       <>
@@ -392,7 +392,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💰 Payments & Wallet",
+    category: "Payments & Wallet",
     question: "Can my GLOHAUS wallet go into a negative balance?",
     answer: (
       <>
@@ -405,7 +405,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💸 Fees & Commission",
+    category: "Fees & Commission",
     question: "Does GLOHAUS charge customers a booking fee?",
     answer: (
       <>
@@ -416,7 +416,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💸 Fees & Commission",
+    category: "Fees & Commission",
     question: "Will the booking fee suddenly appear at checkout?",
     answer: (
       <>
@@ -428,7 +428,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💸 Fees & Commission",
+    category: "Fees & Commission",
     question: "Does GLOHAUS charge professionals commission?",
     answer: (
       <>
@@ -440,7 +440,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💸 Fees & Commission",
+    category: "Fees & Commission",
     question: "Can customers see how much commission GLOHAUS charges professionals?",
     answer: (
       <>
@@ -454,7 +454,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "💸 Fees & Commission",
+    category: "Fees & Commission",
     question: "Are GLOHAUS commissions refundable to professionals?",
     answer: (
       <>
@@ -468,7 +468,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "⚡ Withdrawals",
+    category: "Withdrawals",
     question: "How can professionals withdraw money?",
     answer: (
       <>
@@ -480,7 +480,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "⚡ Withdrawals",
+    category: "Withdrawals",
     question: "How long do standard withdrawals take?",
     answer: (
       <>
@@ -491,7 +491,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "⚡ Withdrawals",
+    category: "Withdrawals",
     question: "Is there an instant withdrawal option?",
     answer: (
       <>
@@ -504,7 +504,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "📦 Shop & Products",
+    category: "Shop & Products",
     question: "Can professionals sell products on GLOHAUS?",
     answer: (
       <>
@@ -514,7 +514,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "📦 Shop & Products",
+    category: "Shop & Products",
     question: "What are sellers responsible for?",
     answer: (
       <>
@@ -526,7 +526,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "📦 Shop & Products",
+    category: "Shop & Products",
     question: "What happens if a professional doesn't ship my product?",
     answer: (
       <>
@@ -538,7 +538,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "📦 Shop & Products",
+    category: "Shop & Products",
     question: "Can professionals track their product earnings?",
     answer: (
       <>
@@ -549,7 +549,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "↩️ Cancellations & Refunds",
+    category: "Cancellations & Refunds",
     question: "Can I cancel a booking?",
     answer: (
       <>
@@ -561,7 +561,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "↩️ Cancellations & Refunds",
+    category: "Cancellations & Refunds",
     question: "What happens if a professional cancels?",
     answer: (
       <>
@@ -571,7 +571,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "↩️ Cancellations & Refunds",
+    category: "Cancellations & Refunds",
     question: "What happens if the professional doesn't turn up?",
     answer: (
       <>
@@ -582,7 +582,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "↩️ Cancellations & Refunds",
+    category: "Cancellations & Refunds",
     question: "What happens if a customer doesn't turn up?",
     answer: (
       <>
@@ -594,7 +594,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "↩️ Cancellations & Refunds",
+    category: "Cancellations & Refunds",
     question: "Are all refunds full refunds?",
     answer: (
       <>
@@ -606,7 +606,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "↩️ Cancellations & Refunds",
+    category: "Cancellations & Refunds",
     question: "Does GLOHAUS refund its own commission when a professional has a problem?",
     answer: (
       <>
@@ -618,7 +618,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "⭐ Reviews & Trust",
+    category: "Reviews & Trust",
     question: "Can customers leave reviews?",
     answer: (
       <>
@@ -629,7 +629,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "⭐ Reviews & Trust",
+    category: "Reviews & Trust",
     question: "Can anyone leave a review?",
     answer: (
       <>
@@ -640,7 +640,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "⭐ Reviews & Trust",
+    category: "Reviews & Trust",
     question: "Can professionals delete negative reviews?",
     answer: (
       <>
@@ -651,7 +651,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "⭐ Reviews & Trust",
+    category: "Reviews & Trust",
     question: "Can a professional respond to a review?",
     answer: (
       <>
@@ -661,7 +661,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "⭐ Reviews & Trust",
+    category: "Reviews & Trust",
     question: "What happens if a review is fake or abusive?",
     answer: (
       <>
@@ -673,7 +673,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "🔐 Safety & Security",
+    category: "Safety & Security",
     question: "Is my payment information secure?",
     answer: (
       <>
@@ -684,7 +684,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "🔐 Safety & Security",
+    category: "Safety & Security",
     question: "How does GLOHAUS protect accounts?",
     answer: (
       <>
@@ -696,7 +696,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "🔐 Safety & Security",
+    category: "Safety & Security",
     question: "Can I report another user?",
     answer: (
       <>
@@ -707,7 +707,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "🔐 Safety & Security",
+    category: "Safety & Security",
     question: "Can GLOHAUS suspend an account?",
     answer: (
       <>
@@ -719,7 +719,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "🔐 Safety & Security",
+    category: "Safety & Security",
     question: "Does GLOHAUS guarantee that every service is safe?",
     answer: (
       <>
@@ -732,7 +732,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "📩 Support",
+    category: "Support",
     question: "How do I contact GLOHAUS?",
     answer: (
       <>
@@ -743,7 +743,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "📩 Support",
+    category: "Support",
     question: "How quickly will GLOHAUS respond?",
     answer: (
       <>
@@ -755,7 +755,7 @@ const items: FaqItem[] = [
     ),
   },
   {
-    category: "📩 Support",
+    category: "Support",
     question: "What information should I provide when reporting a problem?",
     answer: (
       <>
@@ -779,10 +779,10 @@ export function FaqContent() {
   return (
     <div className="public-shell">
       <PublicHeader />
-      <main id="main" className="faq-page">
+      <main id="main" className="faq-page public-info-page">
         <header className="faq-hero">
-          <p className="pro-kicker">GLOHAUS HELP</p>
-          <h1>❓ Frequently Asked Questions</h1>
+          <p className="eyebrow">GLOHAUS HELP</p>
+          <h1>Frequently Asked Questions</h1>
           <p className="lead">
             Everything you need to know about GLOHAUS — updated September 2026.
           </p>

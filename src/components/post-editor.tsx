@@ -19,7 +19,7 @@ export function PostEditor({
   return (
     <>
       <p className="form-notice">
-        Publish a photo or video of your work, a design story, or a written tutorial. Your professional profile must also be published for posts to appear in Share. Attach any published portfolio media.
+        Publish a photo or video of your work, a design story, or a written tutorial. Your professional profile must also be published for posts to appear in Discover. Attach any published portfolio media.
       </p>
       <div className="service-edit-list">
         {posts.map((post) => (
@@ -82,7 +82,7 @@ export function PostEditor({
           }
         }}
       >
-        <h2>{editing ? "Edit your post" : "Share a little inspiration."}</h2>
+        <h2>{editing ? "Edit your post" : "Post your work to Discover."}</h2>
         <label>
           Title
           <input

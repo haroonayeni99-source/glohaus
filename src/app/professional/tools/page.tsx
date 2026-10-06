@@ -11,6 +11,8 @@ import {
   ShieldCheck,
   BadgeCheck,
   Star,
+  Megaphone,
+  ThumbsUp,
   Bell,
   Compass,
   MessageSquare,
@@ -100,6 +102,8 @@ const tools = [
     BadgeCheck,
   ],
   ["Notifications", "Booking reminders, Shop updates and account activity", "/notifications?view=professional", Bell],
+  ["Marketing preferences", "Choose optional customer-growth and business emails", "/preferences", Megaphone],
+  ["Feature votes", "Privately vote on what GLOHAUS should build next", "/feature-votes", ThumbsUp],
   [
     "Account & security",
     "Manage your secure session and account security",

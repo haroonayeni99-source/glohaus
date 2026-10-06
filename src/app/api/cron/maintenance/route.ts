@@ -26,11 +26,24 @@ export async function GET(request: Request) {
       return row.rows[0]?.result ?? {};
     });
 
+    await withPaymentWorker((db) =>
+      db.query(
+        "SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)",
+        ["maintenance", true, JSON.stringify(result)],
+      ),
+    ).catch(() => {});
+
     return Response.json(result, {
       headers: { "Cache-Control": "private, no-store" },
     });
   } catch {
     console.error("Scheduled maintenance worker failed");
+    await withPaymentWorker((db) =>
+      db.query(
+        "SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)",
+        ["maintenance", false, JSON.stringify({ code: "WORKER_FAILED" })],
+      ),
+    ).catch(() => {});
     return new Response("Retry later", { status: 503 });
   }
 }

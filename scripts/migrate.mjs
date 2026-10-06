@@ -12,7 +12,38 @@ try {
   await db.query("ALTER TABLE public.beauty_schema_migrations DISABLE ROW LEVEL SECURITY");
   await db.query("REVOKE ALL ON public.beauty_schema_migrations FROM PUBLIC, anon, authenticated");
   const directory = new URL("../db/migrations/", import.meta.url);
-  for (const name of (await readdir(directory)).filter((name) => /^\d+.*\.sql$/.test(name)).sort()) {
+  const migrationFiles = (await readdir(directory))
+    .filter((name) => /^\d+.*\.sql$/.test(name))
+    .sort();
+
+  const appliedRepoMigrations = await db.query(
+    "SELECT name FROM public.beauty_schema_migrations ORDER BY name",
+  );
+  const appliedRepoNames = new Set(appliedRepoMigrations.rows.map((row) => row.name));
+  const pendingRepoMigrations = migrationFiles.filter((name) => !appliedRepoNames.has(name));
+
+  const externalHistoryTable = (
+    await db.query(
+      "SELECT to_regclass('supabase_migrations.schema_migrations')::text AS name",
+    )
+  ).rows[0]?.name;
+
+  if (pendingRepoMigrations.length && externalHistoryTable) {
+    const externalCount = Number(
+      (
+        await db.query(
+          "SELECT count(*)::integer AS count FROM supabase_migrations.schema_migrations",
+        )
+      ).rows[0]?.count ?? 0,
+    );
+    if (externalCount > 0 && process.env.ALLOW_MIGRATION_DRIFT !== "1") {
+      throw new Error(
+        "Migration history drift detected: repo migrations are pending while Supabase migration history already exists. Reconcile the histories before running db:migrate. Set ALLOW_MIGRATION_DRIFT=1 only for an explicitly reviewed recovery.",
+      );
+    }
+  }
+
+  for (const name of migrationFiles) {
     const sql = await readFile(new URL(name, directory), "utf8");
     const checksum = createHash("sha256").update(sql).digest("hex");
     const existing = await db.query("SELECT checksum FROM public.beauty_schema_migrations WHERE name = $1", [name]);

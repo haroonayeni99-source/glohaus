@@ -9,6 +9,7 @@ import {
   Paintbrush,
   PenSquare,
   ShieldCheck,
+  BadgeCheck,
   Star,
   Bell,
   Compass,
@@ -69,14 +70,14 @@ const tools = [
     MessageSquare,
   ],
   [
-    "Products & stock",
-    "Create, publish and manage your shop catalogue",
+    "Shop / Products",
+    "Create products, publish verified listings and manage stock",
     "/professional/products",
     ShoppingBag,
   ],
   [
-    "Shop orders",
-    "Process paid product orders and add tracking",
+    "Orders & fulfilment",
+    "Process paid Shop orders, dispatch items and add tracking",
     "/professional/orders",
     PackageCheck,
   ],
@@ -92,10 +93,16 @@ const tools = [
     "/professional/plans",
     BadgePoundSterling,
   ],
-  ["Notifications", "Keep up with your appointments", "/notifications?view=professional", Bell],
+  [
+    "Verification",
+    "Identity verification and access to higher-trust marketplace features",
+    "/professional/profile#verification",
+    BadgeCheck,
+  ],
+  ["Notifications", "Booking reminders, Shop updates and account activity", "/notifications?view=professional", Bell],
   [
     "Account & security",
-    "Manage your session and verification",
+    "Manage your secure session and account security",
     "/security",
     ShieldCheck,
   ],
@@ -117,9 +124,9 @@ export default async function ToolsPage() {
       />
       <main id="main" className="pro-main pro-management-page">
         <p className="pro-kicker">MADE FOR YOUR BUSINESS</p>
-        <h1>Your creator tools</h1>
+        <h1>Your business tools</h1>
         <p className="pro-page-lead">
-          Everything you need to make your GLOHAUS page your own.
+          Manage your bookings, Shop, verification, content, money and account tools from one place.
         </p>
         <nav className="tools-grid" aria-label="Business tools">
           {tools.map(([label, description, href, Icon]) => (

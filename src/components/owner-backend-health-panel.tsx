@@ -22,6 +22,11 @@ export function OwnerBackendHealthPanel({
     health.queues.bookingEmailExhausted +
     health.queues.productEmailExhausted +
     health.queues.marketingExhausted;
+  const integrityIssues =
+    health.integrity.unbalancedLedgerTransactions +
+    health.integrity.negativeProfessionalAvailableBalances +
+    health.integrity.bookingsMissingQuote +
+    health.integrity.paidOrdersMissingPaymentLedger;
 
   return (
     <div className="owner-backend-health">
@@ -41,6 +46,10 @@ export function OwnerBackendHealthPanel({
         <article>
           <strong>{requiredPaymentBlocked.length}</strong>
           <span>Required payment checks blocked</span>
+        </article>
+        <article>
+          <strong>{integrityIssues}</strong>
+          <span>Financial integrity issues</span>
         </article>
       </div>
 
@@ -79,6 +88,23 @@ export function OwnerBackendHealthPanel({
               {health.queues.marketingExhausted}
             </small>
           </div>
+        </article>
+
+        <article className="service-edit-row">
+          <div>
+            <h3>Financial integrity</h3>
+            <p>
+              Ledger {health.integrity.unbalancedLedgerTransactions} unbalanced ·
+              negative balances {health.integrity.negativeProfessionalAvailableBalances}
+            </p>
+            <small>
+              Missing booking quotes {health.integrity.bookingsMissingQuote} ·
+              paid Shop orders missing ledger {health.integrity.paidOrdersMissingPaymentLedger}
+            </small>
+          </div>
+          <span className={`admin-status ${integrityIssues ? "admin-status-suspended" : "admin-status-active"}`}>
+            {integrityIssues ? "ATTENTION" : "HEALTHY"}
+          </span>
         </article>
 
         <article className="service-edit-row">

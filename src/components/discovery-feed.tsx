@@ -728,7 +728,7 @@ export function DiscoveryFeed({
           </div>
         )}
       </main>
-      <BottomNavigation active={routeBase === "/share" ? "share" : "discover"} signedIn={viewerSignedIn} />
+      <BottomNavigation active="discover" signedIn={viewerSignedIn} />
     </div>
   );
 }

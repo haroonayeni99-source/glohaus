@@ -602,3 +602,53 @@ export async function ownerMarketingOverview(): Promise<OwnerMarketingOverview> 
     };
   });
 }
+
+
+export type OwnerBackendHealth = {
+  jobs: {
+    maintenance: {
+      lastSuccessAt: string | null;
+      lastFailureAt: string | null;
+      failures24h: number;
+    };
+    notifications: {
+      lastSuccessAt: string | null;
+      lastFailureAt: string | null;
+      failures24h: number;
+    };
+  };
+  queues: {
+    bookingEmailPending: number;
+    bookingEmailExhausted: number;
+    productEmailPending: number;
+    productEmailExhausted: number;
+    marketingPending: number;
+    marketingExhausted: number;
+  };
+};
+
+export async function ownerBackendHealth(): Promise<OwnerBackendHealth> {
+  return withOwner(async (db) => {
+    const row = (
+      await db.query<{ data: OwnerBackendHealth }>(
+        "SELECT beauty.owner_backend_health() AS data",
+      )
+    ).rows[0];
+    return (
+      row?.data ?? {
+        jobs: {
+          maintenance: { lastSuccessAt: null, lastFailureAt: null, failures24h: 0 },
+          notifications: { lastSuccessAt: null, lastFailureAt: null, failures24h: 0 },
+        },
+        queues: {
+          bookingEmailPending: 0,
+          bookingEmailExhausted: 0,
+          productEmailPending: 0,
+          productEmailExhausted: 0,
+          marketingPending: 0,
+          marketingExhausted: 0,
+        },
+      }
+    );
+  });
+}

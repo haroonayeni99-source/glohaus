@@ -73,7 +73,10 @@ export function NotificationInbox({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ all: true }),
       });
-      if (!response.ok) return;
+      if (!response.ok) {
+        setUpdateError("GLOHAUS could not update your notifications. Please try again.");
+        return;
+      }
       const now = new Date();
       setNotifications((items) =>
         items.map((item) => (item.read_at ? item : { ...item, read_at: now })),

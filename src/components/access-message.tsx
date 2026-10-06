@@ -7,10 +7,10 @@ const messages: Record<
   { title: string; text: string; href: string; label: string }
 > = {
   UNAVAILABLE: {
-    title: "Your GLOHAUS account is nearly ready.",
-    text: "You can keep exploring today. Secure sign-in will be available here as soon as account access is connected.",
-    href: "/",
-    label: "Keep discovering",
+    title: "We couldn’t load your account right now.",
+    text: "Your account records are still protected. Return to your workspace and try again; if the problem continues, the service may be temporarily unavailable.",
+    href: "/workspace",
+    label: "Try my workspace",
   },
   UNAUTHENTICATED: {
     title: "Your space is just a sign-in away.",

@@ -5,11 +5,17 @@
       "main": true
     }
   },
-  "regions": ["lhr1"],
+  "regions": [
+    "lhr1"
+  ],
   "crons": [
     {
+      "path": "/api/cron/maintenance",
+      "schedule": "0 * * * *"
+    },
+    {
       "path": "/api/cron/notifications",
-      "schedule": "0 6 * * *"
+      "schedule": "5 * * * *"
     }
   ]
 }

@@ -46,6 +46,7 @@ const ownerSections = [
   ["Pro Commission", "professional-commission", CreditCard],
   ["Referrals", "referrals", UsersRound],
   ["Admins & Access", "staff", ShieldCheck],
+  ["Backend Health", "backend-health", BarChart3],
   ["Payment Readiness", "payment-readiness", CreditCard],
   ["Email Readiness", "email-readiness", ShieldCheck],
   ["Email Delivery", "email-delivery-health", MessageSquareWarning],
@@ -74,6 +75,7 @@ export function AdminNavigation({ account }: { account: Account }) {
             ownerSections[10],
             ownerSections[11],
             ownerSections[12],
+            ownerSections[13],
           ]
         : [...coreSections],
     [owner],

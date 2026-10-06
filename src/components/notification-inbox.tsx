@@ -1,7 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, CheckCheck } from "lucide-react";
+import {
+  Bell,
+  CalendarClock,
+  CheckCheck,
+  PackageCheck,
+  PackageOpen,
+  RotateCcw,
+  Star,
+} from "lucide-react";
 import { useState } from "react";
 import type { InAppNotification } from "@/modules/notifications/repository";
 
@@ -13,6 +21,15 @@ function date(value: Date) {
   }).format(new Date(value));
 }
 
+function NotificationIcon({ kind }: { kind: InAppNotification["kind"] }) {
+  if (kind === "booking_reminder") return <CalendarClock size={16} aria-hidden />;
+  if (kind === "appointment_completed") return <Star size={16} aria-hidden />;
+  if (kind === "order_shipping_reminder") return <PackageOpen size={16} aria-hidden />;
+  if (kind.startsWith("order_refund")) return <RotateCcw size={16} aria-hidden />;
+  if (kind.startsWith("order_")) return <PackageCheck size={16} aria-hidden />;
+  return <Bell size={16} aria-hidden />;
+}
+
 export function NotificationInbox({
   initialNotifications,
   professional = false,
@@ -22,16 +39,21 @@ export function NotificationInbox({
 }) {
   const [notifications, setNotifications] = useState(initialNotifications);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [updateError, setUpdateError] = useState("");
   const unreadCount = notifications.filter((item) => !item.read_at).length;
   async function markRead(id: string) {
     setUpdating(id);
+    setUpdateError("");
     try {
       const response = await fetch("/api/v1/notifications", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
-      if (!response.ok) return;
+      if (!response.ok) {
+        setUpdateError("GLOHAUS could not update this notification. Please try again.");
+        return;
+      }
       setNotifications((items) =>
         items.map((item) =>
           item.id === id && !item.read_at ? { ...item, read_at: new Date() } : item,
@@ -44,6 +66,7 @@ export function NotificationInbox({
   async function markAllRead() {
     if (!unreadCount || updating) return;
     setUpdating("all");
+    setUpdateError("");
     try {
       const response = await fetch("/api/v1/notifications", {
         method: "PATCH",
@@ -65,7 +88,7 @@ export function NotificationInbox({
       <section className={professional ? "pro-empty-state pro-large-empty" : "catalog-empty"}>
         <Bell size={32} aria-hidden />
         <h2>No notifications yet.</h2>
-        <p>Booking updates will appear here when they happen.</p>
+        <p>Booking reminders, Shop orders and other account activity will appear here when they happen.</p>
         <Link href={professional ? "/professional/bookings" : "/explore"}>
           {professional ? "View appointments" : "Discover professionals"}
         </Link>
@@ -73,6 +96,7 @@ export function NotificationInbox({
     );
   return (
     <section className={professional ? "pro-notification-list" : "notification-list"} aria-label="Notifications">
+      {updateError && <p className="form-error" role="alert">{updateError}</p>}
       {unreadCount > 0 && (
         <div className="notification-toolbar">
           <span>{unreadCount} unread</span>
@@ -89,7 +113,7 @@ export function NotificationInbox({
       {notifications.map((notification) => (
         <article key={notification.id} data-read={Boolean(notification.read_at)}>
           <Link href={notification.href} onClick={() => void markRead(notification.id)}>
-            <span className="notification-icon"><Bell size={16} aria-hidden /></span>
+            <span className="notification-icon"><NotificationIcon kind={notification.kind} /></span>
             <span>
               <strong>{notification.title}</strong>
               <small>{notification.body}</small>

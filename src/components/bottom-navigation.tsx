@@ -6,14 +6,12 @@ import {
   Compass,
   Home,
   MessageSquare,
-  Share2,
   UserRound,
 } from "lucide-react";
 
 const items = [
   { id: "home", href: "/", label: "Home", icon: Home },
   { id: "discover", href: "/discover", label: "Discover", icon: Compass },
-  { id: "share", href: "/share", label: "Share", icon: Share2 },
   { id: "bookings", href: "/account/bookings", label: "Bookings", icon: CalendarDays },
   { id: "messages", href: "/messages", label: "Messages", icon: MessageSquare },
   { id: "profile", href: "/workspace", label: "Profile", icon: UserRound },

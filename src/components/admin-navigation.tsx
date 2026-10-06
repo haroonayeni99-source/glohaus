@@ -38,6 +38,7 @@ const coreSections = [
 
 const ownerSections = [
   ["Website Status", "website-status", Globe2],
+  ["Homepage Models", "homepage-media", Settings],
   ["Booking Fee", "booking-fee", CreditCard],
   ["Shop Fees", "shop-fees", CreditCard],
   ["Auth Accounts", "auth-accounts", UsersRound],
@@ -57,19 +58,20 @@ export function AdminNavigation({ account }: { account: Account }) {
       owner
         ? [
             ownerSections[0],
+            ownerSections[1],
             coreSections[0],
             coreSections[1],
-            ownerSections[1],
             ownerSections[2],
             ownerSections[3],
             ownerSections[4],
             ownerSections[5],
             ownerSections[6],
-            ...coreSections.slice(2),
             ownerSections[7],
+            ...coreSections.slice(2),
             ownerSections[8],
             ownerSections[9],
             ownerSections[10],
+            ownerSections[11],
           ]
         : [...coreSections],
     [owner],

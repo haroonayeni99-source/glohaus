@@ -49,7 +49,11 @@ export default async function Page() {
     ? await ownerHomepageMedia().catch(() => ({ desktopHero: null, mobileHero: null }))
     : null;
   const marketing = isOwner
-    ? await ownerMarketingOverview().catch(() => ({ optedInUsers: 0, campaigns: [] }))
+    ? await ownerMarketingOverview().catch(() => ({
+        optedInUsers: 0,
+        queue: { pending: 0, retrying: 0, exhausted: 0 },
+        campaigns: [],
+      }))
     : null;
   return (
     <main id="main" className="admin-workspace">

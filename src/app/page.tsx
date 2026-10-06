@@ -11,6 +11,7 @@ import {
 } from "@/modules/home/repository";
 import { redirect } from "next/navigation";
 import { RecoveryRedirect } from "@/components/recovery-redirect";
+import { publicHomepageMedia } from "@/modules/platform/repository";
 
 export const dynamic = "force-dynamic";
 // Deployment refresh: production runtime credentials are now configured.
@@ -43,6 +44,7 @@ export default async function Home({
     summary: null,
   };
   let professionals: PublicProfessional[] = [];
+  const homepageMedia = await publicHomepageMedia();
 
   let authId = "";
   try {
@@ -126,10 +128,12 @@ export default async function Home({
         displayName={viewer.displayName}
         canAccessAdmin={viewer.canAccessAdmin}
         summary={viewer.summary}
+        homepageMedia={homepageMedia}
       />
       <MobileCustomerHome
         signedIn={viewer.signedIn}
         canAccessAdmin={viewer.canAccessAdmin}
+        homepageMedia={homepageMedia}
       />
     </>
   );

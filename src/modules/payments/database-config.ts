@@ -14,5 +14,7 @@ export function paymentDatabaseConfig(connectionString: string, ca?: string): Po
     ssl: { rejectUnauthorized: true, ...(ca ? { ca } : {}) },
     max: 2,
     connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 5000,
+    allowExitOnIdle: true,
   };
 }

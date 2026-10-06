@@ -17,6 +17,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.mjs",
+    "db:status": "node --env-file-if-exists=.env.local scripts/migration-status.mjs",
     "runtime:provision": "node --env-file-if-exists=.env.local scripts/provision-runtime-login.mjs",
     "runtime:connection-url": "node --env-file-if-exists=.env.local scripts/runtime-connection-url.mjs",
     "admin:grant": "node --env-file-if-exists=.env.local scripts/grant-admin.mjs",

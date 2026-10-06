@@ -266,7 +266,7 @@ export function ProfessionalProfile({
               </div>
             ) : (
               <p className="profile-empty">
-                Portfolio media is on its way.
+                No portfolio media has been published yet.
               </p>
             )}
           </section>

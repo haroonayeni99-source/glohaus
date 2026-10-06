@@ -388,6 +388,10 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
               <strong>{data.shopOrders.counts.refundPending}</strong>
               <span>Refund pending</span>
             </article>
+            <article>
+              <strong>{data.shopOrders.counts.awaitingShipmentOver24h}</strong>
+              <span>Awaiting shipment 24h+</span>
+            </article>
           </div>
           <div className="service-edit-list">
             {data.shopOrders.orders.map((order) => (
@@ -397,6 +401,11 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
                   <p>
                     {order.recipient_name} · {order.city} {order.postcode} · {order.status}
                   </p>
+                  {order.awaiting_shipment_over_24h && (
+                    <small className="pro-dispute-warning">
+                      Fulfilment attention: this paid order has been waiting more than 24 hours without shipment.
+                    </small>
+                  )}
                   <small>
                     {order.items.length
                       ? order.items

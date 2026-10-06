@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { ProfessionalProduct } from "@/modules/shop/domain";
 import { money } from "@/modules/professionals/domain";
@@ -30,14 +31,17 @@ const emptyDraft: Draft = {
 export function ProfessionalProductsManager({
   initialProducts,
   assets,
+  accessStatus,
 }: {
   initialProducts: ProfessionalProduct[];
   assets: Asset[];
+  accessStatus: "unverified" | "pending" | "verified" | "restricted";
 }) {
   const [products, setProducts] = useState(initialProducts);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  const canPublish = accessStatus === "verified";
 
   const editing = useMemo(
     () => products.find((item) => item.id === draft.id) ?? null,
@@ -128,10 +132,25 @@ export function ProfessionalProductsManager({
   return (
     <div className="pro-products-layout">
       <section className="pro-panel pro-product-editor">
-        <p className="form-notice">
-          Product drafts are available to all professional accounts. Publishing
-          products for customer purchase requires completed identity verification.
-        </p>
+        <div className="pro-feature-notice" data-state={canPublish ? "ready" : "locked"}>
+          <div>
+            <strong>{canPublish ? "Product publishing unlocked" : "Draft products now. Publish after verification."}</strong>
+            <p>
+              {canPublish
+                ? "Your identity is verified, so eligible products can be published to the GLOHAUS Shop."
+                : accessStatus === "pending"
+                  ? "Your verification is still being reviewed. Keep preparing products as drafts while you wait."
+                  : accessStatus === "restricted"
+                    ? "This account is currently restricted from publishing new marketplace products."
+                    : "Complete identity verification before customers can see or buy your products."}
+            </p>
+          </div>
+          {!canPublish && accessStatus !== "restricted" && (
+            <Link href="/professional/profile#verification">
+              {accessStatus === "pending" ? "View verification" : "Verify identity"}
+            </Link>
+          )}
+        </div>
         <div className="pro-panel-title">
           <div>
             <p className="pro-kicker">{editing ? "EDIT PRODUCT" : "NEW PRODUCT"}</p>
@@ -235,7 +254,9 @@ export function ProfessionalProductsManager({
               }
             >
               <option value="draft">Draft</option>
-              <option value="published">Published</option>
+              <option value="published" disabled={!canPublish}>
+                Published{canPublish ? "" : " — verification required"}
+              </option>
               <option value="archived">Archived</option>
             </select>
           </label>

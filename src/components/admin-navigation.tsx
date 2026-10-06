@@ -67,6 +67,9 @@ export function AdminNavigation({ account }: { account: Account }) {
             ownerSections[6],
             ...coreSections.slice(2),
             ownerSections[7],
+            ownerSections[8],
+            ownerSections[9],
+            ownerSections[10],
           ]
         : [...coreSections],
     [owner],

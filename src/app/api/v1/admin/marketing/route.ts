@@ -18,18 +18,21 @@ export async function POST(request:Request){
     assertSameOrigin(request);
     const parsed=schema.safeParse(await smallJson(request,4096));
     if(!parsed.success) throw new AccessError("INVALID_REQUEST",400);
-    if(parsed.data.type==="launch"){
+    const data = parsed.data;
+    if(data.type==="launch"){
+      const preset = data.preset;
       const campaign=await withOwner(async(db)=>(
         await db.query<{data:{campaignId:string;name:string;recipients:number}}>(
-          "SELECT beauty.owner_launch_marketing_preset($1) AS data",[parsed.data.preset]
+          "SELECT beauty.owner_launch_marketing_preset($1) AS data",[preset]
         )
       ).rows[0]?.data);
       return json({campaign});
     }
+    const { audience, title, description } = data;
     const featureId=await withOwner(async(db)=>(
       await db.query<{id:string}>(
         "SELECT beauty.owner_create_feature_request($1,$2,$3) AS id",
-        [parsed.data.audience,parsed.data.title,parsed.data.description]
+        [audience,title,description]
       )
     ).rows[0]?.id);
     return json({featureId});

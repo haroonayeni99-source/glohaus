@@ -385,24 +385,37 @@ export async function paymentLaunchReadiness(): Promise<PaymentLaunchReadiness> 
 
 
 export type EmailLaunchReadiness = {
-  ready: boolean;
-  checks: { key: string; label: string; ready: boolean; required: boolean }[];
+  transactionalReady: boolean;
+  authSecurityReady: boolean;
+  checks: {
+    key: string;
+    label: string;
+    ready: boolean;
+    required: boolean;
+    group: "transactional" | "auth";
+  }[];
 };
 
 export function emailLaunchReadiness(): EmailLaunchReadiness {
-  const checks = [
-    { key: "resend-key", label: "Resend transactional email API key", ready: Boolean(process.env.RESEND_API_KEY), required: true },
-    { key: "email-from", label: "Verified GLOHAUS sender address", ready: Boolean(process.env.EMAIL_FROM), required: true },
-    { key: "resend-webhook", label: "Verified Resend delivery webhook secret", ready: Boolean(process.env.RESEND_WEBHOOK_SECRET), required: true },
-    { key: "notification-cron", label: "Protected notification scheduler secret", ready: Boolean(process.env.CRON_SECRET), required: true },
-    { key: "email-app-url", label: "Canonical HTTPS link origin", ready: Boolean(process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://")), required: true },
-    { key: "supabase-smtp", label: "Supabase Auth custom SMTP confirmed", ready: process.env.SUPABASE_CUSTOM_SMTP_CONFIGURED === "true", required: true },
-    { key: "leaked-passwords", label: "Supabase leaked-password protection confirmed", ready: process.env.SUPABASE_LEAKED_PASSWORD_PROTECTION_CONFIGURED === "true", required: true },
-    { key: "auth-captcha", label: "Supabase Auth CAPTCHA / bot protection confirmed", ready: process.env.SUPABASE_AUTH_CAPTCHA_CONFIGURED === "true", required: false },
+  const checks: EmailLaunchReadiness["checks"] = [
+    { key: "resend-key", label: "Resend transactional email API key", ready: Boolean(process.env.RESEND_API_KEY), required: true, group: "transactional" },
+    { key: "email-from", label: "Verified GLOHAUS sender address", ready: Boolean(process.env.EMAIL_FROM), required: true, group: "transactional" },
+    { key: "resend-webhook", label: "Verified Resend delivery webhook secret", ready: Boolean(process.env.RESEND_WEBHOOK_SECRET), required: true, group: "transactional" },
+    { key: "notification-cron", label: "Protected notification scheduler secret", ready: Boolean(process.env.CRON_SECRET), required: true, group: "transactional" },
+    { key: "email-app-url", label: "Canonical HTTPS link origin", ready: Boolean(process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://")), required: true, group: "transactional" },
+    { key: "supabase-smtp", label: "Supabase Auth custom SMTP confirmed", ready: process.env.SUPABASE_CUSTOM_SMTP_CONFIGURED === "true", required: true, group: "auth" },
+    { key: "leaked-passwords", label: "Supabase leaked-password protection confirmed", ready: process.env.SUPABASE_LEAKED_PASSWORD_PROTECTION_CONFIGURED === "true", required: true, group: "auth" },
+    { key: "auth-captcha", label: "Supabase Auth CAPTCHA / bot protection confirmed", ready: process.env.SUPABASE_AUTH_CAPTCHA_CONFIGURED === "true", required: false, group: "auth" },
   ];
 
+  const requiredReady = (group: "transactional" | "auth") =>
+    checks
+      .filter((check) => check.group === group && check.required)
+      .every((check) => check.ready);
+
   return {
-    ready: checks.filter((check) => check.required).every((check) => check.ready),
+    transactionalReady: requiredReady("transactional"),
+    authSecurityReady: requiredReady("auth"),
     checks,
   };
 }

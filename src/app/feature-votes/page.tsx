@@ -12,12 +12,21 @@ export default async function FeatureVotesPage() {
   if (!result.account) return <div className="standalone-message"><AccessMessage code={result.error} /></div>;
   const account = result.account;
   const professional = account.roles.includes("professional");
-  const features = await withIdentity(account.authId, async (db) => (
-    await db.query<{
-      id:string; audience:"customer"|"professional"|"all"; title:string;
-      description:string; status:string; vote_count:number; my_vote:boolean;
-    }>("SELECT * FROM beauty.public_feature_requests()")
-  ).rows;
+  const features = await withIdentity(
+    account.authId,
+    async (db) =>
+      (
+        await db.query<{
+          id: string;
+          audience: "customer" | "professional" | "all";
+          title: string;
+          description: string;
+          status: string;
+          vote_count: number;
+          my_vote: boolean;
+        }>("SELECT * FROM beauty.public_feature_requests()")
+      ).rows,
+  );
 
   const visible = features.filter((item) =>
     item.audience === "all" ||

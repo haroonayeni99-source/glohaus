@@ -148,15 +148,30 @@ export async function GET(request: Request) {
       }
     }
 
-    return Response.json({
+    const summary = {
       processed: jobs.length + productJobs.length + marketingJobs.length,
       bookingJobs: jobs.length,
       productJobs: productJobs.length,
       marketingJobs: marketingJobs.length,
       sent,
-    });
+    };
+
+    await withPaymentWorker((db) =>
+      db.query(
+        "SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)",
+        ["notifications", true, JSON.stringify(summary)],
+      ),
+    ).catch(() => {});
+
+    return Response.json(summary);
   } catch {
     console.error("Notification worker failed");
+    await withPaymentWorker((db) =>
+      db.query(
+        "SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)",
+        ["notifications", false, JSON.stringify({ code: "WORKER_FAILED" })],
+      ),
+    ).catch(() => {});
     return new Response("Retry later", { status: 503 });
   }
 }

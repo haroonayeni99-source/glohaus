@@ -26,6 +26,7 @@ const professionalPresets = [
 
 type Overview = {
   optedInUsers:number;
+  queue:{pending:number;retrying:number;exhausted:number};
   campaigns:{
     id:string;name:string;preset_key:string;status:string;
     recipient_count:number;sent_count:number;failed_count:number;
@@ -84,6 +85,9 @@ export function OwnerMarketingPanel({initial}:{initial:Overview}) {
       <div className="analytics-grid">
         <article><strong>{initial.optedInUsers}</strong><span>Users opted into at least one marketing category</span></article>
         <article><strong>{initial.campaigns.length}</strong><span>Recent campaigns tracked</span></article>
+        <article><strong>{initial.queue.pending}</strong><span>Marketing emails waiting to send</span></article>
+        <article><strong>{initial.queue.retrying}</strong><span>Marketing emails retrying</span></article>
+        <article><strong>{initial.queue.exhausted}</strong><span>Marketing emails needing attention</span></article>
       </div>
 
       <h3>Customer campaign presets</h3>

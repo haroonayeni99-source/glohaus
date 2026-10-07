@@ -31,7 +31,9 @@ export async function GET(request: Request) {
         "SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)",
         ["maintenance", true, JSON.stringify(result)],
       ),
-    ).catch(() => {});
+    ).catch((error) => {
+      console.error("Failed to record maintenance worker health", error);
+    });
 
     return Response.json(result, {
       headers: { "Cache-Control": "private, no-store" },
@@ -43,7 +45,9 @@ export async function GET(request: Request) {
         "SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)",
         ["maintenance", false, JSON.stringify({ code: "WORKER_FAILED" })],
       ),
-    ).catch(() => {});
+    ).catch((error) => {
+      console.error("Failed to record maintenance worker failure health", error);
+    });
     return new Response("Retry later", { status: 503 });
   }
 }

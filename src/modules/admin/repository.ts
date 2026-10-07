@@ -630,6 +630,11 @@ export type OwnerBackendHealth = {
     negativeProfessionalAvailableBalances: number;
     bookingsMissingQuote: number;
     paidOrdersMissingPaymentLedger: number;
+    bookingRefundAmountMismatches: number;
+    bookingTransfersMissingProviderId: number;
+    productTransfersMissingProviderId: number;
+    payoutAmountMismatches: number;
+    openDisputeReserveMismatches: number;
   };
 };
 
@@ -659,6 +664,11 @@ export async function ownerBackendHealth(): Promise<OwnerBackendHealth> {
           negativeProfessionalAvailableBalances: 0,
           bookingsMissingQuote: 0,
           paidOrdersMissingPaymentLedger: 0,
+          bookingRefundAmountMismatches: 0,
+          bookingTransfersMissingProviderId: 0,
+          productTransfersMissingProviderId: 0,
+          payoutAmountMismatches: 0,
+          openDisputeReserveMismatches: 0,
         },
       }
     );

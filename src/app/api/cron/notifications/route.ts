@@ -161,7 +161,9 @@ export async function GET(request: Request) {
         "SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)",
         ["notifications", true, JSON.stringify(summary)],
       ),
-    ).catch(() => {});
+    ).catch((error) => {
+      console.error("Failed to record notification worker health", error);
+    });
 
     return Response.json(summary);
   } catch {
@@ -171,7 +173,9 @@ export async function GET(request: Request) {
         "SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)",
         ["notifications", false, JSON.stringify({ code: "WORKER_FAILED" })],
       ),
-    ).catch(() => {});
+    ).catch((error) => {
+      console.error("Failed to record notification worker failure health", error);
+    });
     return new Response("Retry later", { status: 503 });
   }
 }

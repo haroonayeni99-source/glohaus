@@ -22,10 +22,12 @@ type Reservation = {
   holdExpiresAt: string;
 };
 export async function POST(request: Request) {
+  let stage = "validate";
   try {
     assertSameOrigin(request);
     const parsed = schema.safeParse(await smallJson(request));
     if (!parsed.success) throw new AccessError("INVALID_REQUEST", 400);
+    stage = "reserve";
     const booking = await withAccount("customer", async (db) => {
       const service = (
         await db.query<{
@@ -59,6 +61,7 @@ export async function POST(request: Request) {
     // before a checkout session is created. This is deliberately separate from
     // form validation and the database trigger, so a forged client request
     // cannot pay an excessive professional-required deposit.
+    stage = "policy";
     const paymentWithinPolicy = await withAccount("customer", async (db) => {
       const row = (
         await db.query<{
@@ -86,6 +89,7 @@ export async function POST(request: Request) {
     if (booking.status === "confirmed")
       return json({ url: `/account/bookings/${booking.id}` });
 
+    stage = "quote";
     const quote = await withAccount("customer", async (db) => {
       const result = await db.query<{
         quote: {
@@ -103,6 +107,7 @@ export async function POST(request: Request) {
     const origin = new URL(process.env.NEXT_PUBLIC_APP_URL!).origin;
     let checkoutId: string | null = null;
     try {
+      stage = "stripe_checkout";
       const checkout = await stripe().checkout.sessions.create(
         {
           mode: "payment",
@@ -151,6 +156,7 @@ export async function POST(request: Request) {
         { idempotencyKey: `booking-checkout-${booking.id}` },
       );
       checkoutId = checkout.id;
+      stage = "attach_checkout";
       await withAccount("customer", (db) =>
         db.query("SELECT beauty.attach_checkout($1,$2)", [
           booking.id,
@@ -178,6 +184,9 @@ export async function POST(request: Request) {
       throw checkoutError;
     }
   } catch (error) {
+    if (error instanceof AccessError && error.code === "UNAVAILABLE") {
+      console.error("Booking unavailable", { stage, code: error.code });
+    }
     if (
       error &&
       typeof error === "object" &&

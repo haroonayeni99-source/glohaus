@@ -182,9 +182,17 @@ export function BookingPicker({
                   ? "You’ve tried several bookings recently. Please try again later."
                   : result.error?.code === "PAYMENTS_NOT_READY"
                     ? "This professional is not ready to accept online booking payments yet."
-                    : result.error?.code === "INVALID_APPOINTMENT"
-                      ? "That appointment is no longer available. Please choose another date or time."
-                      : "Booking is unavailable right now. Please try again.",
+                    : result.error?.code === "DEPOSIT_LIMIT"
+                      ? "This service has an invalid deposit setup. Verified deposits must be 40% or less of the service price."
+                      : result.error?.code === "CHECKOUT_CONFLICT"
+                        ? "This booking already has a payment session. Refresh the page and try again."
+                        : result.error?.code === "INVALID_REQUEST"
+                          ? "This service or booking setup needs to be corrected before it can be booked."
+                          : result.error?.code === "UNAVAILABLE"
+                            ? "Secure booking services are temporarily unavailable. Please refresh and try again."
+                            : result.error?.code === "INVALID_APPOINTMENT"
+                              ? "That appointment is no longer available. Please choose another date or time."
+                              : "Booking is unavailable right now. Please try again.",
         );
       }
       window.location.href = result.url;

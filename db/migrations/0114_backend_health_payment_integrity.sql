@@ -1,0 +1,2 @@
+-- Extend Owner Backend Health with payment/refund/payout/dispute integrity checks.
+-- Production function body is defined in managed migration backend_health_payment_integrity.

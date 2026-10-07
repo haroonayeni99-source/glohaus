@@ -26,7 +26,12 @@ export function OwnerBackendHealthPanel({
     health.integrity.unbalancedLedgerTransactions +
     health.integrity.negativeProfessionalAvailableBalances +
     health.integrity.bookingsMissingQuote +
-    health.integrity.paidOrdersMissingPaymentLedger;
+    health.integrity.paidOrdersMissingPaymentLedger +
+    health.integrity.bookingRefundAmountMismatches +
+    health.integrity.bookingTransfersMissingProviderId +
+    health.integrity.productTransfersMissingProviderId +
+    health.integrity.payoutAmountMismatches +
+    health.integrity.openDisputeReserveMismatches;
 
   return (
     <div className="owner-backend-health">
@@ -100,6 +105,12 @@ export function OwnerBackendHealthPanel({
             <small>
               Missing booking quotes {health.integrity.bookingsMissingQuote} ·
               paid Shop orders missing ledger {health.integrity.paidOrdersMissingPaymentLedger}
+            </small>
+            <small>
+              Refund mismatches {health.integrity.bookingRefundAmountMismatches} ·
+              transfer ID gaps {health.integrity.bookingTransfersMissingProviderId + health.integrity.productTransfersMissingProviderId} ·
+              payout mismatches {health.integrity.payoutAmountMismatches} ·
+              dispute reserve mismatches {health.integrity.openDisputeReserveMismatches}
             </small>
           </div>
           <span className={`admin-status ${integrityIssues ? "admin-status-suspended" : "admin-status-active"}`}>

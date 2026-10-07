@@ -205,6 +205,10 @@ export async function POST(request: Request) {
         return json({ error: { code: "TOO_MANY_ATTEMPTS" } }, 429);
       if (error.message.includes("PAYMENTS_NOT_READY"))
         return json({ error: { code: "PAYMENTS_NOT_READY" } }, 409);
+      if (error.message.includes("DEPOSIT_LIMIT"))
+        return json({ error: { code: "DEPOSIT_LIMIT" } }, 409);
+      if (error.message.includes("CHECKOUT_CONFLICT"))
+        return json({ error: { code: "CHECKOUT_CONFLICT" } }, 409);
       if (
         error.message.includes("INVALID_TIME") ||
         error.message.includes("OUTSIDE_HOURS") ||

@@ -1,7 +1,7 @@
 import { PlatformLabel } from "./platform-labels";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Star, ArrowUpRight, BadgeCheck, ShieldQuestion } from "lucide-react";
+import { MapPin, Star, ArrowUpRight, BadgeCheck, ShieldQuestion, CalendarCheck2, Sparkles } from "lucide-react";
 import { money, type PublicProfessional } from "@/modules/professionals/domain";
 export function ProfessionalCard({
   professional: pro,
@@ -34,18 +34,30 @@ export function ProfessionalCard({
           {pro.business_name}
           <ArrowUpRight size={20} aria-hidden />
         </h2>
-        <span>
-          <MapPin size={14} aria-hidden />
-          {pro.city}
-        </span>
-        <span>
+        <div className="professional-card-meta">
+          <span>
+            <MapPin size={14} aria-hidden />
+            {pro.city}
+          </span>
+          <span className={pro.available_today ? "is-available" : undefined}>
+            <CalendarCheck2 size={14} aria-hidden />
+            {pro.available_today ? "Available today" : "Check availability"}
+          </span>
+        </div>
+        <span className={pro.verification_status === "verified" ? "professional-card-verification is-verified" : "professional-card-verification"}>
           {pro.verification_status === "verified" ? (
             <><BadgeCheck size={14} aria-hidden /> Identity verified</>
           ) : (
-            <><ShieldQuestion size={14} aria-hidden /> Identity not verified</>
+            <><ShieldQuestion size={14} aria-hidden /> Not yet verified</>
           )}
         </span>
-        <p>{pro.bio}</p>
+        <p className="professional-card-bio">{pro.bio}</p>
+        {!!pro.popular_services?.length && (
+          <div className="professional-card-services" aria-label="Popular services">
+            <Sparkles size={13} aria-hidden />
+            {pro.popular_services.map((service) => <span key={service}>{service}</span>)}
+          </div>
+        )}
         <div className="professional-card-details">
           <span>
             <Star size={14} aria-hidden />

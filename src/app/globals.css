@@ -12516,3 +12516,51 @@ body {
   }
   .feature-vote-button { width: 100%; }
 }
+
+
+/* Shared text and control alignment hardening. */
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+:is(h1, h2, h3) {
+  max-width: 100%;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+:is(p, small, label, a, button) {
+  overflow-wrap: break-word;
+}
+:is(.button, .text-link, .glohaus-sign-in, .glohaus-sign-up, .home-join) {
+  text-align: center;
+}
+:is(.editor-form, .auth-email-form, .booking-form) :is(input, textarea, select) {
+  max-width: 100%;
+  min-width: 0;
+}
+:is(.editor-form, .auth-email-form, .booking-form) label {
+  min-width: 0;
+}
+@media (max-width: 620px) {
+  .glohaus-site-footer {
+    grid-template-columns: 1fr;
+  }
+  .site-footer-brand,
+  .site-footer-bottom {
+    grid-column: 1;
+  }
+  .site-footer-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+}

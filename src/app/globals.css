@@ -12564,3 +12564,31 @@ select {
     gap: 8px;
   }
 }
+
+
+/* Keep in-page profile navigation aligned below sticky headers. */
+.professional-section,
+.booking-anchor {
+  scroll-margin-top: 96px;
+}
+.profile-section-nav {
+  max-width: 100%;
+}
+@media (max-width: 760px) {
+  .profile-section-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding-inline: 14px;
+    scrollbar-width: thin;
+  }
+  .profile-section-nav a {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+  .professional-section,
+  .booking-anchor {
+    scroll-margin-top: 78px;
+  }
+}

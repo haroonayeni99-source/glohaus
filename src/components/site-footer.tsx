@@ -17,7 +17,7 @@ export function SiteFooter() {
     <footer className="glohaus-site-footer" aria-label="Website footer">
       <div className="site-footer-brand">
         <Brand />
-        <p>LOOK GOOD • FEEL GOOD • BELONG</p>
+        <p>LOOK GOOD • FEEL GOOD • STAND OUT</p>
         <p>
           Beauty. Community. Bookings.
           <br />

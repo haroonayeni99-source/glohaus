@@ -13220,3 +13220,82 @@ select {
     font-size: .72rem;
   }
 }
+
+
+/* Professional inbox overflow and responsive sizing hardening. */
+.pro-message-page {
+  min-width: 0;
+  width: min(1180px, 100%);
+}
+.pro-message-page .message-centre {
+  min-width: 0;
+  max-width: 100%;
+}
+.pro-message-page .message-inbox,
+.pro-message-page .message-thread,
+.pro-message-page .message-thread-body,
+.pro-message-page .message-composer {
+  min-width: 0;
+}
+.pro-message-page .message-inbox-heading > div,
+.pro-message-page .message-thread-header > div,
+.pro-message-page .message-inbox-copy {
+  min-width: 0;
+}
+.pro-message-page .message-inbox-heading h1,
+.pro-message-page .message-thread-header strong,
+.pro-message-page .message-inbox-copy strong,
+.pro-message-page .message-inbox-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pro-message-page .message-thread-body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.pro-message-page .message-bubble {
+  max-width: min(85%, 560px);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.pro-message-page .message-composer textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.pro-message-page .message-prompts button {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .pro-message-page .message-centre {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+  }
+  .pro-message-page .message-thread.is-open {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+  .pro-message-page .message-thread:not(.is-open) {
+    display: none;
+  }
+  .pro-message-page .message-inbox-with-thread {
+    display: none;
+  }
+  .pro-message-page .message-thread-header {
+    grid-template-columns: 38px 38px minmax(0, 1fr);
+    gap: 9px;
+  }
+  .pro-message-page .message-composer {
+    gap: 8px;
+  }
+  .pro-message-page .message-bubble {
+    max-width: 88%;
+  }
+}
+@media (min-width: 761px) and (max-width: 960px) {
+  .pro-message-page .message-centre {
+    grid-template-columns: minmax(220px, 32%) minmax(0, 1fr);
+  }
+}

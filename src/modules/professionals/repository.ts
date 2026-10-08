@@ -92,7 +92,9 @@ export async function publicProfessionals(
          p.id,p.slug,p.business_name,p.bio,p.city,p.category,p.verification_status,
          d.photo_id,d.photo_alt,d.travels_to_you,
          r.rating,r.review_count,
-         s.from_price_pence
+         s.from_price_pence,
+         beauty.public_professional_available_today(p.id) AS available_today,
+         s.popular_services
        FROM beauty.public_professionals p
        LEFT JOIN beauty.public_profile_details d ON d.id=p.id
        LEFT JOIN LATERAL (
@@ -102,7 +104,15 @@ export async function publicProfessionals(
          WHERE professional_id=p.id
        ) r ON true
        LEFT JOIN LATERAL (
-         SELECT min(price_pence) AS from_price_pence
+         SELECT
+           min(price_pence) AS from_price_pence,
+           ARRAY(
+             SELECT svc.name
+             FROM beauty.public_services svc
+             WHERE svc.professional_id=p.id
+             ORDER BY svc.price_pence,svc.id
+             LIMIT 2
+           ) AS popular_services
          FROM beauty.public_services
          WHERE professional_id=p.id
        ) s ON true

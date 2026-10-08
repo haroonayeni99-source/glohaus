@@ -179,7 +179,7 @@ export function DesktopCustomerHome({
           <br />
           FEEL GOOD
           <br />
-          BELONG
+          STAND OUT
         </p>
       </aside>
 

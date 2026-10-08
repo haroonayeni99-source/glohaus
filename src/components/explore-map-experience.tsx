@@ -102,6 +102,7 @@ export function ExploreMapExperience({
       )?.name ?? "",
   );
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [mobileView, setMobileView] = useState<"map" | "list">("list");
   const nearby = professionals;
   const selected = query.trim().toLowerCase();
   const filterPairs = [
@@ -298,7 +299,16 @@ export function ExploreMapExperience({
         </div>
       </section>
 
-      <section className="map-results-layout">
+      <div className="map-mobile-view-toggle" role="group" aria-label="Explore view">
+        <button type="button" aria-pressed={mobileView === "list"} className={mobileView === "list" ? "is-active" : undefined} onClick={() => setMobileView("list")}>
+          List
+        </button>
+        <button type="button" aria-pressed={mobileView === "map"} className={mobileView === "map" ? "is-active" : undefined} onClick={() => setMobileView("map")}>
+          Map
+        </button>
+      </div>
+
+      <section className={`map-results-layout mobile-view-${mobileView}`}>
         <div
           className="glohaus-map"
           aria-label="Stylised London beauty discovery map"

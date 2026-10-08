@@ -48,7 +48,7 @@ export function MobileCustomerHome({
         <header className="mobile-home-header">
           <div className="mobile-home-brand">
             <Brand inverse />
-            <span>Beauty. Book. Shop. Belong.</span>
+            <span>Look good. Feel good. Stand out.</span>
           </div>
           <div className="mobile-home-header-actions">
             {canAccessAdmin && (

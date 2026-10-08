@@ -382,7 +382,7 @@
 @media (max-width: 1099px) {
   .glohaus-bottom-nav {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
   .glohaus-bottom-nav a {
     min-width: 0;

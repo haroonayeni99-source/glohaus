@@ -24,6 +24,7 @@ import type { Account } from "@/modules/accounts/domain";
 const coreSections = [
   ["Overview", "overview", LayoutDashboard],
   ["Settings", "settings", Settings],
+  ["Categories", "categories", BookOpenCheck],
   ["App Users", "users", UsersRound],
   ["Professionals", "professionals", BadgeCheck],
   ["LIVE", "live-access", Radio],

@@ -462,3 +462,64 @@ html[data-theme="night"] {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
+
+
+/* Full application theme parity for shared polished surfaces. */
+:root[data-theme="night"]
+:is(
+  .professional-card,
+  .professional-section,
+  .map-pro-row,
+  .cart-item,
+  .cart-summary,
+  .map-mobile-view-toggle,
+  .owner-backend-health .analytics-grid article
+) {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--text-strong);
+}
+:root[data-theme="night"]
+:is(
+  .professional-card,
+  .professional-section,
+  .map-pro-row,
+  .cart-item,
+  .cart-summary
+)
+:is(h1,h2,h3,strong,label) {
+  color: var(--text-strong);
+}
+:root[data-theme="night"]
+:is(
+  .professional-card-bio,
+  .professional-card-meta > span,
+  .professional-card-verification,
+  .cart-summary > p,
+  .map-pro-copy,
+  .professional-section p,
+  .professional-section small
+) {
+  color: var(--text-soft);
+}
+:root[data-theme="night"] .profile-section-nav {
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+}
+:root[data-theme="night"] .profile-section-nav a:hover {
+  background: var(--surface-soft);
+}
+:root[data-theme="night"] .professional-card-meta > span,
+:root[data-theme="night"] .professional-card-verification,
+:root[data-theme="night"] .professional-card-services > span {
+  background: var(--surface-soft);
+  border-color: var(--line);
+}
+:root[data-theme="night"] .cart-quantity,
+:root[data-theme="night"] .cart-remove {
+  border-color: var(--line);
+  color: var(--text-strong);
+}
+:root[data-theme="night"] .map-mobile-view-toggle button.is-active {
+  background: var(--text-strong);
+  color: var(--paper);
+}

@@ -8496,6 +8496,31 @@ body > .theme-toggle {
   }
 }
 
+@media (max-width: 430px) {
+  .glohaus-header {
+    gap: 8px;
+    padding-inline: 10px;
+  }
+  .glohaus-header .brand {
+    max-width: 38vw;
+    overflow: hidden;
+    font-size: 1.5rem;
+  }
+  .glohaus-header-actions {
+    min-width: 0;
+    gap: 5px;
+  }
+  .glohaus-header-actions .glohaus-search-link {
+    display: none;
+  }
+  .glohaus-header-actions .glohaus-sign-in,
+  .glohaus-sign-up {
+    min-width: 0;
+    padding-inline: 9px;
+    white-space: nowrap;
+  }
+}
+
 
 /* Public informational pages */
 .public-info-page {

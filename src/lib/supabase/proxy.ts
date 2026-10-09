@@ -9,6 +9,29 @@ function noStore(response: NextResponse) {
   return response;
 }
 
+function clearProjectAuthCookies(request: NextRequest) {
+  const clean = noStore(NextResponse.next({ request }));
+  let projectRef = "";
+  try {
+    projectRef =
+      new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || "").hostname.split(".")[0] ||
+      "";
+  } catch {}
+  const prefix = projectRef ? `sb-${projectRef}-auth-token` : "";
+  if (prefix) {
+    for (const cookie of request.cookies.getAll()) {
+      if (!cookie.name.startsWith(prefix)) continue;
+      clean.cookies.set(cookie.name, "", {
+        path: "/",
+        maxAge: 0,
+        expires: new Date(0),
+        sameSite: "lax",
+      });
+    }
+  }
+  return clean;
+}
+
 export async function updateSession(request: NextRequest) {
   let response = noStore(NextResponse.next({ request }));
   // Public routes must remain available if Supabase is temporarily unreachable.
@@ -34,30 +57,14 @@ export async function updateSession(request: NextRequest) {
       },
     );
 
-    await supabase.auth.getClaims();
+    const { error } = await supabase.auth.getClaims();
+    if (error) return clearProjectAuthCookies(request);
   } catch {
     // If @supabase/ssr cannot decode a chunked auth cookie, returning the same
     // broken chunks causes every later server request to fail the same way.
     // Expire only this project's auth cookies so the next password/OTP sign-in
     // starts from a clean browser/server session.
-    const clean = noStore(NextResponse.next({ request }));
-    let projectRef = "";
-    try {
-      projectRef = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || "").hostname.split(".")[0] || "";
-    } catch {}
-    const prefix = projectRef ? `sb-${projectRef}-auth-token` : "";
-    if (prefix) {
-      for (const cookie of request.cookies.getAll()) {
-        if (!cookie.name.startsWith(prefix)) continue;
-        clean.cookies.set(cookie.name, "", {
-          path: "/",
-          maxAge: 0,
-          expires: new Date(0),
-          sameSite: "lax",
-        });
-      }
-    }
-    return clean;
+    return clearProjectAuthCookies(request);
   }
 
   return response;

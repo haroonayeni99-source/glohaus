@@ -9,36 +9,94 @@ import { FeatureVotes } from "@/components/feature-votes";
 
 export default async function FeatureVotesPage() {
   const result = await pageAccount();
-  if (!result.account) return <div className="standalone-message"><AccessMessage code={result.error} /></div>;
+  if (!result.account)
+    return (
+      <div className="standalone-message">
+        <AccessMessage code={result.error} />
+      </div>
+    );
+
   const account = result.account;
   const professional = account.roles.includes("professional");
-  const features = await withIdentity(
-    account.authId,
-    async (db) =>
-      (
-        await db.query<{
-          id: string;
-          audience: "customer" | "professional" | "all";
-          title: string;
-          description: string;
-          status: string;
-          vote_count: number;
-          my_vote: boolean;
-        }>("SELECT * FROM beauty.public_feature_requests()")
-      ).rows,
-  );
 
-  const visible = features.filter((item) =>
-    item.audience === "all" ||
-    (professional ? item.audience === "professional" : item.audience === "customer")
+  let features: {
+    id: string;
+    audience: "customer" | "professional" | "all";
+    title: string;
+    description: string;
+    status: string;
+    vote_count: number;
+    my_vote: boolean;
+  }[];
+
+  try {
+    features = await withIdentity(
+      account.authId,
+      async (db) =>
+        (
+          await db.query<{
+            id: string;
+            audience: "customer" | "professional" | "all";
+            title: string;
+            description: string;
+            status: string;
+            vote_count: number;
+            my_vote: boolean;
+          }>("SELECT * FROM beauty.public_feature_requests()")
+        ).rows,
+    );
+  } catch (error) {
+    console.error("Feature votes page data unavailable", {
+      type: error instanceof Error ? error.name : "UnknownError",
+    });
+
+    const unavailable = (
+      <main
+        id="main"
+        className={
+          professional ? "pro-main pro-management-page" : "customer-account-page"
+        }
+      >
+        <AccessMessage code="UNAVAILABLE" />
+      </main>
+    );
+
+    return professional ? (
+      <div className="pro-app">
+        <ProfessionalNavigation
+          active="more"
+          displayName={account.displayName}
+        />
+        {unavailable}
+      </div>
+    ) : (
+      <>
+        <PublicHeader signedIn />
+        {unavailable}
+      </>
+    );
+  }
+
+  const visible = features.filter(
+    (item) =>
+      item.audience === "all" ||
+      (professional
+        ? item.audience === "professional"
+        : item.audience === "customer"),
   );
 
   const content = (
-    <main id="main" className={professional ? "pro-main pro-management-page" : "customer-account-page"}>
+    <main
+      id="main"
+      className={
+        professional ? "pro-main pro-management-page" : "customer-account-page"
+      }
+    >
       <p className="eyebrow">HELP SHAPE GLOHAUS</p>
       <h1>Vote on what you want next.</h1>
       <p className="lead">
-        Vote totals are public to signed-in GLOHAUS users, but who voted remains private. One account gets one vote per idea.
+        Vote totals are public to signed-in GLOHAUS users, but who voted remains
+        private. One account gets one vote per idea.
       </p>
       <FeatureVotes initial={visible} />
     </main>

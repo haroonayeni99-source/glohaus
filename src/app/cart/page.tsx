@@ -19,9 +19,23 @@ export default async function CartPage() {
       </div>
     );
 
-  const cart = await withIdentity(result.account.authId, (db) =>
-    customerCart(db),
-  );
+  let cart;
+  try {
+    cart = await withIdentity(result.account.authId, (db) => customerCart(db));
+  } catch (error) {
+    console.error("Cart page data unavailable", {
+      type: error instanceof Error ? error.name : "UnknownError",
+    });
+    return (
+      <>
+        <PublicHeader signedIn />
+        <main id="main" className="standalone-message">
+          <AccessMessage code="UNAVAILABLE" />
+        </main>
+        <BottomNavigation active="shop" signedIn />
+      </>
+    );
+  }
 
   return (
     <>

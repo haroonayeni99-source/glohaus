@@ -23,7 +23,7 @@ function isTransientConnectionError(error: unknown) {
     return true;
 
   const message = error instanceof Error ? error.message : String(error ?? "");
-  return /connection terminated|connection closed|socket hang up|econnreset|read eof|server closed the connection/i.test(
+  return /timeout exceeded when trying to connect|connection terminated|connection closed|socket hang up|econnreset|read eof|server closed the connection/i.test(
     message,
   );
 }

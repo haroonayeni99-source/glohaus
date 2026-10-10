@@ -7,6 +7,7 @@ import "./globals.css";
 import "./ui-upgrades.css";
 import "./theme-compat.css";
 import "./customer-polish.css";
+import "./site-improvements.css";
 
 const themeBootstrap = `(() => {
   try {

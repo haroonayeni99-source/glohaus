@@ -1,82 +1,29 @@
 # GLOHAUS bug fixing handoff — 10 October 2026
 
-## Scope
+## Scope and baseline
 
-Investigate symptoms, preserve approved desktop/mobile designs, make targeted fixes,
-and verify them. Payment rules, real money movement, secrets, and production data
-deletion require explicit user approval. Preserve the existing no-preview preference.
+User authorized verified fixes and deployment. Preserve approved designs, payment rules, secrets, and production data. No money movement or production database writes are part of this release.
 
-## Baseline
+- Repository: haroonayeni99-source/glohaus.
+- Baseline main: 8e878a2e5b29c02cc3311fe1c8effe86759da5b0.
+- Vercel project: glohaus1; domain: www.glohaus.shop.
+- Supabase project: tyycrmmczsgnowditnii. Inspection was read-only.
 
-- GitHub: `haroonayeni99-source/glohaus`, `main` at
-  `8e878a2e5b29c02cc3311fe1c8effe86759da5b0`.
-- Vercel: `glohaus1`, production deployment
-  `dpl_F9yb9qDoBYC28wMyAKxWhrpTbV81`, READY and sourced from that commit.
-- Supabase: Glohaus, `tyycrmmczsgnowditnii`, ACTIVE_HEALTHY.
-- Production checks used read-only SQL and metadata/log reads. No production write,
-  secret change, deployment, or money movement was performed.
+## Fixes
 
-## Verified messaging bug and fix
+1. Messages: switching threads previously preserved the old messages, draft, and pagination cursor while showing the new recipient. Key MessageCentre by the account, workspace, and conversation/draft target. Same-thread refresh keeps the draft. Five DOM regressions cover both roles and navigation paths; three failed against baseline and all pass after the change.
+2. LIVE: the recovery button read a mutable ref during render, blocking lint. Track visibility in React state while keeping the ref for cleanup. A DOM regression verifies recovery survives failed cleanup and disappears after a successful end request. Media and API calls are mocked.
+3. Database verification: shared isolated PGlite bootstrap supplies Supabase's anon, authenticated, and minimal Auth prerequisites. Recover missing table and function definitions from authoritative production metadata/history, and insert them before dependent repository migrations through a shared plan. See db/recovered/README.md for provenance and limitations.
+4. Stale fixtures: match existing deposit snapshots, API error codes, public service fields, ownership-test input requirements, and delivery constraints. Application payment, ownership, and eligibility rules are unchanged.
 
-Switching `/messages?thread=...` updates the recipient header but React preserves
-the unkeyed MessageCentre's previous messages, draft, and pagination state. This
-also happens after returning to the inbox and opening another conversation.
+## Release validation
 
-Give MessageCentre a key containing the account, workspace, and conversation or
-draft target. A different target mounts fresh state, while a refresh of the same
-target preserves the unsent draft. The change affects both customer and
-professional messages without changing their markup, styling, API, or permissions.
+Full Vitest suite: 55 files and 394 tests passed, none skipped. Lint passed with one pre-existing unused cartHref warning. Typecheck and the production build passed. Browser E2E could not run because the Chromium download returned an invalid archive; DOM regressions are not an authenticated production browser session. No customer payment, email, or live broadcast was created for verification.
 
-`tests/message-navigation.test.ts` renders the real MessagesPage and MessageCentre
-with isolated account/database/API fixtures. Before the fix, three of five checks
-failed. After the fix, all five passed. Checks cover both workspaces, previous
-message/draft removal, sending to the selected thread with its own polling cursor,
-inbox navigation, and keeping the draft on same-thread refresh.
+## Remaining operational limitation
 
-## Validation
+The repository ledger and Supabase migration history still differ. This release restores prerequisites for isolated reconstruction; it does not reconcile those histories. Original migration files/checksums and the migration drift guard are preserved. Do not run db:migrate against production or bypass its guard as part of this release. Deployment builds do not apply database migrations.
 
-- `pnpm build`: passed; production bundle compiled and all 75 static pages generated.
-- `pnpm typecheck`: passed.
-- `pnpm exec eslint src/app/messages/page.tsx tests/message-navigation.test.ts`: passed.
-- Navigation, homepage, and Resend parsing tests: 12 passed across three files.
-- Full baseline suite: 24 files passed and 29 failed during database setup;
-  159 tests passed and 229 were skipped. This was present before the messaging fix.
-- No authenticated production-browser session was used. DOM regression tests
-  verify message navigation; professional layout still needs visual browser QA.
+## Previously fixed or requiring a fresh symptom
 
-## Existing verification blocker
-
-Most isolated PGlite databases do not provision Supabase's `anon` and
-`authenticated` roles, so the full migration chain fails before their tests run.
-The account-security test already provisions those roles, but then fails because
-`0096_backend_foreign_key_indexes.sql` references
-`beauty.booking_dispute_responses`, which has no CREATE TABLE definition in the
-repository migrations. Read-only production inspection confirms the table exists
-there. A temporary local bootstrap verified this second blocker; that incomplete
-bootstrap was removed.
-
-Do not mark the full suite green or run all repository migrations in production.
-The repository's custom migration ledger and Supabase migration history differ.
-Reconcile the missing schema history from authoritative definitions in a separate
-isolated change, preserving the current financial behavior.
-
-## Recent fixes already present
-
-The production Resend provider-event function contains the qualified
-`record_email_provider_event.provider_event_at` fix from migration 0120. The
-24-hour Vercel error-log sample contained older email webhook failures; it did not
-show a failure on the current deployment. A new delivery event has not been
-triggered to prove live processing.
-
-Owner search and responsive header fixes, and professional messages/Owner
-navigation CSS fixes are already on main. Older open PRs include overlapping work;
-compare them with current main before merging to avoid reverting newer changes.
-
-## Next checks
-
-1. Reconcile the isolated test schema prerequisites and missing production-only
-   migration definitions without changing payment rules.
-2. Visually verify professional messages in desktop/mobile and light/dark modes
-   using an authorized test session.
-3. Reproduce Owner/Admin navigation, search, and header symptoms against current
-   production before making additional changes.
+The production Resend function already includes migration 0120's qualified provider-event timestamp correction. The inspected errors came from older deployments; no fresh delivery event was generated. Owner search, responsive headers, and professional messages/Owner navigation CSS fixes already exist on main. Reproduce new symptoms against current production before changing them.

@@ -1,5 +1,4 @@
-import { PGlite } from "@electric-sql/pglite";
-import { readFile, readdir } from "node:fs/promises";
+import { createTestDatabase, applyTestMigrations } from "./test-database";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { enrolAccount, type SqlClient } from "@/modules/accounts/repository";
 import { updateProfile, saveService } from "@/modules/professionals/repository";
@@ -7,7 +6,7 @@ import { saveSchedule } from "@/modules/availability/repository";
 import { professionalReviews } from "@/modules/reviews/repository";
 import { checkoutReference } from "@/modules/bookings/repository";
 import { customerPaymentOverview } from "@/modules/finance/repository";
-const db = new PGlite();
+const db = await createTestDatabase();
 let professional: string;
 let service: string;
 let booking: string;
@@ -27,11 +26,7 @@ async function worker(fn: (sql: SqlClient) => Promise<unknown>) {
   });
 }
 beforeAll(async () => {
-  const directory = new URL("../db/migrations/", import.meta.url);
-  for (const file of (await readdir(directory))
-    .filter((file) => file.endsWith(".sql"))
-    .sort())
-    await db.exec(await readFile(new URL(file, directory), "utf8"));
+  await applyTestMigrations(db);
   for (const authId of ["pro", "alice", "bob"]) {
     const account = await asUser(authId, (sql) =>
       enrolAccount(
@@ -407,8 +402,8 @@ describe.sequential("booking transactions and verified deposits", () => {
   });
 });
 
-describe.sequential("starter zero-deposit booking fee checkout", () => {
-  it("allows an unverified professional without Connect to take a £1-fee starter booking", async () => {
+describe.sequential("starter full-prepayment checkout", () => {
+  it("collects the full service value plus the £1 booking fee for an unverified professional", async () => {
     const account = await asUser("starter-pro", (sql) =>
       enrolAccount(
         sql,
@@ -472,7 +467,7 @@ describe.sequential("starter zero-deposit booking fee checkout", () => {
     ).rows[0].data;
 
     expect(reservation).toMatchObject({
-      depositPence: 0,
+      depositPence: 5000,
       bookingFeePence: 100,
       status: "payment_pending",
     });
@@ -492,9 +487,9 @@ describe.sequential("starter zero-deposit booking fee checkout", () => {
     ).rows[0].data;
 
     expect(quote).toMatchObject({
-      customerTotalPence: 100,
+      customerTotalPence: 5100,
       customerPlatformFeePence: 100,
-      professionalProceedsPence: 0,
+      professionalProceedsPence: 4600,
     });
 
     await asUser("alice", (sql) =>
@@ -504,7 +499,7 @@ describe.sequential("starter zero-deposit booking fee checkout", () => {
     );
     await worker(async (sql) => {
       await sql.query(
-        "SELECT beauty.apply_checkout_payment('evt_starter_fee',$1,'cs_starter_fee','pi_starter_fee',100,'gbp')",
+        "SELECT beauty.apply_checkout_payment('evt_starter_fee',$1,'cs_starter_fee','pi_starter_fee',5100,'gbp')",
         [reservation.id],
       );
       await sql.query("SELECT beauty.record_booking_payment_finance($1,$2)", [

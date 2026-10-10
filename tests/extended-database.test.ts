@@ -1,10 +1,9 @@
-import { PGlite } from "@electric-sql/pglite";
-import { readFile, readdir } from "node:fs/promises";
+import { createTestDatabase, applyTestMigrations } from "./test-database";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { enrolAccount, type SqlClient } from "@/modules/accounts/repository";
 import { updateProfile, saveService } from "@/modules/professionals/repository";
 import { addTimeOff, removeTimeOff } from "@/modules/availability/repository";
-const db = new PGlite();
+const db = await createTestDatabase();
 let professional: string;
 let customer: string;
 let service: string;
@@ -25,11 +24,7 @@ async function worker<T>(fn: (sql: SqlClient) => Promise<T>) {
   });
 }
 beforeAll(async () => {
-  const directory = new URL("../db/migrations/", import.meta.url);
-  for (const file of (await readdir(directory))
-    .filter((file) => file.endsWith(".sql"))
-    .sort())
-    await db.exec(await readFile(new URL(file, directory), "utf8"));
+  await applyTestMigrations(db);
   for (const authId of ["pro", "customer"]) {
     const account = await asUser(authId, (sql) =>
       enrolAccount(

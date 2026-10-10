@@ -1,5 +1,4 @@
-import { PGlite } from "@electric-sql/pglite";
-import { readFile, readdir } from "node:fs/promises";
+import { createTestDatabase, applyTestMigrations } from "./test-database";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { enrolAccount, type SqlClient } from "@/modules/accounts/repository";
 import { updateProfile } from "@/modules/professionals/repository";
@@ -12,7 +11,7 @@ import {
   shopCartPayoutsReady,
 } from "@/modules/shop/repository";
 
-const db = new PGlite();
+const db = await createTestDatabase();
 let customerId: string;
 let professionalId: string;
 let productId: string;
@@ -38,11 +37,7 @@ async function asPaymentWorker<T>(
 }
 
 beforeAll(async () => {
-  const directory = new URL("../db/migrations/", import.meta.url);
-  for (const file of (await readdir(directory))
-    .filter((file) => file.endsWith(".sql"))
-    .sort())
-    await db.exec(await readFile(new URL(file, directory), "utf8"));
+  await applyTestMigrations(db);
 
   const pro = await asUser("checkout-pro", (sql) =>
     enrolAccount(
@@ -234,7 +229,7 @@ describe.sequential("secure Shop checkout", () => {
     ).rows[0];
 
     await db.query(
-      "UPDATE beauty.product_orders SET status='delivered',delivered_at=now()-interval '49 hours' WHERE id=$1",
+      "UPDATE beauty.product_orders SET status='delivered',shipped_at=now()-interval '49 hours',delivered_at=now()-interval '48 hours',tracking_carrier='Royal Mail',tracking_number='TEST-TRACKING-1' WHERE id=$1",
       [order.id],
     );
 

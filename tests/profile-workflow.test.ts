@@ -3,8 +3,7 @@ import { PUT as reactToPost } from "@/app/api/v1/posts/[id]/engagement/route";
 import { savePost } from "@/modules/posts/repository";
 import { bookingPage } from "@/modules/bookings/repository";
 import { bookingListOptions } from "@/modules/bookings/listing";
-import { PGlite } from "@electric-sql/pglite";
-import { readFile, readdir } from "node:fs/promises";
+import { createTestDatabase, applyTestMigrations } from "./test-database";
 import sharp from "sharp";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { AccessError, type Identity } from "@/modules/accounts/domain";
@@ -61,7 +60,7 @@ vi.mock("@vercel/blob", () => ({
   ),
 }));
 let current: Identity | null = null;
-const db = new PGlite();
+const db = await createTestDatabase();
 const identities = Object.fromEntries(
   ["maya", "other", "client"].map((authId) => [
     authId,
@@ -127,11 +126,7 @@ const photoContext = () => ({ params: Promise.resolve({ id: photoId }) });
 beforeAll(async () => {
   vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://glohaus.test");
   vi.stubEnv("BLOB_READ_WRITE_TOKEN", "test-only-token");
-  const directory = new URL("../db/migrations/", import.meta.url);
-  for (const file of (await readdir(directory))
-    .filter((file) => file.endsWith(".sql"))
-    .sort())
-    await db.exec(await readFile(new URL(file, directory), "utf8"));
+  await applyTestMigrations(db);
   for (const identity of Object.values(identities)) {
     const account = await asUser(identity.authId, (sql) =>
       enrolAccount(
@@ -408,7 +403,7 @@ it("bounds business details and rejects credentials in social links", () => {
 describe.sequential("booking without a payment-provider setup", () => {
   let serviceId: string;
   let startsAt: string;
-  it("requires payment setup even for a zero-deposit service because the £1 booking fee is mandatory", async () => {
+  it("rejects a starter reservation when runtime payment setup is absent", async () => {
     current = identities.client;
     serviceId = (await asUser("", (sql) => publicProfile(sql, profile.slug)))!
       .services[0].id;
@@ -418,7 +413,8 @@ describe.sequential("booking without a payment-provider setup", () => {
     startsAt = monday.toISOString();
     const input = { serviceId, startsAt, acceptPolicy: true };
     const response = await createBooking(request(input, "POST"));
-    expect(response.status).toBe(503);
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: { code: "PAYMENTS_NOT_READY" } });
     expect(
       (
         await db.query("SELECT id FROM beauty.bookings WHERE starts_at=$1", [
@@ -444,7 +440,8 @@ describe.sequential("booking without a payment-provider setup", () => {
     const response = await createBooking(
       request({ serviceId, startsAt: later, acceptPolicy: true }, "POST"),
     );
-    expect(response.status).toBe(503);
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: { code: "PAYMENTS_NOT_READY" } });
     expect(
       (
         await db.query("SELECT id FROM beauty.bookings WHERE starts_at=$1", [
@@ -452,7 +449,7 @@ describe.sequential("booking without a payment-provider setup", () => {
         ])
       ).rows,
     ).toEqual([]);
-    await db.query("UPDATE beauty.services SET deposit_pence=0 WHERE id=$1", [
+    await db.query("UPDATE beauty.services SET deposit_pence=1500 WHERE id=$1", [
       serviceId,
     ]);
   });
@@ -472,7 +469,7 @@ describe.sequential("scoped appointment history and pagination", () => {
     ))!.services[0].id;
     seeded = (
       await db.query<{ id: string }>(
-        `INSERT INTO beauty.bookings(professional_id,customer_id,service_id,service_name,customer_name,professional_name,starts_at,ends_at,duration_minutes,price_pence,deposit_pence,status,hold_expires_at) SELECT $1,$2,$3,'Manicure','Client','Studio',now()+interval '30 days',now()+interval '30 days 1 hour',60,4500,0,'confirmed',now() FROM generate_series(1,28) RETURNING id`,
+        `INSERT INTO beauty.bookings(professional_id,customer_id,service_id,service_name,customer_name,professional_name,starts_at,ends_at,duration_minutes,price_pence,deposit_pence,status,hold_expires_at) SELECT $1,$2,$3,'Manicure','Client','Studio',now()+interval '30 days',now()+interval '30 days 1 hour',60,4500,1500,'confirmed',now() FROM generate_series(1,28) RETURNING id`,
         [owner, customerId, serviceId],
       )
     ).rows.map((r) => r.id);
@@ -597,7 +594,7 @@ it("manages a service through authenticated routes and rejects another owner", a
     description: "Sculpted nails",
     durationMinutes: 90,
     pricePence: 4500,
-    depositPence: 0,
+    depositPence: 1500,
     active: true,
   };
   const created = await addService(request(input, "POST"));
@@ -608,7 +605,7 @@ it("manages a service through authenticated routes and rejects another owner", a
   expect(
     (await editService(request({ ...input, pricePence: 1 }), context)).status,
   ).toBe(400);
-  expect((await editService(request(input), context)).status).toBe(403);
+  expect((await editService(request({ ...input, depositPence: 0 }), context)).status).toBe(403);
   expect(
     (await deactivateServiceRoute(request(null, "DELETE"), context)).status,
   ).toBe(403);

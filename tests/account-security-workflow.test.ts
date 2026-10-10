@@ -1,10 +1,9 @@
-import { PGlite } from "@electric-sql/pglite";
-import { readdir, readFile } from "node:fs/promises";
+import { createTestDatabase, applyTestMigrations } from "./test-database";
 import { beforeAll, afterAll, describe, expect, it } from "vitest";
 import { authorize, type Identity } from "@/modules/accounts/domain";
 import { enrolAccount, ensureCustomerAccount, findAccount, type SqlClient } from "@/modules/accounts/repository";
 
-const db = new PGlite();
+const db = await createTestDatabase();
 const ids = { customer: "00000000-0000-4000-8000-000000000001", owner: "00000000-0000-4000-8000-000000000002", admin: "00000000-0000-4000-8000-000000000003" };
 const users: Record<string,string> = {};
 const identity = (authId: string): Identity => ({authId,email: `${authId}@example.test`,displayName:"Test account",secondFactorAge:0});
@@ -16,13 +15,7 @@ async function asUser<T>(authId: string, verified: boolean, work: (sql: SqlClien
   });
 }
 beforeAll(async () => {
-  await db.exec(`CREATE ROLE authenticated NOLOGIN; CREATE ROLE anon NOLOGIN; CREATE SCHEMA auth;
-    CREATE TABLE auth.users(id uuid PRIMARY KEY,email text,email_confirmed_at timestamptz);
-    CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $$ SELECT nullif(current_setting('test.auth_id',true),'')::uuid $$;`);
-  const directory = new URL("../db/migrations/",import.meta.url);
-  for (const file of (await readdir(directory)).filter(file => file.endsWith(".sql")).sort()) {
-    await db.exec(await readFile(new URL(file,directory),"utf8"));
-  }
+  await applyTestMigrations(db);
   for (const [name,authId] of Object.entries(ids)) {
     users[name]=(await asUser(authId,false,sql=>enrolAccount(sql,identity(authId),"customer"))).id;
     await db.query("INSERT INTO auth.users VALUES($1,$2,now())",[authId,identity(authId).email]);

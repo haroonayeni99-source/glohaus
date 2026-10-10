@@ -1,9 +1,8 @@
-import { PGlite } from "@electric-sql/pglite";
-import { readFile, readdir } from "node:fs/promises";
+import { createTestDatabase, applyTestMigrations } from "./test-database";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { enrolAccount, type SqlClient } from "@/modules/accounts/repository";
 
-const db = new PGlite();
+const db = await createTestDatabase();
 let professionalId: string;
 let customerId: string;
 
@@ -22,11 +21,7 @@ async function asUser<T>(
 }
 
 beforeAll(async () => {
-  const directory = new URL("../db/migrations/", import.meta.url);
-  for (const file of (await readdir(directory))
-    .filter((file) => file.endsWith(".sql"))
-    .sort())
-    await db.exec(await readFile(new URL(file, directory), "utf8"));
+  await applyTestMigrations(db);
 
   const professional = await asUser("finance-admin-pro", false, (sql) =>
     enrolAccount(sql, {
@@ -93,7 +88,7 @@ beforeAll(async () => {
         deposit_pence,status,hold_expires_at
       ) VALUES($1,$2,$3,'Finance test','Finance Customer','Finance Studio',
         now()-interval '2 days',now()-interval '2 days'+interval '1 hour',
-        60,5000,0,'completed',now()-interval '3 days') RETURNING id`,
+        60,5000,5000,'completed',now()-interval '3 days') RETURNING id`,
       [professionalId, customerId, serviceId],
     )
   ).rows[0].id;

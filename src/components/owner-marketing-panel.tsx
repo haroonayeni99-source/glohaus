@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Megaphone, ThumbsUp } from "lucide-react";
+import { requireAdminResponse } from "@/lib/admin-response";
 
 const customerPresets = [
   ["last_minute_availability","Last-minute availability","Optional appointment-slot campaign. No GLOHAUS discount is promised."],
@@ -49,8 +50,8 @@ export function OwnerMarketingPanel({initial}:{initial:Overview}) {
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({type:"launch",preset}),
       });
-      const data=await response.json().catch(()=>null) as {campaign?:{recipients?:number};error?:{code?:string}}|null;
-      if(!response.ok) throw new Error("Campaign could not be launched.");
+      await requireAdminResponse(response, "Campaign could not be launched.");
+      const data=await response.json().catch(()=>null) as {campaign?:{recipients?:number}}|null;
       setNotice(`Campaign queued for ${data?.campaign?.recipients ?? 0} opted-in recipient(s).`);
       router.refresh();
     }catch(error){setNotice(error instanceof Error?error.message:"Campaign could not be launched.");}
@@ -59,7 +60,8 @@ export function OwnerMarketingPanel({initial}:{initial:Overview}) {
 
   async function createPoll(event:React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form=new FormData(event.currentTarget);
+    const element=event.currentTarget;
+    const form=new FormData(element);
     setBusy("poll"); setNotice("");
     try{
       const response=await fetch("/api/v1/admin/marketing",{
@@ -72,9 +74,9 @@ export function OwnerMarketingPanel({initial}:{initial:Overview}) {
           description:form.get("description"),
         }),
       });
-      if(!response.ok) throw new Error("Feature vote could not be created.");
+      await requireAdminResponse(response, "Feature vote could not be created.");
       setNotice("Feature vote published privately to signed-in GLOHAUS users.");
-      event.currentTarget.reset();
+      element.reset();
       router.refresh();
     }catch(error){setNotice(error instanceof Error?error.message:"Feature vote could not be created.");}
     finally{setBusy("");}

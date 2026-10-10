@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { requireAdminResponse } from "@/lib/admin-response";
 import {
   labelKeys,
   labelsSchema,
@@ -33,14 +34,14 @@ export function AdminLabelEditor({ initial }: { initial: Labels }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(input.data),
           });
-          if (!response.ok) throw new Error();
+          await requireAdminResponse(response, "Could not update labels. Check your admin verification and try again.");
           setNotice(
             "Display names updated. Roles and existing profiles are preserved.",
           );
           router.refresh();
-        } catch {
+        } catch (error) {
           setNotice(
-            "Could not update labels. Check your admin verification and try again.",
+            error instanceof Error ? error.message : "Could not update labels. Try again.",
           );
         } finally {
           setBusy(false);

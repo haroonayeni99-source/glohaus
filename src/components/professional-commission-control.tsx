@@ -1,4 +1,5 @@
 "use client";
+import { requireAdminResponse } from "@/lib/admin-response";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -40,7 +41,7 @@ export function ProfessionalCommissionControl({
           reason: String(form.get("reason") || "").trim(),
         }),
       });
-      if (!response.ok) throw new Error("Commission change was not saved.");
+      await requireAdminResponse(response, "Commission change was not saved.");
       setNotice(raw === "" ? "Custom commission removed; the normal plan rate now applies." : "Custom commission saved for future booking quotes.");
       router.refresh();
     } catch (error) {
@@ -82,7 +83,7 @@ export function ProfessionalCommissionControl({
                 <input
                   name="expiresAt"
                   type="datetime-local"
-                  defaultValue={pro.overrideUntil ? new Date(pro.overrideUntil).toISOString().slice(0,16) : ""}
+                  defaultValue={pro.overrideUntil ? (() => { const date = new Date(pro.overrideUntil); return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0,16); })() : ""}
                 />
               </label>
               <label>

@@ -1,4 +1,5 @@
 "use client";
+import { requireAdminResponse } from "@/lib/admin-response";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -41,10 +42,7 @@ export function ShopFeeControl({
               reason: form.get("reason"),
             }),
           });
-          if (!response.ok)
-            throw new Error(
-              "The Shop commission rule was not saved. Check the values and try again.",
-            );
+          await requireAdminResponse(response, "The Shop commission rule was not saved. Check the values and try again.");
           setNotice("Shop commission updated. New Shop checkouts will use this rule.");
           router.refresh();
         } catch (error) {

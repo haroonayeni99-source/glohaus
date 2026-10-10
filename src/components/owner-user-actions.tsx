@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCurrentTime } from "@/components/use-current-time";
 import { useRouter } from "next/navigation";
+import { requireAdminResponse } from "@/lib/admin-response";
 
 type UserRow = {
   id: string;
@@ -43,9 +44,9 @@ export function OwnerUserActions({ user, hardDeleteConfigured }: { user: UserRow
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const result = await response.json().catch(() => ({}));
+      const result = await response.clone().json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(
+        await requireAdminResponse(response,
           typeof result?.message === "string"
             ? result.message
             : "Owner account action was not saved.",

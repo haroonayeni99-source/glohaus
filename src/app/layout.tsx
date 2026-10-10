@@ -49,7 +49,7 @@ export default async function RootLayout({
     </>
   );
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <script
           id="glohaus-theme-bootstrap"

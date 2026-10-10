@@ -66,7 +66,9 @@ export function MessageCentre({
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
-  const endRef = useRef<HTMLDivElement | null>(null);
+  const threadRef = useRef<HTMLDivElement | null>(null);
+  const stayAtEnd = useRef(true);
+
   const activeId = activeConversation?.id || null;
   const role = activeConversation?.participant_role || null;
   const viewSuffix = view === "professional" ? "&view=professional" : "";
@@ -98,24 +100,30 @@ export function MessageCentre({
   }, [activeId]);
 
   const refreshNew = useCallback(async () => {
-    if (!activeId || !cursor) return;
+    if (!activeId) return;
     try {
       const response = await fetch(
-        `/api/v1/messages/${activeId}?after=${encodeURIComponent(cursor)}`,
+        `/api/v1/messages/${activeId}${cursor ? `?after=${encodeURIComponent(cursor)}` : ""}`,
         { cache: "no-store" },
       );
       if (!response.ok) return;
       const data = (await response.json()) as {
         messages: ConversationMessage[];
         next: string | null;
+        previous?: string | null;
+        hasMore?: boolean;
       };
+      if (!cursor && data.previous) {
+        setOlderCursor(data.previous);
+        setHasOlder(Boolean(data.hasMore));
+      }
       if (data.messages.length) {
         setMessages((current) => {
           const known = new Set(current.map((message) => message.id));
           return [
             ...current,
             ...data.messages.filter((message) => !known.has(message.id)),
-          ];
+          ].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime() || a.id.localeCompare(b.id));
         });
         if (
           role &&
@@ -140,16 +148,24 @@ export function MessageCentre({
   const latestMessageId = messages.at(-1)?.id ?? null;
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end" });
+    const thread = threadRef.current;
+    if (thread && stayAtEnd.current) thread.scrollTop = thread.scrollHeight;
   }, [latestMessageId, activeId]);
 
-  async function loadOlder() {
+  async function loadOlder(full = false) {
     if (!activeId || !olderCursor || loadingOlder) return;
     setLoadingOlder(true);
     setNotice("");
     try {
+      const thread = threadRef.current;
+      const previousHeight = thread?.scrollHeight ?? 0;
+      const previousTop = thread?.scrollTop ?? 0;
+      let before: string | null = olderCursor;
+      const earlier: ConversationMessage[] = [];
+      let more = hasOlder;
+      do {
       const response = await fetch(
-        `/api/v1/messages/${activeId}?before=${encodeURIComponent(olderCursor)}`,
+        `/api/v1/messages/${activeId}?before=${encodeURIComponent(before!)}`,
         { cache: "no-store" },
       );
       if (!response.ok) throw new Error();
@@ -158,15 +174,21 @@ export function MessageCentre({
         previous?: string | null;
         hasMore: boolean;
       };
-      setMessages((current) => {
-        const known = new Set(current.map((message) => message.id));
-        return [
-          ...data.messages.filter((message) => !known.has(message.id)),
-          ...current,
-        ];
+      earlier.unshift(...data.messages);
+      more = data.hasMore;
+      if (more && (!data.previous || data.previous === before)) throw new Error();
+      before = data.previous ?? null;
+      } while (full && more);
+      stayAtEnd.current = false;
+      setMessages(current => {
+        const known = new Set(current.map(message => message.id));
+        return [...earlier.filter(message => !known.has(message.id)), ...current];
       });
-      setOlderCursor(data.previous ?? null);
-      setHasOlder(data.hasMore);
+      setOlderCursor(before);
+      setHasOlder(more);
+      requestAnimationFrame(() => {
+        if (thread) thread.scrollTop = previousTop + thread.scrollHeight - previousHeight;
+      });
     } catch {
       setNotice("Earlier messages could not be loaded.");
     } finally {
@@ -209,6 +231,7 @@ export function MessageCentre({
         );
 
       setBody("");
+      stayAtEnd.current = true;
       if (!activeId) {
         router.push(`/messages?thread=${encodeURIComponent(data.conversationId)}${viewSuffix}`);
         router.refresh();
@@ -319,7 +342,11 @@ export function MessageCentre({
               </div>
             </header>
 
-            <div className="message-thread-body" aria-live="polite">
+            <div className="message-thread-body" ref={threadRef} aria-live="polite"
+              onScroll={event => {
+                const thread = event.currentTarget;
+                stayAtEnd.current = thread.scrollHeight - thread.scrollTop - thread.clientHeight < 80;
+              }}>
               {activeConversation && hasOlder && (
                 <div className="message-load-older">
                   <button
@@ -329,8 +356,12 @@ export function MessageCentre({
                   >
                     {loadingOlder ? "Loading earlier messages…" : "Load earlier messages"}
                   </button>
+                  <button type="button" disabled={loadingOlder} onClick={() => void loadOlder(true)}>
+                    View full conversation
+                  </button>
                 </div>
               )}
+              {activeConversation && !hasOlder && <p className="message-history-start">Start of conversation</p>}
               {!activeConversation && (
                 <div className="message-start-note">
                   <MessageCircle size={22} aria-hidden />
@@ -350,15 +381,16 @@ export function MessageCentre({
                     key={message.id}
                     className={mine ? "message-bubble mine" : "message-bubble"}
                   >
+                    <strong className="message-sender">{mine ? "You" : message.sender_role === "professional" ? activeConversation?.professional_name : activeConversation?.customer_name}</strong>
                     {message.booking_id && <small>Booking message</small>}
                     <p>{message.body}</p>
-                    <time dateTime={new Date(message.created_at).toISOString()}>
+                    <time title={new Date(message.created_at).toLocaleString("en-GB", { timeZone: "Europe/London" })} dateTime={new Date(message.created_at).toISOString()}>
                       {displayTime(message.created_at)}
                     </time>
                   </article>
                 );
               })}
-              <div ref={endRef} />
+
             </div>
 
             <form className="message-composer" onSubmit={send}>

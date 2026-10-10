@@ -1,5 +1,5 @@
-import { readdir } from "node:fs/promises";
 import { Client } from "pg";
+import { migrationPlan } from "./migration-plan.mjs";
 
 if (!process.env.MIGRATION_DATABASE_URL) {
   throw new Error("Set MIGRATION_DATABASE_URL on the migration machine.");
@@ -13,10 +13,7 @@ const db = new Client({
 try {
   await db.connect();
 
-  const directory = new URL("../db/migrations/", import.meta.url);
-  const repoFiles = (await readdir(directory))
-    .filter((name) => /^\d+.*\.sql$/.test(name))
-    .sort();
+  const repoFiles = (await migrationPlan()).map(migration => migration.name);
 
   const customTable = (
     await db.query(

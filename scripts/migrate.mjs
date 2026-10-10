@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
-import { readFile, readdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { Client } from "pg";
+import { migrationPlan } from "./migration-plan.mjs";
 
 if (!process.env.MIGRATION_DATABASE_URL) throw new Error("Set MIGRATION_DATABASE_URL on the migration machine.");
 const db = new Client({ connectionString: process.env.MIGRATION_DATABASE_URL, connectionTimeoutMillis: 10000 });
@@ -11,10 +12,8 @@ try {
   await db.query("CREATE TABLE IF NOT EXISTS public.beauty_schema_migrations (name text PRIMARY KEY, checksum text NOT NULL, applied_at timestamptz NOT NULL DEFAULT now())");
   await db.query("ALTER TABLE public.beauty_schema_migrations DISABLE ROW LEVEL SECURITY");
   await db.query("REVOKE ALL ON public.beauty_schema_migrations FROM PUBLIC, anon, authenticated");
-  const directory = new URL("../db/migrations/", import.meta.url);
-  const migrationFiles = (await readdir(directory))
-    .filter((name) => /^\d+.*\.sql$/.test(name))
-    .sort();
+  const plan = await migrationPlan();
+  const migrationFiles = plan.map(migration => migration.name);
 
   const appliedRepoMigrations = await db.query(
     "SELECT name FROM public.beauty_schema_migrations ORDER BY name",
@@ -43,8 +42,8 @@ try {
     }
   }
 
-  for (const name of migrationFiles) {
-    const sql = await readFile(new URL(name, directory), "utf8");
+  for (const { name, url } of plan) {
+    const sql = await readFile(url, "utf8");
     const checksum = createHash("sha256").update(sql).digest("hex");
     const existing = await db.query("SELECT checksum FROM public.beauty_schema_migrations WHERE name = $1", [name]);
     if (existing.rows.length) {

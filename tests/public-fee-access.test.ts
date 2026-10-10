@@ -1,7 +1,6 @@
-import { PGlite } from "@electric-sql/pglite";
+import { createTestDatabase, applyTestMigrations } from "./test-database";
 import { beforeAll,afterAll,describe,it,expect } from "vitest";
-import { readFile,readdir } from "node:fs/promises";
-const db=new PGlite();
+const db=await createTestDatabase();
 let owner:string;
 async function asRole<T>(role:string,sql:string,params:unknown[]=[]) {
   return db.transaction(async tx=>{
@@ -10,16 +9,7 @@ async function asRole<T>(role:string,sql:string,params:unknown[]=[]) {
   });
 }
 beforeAll(async()=>{
-  const directory=new URL("../db/migrations/",import.meta.url);
-  for(const file of (await readdir(directory)).filter(file=>file.endsWith(".sql")).sort()) {
-    if(file.startsWith("0093")) {
-      // Reproduce the production-only table and its existing restricted reader.
-      await db.exec(`CREATE TABLE beauty.professional_commission_overrides(professional_id uuid PRIMARY KEY,service_commission_basis_points integer);
-        ALTER TABLE beauty.professional_commission_overrides ENABLE ROW LEVEL SECURITY;
-        GRANT SELECT ON beauty.professional_commission_overrides TO beauty_financial_worker;`);
-    }
-    await db.exec(await readFile(new URL(file,directory),"utf8"));
-  }
+  await applyTestMigrations(db);
   owner=(await db.query<{id:string}>("INSERT INTO beauty.users(auth_id,email,display_name) VALUES('fee-owner','owner@example.test','Owner') RETURNING id")).rows[0].id;
   await db.query("INSERT INTO beauty.user_roles(user_id,role) VALUES($1,'owner')",[owner]);
 });
@@ -45,7 +35,8 @@ describe.sequential("public booking-fee permission boundary",()=>{
     expect(roles.rows[0].allowed).toBe(false);
   });
   it("keeps commission overrides invisible to app callers while allowing the existing finance reader",async()=>{
-    await db.exec("INSERT INTO beauty.professional_commission_overrides VALUES('00000000-0000-4000-8000-000000000099',600)");
+    const professional=(await db.query<{id:string}>("INSERT INTO beauty.professional_profiles(user_id) VALUES($1) RETURNING id",[owner])).rows[0].id;
+    await db.query("INSERT INTO beauty.professional_commission_overrides(professional_id,service_commission_basis_points,reason,updated_by_user_id) VALUES($1,600,'Test commission read permissions',$2)",[professional,owner]);
     expect((await asRole("beauty_financial_worker","SELECT * FROM beauty.professional_commission_overrides")).rows).toHaveLength(1);
     await expect(asRole("beauty_app","SELECT * FROM beauty.professional_commission_overrides")).rejects.toThrow(/permission denied/);
     expect((await db.query<{forced:boolean}>("SELECT relforcerowsecurity AS forced FROM pg_class WHERE oid='beauty.professional_commission_overrides'::regclass")).rows[0].forced).toBe(true);

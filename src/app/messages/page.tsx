@@ -123,6 +123,7 @@ export default async function MessagesPage({
 
   const centre = (
     <MessageCentre
+      key={`${account.id}:${professionalMode ? "professional" : "customer"}:${data.activeConversation?.id ?? data.bookingId ?? data.professionalId ?? "inbox"}`}
       initialConversations={data.inbox}
       view={professionalMode ? "professional" : "customer"}
       activeConversation={data.activeConversation}

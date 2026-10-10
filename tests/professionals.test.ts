@@ -3,8 +3,7 @@ import {
   discoveryCursor,
   type DiscoveryCursor,
 } from "@/modules/professionals/discovery";
-import { PGlite } from "@electric-sql/pglite";
-import { readFile, readdir } from "node:fs/promises";
+import { createTestDatabase, applyTestMigrations } from "./test-database";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { enrolAccount, type SqlClient } from "@/modules/accounts/repository";
 import { profileSchema, serviceSchema } from "@/modules/professionals/domain";
@@ -20,7 +19,7 @@ import {
   publicProfile,
   discoveryPage,
 } from "@/modules/professionals/repository";
-const db = new PGlite();
+const db = await createTestDatabase();
 let ownerId: string;
 let otherId: string;
 let serviceId: string;
@@ -49,11 +48,7 @@ const service = {
   category: "Nails",
 };
 beforeAll(async () => {
-  const directory = new URL("../db/migrations/", import.meta.url);
-  for (const file of (await readdir(directory))
-    .filter((file) => file.endsWith(".sql"))
-    .sort())
-    await db.exec(await readFile(new URL(file, directory), "utf8"));
+  await applyTestMigrations(db);
   for (const authId of ["alice", "bob"]) {
     const account = await asUser(authId, (sql) =>
       enrolAccount(
@@ -81,6 +76,7 @@ describe.sequential("professional publishing and private ownership", () => {
     const results = await asUser("", (sql) => publicProfessionals(sql));
     expect(results).toHaveLength(1);
     expect(Object.keys(results[0]).sort()).toEqual([
+      "available_today",
       "bio",
       "business_name",
       "category",
@@ -89,6 +85,7 @@ describe.sequential("professional publishing and private ownership", () => {
       "id",
       "photo_alt",
       "photo_id",
+      "popular_services",
       "rating",
       "review_count",
       "slug",

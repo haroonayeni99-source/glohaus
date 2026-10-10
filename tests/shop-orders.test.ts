@@ -1,5 +1,4 @@
-import { PGlite } from "@electric-sql/pglite";
-import { readFile, readdir } from "node:fs/promises";
+import { createTestDatabase, applyTestMigrations } from "./test-database";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { enrolAccount, type SqlClient } from "@/modules/accounts/repository";
 import { updateProfile } from "@/modules/professionals/repository";
@@ -14,7 +13,7 @@ import {
   releaseMatureProductProceeds,
 } from "@/modules/finance/repository";
 
-const db = new PGlite();
+const db = await createTestDatabase();
 
 let customerId: string;
 let otherCustomerId: string;
@@ -35,11 +34,7 @@ async function asUser<T>(
 }
 
 beforeAll(async () => {
-  const directory = new URL("../db/migrations/", import.meta.url);
-  for (const file of (await readdir(directory))
-    .filter((file) => file.endsWith(".sql"))
-    .sort())
-    await db.exec(await readFile(new URL(file, directory), "utf8"));
+  await applyTestMigrations(db);
 
   for (const [authId, slug, business] of [
     ["order-pro", "order-studio", "Order Studio"],

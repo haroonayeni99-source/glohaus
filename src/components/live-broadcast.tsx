@@ -16,6 +16,7 @@ export function LiveBroadcast({ host = false, sessionId, enabled = true }: { hos
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState("");
   const [watchUrl, setWatchUrl] = useState("");
+  const [hasActiveSession, setHasActiveSession] = useState(false);
 
   useEffect(() => {
     mounted.current = true;
@@ -42,7 +43,7 @@ export function LiveBroadcast({ host = false, sessionId, enabled = true }: { hos
       setConnected(false);
       setStatus(host ? "Broadcast ended" : "You have left the broadcast");
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Please try again."); }
-    finally { setBusy(false); }
+    finally { setHasActiveSession(Boolean(activeSession.current)); setBusy(false); }
   }
 
   async function join() {
@@ -105,7 +106,7 @@ export function LiveBroadcast({ host = false, sessionId, enabled = true }: { hos
         setStatus("Not broadcasting");
         setError(cause instanceof Error && cause.name === "NotAllowedError" ? "Allow camera and microphone access in your browser, then try again." : cause instanceof Error ? cause.message : "Unable to connect. Please try again.");
       }
-    } finally { if (mounted.current) setBusy(false); }
+    } finally { if (mounted.current) { setHasActiveSession(Boolean(activeSession.current)); setBusy(false); } }
   }
 
   return <section className="gh-live-studio">
@@ -115,7 +116,7 @@ export function LiveBroadcast({ host = false, sessionId, enabled = true }: { hos
     {error && <p role="alert">{error}</p>}
     {!enabled && <p>LIVE connection setup is pending. You can return when it is ready.</p>}
     {!connected ? <button className="pro-dark-button" disabled={!enabled || busy || (host && !title.trim())} onClick={() => void join()}>{busy ? "Connecting…" : host ? "Go LIVE" : "Watch LIVE"}</button> : <button className="pro-dark-button" disabled={busy} onClick={() => void endBroadcast()}>{host ? "End broadcast" : "Leave broadcast"}</button>}
-    {host && !connected && activeSession.current && <button disabled={busy} onClick={() => void endBroadcast()}>End the previous broadcast</button>}
+    {host && !connected && hasActiveSession && <button disabled={busy} onClick={() => void endBroadcast()}>End the previous broadcast</button>}
     {host && watchUrl && <label>Share your broadcast<input readOnly value={watchUrl} onFocus={event => event.target.select()} /></label>}
     {host && <p>Your camera and microphone are shared only after you choose Go LIVE. Close the broadcast with End broadcast.</p>}
   </section>;

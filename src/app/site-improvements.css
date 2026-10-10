@@ -246,3 +246,94 @@
     font-size: 16px;
   }
 }
+
+/* Conversation colours follow the selected theme in both workspaces. */
+:root .message-centre {
+  --chat-surface: #ffffff; --chat-soft: #fff7fa; --chat-body: #faf5f7;
+  --chat-text: #302329; --chat-muted: #705c65; --chat-line: #dccbd2;
+  --chat-mine: #f6dce6; --chat-accent: #8f2854;
+  color: var(--chat-text); background: var(--chat-surface); border-color: var(--chat-line);
+}
+:root[data-theme="night"] .message-centre {
+  --chat-surface: #231d21; --chat-soft: #2b2328; --chat-body: #191519;
+  --chat-text: #fff5fa; --chat-muted: #d2bdc7; --chat-line: #604554;
+  --chat-mine: #542d43; --chat-accent: #ffb2d0;
+}
+:root[data-theme="night"] .messages-page { background: #191519; }
+:root .message-centre :is(.message-inbox,.message-thread-header,.message-composer) {
+  background: var(--chat-surface); color: var(--chat-text); border-color: var(--chat-line);
+}
+:root .message-centre :is(.message-thread,.message-thread-body) { background: var(--chat-body); color: var(--chat-text); }
+:root .message-centre :is(h1,h2,.message-inbox-copy strong,.message-thread-header strong,.message-start-note strong) { color: var(--chat-text); }
+:root .message-centre :is(.message-inbox-copy small,.message-inbox-meta small,.message-thread-header small,.message-empty p,.message-thread-placeholder p,.message-bubble time,.message-history-start) { color: var(--chat-muted); }
+:root .message-centre .message-inbox nav > a { color: var(--chat-text); border-color: var(--chat-line); }
+:root .message-centre .message-inbox nav > a:is(:hover,[aria-current="page"]) { background: var(--chat-soft); }
+:root .message-centre .message-bubble { color: var(--chat-text); background: var(--chat-surface); border-color: var(--chat-line); }
+:root .message-centre .message-bubble.mine { background: var(--chat-mine); }
+:root .message-centre .message-bubble p { color: var(--chat-text); font-size: .95rem; }
+:root .message-centre .message-bubble time { font-size: .7rem; }
+:root .message-centre .message-composer textarea { background: var(--chat-soft); color: var(--chat-text); border-color: var(--chat-line); }
+:root .message-centre .message-composer textarea::placeholder { color: var(--chat-muted); opacity: 1; }
+:root .message-centre :is(.message-prompts button,.message-load-older button) { color: var(--chat-accent); background: var(--chat-soft); border-color: var(--chat-line); }
+:root .message-centre .message-empty a { color: var(--chat-accent); }
+:root .message-centre .message-inbox-heading > span { color: var(--chat-text); background: var(--chat-mine); }
+.message-sender { display: block; margin-bottom: 5px; font-size: .75rem; color: var(--chat-muted); }
+.message-history-start { text-align: center; font-size: .8rem; margin: 0; }
+.message-load-older { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.message-thread-body { overscroll-behavior: contain; }
+
+/* A compact rail and a mobile section picker avoid competing scroll areas. */
+.admin-navigation-collapse { display: flex; gap: 8px; align-items: center; justify-content: center; min-height: 40px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--text-strong); margin-bottom: 12px; }
+.admin-section-picker { display: none; }
+.admin-workspace [id] { scroll-margin-top: var(--admin-section-offset,210px); }
+.admin-workspace .owner-tab-row a { padding: 8px; font-size: .85rem; border-radius: 6px; }
+.admin-workspace .owner-tab-row a:hover { background: var(--surface-soft); }
+.admin-workspace .analytics-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); }
+.admin-workspace .analytics-grid strong { color: var(--text-strong); }
+.admin-workspace .analytics-grid span { color: var(--text-soft); }
+.admin-workspace :is(.owner-chart-axis,.owner-live-stats small,.owner-fee-summary > span,.owner-fee-summary p,.owner-mini-table-head span,.admin-account-search small,.admin-navigation-identity small) { color: var(--text-soft); }
+.admin-workspace .owner-mini-table em { color: #13633f; background: #e9f8ef; }
+.admin-workspace .owner-leaderboard-head { background: var(--surface-soft); color: var(--text-strong); }
+.admin-workspace .owner-staff-avatar { background: #542d43; color: #fff5fa; }
+.admin-workspace .website-status-toggle.is-on { background: #176d3b; }
+.admin-section-unavailable { padding: 12px; }
+.admin-section-unavailable button { padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-soft); color: var(--text-strong); }
+.admin-workspace :is(.owner-date-chip,.owner-profile-chip,.owner-search-shortcut,.owner-filter-chip) { background: var(--surface); color: var(--text-strong); border-color: var(--line); }
+.admin-workspace :is(.owner-date-chip span,.owner-profile-chip strong,.owner-booking-summary strong,.owner-booking-summary div,.owner-filter-chip,.owner-revenue-row,.owner-chart-labels) { color: var(--text-strong); }
+.admin-workspace :is(.owner-date-chip small,.owner-profile-chip small) { color: var(--text-soft); }
+:root[data-theme="night"] .admin-workspace :is(.owner-card-heading a,.service-edit-row button:not(.button),.admin-table button:not(.owner-danger-button),.editor-actions button:not(.button)) { background: #322730; color: #ffc1d9; border-color: #775568; }
+:root[data-theme="night"] .admin-workspace .admin-status { background: #342b32; color: #e7d5df; border-color: #775568; }
+:root[data-theme="night"] .admin-workspace .admin-status-active { background: #1c3d31; color: #aaf0cb; }
+:root[data-theme="night"] .admin-workspace .admin-status-suspended { background: #4b2e29; color: #ffd4b7; }
+:root[data-theme="night"] .admin-workspace .owner-booking-summary { background: #231d21; border-color: var(--line); }
+:root[data-theme="night"] .admin-workspace .website-status-icon.is-public { background: #1c3d31; color: #aaf0cb; }
+:root[data-theme="night"] .admin-workspace .button { color: #28131e !important; background: #f3aac7 !important; border-color: #f3aac7; }
+@media (min-width: 881px) {
+  .admin-workspace:has(.admin-navigation.is-compact) { grid-template-columns: 82px minmax(0,1fr); }
+  .admin-navigation.is-compact { padding-inline: 10px; }
+  .admin-navigation.is-compact :is(.admin-navigation-brand span,.admin-navigation-identity,.admin-navigation nav a span,.admin-navigation-collapse span) { display: none; }
+  .admin-navigation.is-compact :is(.admin-navigation-brand,nav a) { justify-content: center; padding-inline: 0; }
+  .admin-navigation.is-compact .admin-navigation-bottom { font-size: .7rem; text-align: center; }
+}
+@media (max-width: 880px) {
+  .admin-navigation { padding: 12px 16px !important; }
+  .admin-navigation :is(nav,.admin-navigation-identity,.admin-navigation-collapse) { display: none !important; }
+  .admin-navigation-brand { padding: 0 0 8px !important; }
+  .admin-section-picker { display: grid; gap: 5px; font-size: .8rem; color: var(--text-strong); }
+  .admin-section-picker select { width: 100%; min-height: 44px; background: var(--surface); color: var(--text-strong); border: 1px solid var(--line); border-radius: 8px; }
+  .admin-navigation-bottom { display: flex; justify-content: space-between; margin: 8px 0 0 !important; padding: 0 !important; }
+  .admin-workspace [id] { scroll-margin-top: var(--admin-section-offset,185px); }
+  .admin-workspace .owner-topbar { flex-direction: column; gap: 12px; }
+  .admin-workspace .owner-topbar h1 { font-size: 1.55rem; }
+  .admin-workspace .owner-topbar-actions { width: 100%; }
+  .admin-workspace .owner-admin-search { width: 100%; min-width: 0; }
+  .admin-workspace .owner-search-shortcut { display: flex; width: 100%; }
+  .admin-workspace .owner-profile-chip { display: none; }
+  .admin-workspace .owner-search-results { position: absolute; top: calc(100% + 6px); left: 0; right: 0; }
+  .admin-workspace .owner-kpi-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .admin-workspace .owner-kpi-card { padding: 14px; min-height: 135px; flex-wrap: wrap; gap: 8px; }
+  .admin-workspace .owner-kpi-card > div:nth-child(2) { flex-basis: 100%; }
+  .admin-workspace .owner-kpi-card .owner-mini-bars { display: none; }
+  .admin-workspace .owner-kpi-card span { font-size: .75rem; }
+  .admin-workspace .owner-kpi-card small { font-size: .65rem; }
+}

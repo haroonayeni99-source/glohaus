@@ -1,4 +1,5 @@
 "use client";
+import { requireAdminResponse } from "@/lib/admin-response";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -35,7 +36,7 @@ export function AdminCategoryManager({ initial }: { initial: AdminCategory[] }) 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error("Category change could not be saved.");
+      await requireAdminResponse(response, "Category change could not be saved.");
       setNotice(data.id ? "Category updated." : "Category added.");
       setEditing(null);
       router.refresh();

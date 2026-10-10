@@ -1,3 +1,4 @@
+import { AdminSectionUnavailable } from "@/components/admin-section-unavailable";
 import { money } from "@/modules/professionals/domain";
 import type { AdminFinanceOverview } from "@/modules/admin/repository";
 
@@ -17,13 +18,10 @@ export function AdminFinancePanel({
 }) {
   if (!data)
     return (
-      <section id="payments" className="admin-workspace-section">
-        <p className="eyebrow">PAYMENTS & ANALYTICS</p>
-        <h2>Financial reporting unavailable</h2>
-        <p className="lead">
-          The finance reporting migration has not been applied to this environment.
-        </p>
-      </section>
+      <>
+        <section id="payments" className="admin-workspace-section"><AdminSectionUnavailable label="Payments reporting" /></section>
+        <section id="analytics" className="admin-workspace-section"><AdminSectionUnavailable label="Analytics" /></section>
+      </>
     );
 
   const m = data.metrics;

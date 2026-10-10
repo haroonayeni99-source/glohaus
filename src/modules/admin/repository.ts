@@ -3,6 +3,7 @@ import { withAccount } from "@/lib/api-account";
 import type { SqlClient } from "@/modules/accounts/repository";
 import { AccessError } from "@/modules/accounts/domain";
 export type AdminOverview = {
+  unavailableSections?: ("safety" | "shopOrders" | "professionalTrust" | "bookingDisputes")[];
   counts: { users: number; active: number; suspended: number };
   professionals: number;
   professionalTrust?: { id:string; user_id:string; business_name:string; verification_status:string; standing_status:string; live_restricted_until:string|null }[];
@@ -199,65 +200,40 @@ export async function withOwner<T>(work: (db: SqlClient) => Promise<T>) {
 }
 
 export async function adminOverview() {
-  return withAdmin(async (db) => {
-    const base = (
-      await db.query<{ overview: AdminOverview }>(
-        "SELECT beauty.admin_overview() AS overview",
-      )
-    ).rows[0].overview;
-    const extra = (
-      await db.query<{ overview: Pick<AdminOverview, "bookings" | "reviews"> }>(
-        "SELECT beauty.admin_booking_overview() AS overview",
-      )
-    ).rows[0].overview;
-    // Existing deployments can remain usable while the additive report
-    // migration is awaiting an operator-run database migration.
-    let safety: AdminOverview["safety"] = null;
-    try {
-      safety = (
-        await db.query<{ overview: NonNullable<AdminOverview["safety"]> }>(
-          "SELECT beauty.admin_safety_report_overview() AS overview",
-        )
-      ).rows[0]?.overview ?? null;
-    } catch {
-      safety = null;
-    }
-    let shopOrders: AdminOverview["shopOrders"] = null;
-    try {
-      shopOrders = (
-        await db.query<{ overview: NonNullable<AdminOverview["shopOrders"]> }>(
-          "SELECT beauty.admin_shop_order_overview() AS overview",
-        )
-      ).rows[0]?.overview ?? null;
-    } catch {
-      shopOrders = null;
-    }
-
-    let professionalTrust: NonNullable<AdminOverview["professionalTrust"]> = [];
-    try {
-      professionalTrust = (await db.query<NonNullable<AdminOverview["professionalTrust"]>[number]>(
-        "SELECT p.id,p.user_id,p.business_name,coalesce(t.verification_status,'unverified') verification_status,coalesce(t.standing_status,'good') standing_status,t.live_restricted_until::text FROM beauty.professional_profiles p LEFT JOIN beauty.professional_trust_status t ON t.professional_id=p.id ORDER BY p.business_name,p.id LIMIT 100"
-      )).rows;
-    } catch { professionalTrust = []; }
-    let bookingDisputes: NonNullable<AdminOverview["bookingDisputes"]> = [];
-    try {
-      bookingDisputes = (
-        await db.query<{
-          overview: NonNullable<AdminOverview["bookingDisputes"]>;
-        }>("SELECT beauty.admin_booking_dispute_overview() AS overview")
-      ).rows[0]?.overview ?? [];
-    } catch {
-      bookingDisputes = [];
-    }
-
-    const users = (
-      await db.query<{ users: AdminOverview["users"] }>(
-        "SELECT beauty.admin_user_overview() AS users",
-      )
-    ).rows[0].users;
-
-    return { ...base, ...extra, users, safety, shopOrders, professionalTrust, bookingDisputes };
+  const required = await withAdmin(async (db) => {
+    const base = (await db.query<{ overview: AdminOverview }>(
+      "SELECT beauty.admin_overview() AS overview",
+    )).rows[0].overview;
+    const extra = (await db.query<{ overview: Pick<AdminOverview, "bookings" | "reviews"> }>(
+      "SELECT beauty.admin_booking_overview() AS overview",
+    )).rows[0].overview;
+    const users = (await db.query<{ users: AdminOverview["users"] }>(
+      "SELECT beauty.admin_user_overview() AS users",
+    )).rows[0].users;
+    return { ...base, ...extra, users };
   });
+  // A failed SQL statement aborts its transaction. Optional sections need
+  // separate authenticated transactions so one failure cannot hide all data.
+  const [safety, shopOrders, professionalTrust, bookingDisputes] = await Promise.all([
+    withAdmin(async db => (await db.query<{ overview: NonNullable<AdminOverview["safety"]> }>(
+      "SELECT beauty.admin_safety_report_overview() AS overview",
+    )).rows[0]?.overview ?? null).catch(() => null),
+    withAdmin(async db => (await db.query<{ overview: NonNullable<AdminOverview["shopOrders"]> }>(
+      "SELECT beauty.admin_shop_order_overview() AS overview",
+    )).rows[0]?.overview ?? null).catch(() => null),
+    withAdmin(async db => (await db.query<NonNullable<AdminOverview["professionalTrust"]>[number]>(
+      "SELECT p.id,p.user_id,p.business_name,coalesce(t.verification_status,'unverified') verification_status,coalesce(t.standing_status,'good') standing_status,t.live_restricted_until::text FROM beauty.professional_profiles p LEFT JOIN beauty.professional_trust_status t ON t.professional_id=p.id ORDER BY p.business_name,p.id LIMIT 100",
+    )).rows).catch(() => null),
+    withAdmin(async db => (await db.query<{ overview: NonNullable<AdminOverview["bookingDisputes"]> }>(
+      "SELECT beauty.admin_booking_dispute_overview() AS overview",
+    )).rows[0]?.overview ?? null).catch(() => null),
+  ]);
+  const unavailableSections: NonNullable<AdminOverview["unavailableSections"]> = [];
+  if (safety === null) unavailableSections.push("safety");
+  if (shopOrders === null) unavailableSections.push("shopOrders");
+  if (professionalTrust === null) unavailableSections.push("professionalTrust");
+  if (bookingDisputes === null) unavailableSections.push("bookingDisputes");
+  return { ...required, safety, shopOrders, professionalTrust: professionalTrust ?? [], bookingDisputes: bookingDisputes ?? [], unavailableSections };
 }
 
 export async function ownerControls() {

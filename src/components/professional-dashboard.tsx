@@ -255,7 +255,7 @@ export function ProfessionalDashboard({
         </section>
 
         {data.referral && (
-          <section className="pro-panel" aria-label="Professional referral code">
+          <section id="referrals" className="pro-panel" aria-label="Professional referral code">
             <div className="pro-panel-title">
               <div>
                 <p className="pro-kicker">GROW GLOHAUS</p>

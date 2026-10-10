@@ -99,11 +99,12 @@ export function OwnerDashboardOverview({
   data: AdminOverview;
   finance: AdminFinanceOverview | null;
   bookingFee: OwnerBookingFeeRule | null;
-  authAccounts: OwnerAuthAccount[];
-  commissions: OwnerProfessionalCommission[];
-  referrals: OwnerProfessionalReferral[];
+  authAccounts: OwnerAuthAccount[] | null;
+  commissions: OwnerProfessionalCommission[] | null;
+  referrals: OwnerProfessionalReferral[] | null;
   owner: OwnerControls | null;
 }) {
+  const isOwner = account.roles.includes("owner");
   const bookings = data.bookings ?? [];
   const todayKey = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/London",
@@ -123,7 +124,7 @@ export function OwnerDashboardOverview({
   const pending = data.professionalTrust?.filter((p) => p.verification_status === "pending").length ?? 0;
   const restricted = data.professionalTrust?.filter((p) => p.standing_status === "restricted").length ?? 0;
   const liveEnabled = data.professionalTrust?.filter((p) => p.verification_status === "verified" && p.standing_status === "good" && !p.live_restricted_until).length ?? 0;
-  const topReferrers = referrals.slice(0, 5);
+  const topReferrers = referrals?.slice(0, 5) ?? [];
   const recentAudit = owner?.audit.slice(0, 5) ?? [];
   const activeStaff = owner?.staff.filter((person) => person.status === "active").slice(0, 5) ?? [];
   const currentFee = bookingFee?.fixedFeePence ?? 100;
@@ -133,7 +134,7 @@ export function OwnerDashboardOverview({
     <>
       <header className="owner-topbar">
         <div>
-          <h1>GLOHAUS Owner Control Centre</h1>
+          <h1>GLOHAUS {isOwner ? "Owner" : "Admin"} Control Centre</h1>
           <p>Manage your beauty marketplace · Users · Professionals · Bookings · Revenue · Growth</p>
         </div>
         <div className="owner-topbar-actions">
@@ -150,8 +151,8 @@ export function OwnerDashboardOverview({
               customer_name: booking.customer_name,
             }))}
           />
-          <div className="owner-date-chip"><CalendarDays size={16} aria-hidden /><span>{new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/London" }).format(new Date())}<small>Owner workspace</small></span></div>
-          <div className="owner-profile-chip"><span>{account.displayName.slice(0, 1).toUpperCase()}</span><div><strong>{account.displayName}</strong><small>Owner · GLOHAUS</small></div></div>
+          <div className="owner-date-chip"><CalendarDays size={16} aria-hidden /><span>{new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/London" }).format(new Date())}<small>{isOwner ? "Owner" : "Admin"} workspace</small></span></div>
+          <div className="owner-profile-chip"><span>{account.displayName.slice(0, 1).toUpperCase()}</span><div><strong>{account.displayName}</strong><small>{isOwner ? "Owner" : "Admin"} · GLOHAUS</small></div></div>
         </div>
       </header>
 
@@ -174,7 +175,7 @@ export function OwnerDashboardOverview({
           </article>
           <article className="owner-kpi-card owner-kpi-green">
             <div className="owner-kpi-icon"><CircleDollarSign size={22} /></div>
-            <div><span>Platform Revenue</span><strong>{money(revenue)}</strong><small>{finance ? `${money(finance.metrics.platformRevenue30dPence)} in last 30 days` : "Finance data unavailable"}</small></div>
+            <div><span>Platform Revenue</span><strong>{finance ? money(revenue) : "Unavailable"}</strong><small>{finance ? `${money(finance.metrics.platformRevenue30dPence)} in last 30 days` : "Retry from Payments"}</small></div>
             <div className="owner-mini-bars">{[3,6,5,9,12,15,19].map((h,i)=><i key={i} style={{height:`${h * 2}px`}} />)}</div>
           </article>
         </div>
@@ -185,7 +186,7 @@ export function OwnerDashboardOverview({
               <div><strong>Platform Performance</strong><span>Bookings, revenue and marketplace activity</span></div>
               <span className="owner-filter-chip">Last 14 days</span>
             </div>
-            <div className="owner-tab-row"><span className="is-active">Bookings</span><span>Revenue</span><span>Users</span><span>Orders</span></div>
+            <div className="owner-tab-row"><a href="#bookings">Bookings</a><a href="#analytics">Revenue</a><a href="#users">Users</a><a href="#orders">Orders</a></div>
             <div className="owner-performance-inner">
               <Chart bookings={bookings} />
               <div className="owner-booking-summary">
@@ -211,15 +212,16 @@ export function OwnerDashboardOverview({
             </div>
             <div className="owner-live-panel">
               <div className="owner-card-heading"><div><strong><Radio size={16}/> LIVE Access Status</strong></div><a href="#live-access">Manage →</a></div>
-              <div className="owner-live-stats"><span><i className="is-green"/><small>LIVE Enabled</small><strong>{liveEnabled}</strong></span><span><i className="is-amber"/><small>Pending</small><strong>{pending}</strong></span><span><i className="is-red"/><small>Restricted</small><strong>{restricted}</strong></span></div>
+              <div className="owner-live-stats"><span><i className="is-green"/><small>Verified & unrestricted</small><strong>{liveEnabled}</strong></span><span><i className="is-amber"/><small>Pending</small><strong>{pending}</strong></span><span><i className="is-red"/><small>Restricted</small><strong>{restricted}</strong></span></div>
             </div>
           </article>
         </div>
 
+        {isOwner && <>
         <div className="owner-dashboard-secondary-grid">
           <article className="owner-dashboard-card owner-fee-summary">
             <div className="owner-card-heading"><div><strong>Customer Booking Fee</strong></div><a href="#booking-fee">Edit</a></div>
-            <strong className="owner-big-money">£{(currentFee / 100).toFixed(2)}</strong>
+            <strong className="owner-big-money">{bookingFee ? `£${(currentFee / 100).toFixed(2)}` : "Unavailable"}</strong>
             <span>Current customer booking fee (per booking)</span>
             <p>This fee is shown to customers before checkout and can be changed by the Owner for future bookings.</p>
           </article>
@@ -229,9 +231,9 @@ export function OwnerDashboardOverview({
             <div className="owner-mini-table">
               <div className="owner-mini-table-head"><span>Plan</span><span>Rate</span><span>Status</span></div>
               {(["trial","starter","pro","premium"] as const).map((plan) => {
-                const rows = commissions.filter((row) => row.planKey === plan);
-                const rate = rows[0]?.defaultBasisPoints ?? (plan === "trial" ? 1000 : plan === "starter" ? 800 : plan === "pro" ? 600 : 400);
-                return <div key={plan}><span>{plan === "trial" ? "Trial Pro" : plan[0].toUpperCase()+plan.slice(1)}</span><strong>{(rate/100).toFixed(rate % 100 ? 2 : 0)}%</strong><em>Active</em></div>;
+                const rows = (commissions ?? []).filter((row) => row.planKey === plan);
+                const rate = rows[0]?.defaultBasisPoints;
+                return <div key={plan}><span>{plan === "trial" ? "Trial Pro" : plan[0].toUpperCase()+plan.slice(1)}</span><strong>{rate === undefined ? "—" : `${(rate/100).toFixed(rate % 100 ? 2 : 0)}%`}</strong><em>{commissions === null ? "Unavailable" : rate === undefined ? "No profiles" : "Current"}</em></div>;
               })}
             </div>
           </article>
@@ -239,10 +241,10 @@ export function OwnerDashboardOverview({
           <article className="owner-dashboard-card owner-auth-summary">
             <div className="owner-card-heading"><div><strong>Auth Accounts</strong></div><a href="#auth-accounts">View details →</a></div>
             <div className="owner-auth-rows">
-              <div><span>Total Sign Ups</span><strong>{authAccounts.length.toLocaleString("en-GB")}</strong></div>
-              <div><span>Email confirmed</span><strong>{authAccounts.filter((a)=>a.emailConfirmedAt).length.toLocaleString("en-GB")}</strong></div>
-              <div><span>Linked app accounts</span><strong>{authAccounts.filter((a)=>a.appUserId).length.toLocaleString("en-GB")}</strong></div>
-              <div><span>Signed in before</span><strong>{authAccounts.filter((a)=>a.lastSignInAt).length.toLocaleString("en-GB")}</strong></div>
+              <div><span>Total Sign Ups</span><strong>{authAccounts?.length.toLocaleString("en-GB") ?? "—"}</strong></div>
+              <div><span>Email confirmed</span><strong>{authAccounts?.filter((a)=>a.emailConfirmedAt).length.toLocaleString("en-GB") ?? "—"}</strong></div>
+              <div><span>Linked app accounts</span><strong>{authAccounts?.filter((a)=>a.appUserId).length.toLocaleString("en-GB") ?? "—"}</strong></div>
+              <div><span>Signed in before</span><strong>{authAccounts?.filter((a)=>a.lastSignInAt).length.toLocaleString("en-GB") ?? "—"}</strong></div>
             </div>
           </article>
         </div>
@@ -253,7 +255,7 @@ export function OwnerDashboardOverview({
             <div className="owner-leaderboard">
               <div className="owner-leaderboard-head"><span>#</span><span>Professional</span><span>Code</span><span>Total</span><span>Customers</span><span>Pros</span></div>
               {topReferrers.map((row,index)=><div key={row.professionalId}><span>{index+1}</span><span>{row.businessName}</span><code>{row.code}</code><strong>{row.totalReferrals}</strong><span>{row.customerReferrals}</span><span>{row.professionalReferrals}</span></div>)}
-              {!topReferrers.length && <p>No referral activity yet.</p>}
+              {!topReferrers.length && <p>{referrals === null ? "Referral data unavailable. Open Referrals to retry." : "No referral activity yet."}</p>}
             </div>
           </article>
 
@@ -261,7 +263,7 @@ export function OwnerDashboardOverview({
             <div className="owner-card-heading"><div><strong>Staff & Admins</strong></div><a href="#staff">Manage →</a></div>
             <div className="owner-staff-list">
               {activeStaff.map((person)=><div key={person.id}><span className="owner-staff-avatar">{person.display_name.slice(0,1).toUpperCase()}</span><span><strong>{person.display_name}</strong><small>{person.roles.join(", ")}</small></span><em><i/>Active</em></div>)}
-              {!activeStaff.length && <p>No delegated staff yet.</p>}
+              {!activeStaff.length && <p>{owner === null ? "Access data unavailable. Open Staff & Admins to retry." : "No delegated staff yet."}</p>}
             </div>
           </article>
 
@@ -269,10 +271,11 @@ export function OwnerDashboardOverview({
             <div className="owner-card-heading"><div><strong>Owner Audit Log</strong></div><a href="#audit">View all →</a></div>
             <div className="owner-audit-preview">
               {recentAudit.map((entry)=><div key={entry.id}><span>{new Date(entry.created_at).toLocaleString("en-GB",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Europe/London"})}</span><strong>{entry.action.replaceAll("_"," ")}</strong><small>{entry.reason}</small></div>)}
-              {!recentAudit.length && <p>No owner audit events yet.</p>}
+              {!recentAudit.length && <p>{owner === null ? "Audit data unavailable. Open Audit Log to retry." : "No owner audit events yet."}</p>}
             </div>
           </article>
         </div>
+        </>}
       </section>
     </>
   );

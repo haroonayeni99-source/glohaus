@@ -115,6 +115,7 @@ export default async function ShopPage({
               <div className="marketplace-hero-actions">
                 <a href="#products">Shop all products <ArrowRight size={16} /></a>
                 <a href="#categories">Shop by category</a>
+                <Link href={cartHref}><ShoppingBag size={16} aria-hidden /> Cart</Link>
               </div>
             </div>
             <div className="marketplace-hero-art" aria-hidden>

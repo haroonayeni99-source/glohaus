@@ -1,4 +1,5 @@
 "use client";
+import { requireAdminResponse } from "@/lib/admin-response";
 
 import { useState } from "react";
 import { Globe2, LockKeyhole } from "lucide-react";
@@ -25,7 +26,7 @@ export function WebsiteStatusControl({ initialEnabled }: { initialEnabled: boole
             : "Owner disabled public website access",
         }),
       });
-      if (!response.ok) throw new Error("Website status could not be changed.");
+      await requireAdminResponse(response, "Website status could not be changed.");
       setEnabled(nextEnabled);
       setNotice(nextEnabled ? "GLOHAUS is now public." : "Public visitors now see maintenance mode.");
     } catch (error) {

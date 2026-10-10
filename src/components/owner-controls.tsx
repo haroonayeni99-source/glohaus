@@ -1,4 +1,5 @@
 "use client";
+import { requireAdminResponse } from "@/lib/admin-response";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -46,7 +47,7 @@ export function OwnerControls({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      if (!response.ok) throw new Error("The owner change was not saved.");
+      await requireAdminResponse(response, "The owner change was not saved.");
       setNotice("Saved and recorded in the owner audit log.");
       setSelected(null);
       setDelegation(null);
@@ -182,7 +183,7 @@ export function OwnerControls({
               <small>{member.permissions.length ? member.permissions.join(", ") : "No delegated staff permissions"}</small>
             </div>
             {member.roles.includes("staff") && (
-              <button disabled title="Granular staff workspace access is not enabled yet.">Staff permissions unavailable</button>
+              <span className="form-help">Staff permissions are unavailable in this workspace.</span>
             )}
             {member.roles.includes("staff") && (
               <button onClick={() => setDelegation({ id: member.id, name: member.display_name, role: "staff", enabled: false })}>Remove staff</button>

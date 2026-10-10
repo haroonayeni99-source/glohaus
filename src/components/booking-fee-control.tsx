@@ -1,4 +1,5 @@
 "use client";
+import { requireAdminResponse } from "@/lib/admin-response";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -24,7 +25,7 @@ export function BookingFeeControl({ initial }: { initial: OwnerBookingFeeRule })
           reason: form.get("reason"),
         }),
       });
-      if (!response.ok) throw new Error("Booking fee change was not saved.");
+      await requireAdminResponse(response, "Booking fee change was not saved.");
       setNotice("Booking fee updated for new bookings. Existing paid bookings keep their original fee.");
       router.refresh();
     } catch (error) {

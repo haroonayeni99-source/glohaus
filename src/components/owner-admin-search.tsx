@@ -11,6 +11,17 @@ type SearchItem = {
 };
 
 const staticItems: SearchItem[] = [
+    ["website", "Website Status", "Public access and maintenance", "website-status"],
+    ["homepage", "Homepage images", "Change desktop and mobile photos", "homepage-media"],
+    ["marketing", "Marketing", "Campaigns and feature feedback", "marketing"],
+    ["settings", "Platform labels", "Community names", "settings"],
+    ["categories", "Categories", "Discovery categories", "categories"],
+    ["shop-fees", "Shop Fees", "Marketplace commission", "shop-fees"],
+    ["backend", "Backend Health", "Jobs and queues", "backend-health"],
+    ["payment-readiness", "Payment Readiness", "Payment configuration", "payment-readiness"],
+    ["email-readiness", "Email Readiness", "Email configuration", "email-readiness"],
+    ["email-health", "Email Delivery", "Delivery outcomes", "email-delivery-health"],
+    ["disputes", "Payment disputes", "Booking dispute responses", "payment-disputes"],
     ["overview", "Overview", "Owner dashboard", "overview"],
     ["users", "App Users", "Manage accounts, restrictions and deletion", "users"],
     ["professionals", "Professionals", "Professional account management", "professionals"],
@@ -73,6 +84,7 @@ export function OwnerAdminSearch({
       .filter((item) =>
         `${item.label} ${item.detail}`.toLowerCase().includes(q),
       )
+      .filter(item => typeof document !== "undefined" && document.getElementById(item.targetId))
       .slice(0, 8);
   }, [bookings, professionals, query, users]);
 
@@ -80,7 +92,7 @@ export function OwnerAdminSearch({
     const target = document.getElementById(targetId);
     if (!target) return;
     target.scrollIntoView({ behavior: "smooth", block: "center" });
-    history.replaceState(null, "", `#${targetId}`);
+    history.replaceState(history.state, "", `#${targetId}`);
     target.classList.add("owner-search-hit");
     window.setTimeout(() => target.classList.remove("owner-search-hit"), 1400);
     setOpen(false);

@@ -1,9 +1,11 @@
 "use client";
-import { useMemo, useState } from "react";
+import { requireAdminResponse } from "@/lib/admin-response";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useCurrentTime } from "@/components/use-current-time";
 import { useRouter } from "next/navigation";
 import type { AdminOverview } from "@/modules/admin/repository";
 import { OwnerUserActions } from "@/components/owner-user-actions";
+import { AdminSectionUnavailable } from "@/components/admin-section-unavailable";
 export function AdminManager({ data, owner = false, hardDeleteConfigured = false }: { data: AdminOverview; owner?: boolean; hardDeleteConfigured?: boolean }) {
   const router = useRouter();
   const now = useCurrentTime();
@@ -28,6 +30,13 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
     id: string;
     name: string;
   } | null>(null);
+  const decisionRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (selection) {
+      decisionRef.current?.scrollIntoView({ block: "center", behavior: "instant" });
+      decisionRef.current?.querySelector<HTMLSelectElement>("select")?.focus({ preventScroll: true });
+    }
+  }, [selection]);
   return (
     <>
       <div className="analytics-grid">
@@ -56,6 +65,7 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
       {selection && (
         <form
           className="editor-form"
+          ref={decisionRef}
           onSubmit={async (event) => {
             event.preventDefault();
             const form = new FormData(event.currentTarget);
@@ -85,10 +95,7 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
                   ),
                 },
               );
-              if (!response.ok)
-                throw new Error(
-                  "Change was not saved. Check your access and try again.",
-                );
+              await requireAdminResponse(response, "Change was not saved. Check your access and try again.");
               setNotice("Change saved and recorded in the audit log.");
               setSelection(null);
               router.refresh();
@@ -280,7 +287,7 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
                     reason: form.get("reason"),
                   }),
                 });
-                if (!response.ok) throw new Error("LIVE access decision was not saved.");
+                await requireAdminResponse(response, "LIVE access decision was not saved.");
                 setNotice("Professional verification/LIVE decision saved and audited.");
                 router.refresh();
               } catch (error) {
@@ -293,13 +300,13 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
               <select name="standing" defaultValue={pro.standing_status} aria-label={`Standing for ${pro.business_name}`}>
                 <option value="good">good</option><option value="restricted">restricted</option>
               </select>
-              <input name="restrictedUntil" type="datetime-local" aria-label={`LIVE restriction end for ${pro.business_name}`} />
+              <input name="restrictedUntil" defaultValue={pro.live_restricted_until ? new Date(new Date(pro.live_restricted_until).getTime() - new Date(pro.live_restricted_until).getTimezoneOffset() * 60000).toISOString().slice(0,16) : ""} type="datetime-local" aria-label={`LIVE restriction end for ${pro.business_name}`} />
               <input name="reason" required minLength={5} maxLength={500} placeholder="Reason for decision" aria-label={`Decision reason for ${pro.business_name}`} />
               <button disabled={busy}>Save LIVE access</button>
             </form>
           </article>
         ))}
-        {!data.professionalTrust?.length && <p className="lead">Professional verification controls will appear after the LIVE eligibility migration is available.</p>}
+        {data.unavailableSections?.includes("professionalTrust") ? <AdminSectionUnavailable label="Professional verification" /> : !data.professionalTrust?.length && <p className="lead">No professional profiles are available yet.</p>}
       </div>
       <h2 id="bookings" className="admin-section-title">Booking overview</h2>
       <div className="service-edit-list">
@@ -385,7 +392,7 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
             </article>
           );
         })}
-        {!data.bookingDisputes?.length && (
+        {data.unavailableSections?.includes("bookingDisputes") ? <AdminSectionUnavailable label="Booking disputes" /> : !data.bookingDisputes?.length && (
           <p className="lead">No booking payment disputes are recorded.</p>
         )}
       </div>
@@ -461,9 +468,7 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
           </div>
         </>
       ) : (
-        <p className="lead">
-          Shop order oversight will appear after the Admin order migration is available.
-        </p>
+        <AdminSectionUnavailable label="Shop order oversight" />
       )}
       <h2 id="reviews" className="admin-section-title">Review moderation</h2>
       <h2 className="admin-section-title">Refund appeals</h2>
@@ -547,7 +552,7 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
           </div>
         </>
       ) : (
-        <p className="lead">The safety report queue will appear after the owner-controls database migration is applied.</p>
+        <AdminSectionUnavailable label="Safety reports" />
       )}
       <h2 id="content" className="admin-section-title">Content moderation</h2>
       <div className="service-edit-list">

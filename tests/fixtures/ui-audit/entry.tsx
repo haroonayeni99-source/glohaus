@@ -4,7 +4,8 @@ import AdminPage from "@/app/admin/page";
 import { MessageCentre } from "@/components/message-centre";
 import { ProfilePhotoEditor } from "@/components/profile-photo-editor";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { ids } from "./data";
+import { FeatureVotes } from "@/components/feature-votes";
+import { ids, featureVotes } from "./data";
 const params = new URLSearchParams(location.search);
 document.documentElement.dataset.theme = params.get("theme") ?? "light";
 localStorage.setItem("glohaus-theme", document.documentElement.dataset.theme);
@@ -13,6 +14,19 @@ window.fetch = async (url, init) => {
   const requests = JSON.parse(sessionStorage.getItem("audit-requests") || "[]");
   requests.push({ url: String(url), method: init?.method || "GET", body: init?.body });
   sessionStorage.setItem("audit-requests", JSON.stringify(requests));
+  if (String(url).includes("/features/vote")) {
+    if (params.get("response") === "expired") return Response.json({ error: { code: "VOTING_CLOSED" } }, { status: 409 });
+    const body = JSON.parse(String(init?.body));
+    const feature = featureVotes.find(value => value.id === body.featureId)!;
+    if (feature.my_choice === "like") feature.vote_count--;
+    if (feature.my_choice === "dislike") feature.dislike_count--;
+    feature.my_choice = body.choice === "none" ? null : body.choice;
+    if (feature.my_choice === "like") feature.vote_count++;
+    if (feature.my_choice === "dislike") feature.dislike_count++;
+    feature.my_vote = feature.my_choice === "like";
+    feature.total_count = feature.vote_count + feature.dislike_count;
+    return Response.json({ result: { ...feature }, voted: feature.my_vote });
+  }
   if (params.get("response") === "mfa") return Response.json({ error: { code: "MFA_REQUIRED" } }, { status: 403 });
   if (String(url).endsWith("/upload")) return Response.json({ url: "https://image.example.test/homepage.webp" }, { status: 201 });
   if (String(url).includes("/profile/photo")) return Response.json({ id: ids.pro }, { status: 201 });
@@ -22,7 +36,9 @@ window.fetch = async (url, init) => {
 };
 async function start() {
   let content: React.ReactNode;
-  if (location.pathname === "/messages") {
+  if (location.pathname === "/feature-votes") {
+    content = <main id="main" className={params.get("role") === "professional" ? "pro-main" : "customer-account-page"}><h1>Vote on what you want next.</h1><FeatureVotes initial={featureVotes.map(value => ({ ...value }))} /></main>;
+  } else if (location.pathname === "/messages") {
     const professional = params.get("role") === "professional";
     content = <main id="main" className={professional ? "pro-main pro-message-page" : "messages-page"}>
       <MessageCentre initialConversations={[]} activeConversation={{ id: ids.pro, customer_name: "Alex Customer", professional_name: "Maya Studio", participant_role: professional ? "professional" : "customer" }}

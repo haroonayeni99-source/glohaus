@@ -402,3 +402,25 @@
   .admin-workspace .category-row-actions { width: 100%; padding-left: 54px; }
   .admin-workspace .category-row-actions button { flex: 1; }
 }
+
+/* Timed feature votes: scoped to voting and the existing Owner feedback panel. */
+.feature-vote-description { min-width: 0; overflow-wrap: anywhere; }
+.feature-vote-results { flex-shrink: 0; }
+.feature-vote-choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.feature-vote-card .feature-vote-deadline,
+.feature-vote-card .feature-vote-total { font-size: .82rem; margin: 10px 0; }
+.feature-vote-results small { display: block; color: var(--ink); }
+.feature-vote-list .feature-vote-button { width: auto; }
+.feature-vote-list .feature-vote-button.is-voted,
+:root[data-theme="night"] .feature-vote-list .feature-vote-button.is-voted { background: #5b284f; border-color: #5b284f; color: #fff; }
+.owner-feature-results { display: grid; gap: 14px; }
+.owner-feature-result { padding: 18px; border: 1px solid var(--line); border-radius: 14px; overflow-wrap: anywhere; }
+.owner-feature-result h4 { margin: 0 0 8px; }
+.owner-feature-result p { margin: 8px 0; color: var(--muted); }
+.owner-feature-totals { display: flex; flex-wrap: wrap; gap: 12px; }
+.owner-feature-totals span { display: inline-flex; gap: 8px; padding: 8px 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; color: var(--ink); }
+.owner-feature-results > button { justify-self: start; }
+@media (max-width: 760px) {
+  .feature-vote-results { width: 100%; }
+  .feature-vote-choices > button { flex: 1; }
+}

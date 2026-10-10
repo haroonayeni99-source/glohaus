@@ -10,6 +10,7 @@ const schema=z.discriminatedUnion("type",[
     audience:z.enum(["customer","professional","all"]),
     title:z.string().trim().min(5).max(140),
     description:z.string().trim().min(10).max(800),
+    durationDays:z.number().int().min(1).max(90).default(7),
   }).strict(),
 ]);
 
@@ -28,11 +29,11 @@ export async function POST(request:Request){
       ).rows[0]?.data);
       return json({campaign});
     }
-    const { audience, title, description } = data;
+    const { audience, title, description, durationDays } = data;
     const featureId=await withOwner(async(db)=>(
       await db.query<{id:string}>(
-        "SELECT beauty.owner_create_feature_request($1,$2,$3) AS id",
-        [audience,title,description]
+        "SELECT beauty.owner_create_feature_request($1,$2,$3,$4) AS id",
+        [audience,title,description,durationDays]
       )
     ).rows[0]?.id);
     return json({featureId});

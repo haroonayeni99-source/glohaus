@@ -1,3 +1,4 @@
+import type { FeatureVoteItem } from "@/lib/feature-voting";
 // Fictional, isolated accounts. This module is used only by the audit harness.
 import { defaultLabels } from "@/modules/platform/domain";
 import type { AdminOverview } from "@/modules/admin/repository";
@@ -37,7 +38,12 @@ export async function ownerProfessionalCommissionOverview() { fail("commission")
 export async function ownerProfessionalReferralOverview() { fail("referrals"); return []; }
 export async function ownerPublicSiteStatus() { fail("site"); return true; }
 export async function ownerHomepageMedia() { fail("homepage"); return { desktopHero: null, mobileHero: null }; }
-export async function ownerMarketingOverview() { fail("marketing"); return { optedInUsers: 0, queue: { pending: 0, retrying: 0, exhausted: 0 }, campaigns: [] }; }
+export async function ownerMarketingOverview() { fail("marketing"); return { features: featureVotes, optedInUsers: 0, queue: { pending: 0, retrying: 0, exhausted: 0 }, campaigns: [] }; }
 export async function ownerBackendHealth() { fail("backend"); return { jobs: { maintenance: { lastSuccessAt: date, lastFailureAt: null, failures24h: 0 }, notifications: { lastSuccessAt: date, lastFailureAt: null, failures24h: 0 } }, queues: { bookingEmailPending: 0, bookingEmailExhausted: 0, productEmailPending: 0, productEmailExhausted: 0, marketingPending: 0, marketingExhausted: 0 }, integrity: { unbalancedLedgerTransactions: 0, negativeProfessionalAvailableBalances: 0, bookingsMissingQuote: 0, paidOrdersMissingPaymentLedger: 0, bookingRefundAmountMismatches: 0, bookingTransfersMissingProviderId: 0, productTransfersMissingProviderId: 0, payoutAmountMismatches: 0, openDisputeReserveMismatches: 0 } }; }
 export async function pageAccount() { return { account: { id: ids.user, authId: "fictional", displayName: "Test Owner", email: "owner@example.test", status: "active", roles: [new URLSearchParams(location.search).get("role") === "admin" ? "admin" : "owner"], professionalId: null } }; }
 export function createClient() { return { auth: { signOut: async () => undefined } }; }
+
+export const featureVotes: FeatureVoteItem[] = [
+  { id: ids.pro, audience: "all", title: "Clearer booking", description: "Make booking easier for everyone.", status: "open", vote_count: 3, dislike_count: 1, total_count: 4, my_vote: false, my_choice: null, closes_at: new Date(Date.now()+7*86400000).toISOString(), voting_open: true },
+  { id: ids.customer, audience: "all", title: "A previous idea", description: "This idea has finished collecting votes.", status: "open", vote_count: 2, dislike_count: 3, total_count: 5, my_vote: false, my_choice: "dislike", closes_at: "2026-10-01T12:00:00Z", voting_open: false },
+];

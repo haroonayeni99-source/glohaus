@@ -1,0 +1,135 @@
+/* Focused UX fixes for messaging and long Owner/Admin pages.
+   Kept separate from globals.css so these fixes are easy to audit or revert. */
+
+/* Suggested replies must occupy their own row instead of inheriting the
+   circular send-button styling from .message-composer button. */
+.message-composer .message-prompts {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+  overflow-x: auto;
+  padding: 0 0 2px;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+
+.message-composer .message-prompts button {
+  display: inline-flex;
+  width: auto;
+  height: auto;
+  min-height: 34px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 11px;
+  border: 1px solid #ead5dd;
+  border-radius: 999px;
+  background: #fff7fa;
+  color: #6f2a49;
+  font-size: 0.68rem;
+  font-weight: 750;
+  line-height: 1.25;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.message-composer .message-prompts button:hover:not(:disabled) {
+  border-color: #d98aad;
+  background: #fff0f6;
+}
+
+.pro-message-page .message-composer .message-prompts button {
+  border-color: rgb(255 255 255 / 12%);
+  background: #2b2427;
+  color: #f3dce5;
+}
+
+.pro-message-page .message-composer .message-prompts button:hover:not(:disabled) {
+  border-color: rgb(255 157 196 / 42%);
+  background: #3a2931;
+  color: #fff;
+}
+
+/* Keep the professional inbox inside the available viewport. Long message
+   threads scroll internally instead of pushing the composer underneath nav. */
+@media (min-width: 761px) {
+  .pro-message-page {
+    width: min(1180px, 100%);
+  }
+
+  .pro-message-page .message-centre {
+    height: min(760px, calc(100dvh - 190px));
+    min-height: 580px;
+  }
+
+  .pro-message-page .message-inbox,
+  .pro-message-page .message-thread {
+    min-height: 0;
+  }
+
+  .pro-message-page .message-inbox nav {
+    max-height: none;
+    height: calc(100% - 106px);
+  }
+}
+
+@media (max-width: 760px) {
+  .pro-message-page .message-centre,
+  .pro-message-page .message-inbox,
+  .pro-message-page .message-thread {
+    min-height: calc(100dvh - 128px);
+    height: calc(100dvh - 128px);
+  }
+
+  .message-composer .message-prompts {
+    margin-inline: -2px;
+  }
+
+  .message-composer .message-prompts button {
+    min-height: 32px;
+    padding: 6px 10px;
+    font-size: 0.65rem;
+  }
+
+  .message-thread-header > div {
+    overflow: hidden;
+  }
+}
+
+/* Make long Owner/Admin navigation easier to scan and prevent the bottom
+   account controls from competing with the scrollable section list. */
+@media (min-width: 881px) {
+  .admin-navigation nav {
+    scroll-padding-block: 10px;
+  }
+
+  .admin-navigation nav a {
+    min-height: 39px;
+    display: flex;
+    align-items: center;
+  }
+
+  .admin-navigation nav a.is-active,
+  .admin-navigation nav a[aria-current="location"] {
+    position: relative;
+    z-index: 1;
+  }
+
+  .admin-navigation-bottom {
+    border-top: 1px solid rgb(255 255 255 / 8%);
+  }
+}
+
+@media (max-width: 880px) {
+  .admin-navigation {
+    position: sticky !important;
+    top: 0;
+    z-index: 70;
+    box-shadow: 0 10px 28px rgb(0 0 0 / 18%);
+  }
+
+  .admin-navigation nav {
+    padding-bottom: 7px;
+  }
+}

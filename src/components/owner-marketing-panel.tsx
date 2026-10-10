@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Megaphone, ThumbsUp } from "lucide-react";
+import { voteDeadline, type FeatureVoteItem } from "@/lib/feature-voting";
 import { requireAdminResponse } from "@/lib/admin-response";
 
 const customerPresets = [
@@ -26,6 +27,7 @@ const professionalPresets = [
 ] as const;
 
 type Overview = {
+  features?:FeatureVoteItem[];
   optedInUsers:number;
   queue:{pending:number;retrying:number;exhausted:number};
   campaigns:{
@@ -72,10 +74,11 @@ export function OwnerMarketingPanel({initial}:{initial:Overview}) {
           audience:form.get("audience"),
           title:form.get("title"),
           description:form.get("description"),
+          durationDays:Number(form.get("durationDays")),
         }),
       });
       await requireAdminResponse(response, "Feature vote could not be created.");
-      setNotice("Feature vote published privately to signed-in GLOHAUS users.");
+      setNotice(`Feature vote published for ${form.get("durationDays")} day(s). Likes, dislikes and totals are available below after refresh.`);
       element.reset();
       router.refresh();
     }catch(error){setNotice(error instanceof Error?error.message:"Feature vote could not be created.");}
@@ -135,10 +138,33 @@ export function OwnerMarketingPanel({initial}:{initial:Overview}) {
         <label>Short explanation
           <textarea name="description" minLength={10} maxLength={800} required placeholder="Explain what users would be voting for." />
         </label>
-        <button className="button" disabled={busy==="poll"}>
+        <label>Voting duration (days)
+          <input name="durationDays" type="number" min={1} max={90} step={1} defaultValue={7} required aria-describedby="vote-duration-help" />
+        </label>
+        <p id="vote-duration-help">Choose 1–90 days. Voting closes automatically; final results stay visible.</p>
+        <button className="button" disabled={Boolean(busy)}>
           <ThumbsUp size={17} aria-hidden /> {busy==="poll"?"Publishing…":"Publish private vote"}
         </button>
       </form>
+
+      <section className="owner-feature-results" aria-label="Feature vote results">
+        <h3>Feature vote results</h3>
+        <p>Totals are anonymous. Voting ends at the time shown.</p>
+        {(initial.features ?? []).map(feature => (
+          <article className="owner-feature-result" key={feature.id}>
+            <h4>{feature.title}</h4>
+            <p>{feature.audience === "all" ? "All signed-in users" : feature.audience === "customer" ? "Customers" : "Professionals"} · {feature.voting_open ? "Voting open" : "Voting closed"}</p>
+            <p>{feature.voting_open ? "Ends" : "Ended"} <time dateTime={feature.closes_at}>{voteDeadline(feature.closes_at)} UK time</time></p>
+            <div className="owner-feature-totals">
+              <span>Like <strong>{feature.vote_count}</strong></span>
+              <span>Dislike <strong>{feature.dislike_count}</strong></span>
+              <span>Total <strong>{feature.total_count}</strong></span>
+            </div>
+          </article>
+        ))}
+        {!initial.features?.length && <p>No feature votes have been published yet.</p>}
+        <button type="button" className="feature-vote-button" onClick={() => router.refresh()} disabled={Boolean(busy)}>Refresh vote results</button>
+      </section>
 
       <h3>Recent campaign performance</h3>
       <div className="service-edit-list">

@@ -5,17 +5,8 @@ import { withIdentity } from "@/lib/db";
 import { AccessMessage } from "@/components/access-message";
 import { PublicHeader } from "@/components/public-header";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
+import type { FeatureVoteItem } from "@/lib/feature-voting";
 import { FeatureVotes } from "@/components/feature-votes";
-
-type FeatureVoteItem = {
-  id: string;
-  audience: "customer" | "professional" | "all";
-  title: string;
-  description: string;
-  status: string;
-  vote_count: number;
-  my_vote: boolean;
-};
 
 export default async function FeatureVotesPage() {
   const result = await pageAccount();
@@ -36,9 +27,9 @@ export default async function FeatureVotesPage() {
     features = await withIdentity(account.authId, async (db) =>
       (
         await db.query<FeatureVoteItem>(
-          "SELECT * FROM beauty.public_feature_requests()",
+          "SELECT * FROM beauty.feature_vote_results()",
         )
-      ).rows,
+      ).rows.map(item => ({ ...item, closes_at: new Date(item.closes_at).toISOString() })),
     );
   } catch (error) {
     featureLoadUnavailable = true;
@@ -72,7 +63,8 @@ export default async function FeatureVotesPage() {
       <h1>Vote on what you want next.</h1>
       <p className="lead">
         Vote totals are public to signed-in GLOHAUS users, but who voted remains
-        private. One account gets one vote per idea.
+        private. Choose Like or Dislike before the end time. One account gets one
+        choice per idea; pick it again to remove it. Final results stay visible.
       </p>
       {featureLoadUnavailable ? (
         <section className="feature-vote-list" aria-live="polite">

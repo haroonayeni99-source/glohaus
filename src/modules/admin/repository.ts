@@ -1,3 +1,4 @@
+import type { FeatureVoteItem } from "@/lib/feature-voting";
 import "server-only";
 import { withAccount } from "@/lib/api-account";
 import type { SqlClient } from "@/modules/accounts/repository";
@@ -543,6 +544,7 @@ export async function ownerHomepageMedia(): Promise<OwnerHomepageMedia> {
 
 
 export type OwnerMarketingOverview = {
+  features?: FeatureVoteItem[];
   optedInUsers: number;
   queue: {
     pending: number;
@@ -571,11 +573,12 @@ export async function ownerMarketingOverview(): Promise<OwnerMarketingOverview> 
         "SELECT beauty.owner_marketing_overview() AS data",
       )
     ).rows[0];
-    return row?.data ?? {
+    const features = (await db.query<FeatureVoteItem>("SELECT * FROM beauty.feature_vote_results()")).rows;
+    return { ...(row?.data ?? {
       optedInUsers: 0,
       queue: { pending: 0, retrying: 0, exhausted: 0 },
       campaigns: [],
-    };
+    }), features: features.map(item => ({ ...item, closes_at: new Date(item.closes_at).toISOString() })) };
   });
 }
 

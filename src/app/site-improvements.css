@@ -424,3 +424,75 @@
   .feature-vote-results { width: 100%; }
   .feature-vote-choices > button { flex: 1; }
 }
+
+/* Keep mobile navigation available rather than clipping the desktop links. */
+.mobile-site-menu { display: none; flex: 0 0 auto; }
+.mobile-site-menu summary { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px 10px; border: 1px solid currentColor; border-radius: 10px; cursor: pointer; font-size: .8rem; font-weight: 700; list-style: none; }
+.mobile-site-menu summary::-webkit-details-marker { display: none; }
+.mobile-site-menu summary:focus-visible { outline: 3px solid var(--plum); outline-offset: 3px; }
+.mobile-site-menu-panel { position: fixed; z-index: 200; top: 82px; left: 14px; right: 14px; max-height: calc(100dvh - 180px); overflow-y: auto; overscroll-behavior: contain; padding: 16px; background: var(--white); color: var(--ink); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 14px 40px rgb(0 0 0 / 20%); }
+.mobile-site-menu .mobile-site-menu-panel nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 8px; align-items: stretch; }
+.mobile-site-menu .mobile-site-menu-panel a { display: flex; align-items: center; min-height: 44px; padding: 10px; border-radius: 8px; color: var(--ink); font-size: .88rem; font-weight: 650; white-space: normal; overflow-wrap: anywhere; text-decoration: none; }
+.mobile-site-menu-panel a:hover { background: var(--paper); }
+.mobile-menu-account { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.mobile-menu-signout { margin-top: 12px; }
+.mobile-site-menu .mobile-menu-signout .text-link { display: inline-flex; min-height: 44px; padding: 10px; color: var(--ink); font-size: .88rem; }
+@media (max-width: 1180px) { .professional-mobile-menu { display: block; } }
+@media (max-width: 1120px) {
+  .mobile-site-menu { display: block; }
+  .glohaus-header { grid-template-columns: minmax(0, 1fr) auto; }
+  .glohaus-header > .glohaus-main-links, .glohaus-header > .glohaus-header-tagline { display: none; }
+  .glohaus-header-actions { flex-shrink: 0; }
+}
+@media (max-width: 1099px) {
+  .mobile-home-header { flex-wrap: wrap; gap: 12px; padding-inline: 0; }
+  .mobile-home-header-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  .mobile-home-brand { min-width: 0; }
+  .mobile-home-brand > span { white-space: normal; }
+  .mobile-home-more-services { display: flex; flex-wrap: wrap; gap: 8px; margin: -8px 0 20px; }
+  .mobile-home-more-services a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); font-size: .82rem; }
+  .mobile-home-hero { height: clamp(360px, 65svh, 480px); min-height: 360px; }
+  .mobile-home-account, .mobile-home-professionals, .mobile-home-inspiration { display: grid; gap: 14px; margin-top: 28px; }
+  .mobile-home-account article { padding: 16px; background: var(--white); border: 1px solid var(--line); border-radius: 14px; }
+  .mobile-home-account :is(h2,h3), .mobile-home-section-title h2, .mobile-home-inspiration h2 { margin: 0; color: var(--ink); }
+  .mobile-home-account p { color: var(--muted); font-size: .9rem; margin: 10px 0; overflow-wrap: anywhere; }
+  .mobile-home-account a, .mobile-home-section-title a, .mobile-home-inspiration a { display: inline-flex; align-items: center; min-height: 44px; color: var(--plum-dark); font-weight: 700; }
+  .mobile-home-section-title { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+  .mobile-home-professionals .professional-card { min-width: 0; }
+  .mobile-home-inspiration nav { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+  .mobile-home-inspiration nav a, .mobile-home-shop-link { padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); color: var(--ink); }
+}
+@media (max-width: 760px) {
+  .glohaus-header .glohaus-sign-up { display: none; }
+  .glohaus-header > .brand { max-width: none; overflow: visible; font-size: clamp(1.2rem,5.5vw,1.65rem); }
+  .glohaus-header-actions { gap: 8px; }
+  .pro-header { gap: 10px; flex-wrap: wrap; padding-block: 10px; }
+  .pro-header-brand { max-width: none; flex: 0 1 auto; }
+  .pro-header-account { margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+  .pro-header-account > .pro-create-post { display: none; }
+  .discovery-top-actions > .mobile-site-menu { grid-column: auto; }
+}
+
+/* Let the actual controls and copy fit narrow screens, without cropping content. */
+@media (max-width: 760px) {
+  .role-links .role-option { min-width: 0; }
+  .role-links .role-option > span { min-width: 0; overflow-wrap: anywhere; }
+  .role-links .role-option > svg { flex-shrink: 0; }
+  .pro-app .service-edit-list[aria-label="Your services"] .service-edit-row { flex-wrap: wrap; align-items: flex-start; }
+  .pro-app .service-edit-list[aria-label="Your services"] .service-edit-row > div { min-width: 0; overflow-wrap: anywhere; }
+  .service-list article:not(.service-with-image) { flex-direction: column; }
+  .service-list article > div { min-width: 0; overflow-wrap: anywhere; }
+  .service-list article:not(.service-with-image) .profile-service-price { align-items: flex-start; }
+  .cart-item-copy { grid-template-columns: minmax(0, 1fr); }
+  .cart-item-copy > a, .cart-item-copy h2 { width: auto; white-space: normal; overflow: visible; overflow-wrap: anywhere; }
+  .admin-workspace .owner-tab-row { flex-wrap: wrap; gap: 4px 8px; }
+  .admin-workspace .service-edit-row > form { display: grid; gap: 10px; width: 100%; min-width: 0; }
+  .admin-workspace .service-edit-row > form :is(input,select,textarea,button) { min-width: 0; max-width: 100%; width: 100%; }
+}
+@media (max-width: 860px) {
+  .marketplace-sidebar nav:nth-of-type(2) { display: flex; }
+}
+
+:root[data-theme="night"] .mobile-home-account a,
+:root[data-theme="night"] .mobile-home-section-title a,
+:root[data-theme="night"] .mobile-home-shop-link { color: var(--ink); }

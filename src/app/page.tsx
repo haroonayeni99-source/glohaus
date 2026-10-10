@@ -131,6 +131,8 @@ export default async function Home({
         homepageMedia={homepageMedia}
       />
       <MobileCustomerHome
+        professionals={professionals}
+        summary={viewer.summary}
         signedIn={viewer.signedIn}
         canAccessAdmin={viewer.canAccessAdmin}
         homepageMedia={homepageMedia}

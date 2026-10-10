@@ -25,6 +25,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
+import { MobileSiteMenu } from "./mobile-site-menu";
 import { Brand } from "./brand";
 import { BottomNavigation } from "./bottom-navigation";
 import type { PublicPost } from "@/modules/posts/domain";
@@ -378,6 +379,7 @@ export function DiscoveryFeed({
             </p>
           </div>
           <div className="discovery-top-actions">
+            <MobileSiteMenu signedIn={viewerSignedIn} />
             <Link className="discovery-search-bar" href="/explore">
               <Search size={17} aria-hidden />
               <span>Search services, professionals...</span>

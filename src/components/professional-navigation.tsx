@@ -13,6 +13,7 @@ import {
   Bell,
 } from "lucide-react";
 import { Brand } from "./brand";
+import { MobileSiteMenu } from "./mobile-site-menu";
 import { AccountControls } from "./account-controls";
 
 const items = [
@@ -71,6 +72,7 @@ export function ProfessionalNavigation({
           </span>
           <span className="pro-account-name">{displayName}</span>
           <AccountControls />
+          <MobileSiteMenu signedIn professionalWorkspace />
         </div>
       </header>
       <nav className="pro-desktop-nav" aria-label="Professional navigation">

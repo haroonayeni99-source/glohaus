@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Bell, Search } from "lucide-react";
+import { MobileSiteMenu } from "./mobile-site-menu";
 import { Brand } from "./brand";
 
 /** Shared public header for customer, profile and professional pages. */
@@ -62,6 +63,7 @@ export function GlohausHeader({
             Sign up
           </Link>
         )}
+        <MobileSiteMenu signedIn={signedIn} />
       </nav>
     </header>
   );

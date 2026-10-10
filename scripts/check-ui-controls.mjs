@@ -6,7 +6,7 @@ const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_TEST
 const results = [];
 const image = { name: "photo.png", mimeType: "image/png", buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a3ioAAAAASUVORK5CYII=", "base64") };
 try {
-  for (const role of ["owner", "admin"]) for (const theme of ["light", "night"]) for (const width of [1440, 390]) {
+  for (const role of ["owner", "admin"]) for (const theme of ["light", "night"]) for (const width of [1440, 390, 320]) {
     const page = await browser.newPage({ viewport: { width, height: 1000 } });
     const errors = []; page.on("pageerror", error => errors.push(error.message));
     page.on("dialog", dialog => dialog.accept());
@@ -80,7 +80,7 @@ try {
   await expect(page.getByText("Your security verification has expired. Open Security, verify your account, then retry this change.", { exact: true })).toBeVisible();
   await expect(page.locator('.admin-navigation-bottom a[href="/security"]')).toBeVisible();
   await page.close();
-  for (const theme of ["light", "night"]) for (const width of [1440, 390]) {
+  for (const theme of ["light", "night"]) for (const width of [1440, 390, 320]) {
     const page = await browser.newPage({ viewport: { width, height: 1000 } });
     await page.goto(`http://127.0.0.1:3004/photo?theme=${theme}`);
     await page.getByLabel("Profile image", { exact: true }).setInputFiles(image);

@@ -6,7 +6,7 @@ const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_TEST
 const results = [];
 const image = { name: "photo.png", mimeType: "image/png", buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a3ioAAAAASUVORK5CYII=", "base64") };
 try {
-  for (const role of ["owner", "admin"]) for (const theme of ["light", "night"]) for (const width of [1440, 390]) {
+  for (const role of ["owner", "admin"]) for (const theme of ["light", "night"]) for (const width of [1440, 390, 320]) {
     const page = await browser.newPage({ viewport: { width, height: 1000 } });
     const errors = []; page.on("pageerror", error => errors.push(error.message));
     page.on("dialog", dialog => dialog.accept());
@@ -66,7 +66,7 @@ try {
       await submit(page.locator(".owner-account-action-popover"), "Apply restriction");
       for (const launch of await page.getByRole("button", { name: "Launch preset", exact: true }).all()) await launch.click();
       await submit(page.locator("#marketing form"), "Publish private vote");
-      await expect(page.getByText("Feature vote published privately to signed-in GLOHAUS users.", { exact: true })).toBeVisible();
+      await expect(page.locator(".owner-marketing-panel").getByRole("status")).toContainText("published for 7 day(s)");
     }
     const requests = await page.evaluate(() => JSON.parse(sessionStorage.getItem("audit-requests") || "[]"));
     results.push({ role, theme, width, errors, actions: requests.map(request => ({ url: request.url, payload: JSON.parse(request.body || "{}") })) });
@@ -80,7 +80,7 @@ try {
   await expect(page.getByText("Your security verification has expired. Open Security, verify your account, then retry this change.", { exact: true })).toBeVisible();
   await expect(page.locator('.admin-navigation-bottom a[href="/security"]')).toBeVisible();
   await page.close();
-  for (const theme of ["light", "night"]) for (const width of [1440, 390]) {
+  for (const theme of ["light", "night"]) for (const width of [1440, 390, 320]) {
     const page = await browser.newPage({ viewport: { width, height: 1000 } });
     await page.goto(`http://127.0.0.1:3004/photo?theme=${theme}`);
     await page.getByLabel("Profile image", { exact: true }).setInputFiles(image);

@@ -4,6 +4,10 @@ import { Bell, Search, ShieldCheck } from "lucide-react";
 import { HomeStory } from "./home-story";
 import { AccountControls } from "./account-controls";
 import { Brand } from "./brand";
+import { MobileSiteMenu } from "./mobile-site-menu";
+import { ProfessionalCard } from "./professional-card";
+import { money, type PublicProfessional } from "@/modules/professionals/domain";
+import type { CustomerHomeSummary } from "@/modules/home/repository";
 import { BottomNavigation } from "./bottom-navigation";
 
 const mobileCategories = [
@@ -31,10 +35,14 @@ const mobileCategories = [
 
 export function MobileCustomerHome({
   signedIn = false,
+  professionals = [],
+  summary = null,
   canAccessAdmin = false,
   homepageMedia = { desktopHero: null, mobileHero: null },
 }: {
   signedIn?: boolean;
+  professionals?: PublicProfessional[];
+  summary?: CustomerHomeSummary | null;
   canAccessAdmin?: boolean;
   homepageMedia?: { desktopHero: string | null; mobileHero: string | null };
 }) {
@@ -77,6 +85,10 @@ export function MobileCustomerHome({
                 Sign in
               </Link>
             )}
+            <MobileSiteMenu
+              signedIn={signedIn}
+              canAccessAdmin={canAccessAdmin}
+            />
           </div>
         </header>
 
@@ -101,6 +113,17 @@ export function MobileCustomerHome({
               <strong>{label}</strong>
             </Link>
           ))}
+        </nav>
+        <nav
+          className="mobile-home-more-services"
+          aria-label="More beauty services"
+        >
+          {["Barber", "Waxing", "Injectables"].map((label) => (
+            <Link key={label} href={`/explore?q=${encodeURIComponent(label)}`}>
+              {label}
+            </Link>
+          ))}
+          <Link href="/explore">View all services</Link>
         </nav>
 
         <section className="mobile-home-hero">
@@ -136,6 +159,102 @@ export function MobileCustomerHome({
           Discover more beauty inspiration
           <span aria-hidden>→</span>
         </Link>
+        {signedIn && (
+          <section
+            className="mobile-home-account"
+            aria-label="Your account at a glance"
+          >
+            <h2>Your account at a glance</h2>
+            <article>
+              <h3>Upcoming Booking</h3>
+              <p>
+                {summary?.nextBooking
+                  ? `${summary.nextBooking.serviceName} · ${summary.nextBooking.professionalName}`
+                  : summary
+                    ? "No upcoming bookings"
+                    : "Booking summary unavailable"}
+              </p>
+              {summary?.nextBooking && (
+                <p>
+                  {new Intl.DateTimeFormat("en-GB", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                    timeZone: "Europe/London",
+                  }).format(new Date(summary.nextBooking.startsAt))}
+                </p>
+              )}
+              <Link
+                href={
+                  summary?.nextBooking
+                    ? `/account/bookings/${summary.nextBooking.id}`
+                    : "/account/bookings"
+                }
+              >
+                View bookings
+              </Link>
+            </article>
+            <article>
+              <h3>Messages</h3>
+              <p>
+                {summary
+                  ? summary.messages.unreadCount
+                    ? `${summary.messages.unreadCount} unread messages`
+                    : summary.messages.conversationCount
+                      ? "Messages up to date"
+                      : "No conversations yet"
+                  : "Message summary unavailable"}
+              </p>
+              <Link href="/messages">Open messages</Link>
+            </article>
+            <article>
+              <h3>Wallet & payments</h3>
+              <p>
+                {summary
+                  ? `${money(summary.payments.capturedPence)} deposits paid`
+                  : "Payment summary unavailable"}
+              </p>
+              {summary && (
+                <p>
+                  {summary.payments.pendingRefundPence > 0
+                    ? `${money(summary.payments.pendingRefundPence)} refund processing`
+                    : summary.payments.refundedPence > 0
+                      ? `${money(summary.payments.refundedPence)} refunded`
+                      : "No refunds recorded"}
+                </p>
+              )}
+              <Link href="/wallet">View payments</Link>
+            </article>
+          </section>
+        )}
+        {professionals.length > 0 && (
+          <section
+            className="mobile-home-professionals"
+            aria-label="Recommended professionals"
+          >
+            <div className="mobile-home-section-title">
+              <h2>Meet the professionals</h2>
+              <Link href="/explore">See all</Link>
+            </div>
+            {professionals.slice(0, 4).map((professional) => (
+              <ProfessionalCard
+                key={professional.id}
+                professional={professional}
+              />
+            ))}
+          </section>
+        )}
+        <section className="mobile-home-inspiration">
+          <h2>A little inspiration</h2>
+          <nav aria-label="Beauty inspiration">
+            <Link href="/explore">The Hair Edit</Link>
+            <Link href="/explore">Nail Inspiration</Link>
+            <Link href="/explore">Beauty Looks</Link>
+            <Link href="/explore">Your next beauty space</Link>
+          </nav>
+          <Link className="mobile-home-shop-link" href="/shop">
+            Shop beauty essentials →
+          </Link>
+        </section>
         <HomeStory />
       </main>
       <BottomNavigation active="home" signedIn={signedIn} />

@@ -6,7 +6,7 @@ if (!process.env.GLOHAUS_TEST_BROWSER) throw new Error("Set GLOHAUS_TEST_BROWSER
 const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_TEST_BROWSER, args: ["--no-sandbox", "--disable-dev-shm-usage", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
 const findings = [];
 try {
-  for (const role of ["owner", "admin"]) for (const theme of ["light", "night"]) for (const width of [1440, 1024, 820, 390]) {
+  for (const role of ["owner", "admin"]) for (const theme of ["light", "night"]) for (const width of [1440, 1024, 820, 390, 320]) {
     const page = await browser.newPage({ viewport: { width, height: 1000 } });
     const errors = []; page.on("pageerror", e => errors.push(e.message));
     await page.goto(`http://127.0.0.1:3004/admin?role=${role}&theme=${theme}`);
@@ -50,7 +50,7 @@ try {
     }
     await page.close();
   }
-  for (const role of ["customer", "professional"]) for (const theme of ["light", "night"]) for (const width of [1440, 390]) {
+  for (const role of ["customer", "professional"]) for (const theme of ["light", "night"]) for (const width of [1440, 390, 320]) {
     const page = await browser.newPage({viewport:{width,height:1000}});
     await page.goto(`http://127.0.0.1:3004/messages?role=${role}&theme=${theme}`);
     await page.locator('.message-bubble').first().waitFor();

@@ -8,7 +8,7 @@ const vr = createRequire(require.resolve("vitest/package.json"));
 const vite = createRequire(vr.resolve("vite"));
 const { build } = await import(vite.resolve("esbuild"));
 await mkdir("reports", { recursive: true });
-await build({ entryPoints: ["tests/fixtures/ui-audit/entry.tsx"], outfile: "reports/ui-audit.js", bundle: true, platform: "browser", jsx: "automatic", define: { "process.env": "{}" }, alias: {
+await build({ entryPoints: [process.env.GLOHAUS_UI_AUDIT_ENTRY || "tests/fixtures/ui-audit/entry.tsx"], outfile: "reports/ui-audit.js", bundle: true, platform: "browser", jsx: "automatic", define: { "process.env": "{}" }, alias: {
   "@/modules/admin/repository": resolve("tests/fixtures/ui-audit/data.ts"),
   "@/modules/platform/repository": resolve("tests/fixtures/ui-audit/data.ts"),
   "@/lib/page-access": resolve("tests/fixtures/ui-audit/data.ts"),

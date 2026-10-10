@@ -21,12 +21,13 @@ try {
       await expect.poll(() => page.evaluate(() => JSON.parse(sessionStorage.getItem("audit-requests") || "[]").length)).toBe(before + 1);
     }
     await submit(page.locator("#settings form"), "Save display names");
+    await page.locator("#categories").getByRole("button", { name: "Add category", exact: true }).click();
     const category = page.locator("#categories form");
     await category.locator('[name="name"]').fill("Massage");
-    await submit(category, "Add category");
-    await page.locator("#categories").getByRole("button", { name: "Edit", exact: true }).click();
-    await submit(category, "Save category");
-    await page.locator("#categories").getByRole("button", { name: "Hide", exact: true }).click();
+    await submit(category, "Create category");
+    await page.locator("#categories").getByRole("button", { name: "Edit Massage", exact: true }).click();
+    await submit(category, "Save changes");
+    await page.locator("#categories").getByRole("button", { name: "Hide Massage", exact: true }).click();
     await submit(page.locator('form').filter({ has: page.getByRole("button", { name: "Save LIVE access", exact: true }) }), "Save LIVE access");
     for (const [name, index] of [["Manage status", 0], ["Moderate", 0], ["Moderate", 1], ["Review", 0], ["Review", 1]]) {
       await page.getByRole("button", { name, exact: true }).nth(index).click();

@@ -67,6 +67,7 @@ export function MessageCentre({
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const endRef = useRef<HTMLDivElement | null>(null);
+  const threadBodyRef = useRef<HTMLDivElement | null>(null);
   const activeId = activeConversation?.id || null;
   const role = activeConversation?.participant_role || null;
   const viewSuffix = view === "professional" ? "&view=professional" : "";
@@ -140,7 +141,9 @@ export function MessageCentre({
   const latestMessageId = messages.at(-1)?.id ?? null;
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end" });
+    // Scroll only the message list, not the entire professional dashboard.
+    const container = threadBodyRef.current;
+    if (container) container.scrollTop = container.scrollHeight;
   }, [latestMessageId, activeId]);
 
   async function loadOlder() {
@@ -319,7 +322,7 @@ export function MessageCentre({
               </div>
             </header>
 
-            <div className="message-thread-body" aria-live="polite">
+            <div ref={threadBodyRef} className="message-thread-body" aria-live="polite">
               {activeConversation && hasOlder && (
                 <div className="message-load-older">
                   <button
@@ -358,7 +361,7 @@ export function MessageCentre({
                   </article>
                 );
               })}
-              <div ref={endRef} />
+              <div ref={endRef} aria-hidden="true" />
             </div>
 
             <form className="message-composer" onSubmit={send}>

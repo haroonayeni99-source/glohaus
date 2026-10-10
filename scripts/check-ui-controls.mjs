@@ -66,7 +66,7 @@ try {
       await submit(page.locator(".owner-account-action-popover"), "Apply restriction");
       for (const launch of await page.getByRole("button", { name: "Launch preset", exact: true }).all()) await launch.click();
       await submit(page.locator("#marketing form"), "Publish private vote");
-      await expect(page.getByText("Feature vote published privately to signed-in GLOHAUS users.", { exact: true })).toBeVisible();
+      await expect(page.locator(".owner-marketing-panel").getByRole("status")).toContainText("published for 7 day(s)");
     }
     const requests = await page.evaluate(() => JSON.parse(sessionStorage.getItem("audit-requests") || "[]"));
     results.push({ role, theme, width, errors, actions: requests.map(request => ({ url: request.url, payload: JSON.parse(request.body || "{}") })) });

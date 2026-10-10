@@ -133,3 +133,116 @@
     padding-bottom: 7px;
   }
 }
+
+
+/* Owner/Admin account search */
+.admin-account-search {
+  display: grid;
+  gap: 7px;
+  margin: 14px 0 18px;
+  max-width: 620px;
+}
+
+.admin-account-search > span {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: inherit;
+}
+
+.admin-account-search input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 13px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 11px;
+  background: #171416;
+  color: #fff;
+  font: inherit;
+  font-size: 0.82rem;
+}
+
+.admin-account-search input::placeholder {
+  color: #9f9298;
+}
+
+.admin-account-search input:focus {
+  outline: 2px solid #ff79ad;
+  outline-offset: 2px;
+  border-color: #ff79ad;
+}
+
+.admin-account-search small {
+  color: #b8aab0;
+  font-size: 0.66rem;
+}
+
+:root:not([data-theme="night"]) .admin-account-search input {
+  border-color: #dacbd1;
+  background: #fff;
+  color: #261d21;
+}
+
+:root:not([data-theme="night"]) .admin-account-search input::placeholder {
+  color: #83757b;
+}
+
+/* Keep the public header usable at tablet widths without squeezing actions
+   into the logo or wrapping the sign-in controls. */
+@media (max-width: 1120px) and (min-width: 761px) {
+  .glohaus-header {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .glohaus-main-links {
+    overflow: hidden;
+  }
+
+  .glohaus-header-actions {
+    flex: 0 0 auto;
+  }
+
+  .glohaus-header-actions :is(.glohaus-sign-in, .glohaus-sign-up) {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 760px) {
+  .glohaus-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .glohaus-header > .brand {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .glohaus-header-actions {
+    min-width: 0;
+  }
+
+  .glohaus-header-actions :is(.glohaus-sign-in, .glohaus-sign-up) {
+    white-space: nowrap;
+  }
+
+  .admin-account-search {
+    max-width: none;
+  }
+}
+
+@media (max-width: 430px) {
+  .glohaus-header .brand {
+    max-width: 44vw;
+  }
+
+  .glohaus-header-actions .glohaus-sign-in {
+    max-width: 32vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .admin-account-search input {
+    min-height: 46px;
+    font-size: 16px;
+  }
+}

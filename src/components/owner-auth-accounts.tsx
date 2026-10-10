@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import type { OwnerAuthAccount } from "@/modules/admin/repository";
 
 function when(value: string | null) {
@@ -8,8 +9,36 @@ function when(value: string | null) {
 }
 
 export function OwnerAuthAccounts({ accounts }: { accounts: OwnerAuthAccount[] }) {
+  const [search, setSearch] = useState("");
+  const query = search.trim().toLowerCase();
+  const visibleAccounts = useMemo(() => {
+    if (!query) return accounts;
+    return accounts.filter((account) =>
+      [
+        account.email,
+        account.appStatus,
+        account.appUserId,
+        ...account.roles,
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query)),
+    );
+  }, [accounts, query]);
+
   return (
-    <div className="admin-table-wrap">
+    <>
+      <label className="admin-account-search">
+        <span>Search authentication accounts</span>
+        <input
+          type="search"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Email, role or account status"
+          autoComplete="off"
+        />
+        <small>{visibleAccounts.length} of {accounts.length} auth accounts shown</small>
+      </label>
+      <div className="admin-table-wrap">
       <table className="admin-table">
         <thead>
           <tr>
@@ -21,7 +50,7 @@ export function OwnerAuthAccounts({ accounts }: { accounts: OwnerAuthAccount[] }
           </tr>
         </thead>
         <tbody>
-          {accounts.map((account) => (
+          {visibleAccounts.map((account) => (
             <tr key={account.authId}>
               <td>{account.email}</td>
               <td>
@@ -38,11 +67,12 @@ export function OwnerAuthAccounts({ accounts }: { accounts: OwnerAuthAccount[] }
               <td>{when(account.lastSignInAt)}</td>
             </tr>
           ))}
-          {!accounts.length && (
-            <tr><td colSpan={5}>No Supabase Auth users found.</td></tr>
+          {!visibleAccounts.length && (
+            <tr><td colSpan={5}>{query ? "No authentication accounts match your search." : "No Supabase Auth users found."}</td></tr>
           )}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }

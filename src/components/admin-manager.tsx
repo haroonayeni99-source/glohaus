@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useCurrentTime } from "@/components/use-current-time";
 import { useRouter } from "next/navigation";
 import type { AdminOverview } from "@/modules/admin/repository";
@@ -9,6 +9,20 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
   const now = useCurrentTime();
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [accountSearch, setAccountSearch] = useState("");
+  const accountQuery = accountSearch.trim().toLowerCase();
+  const visibleUsers = useMemo(() => {
+    if (!accountQuery) return data.users;
+    return data.users.filter((user) =>
+      [user.display_name, user.email, user.status, ...user.roles]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(accountQuery)),
+    );
+  }, [accountQuery, data.users]);
+  const visibleProfessionals = useMemo(
+    () => visibleUsers.filter((user) => user.roles.includes("professional")),
+    [visibleUsers],
+  );
   const [selection, setSelection] = useState<{
     type: "user" | "post" | "review" | "appeal" | "report";
     id: string;
@@ -135,6 +149,17 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
         </form>
       )}
       <h2 id="users" className="admin-section-title">App Users</h2>
+      <label className="admin-account-search">
+        <span>Search users and professionals</span>
+        <input
+          type="search"
+          value={accountSearch}
+          onChange={(event) => setAccountSearch(event.target.value)}
+          placeholder="Name, email, role or status"
+          autoComplete="off"
+        />
+        <small>{visibleUsers.length} of {data.users.length} accounts shown</small>
+      </label>
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>
@@ -147,7 +172,7 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
             </tr>
           </thead>
           <tbody>
-            {data.users.map((user) => (
+            {visibleUsers.map((user) => (
               <tr key={user.id} id={`user-${user.id}`}>
                 <td>{user.display_name}</td>
                 <td>{user.email}</td>
@@ -181,6 +206,9 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
                 </td>
               </tr>
             ))}
+            {!visibleUsers.length && (
+              <tr><td colSpan={5}>{accountQuery ? "No accounts match your search." : "No accounts found."}</td></tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -200,9 +228,7 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
             </tr>
           </thead>
           <tbody>
-            {data.users
-              .filter((user) => user.roles.includes("professional"))
-              .map((user) => (
+            {visibleProfessionals.map((user) => (
                 <tr key={user.id} id={`professional-user-${user.id}`}>
                   <td>{user.display_name}</td>
                   <td>{user.email}</td>
@@ -219,8 +245,8 @@ export function AdminManager({ data, owner = false, hardDeleteConfigured = false
                   </td>
                 </tr>
               ))}
-            {!data.users.some((user) => user.roles.includes("professional")) && (
-              <tr><td colSpan={5}>No professional accounts have been created yet.</td></tr>
+            {!visibleProfessionals.length && (
+              <tr><td colSpan={5}>{accountQuery ? "No professionals match your search." : "No professional accounts have been created yet."}</td></tr>
             )}
           </tbody>
         </table>

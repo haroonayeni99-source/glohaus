@@ -1,0 +1,78 @@
+// Real category controls; fictional data and locally intercepted mutations only.
+import { chromium, expect } from "@playwright/test";
+import { writeFile } from "node:fs/promises";
+import { server } from "./ui-audit.mjs";
+const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_TEST_BROWSER, args: ["--no-sandbox", "--disable-dev-shm-usage", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
+const results = [];
+try {
+  for (const role of ["owner", "admin"]) for (const theme of ["light", "night"]) for (const width of [1440, 390]) {
+    const page = await browser.newPage({ viewport: { width, height: 1000 } });
+    const errors = []; page.on("pageerror", error => errors.push(error.message));
+    await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.abort());
+    await page.goto(`http://127.0.0.1:3004/admin?role=${role}&theme=${theme}#categories`);
+    const manager = page.locator(".category-manager"); await manager.waitFor();
+    await expect(manager.locator("form")).toHaveCount(0);
+    await page.screenshot({ path: `reports/categories-${role}-${theme}-${width}.png` });
+    await manager.getByRole("button", { name: "Add category", exact: true }).click();
+    await expect(manager.getByLabel("Category name", { exact: true })).toBeFocused();
+    await manager.getByLabel("Category name", { exact: true }).fill("Massage therapy");
+    const contrast = await manager.getByRole("button", { name: "Create category", exact: true }).evaluate(element => {
+      const style = getComputedStyle(element);
+      const luminance = value => value.match(/[\d.]+/g).slice(0,3).map(Number).map(v => v/255).map(v => v <= .04045 ? v/12.92 : ((v+.055)/1.055)**2.4).reduce((sum,v,i) => sum + v*[.2126,.7152,.0722][i],0);
+      const [light,dark] = [luminance(style.color),luminance(style.backgroundColor)].sort((a,b)=>b-a);
+      return (light+.05)/(dark+.05);
+    });
+    expect(contrast).toBeGreaterThanOrEqual(4.5);
+    await expect(manager.getByLabel("Category link", { exact: true })).not.toBeVisible();
+    await page.screenshot({ path: `reports/category-form-${role}-${theme}-${width}.png` });
+    await manager.getByRole("button", { name: "Create category", exact: true }).click();
+    await expect(manager.getByRole("status").filter({ hasText: "“Massage therapy” added." })).toBeVisible();
+    await expect(manager.getByRole("heading", { name: "Massage therapy", exact: true })).toBeVisible();
+    await manager.getByLabel("Search categories", { exact: true }).fill("massage");
+    await expect(manager.locator(".category-row")).toHaveCount(1);
+    await manager.getByRole("button", { name: "Hide Massage therapy", exact: true }).click();
+    await expect(manager.getByRole("button", { name: "Show Massage therapy", exact: true })).toBeVisible();
+    await manager.getByRole("button", { name: "Visible", exact: true }).click();
+    await expect(manager.getByRole("heading", { name: "No matching categories" })).toBeVisible();
+    await manager.getByRole("button", { name: "Clear filters", exact: true }).click();
+    await manager.getByRole("button", { name: "Hidden", exact: true }).click();
+    await expect(manager.locator(".category-row")).toHaveCount(1);
+    await manager.getByRole("button", { name: "Show Massage therapy", exact: true }).click();
+    await expect(manager.locator(".category-row")).toHaveCount(0);
+    await manager.getByRole("button", { name: "All", exact: true }).click();
+    await manager.getByRole("button", { name: "Edit Nails", exact: true }).click();
+    await manager.getByLabel("Category name", { exact: true }).fill("Nail art");
+    await manager.getByText("Advanced options", { exact: true }).click();
+    await expect(manager.getByLabel("Category link", { exact: true })).toHaveValue("nails");
+    await manager.getByLabel("Display order", { exact: true }).fill("0");
+    await manager.getByLabel("Change note (optional)", { exact: true }).fill("Clearer customer category name");
+    await manager.getByRole("button", { name: "Save changes", exact: true }).click();
+    await expect(manager.getByRole("heading", { name: "Nail art", exact: true })).toBeVisible();
+    await manager.getByRole("button", { name: "Add category", exact: true }).click();
+    await manager.getByLabel("Category name", { exact: true }).fill("NAIL ART");
+    await manager.getByRole("button", { name: "Create category", exact: true }).click();
+    await expect(manager.getByRole("alert")).toContainText("already exists");
+    await expect(manager.getByLabel("Category name", { exact: true })).toHaveValue("NAIL ART");
+    await manager.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(manager.getByRole("button", { name: "Add category", exact: true })).toBeFocused();
+    const requests = await page.evaluate(() => JSON.parse(sessionStorage.getItem("audit-requests") || "[]"));
+    expect(requests).toHaveLength(4);
+    expect(JSON.parse(requests[0].body)).toMatchObject({ name: "Massage therapy", slug: "massage-therapy", active: true, reason: "Add category: Massage therapy" });
+    expect(JSON.parse(requests[3].body)).toMatchObject({ name: "Nail art", slug: "nails", sortOrder: 0, reason: "Clearer customer category name" });
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+    expect(overflow).toBeLessThanOrEqual(1); expect(errors).toEqual([]);
+    results.push({ role, theme, width, actions: requests.length, overflow, buttonContrast: contrast, errors });
+    await page.close();
+  }
+  const page = await browser.newPage({ viewport: { width: 390, height: 1000 } });
+  await page.goto("http://127.0.0.1:3004/admin?response=mfa#categories");
+  const manager = page.locator(".category-manager"); await manager.getByRole("button", { name: "Add category", exact: true }).click();
+  await manager.getByLabel("Category name", { exact: true }).fill("Brows");
+  await manager.getByRole("button", { name: "Create category", exact: true }).click();
+  await expect(manager.getByRole("alert")).toContainText("Open Security");
+  await expect(manager.getByLabel("Category name", { exact: true })).toHaveValue("Brows");
+  await expect(manager.getByRole("button", { name: "Create category", exact: true })).toBeEnabled();
+  await page.close();
+  console.log(JSON.stringify(results));
+  await writeFile("reports/category-manager-results.json", JSON.stringify(results, null, 2));
+} finally { await browser.close(); server.close(); }

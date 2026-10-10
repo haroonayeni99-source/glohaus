@@ -17,6 +17,7 @@ window.fetch = async (url, init) => {
   if (String(url).endsWith("/upload")) return Response.json({ url: "https://image.example.test/homepage.webp" }, { status: 201 });
   if (String(url).includes("/profile/photo")) return Response.json({ id: ids.pro }, { status: 201 });
   if (String(url).includes("/messages/")) return Response.json({ messages: [], next: null });
+  if (String(url).includes("/admin/categories")) return Response.json({ saved: true, id: "44444444-4444-4444-8444-444444444444" });
   return Response.json({ saved: true, campaign: { recipients: 0 }, featureId: ids.pro });
 };
 async function start() {

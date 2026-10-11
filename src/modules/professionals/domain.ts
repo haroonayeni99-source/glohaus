@@ -129,6 +129,10 @@ export type ProfessionalPresentationInput = z.infer<
 export type ProfileInput = z.infer<typeof profileSchema>;
 export type ServiceInput = z.infer<typeof serviceSchema>;
 export type PublicProfessional = {
+  public_latitude?: number | null;
+  public_longitude?: number | null;
+  public_location_confirmed_at?: string | null;
+  distance_miles?: number | null;
   photo_id?: string | null;
   photo_alt?: string | null;
   rating?: number | null;

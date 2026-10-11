@@ -20,7 +20,7 @@ export const defaultDiscoveryFilters: DiscoveryFilters = {
   availableToday: false,
 };
 
-const filtersSchema = z
+export const discoveryFiltersSchema = z
   .object({
     location: z.string().max(100).optional(),
     category: z.string().max(60).optional(),
@@ -33,6 +33,8 @@ const filtersSchema = z
     availableToday: z.boolean(),
   })
   .strict();
+
+const filtersSchema = discoveryFiltersSchema;
 
 const cursorSchema = z
   .object({

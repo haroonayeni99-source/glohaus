@@ -10,6 +10,7 @@ import "./theme-compat.css";
 import "./customer-polish.css";
 import "./site-improvements.css";
 import "./design-system.css";
+import "./location.css";
 
 const themeBootstrap = `(() => {
   try {

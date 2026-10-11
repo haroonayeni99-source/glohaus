@@ -1,4 +1,5 @@
 "use client";
+import { ProfessionalLocationEditor } from "./professional-location-editor";
 import { useLabels } from "./platform-labels";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -364,6 +365,7 @@ export function ProfessionalEditor({
               )}
             </div>
           </form>
+          <ProfessionalLocationEditor />
         </>
       )}
       {section !== "profile" && (

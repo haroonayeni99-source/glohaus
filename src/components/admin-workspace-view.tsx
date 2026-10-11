@@ -93,8 +93,8 @@ export function AdminWorkspaceView({
     >
       <div className="admin-view-toolbar">
         <span>
-          Choose a section from the menu to work on one thing at a time.
-          Unsaved entries stay here when you switch sections; save before leaving this page.
+          Choose a section. Switching sections keeps your unsaved entries.
+          Save before leaving this page.
         </span>
         <button
           type="button"

@@ -10,6 +10,18 @@ export function json(body: unknown, status = 200): Response {
 export function apiError(error: unknown): Response {
   if (error instanceof AccessError)
     return json({ error: { code: error.code } }, error.status);
+  // Translate only known database decisions; keep SQL text and unknown failures private.
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    "message" in error
+  ) {
+    if (error.code === "42501" && error.message === "FORBIDDEN")
+      return json({ error: { code: "FORBIDDEN" } }, 403);
+    if (error.code === "22023" && error.message === "INVALID_TRANSITION")
+      return json({ error: { code: "INVALID_REQUEST" } }, 409);
+  }
   // Never log raw provider/database errors: they may contain customer data or credentials.
   console.error("Account request failed", {
     type: error instanceof Error ? error.name : "UnknownError",

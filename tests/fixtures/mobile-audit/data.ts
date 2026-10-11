@@ -46,7 +46,7 @@ export const services: Service[] = [
     description: "Preparation, shaping and your choice of colour.",
     duration_minutes: 60,
     price_pence: 4500,
-    deposit_pence: 0,
+    deposit_pence: 1500,
     active: true,
     category: "Nails",
   },

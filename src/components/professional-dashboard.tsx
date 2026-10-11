@@ -1,3 +1,5 @@
+import { ProfessionalNextSteps } from "./professional-next-steps";
+import type { SetupProgress } from "@/modules/professionals/setup";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -41,9 +43,11 @@ function appointmentDate(value: Date) {
 export function ProfessionalDashboard({
   account,
   data,
+  setup = null,
 }: {
   account: Account;
   data: DashboardData;
+  setup?: SetupProgress | null;
 }) {
   const businessName = data.profile?.businessName || account.displayName;
   const incomplete =
@@ -52,7 +56,10 @@ export function ProfessionalDashboard({
     data.stats.activeServices === 0;
   return (
     <div className="pro-app">
-      <ProfessionalNavigation active="dashboard" displayName={account.displayName} />
+      <ProfessionalNavigation
+        active="dashboard"
+        displayName={account.displayName}
+      />
       <main id="main" className="pro-main">
         <section className="pro-welcome">
           <div>
@@ -64,14 +71,22 @@ export function ProfessionalDashboard({
                 : `${businessName} is ready for appointments. Keep your week in view here.`}
             </p>
           </div>
-          <Link className="pro-icon-button" href="/professional/profile" aria-label="Manage your profile">
+          <Link
+            className="pro-icon-button"
+            href="/professional/profile"
+            aria-label="Manage your profile"
+          >
             <Plus size={20} aria-hidden />
             <span>Manage profile</span>
           </Link>
         </section>
 
+        {setup && <ProfessionalNextSteps progress={setup} />}
         {data.access && (
-          <section className="pro-setup-card" aria-label="Professional verification status">
+          <section
+            className="pro-setup-card"
+            aria-label="Professional verification status"
+          >
             <div>
               <span className="pro-inline-icon">
                 {data.access.status === "verified" ? (
@@ -100,28 +115,37 @@ export function ProfessionalDashboard({
                       ? "Stripe is reviewing your information. Continue verification if more details are requested."
                       : data.access.status === "restricted"
                         ? "Paid marketplace activity is limited while this account is reviewed."
-                        : `You can publish your profile and accept Starter bookings before verification. You have ${data.access.starterBookingsRemaining ?? 0} of 5 starter bookings remaining. Unverified services are limited to £200 with no online deposit; verification unlocks deposits, higher-value services, product selling and withdrawals.`}
+                        : `You can publish your profile and accept Starter bookings before verification. You have ${data.access.starterBookingsRemaining ?? 0} of 5 starter bookings remaining. Unverified services are limited to £200 and paid in full through GLOHAUS at booking; verification unlocks partial deposits, higher-value services, product selling and withdrawals.`}
                 </p>
               </div>
             </div>
-            {data.access.status !== "verified" && data.access.status !== "restricted" && (
-              <Link className="pro-pink-button" href="/professional/profile#verification">
-                {data.access.status === "pending" ? "Continue verification" : "Verify identity"}
-                <ArrowUpRight size={16} aria-hidden />
-              </Link>
-            )}
+            {data.access.status !== "verified" &&
+              data.access.status !== "restricted" && (
+                <Link
+                  className="pro-pink-button"
+                  href="/professional/profile#verification"
+                >
+                  {data.access.status === "pending"
+                    ? "Continue verification"
+                    : "Verify identity"}
+                  <ArrowUpRight size={16} aria-hidden />
+                </Link>
+              )}
           </section>
         )}
 
         {incomplete && (
           <section className="pro-setup-card" aria-label="Complete your setup">
             <div>
-              <span className="pro-inline-icon"><UserRoundCheck size={17} aria-hidden /></span>
+              <span className="pro-inline-icon">
+                <UserRoundCheck size={17} aria-hidden />
+              </span>
               <div>
                 <p className="pro-kicker">YOUR BUSINESS SETUP</p>
                 <h2>Make your page ready to book.</h2>
                 <p>
-                  Add the details clients need, set working hours and publish an active service.
+                  Add the details clients need, set working hours and publish an
+                  active service.
                 </p>
               </div>
             </div>
@@ -169,7 +193,11 @@ export function ProfessionalDashboard({
               <h2>Understand how your business is moving.</h2>
             </div>
             <span className="pro-status pro-status-confirmed">
-              {data.plan === "starter" ? "Pro feature" : data.plan === "pro" ? "Pro" : "Premium"}
+              {data.plan === "starter"
+                ? "Pro feature"
+                : data.plan === "pro"
+                  ? "Pro"
+                  : "Premium"}
             </span>
           </div>
 
@@ -177,7 +205,9 @@ export function ProfessionalDashboard({
             <>
               <div className="pro-stat-grid">
                 <article>
-                  <strong>{money(data.insights.completedServiceValuePence)}</strong>
+                  <strong>
+                    {money(data.insights.completedServiceValuePence)}
+                  </strong>
                   <span>Completed service value · 30 days</span>
                 </article>
                 <article>
@@ -189,7 +219,9 @@ export function ProfessionalDashboard({
                   <span>Repeat clients</span>
                 </article>
                 <article>
-                  <strong>{money(data.insights.averageServiceValuePence)}</strong>
+                  <strong>
+                    {money(data.insights.averageServiceValuePence)}
+                  </strong>
                   <span>Average completed service value</span>
                 </article>
                 <article>
@@ -205,7 +237,8 @@ export function ProfessionalDashboard({
                 <div className="pro-finance-notice">
                   <CircleDollarSign size={18} aria-hidden />
                   <span>
-                    Premium insight: {data.insights.quietestWeekday
+                    Premium insight:{" "}
+                    {data.insights.quietestWeekday
                       ? `${data.insights.quietestWeekday} is currently your quietest booking day. Use it for targeted offers, rebooking campaigns or last-minute availability.`
                       : "Complete more bookings to unlock quiet-period recommendations."}
                   </span>
@@ -215,7 +248,9 @@ export function ProfessionalDashboard({
           ) : (
             <div className="pro-empty-state">
               <CircleDollarSign size={29} aria-hidden />
-              <h3>Advanced business insights are available on Pro and Premium.</h3>
+              <h3>
+                Advanced business insights are available on Pro and Premium.
+              </h3>
               <p>
                 Upgrade to see completed service value, repeat-client activity,
                 cancellation rate and booking-pattern insights.
@@ -225,7 +260,10 @@ export function ProfessionalDashboard({
           )}
         </section>
 
-        <section className="pro-live-card" aria-label="GLOHAUS Live eligibility">
+        <section
+          className="pro-live-card"
+          aria-label="GLOHAUS Live eligibility"
+        >
           <div className="pro-panel-title">
             <div>
               <p className="pro-kicker">GLOHAUS LIVE</p>
@@ -233,29 +271,69 @@ export function ProfessionalDashboard({
             </div>
             <Radio size={24} aria-hidden />
           </div>
-          <p>LIVE is earned by established GLOHAUS professionals. Keep bringing genuine clients into your community and completing bookings through GLOHAUS.</p>
+          <p>
+            LIVE is earned by established GLOHAUS professionals. Keep bringing
+            genuine clients into your community and completing bookings through
+            GLOHAUS.
+          </p>
           <div className="pro-live-requirements">
             <div>
-              <span><Users size={17} aria-hidden /> Followers</span>
-              <strong>{data.live?.followers ?? data.stats.followerCount} / {data.live?.followersRequired ?? 500}</strong>
-              <progress max={500} value={Math.min(data.live?.followers ?? data.stats.followerCount, data.live?.followersRequired ?? 500)} />
+              <span>
+                <Users size={17} aria-hidden /> Followers
+              </span>
+              <strong>
+                {data.live?.followers ?? data.stats.followerCount} /{" "}
+                {data.live?.followersRequired ?? 500}
+              </strong>
+              <progress
+                max={500}
+                value={Math.min(
+                  data.live?.followers ?? data.stats.followerCount,
+                  data.live?.followersRequired ?? 500,
+                )}
+              />
             </div>
             <div>
-              <span><CalendarDays size={17} aria-hidden /> Completed bookings</span>
-              <strong>{data.live?.completedBookings ?? data.stats.completedBookings} / {data.live?.completedBookingsRequired ?? 10}</strong>
-              <progress max={10} value={Math.min(data.live?.completedBookings ?? data.stats.completedBookings, data.live?.completedBookingsRequired ?? 10)} />
+              <span>
+                <CalendarDays size={17} aria-hidden /> Completed bookings
+              </span>
+              <strong>
+                {data.live?.completedBookings ?? data.stats.completedBookings} /{" "}
+                {data.live?.completedBookingsRequired ?? 10}
+              </strong>
+              <progress
+                max={10}
+                value={Math.min(
+                  data.live?.completedBookings ?? data.stats.completedBookings,
+                  data.live?.completedBookingsRequired ?? 10,
+                )}
+              />
             </div>
           </div>
           <Link className="pro-dark-button" href="/professional/live">
-            {data.live?.eligible ? <Radio size={16} aria-hidden /> : <LockKeyhole size={16} aria-hidden />} {data.live?.eligible ? "Go LIVE" : "View LIVE requirements"}
+            {data.live?.eligible ? (
+              <Radio size={16} aria-hidden />
+            ) : (
+              <LockKeyhole size={16} aria-hidden />
+            )}{" "}
+            {data.live?.eligible ? "Go LIVE" : "View LIVE requirements"}
           </Link>
           <small>
-            Verification: {data.live?.verified ? "complete" : "required"} · Account standing: {data.live?.goodStanding ? "good" : "restricted"} · Moderation: {data.live?.seriousModerationRestriction ? "restriction active" : "clear"}
+            Verification: {data.live?.verified ? "complete" : "required"} ·
+            Account standing: {data.live?.goodStanding ? "good" : "restricted"}{" "}
+            · Moderation:{" "}
+            {data.live?.seriousModerationRestriction
+              ? "restriction active"
+              : "clear"}
           </small>
         </section>
 
         {data.referral && (
-          <section id="referrals" className="pro-panel" aria-label="Professional referral code">
+          <section
+            id="referrals"
+            className="pro-panel"
+            aria-label="Professional referral code"
+          >
             <div className="pro-panel-title">
               <div>
                 <p className="pro-kicker">GROW GLOHAUS</p>
@@ -264,25 +342,34 @@ export function ProfessionalDashboard({
               <Share2 size={22} aria-hidden />
             </div>
             <p>
-              Share your code when inviting clients or other beauty professionals to GLOHAUS.
+              Share your code when inviting clients or other beauty
+              professionals to GLOHAUS.
             </p>
             <div className="pro-finance-notice">
               <Copy size={18} aria-hidden />
               <strong>{data.referral.code}</strong>
               <span>
-                {data.referral.totalReferrals} referred · {data.referral.qualifiedReferrals} qualified
+                {data.referral.totalReferrals} referred ·{" "}
+                {data.referral.qualifiedReferrals} qualified
               </span>
             </div>
             <p>
-              Referral link: <strong>{`https://www.glohaus.shop/sign-up?ref=${data.referral.code}`}</strong>
+              Referral link:{" "}
+              <strong>{`https://www.glohaus.shop/sign-up?ref=${data.referral.code}`}</strong>
             </p>
           </section>
         )}
 
-        <section className="pro-quick-actions" aria-label="Professional quick actions">
+        <section
+          className="pro-quick-actions"
+          aria-label="Professional quick actions"
+        >
           <Link href="/professional/bookings">
             <CalendarDays size={18} aria-hidden />
-            <span><strong>Bookings</strong><small>See your upcoming week</small></span>
+            <span>
+              <strong>Bookings</strong>
+              <small>See your upcoming week</small>
+            </span>
           </Link>
           <Link href="/messages?view=professional">
             <MessageSquare size={18} aria-hidden />
@@ -297,11 +384,17 @@ export function ProfessionalDashboard({
           </Link>
           <Link href="/professional/services">
             <Plus size={18} aria-hidden />
-            <span><strong>Manage services</strong><small>Update your menu and pricing</small></span>
+            <span>
+              <strong>Manage services</strong>
+              <small>Update your menu and pricing</small>
+            </span>
           </Link>
           <Link href="/professional/availability">
             <Clock3 size={18} aria-hidden />
-            <span><strong>Availability</strong><small>Set hours and time off</small></span>
+            <span>
+              <strong>Availability</strong>
+              <small>Set hours and time off</small>
+            </span>
           </Link>
           <Link href="/professional/products">
             <ShoppingBag size={18} aria-hidden />
@@ -323,7 +416,10 @@ export function ProfessionalDashboard({
           </Link>
           <Link href="/professional/posts">
             <ImagePlus size={18} aria-hidden />
-            <span><strong>Create a post</strong><small>Share a look or tutorial</small></span>
+            <span>
+              <strong>Create a post</strong>
+              <small>Share a look or tutorial</small>
+            </span>
           </Link>
         </section>
 
@@ -334,12 +430,17 @@ export function ProfessionalDashboard({
                 <p className="pro-kicker">YOUR WEEK</p>
                 <h2>Upcoming appointments</h2>
               </div>
-              <Link href="/professional/bookings">View all <ArrowUpRight size={15} aria-hidden /></Link>
+              <Link href="/professional/bookings">
+                View all <ArrowUpRight size={15} aria-hidden />
+              </Link>
             </div>
             {data.upcoming.length ? (
               <div className="pro-appointment-list">
                 {data.upcoming.map((booking) => (
-                  <Link href={`/account/bookings/${booking.id}`} key={booking.id}>
+                  <Link
+                    href={`/account/bookings/${booking.id}`}
+                    key={booking.id}
+                  >
                     <time>{appointmentDate(booking.starts_at)}</time>
                     <div>
                       <strong>{booking.service_name}</strong>
@@ -356,7 +457,9 @@ export function ProfessionalDashboard({
                 <CalendarDays size={29} aria-hidden />
                 <h3>No upcoming appointments</h3>
                 <p>When clients confirm a booking, it will appear here.</p>
-                <Link href="/professional/availability">Review availability</Link>
+                <Link href="/professional/availability">
+                  Review availability
+                </Link>
               </div>
             )}
           </section>
@@ -371,7 +474,9 @@ export function ProfessionalDashboard({
                 <CircleDollarSign size={23} aria-hidden />
               </div>
               <strong className="pro-wallet-total">
-                {data.wallet ? money(data.wallet.availablePence) : "Unavailable"}
+                {data.wallet
+                  ? money(data.wallet.availablePence)
+                  : "Unavailable"}
               </strong>
               <p>
                 {data.wallet
@@ -385,18 +490,24 @@ export function ProfessionalDashboard({
             <section className="pro-panel pro-profile-panel">
               <Eye size={20} aria-hidden />
               <p className="pro-kicker">YOUR STOREFRONT</p>
-              <h2>{data.stats.activeServices} active {data.stats.activeServices === 1 ? "service" : "services"}</h2>
+              <h2>
+                {data.stats.activeServices} active{" "}
+                {data.stats.activeServices === 1 ? "service" : "services"}
+              </h2>
               <p>
                 {data.profile?.publicationStatus === "published"
                   ? "Your public page is live and can receive bookings for your available services."
                   : "Your page is private until you publish the profile and add the booking essentials."}
               </p>
-              <Link href="/professional/profile">Edit your page <ArrowUpRight size={15} aria-hidden /></Link>
+              <Link href="/professional/profile">
+                Edit your page <ArrowUpRight size={15} aria-hidden />
+              </Link>
             </section>
           </aside>
         </section>
         <p className="pro-footnote">
-          <CheckCircle2 size={15} aria-hidden /> Your appointments and financial data are visible only to your authorised business account.
+          <CheckCircle2 size={15} aria-hidden /> Your appointments and financial
+          data are visible only to your authorised business account.
         </p>
       </main>
     </div>

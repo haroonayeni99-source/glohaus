@@ -1,3 +1,4 @@
+import { publicMetadata, publicOrigin, jsonLd } from "@/lib/public-seo";
 import { notFound } from "next/navigation";
 import { PublicHeader } from "@/components/public-header";
 import { ProfessionalProfile } from "@/components/professional-profile";
@@ -14,6 +15,34 @@ import { getIdentity } from "@/lib/identity";
 import { findAccount } from "@/modules/accounts/repository";
 import type { Rule } from "@/modules/availability/domain";
 export const dynamic = "force-dynamic";
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  if (!/^[a-z0-9][a-z0-9-]{2,59}$/.test(slug) || !process.env.DATABASE_URL)
+    return { robots: { index: false, follow: false } };
+  try {
+    const profile = await withIdentity("", (db) => publicProfile(db, slug));
+    if (!profile)
+      return {
+        title: "Professional unavailable",
+        robots: { index: false, follow: false },
+      };
+    return publicMetadata(
+      `/p/${slug}`,
+      `${profile.professional.business_name} · ${profile.professional.city}`,
+      profile.professional.bio.slice(0, 160),
+    );
+  } catch {
+    return {
+      title: "Professional profile",
+      robots: { index: false, follow: false },
+    };
+  }
+}
+
 export default async function Profile({
   params,
   searchParams,
@@ -47,11 +76,12 @@ export default async function Profile({
   const data = await withIdentity(viewerAuthId, async (db) => {
     const profile = await publicProfile(db, slug);
     if (!profile) return null;
-    const bookingFeePence = (
-      await db.query<{ fee: number }>(
-        "SELECT beauty.public_booking_fee_pence() AS fee",
-      )
-    ).rows[0]?.fee ?? 100;
+    const bookingFeePence =
+      (
+        await db.query<{ fee: number }>(
+          "SELECT beauty.public_booking_fee_pence() AS fee",
+        )
+      ).rows[0]?.fee ?? 100;
     const id = profile.professional.id;
     const access = (
       await db.query<{
@@ -65,7 +95,11 @@ export default async function Profile({
       }>("SELECT beauty.professional_access_state($1) AS data", [id])
     ).rows[0].data;
     const assets = (
-      await db.query<{ id: string; alt_text: string; media_type: "image" | "video" }>(
+      await db.query<{
+        id: string;
+        alt_text: string;
+        media_type: "image" | "video";
+      }>(
         "SELECT id,alt_text,media_type FROM beauty.public_media_assets WHERE professional_id=$1 ORDER BY created_at DESC LIMIT 100",
         [id],
       )
@@ -146,6 +180,41 @@ export default async function Profile({
   if (!data) notFound();
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd({
+            "@context": "https://schema.org",
+            "@type": "BeautySalon",
+            name: data.professional.business_name,
+            description: data.professional.bio,
+            url: `${publicOrigin}/p/${slug}`,
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: data.professional.city,
+            },
+            ...(data.stats.count && data.stats.rating
+              ? {
+                  aggregateRating: {
+                    "@type": "AggregateRating",
+                    ratingValue: data.stats.rating,
+                    reviewCount: data.stats.count,
+                  },
+                }
+              : {}),
+            hasOfferCatalog: {
+              "@type": "OfferCatalog",
+              name: "Beauty services",
+              itemListElement: data.services.map((service) => ({
+                "@type": "Offer",
+                price: (service.price_pence / 100).toFixed(2),
+                priceCurrency: "GBP",
+                itemOffered: { "@type": "Service", name: service.name },
+              })),
+            },
+          }),
+        }}
+      />
       <PublicHeader />
       <ProfessionalProfile
         professional={data.professional}
@@ -160,7 +229,12 @@ export default async function Profile({
         messageHref={data.messageHref}
         bookingFeePence={data.bookingFeePence}
         presentation={data.presentation}
-        live={<DiscoveryLiveStrip stories={data.stories} lastMinute={data.lastMinute} />}
+        live={
+          <DiscoveryLiveStrip
+            stories={data.stories}
+            lastMinute={data.lastMinute}
+          />
+        }
         booking={
           <BookingPicker
             services={data.services}

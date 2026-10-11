@@ -1,11 +1,9 @@
+import { publicMetadata, publicPages } from "@/lib/public-seo";
 import { DiscoveryFeed } from "@/components/discovery-feed";
 import { withIdentity } from "@/lib/db";
 import { getIdentity } from "@/lib/identity";
 import { findAccount } from "@/modules/accounts/repository";
-import {
-  followedPostPage,
-  publicPostPage,
-} from "@/modules/posts/repository";
+import { followedPostPage, publicPostPage } from "@/modules/posts/repository";
 import { savedPosts, viewerEngagement } from "@/modules/engagement/repository";
 import {
   followStates,
@@ -135,7 +133,10 @@ export async function FeedPage({
           canFollow: Boolean(customerId),
           hasMore:
             (savedView && rows.length > 40) ||
-            Boolean((followingView || (!savedView && !postId.success)) && pageData?.next),
+            Boolean(
+              (followingView || (!savedView && !postId.success)) &&
+              pageData?.next,
+            ),
           viewer: account?.id || "",
           next: pageData?.next || null,
           stories,
@@ -169,7 +170,6 @@ export async function FeedPage({
   );
 }
 
-
 export default async function DiscoverPage(props: {
   searchParams: Promise<{
     view?: string;
@@ -180,3 +180,8 @@ export default async function DiscoverPage(props: {
 }) {
   return FeedPage({ ...props, mode: "discover" });
 }
+
+export const metadata = publicMetadata(
+  "/discover",
+  ...publicPages["/discover"],
+);

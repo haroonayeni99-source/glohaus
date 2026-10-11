@@ -1,3 +1,4 @@
+import { professionalSetupProgress } from "@/modules/professionals/setup";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
 import { ProfessionalDashboard } from "@/components/professional-dashboard";
@@ -17,5 +18,10 @@ export default async function Page() {
   const data = await withIdentity(result.account.authId, (db) =>
     professionalDashboard(db, result.account.professionalId!),
   );
-  return <ProfessionalDashboard account={result.account} data={data} />;
+  const setup = await withIdentity(result.account.authId, (db) =>
+    professionalSetupProgress(db, result.account!.professionalId!),
+  );
+  return (
+    <ProfessionalDashboard account={result.account} data={data} setup={setup} />
+  );
 }

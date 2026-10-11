@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { upload } from "@vercel/blob/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export type PortfolioAsset = {
@@ -16,6 +16,24 @@ export function PortfolioEditor({ assets }: { assets: PortfolioAsset[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  const [preview, setPreview] = useState<{
+    url: string;
+    type: string;
+    name: string;
+  } | null>(null);
+  const [search, setSearch] = useState("");
+  const [visibility, setVisibility] = useState("all");
+  const visibleAssets = assets.filter(
+    (asset) =>
+      asset.alt_text.toLowerCase().includes(search.trim().toLowerCase()) &&
+      (visibility === "all" || asset.publication_status === visibility),
+  );
+  useEffect(
+    () => () => {
+      if (preview) URL.revokeObjectURL(preview.url);
+    },
+    [preview],
+  );
 
   async function uploadImage(file: File, altText: string) {
     if (file.size > 3 * 1024 * 1024)
@@ -32,7 +50,9 @@ export function PortfolioEditor({ assets }: { assets: PortfolioAsset[] }) {
       body: JSON.stringify({ base64, altText }),
     });
     if (!response.ok)
-      throw new Error("Image upload failed. Check the format and storage connection.");
+      throw new Error(
+        "Image upload failed. Check the format and storage connection.",
+      );
   }
 
   async function uploadVideo(file: File, altText: string) {
@@ -44,17 +64,13 @@ export function PortfolioEditor({ assets }: { assets: PortfolioAsset[] }) {
         : file.type === "video/quicktime"
           ? "mov"
           : "mp4";
-    await upload(
-      `portfolio/video-${crypto.randomUUID()}.${extension}`,
-      file,
-      {
-        access: "private",
-        handleUploadUrl: "/api/v1/professional/media-upload",
-        contentType: file.type,
-        multipart: file.size > 10 * 1024 * 1024,
-        clientPayload: JSON.stringify({ altText }),
-      },
-    );
+    await upload(`portfolio/video-${crypto.randomUUID()}.${extension}`, file, {
+      access: "private",
+      handleUploadUrl: "/api/v1/professional/media-upload",
+      contentType: file.type,
+      multipart: file.size > 10 * 1024 * 1024,
+      clientPayload: JSON.stringify({ altText }),
+    });
   }
 
   return (
@@ -87,16 +103,20 @@ export function PortfolioEditor({ assets }: { assets: PortfolioAsset[] }) {
           setBusy(true);
           setNotice("");
           try {
-            if (imageTypes.includes(file.type)) await uploadImage(file, altText);
+            if (imageTypes.includes(file.type))
+              await uploadImage(file, altText);
             else await uploadVideo(file, altText);
 
             setNotice(
               "Uploaded privately. Publish it when you are ready to show it on GLOHAUS.",
             );
             form.reset();
+            setPreview(null);
             router.refresh();
           } catch (error) {
-            setNotice(error instanceof Error ? error.message : "Upload failed.");
+            setNotice(
+              error instanceof Error ? error.message : "Upload failed.",
+            );
           } finally {
             setBusy(false);
           }
@@ -106,20 +126,50 @@ export function PortfolioEditor({ assets }: { assets: PortfolioAsset[] }) {
         <label>
           Photo or video
           <input
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              setPreview(
+                file
+                  ? {
+                      url: URL.createObjectURL(file),
+                      type: file.type,
+                      name: file.name,
+                    }
+                  : null,
+              );
+            }}
             name="media"
             type="file"
             accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
             required
           />
           <small>
-            Images: JPEG, PNG or WebP up to 3 MB · Videos: MP4, WebM or MOV up to 50 MB
+            Images: JPEG, PNG or WebP up to 3 MB · Videos: MP4, WebM or MOV up
+            to 50 MB
           </small>
         </label>
+        {preview && (
+          <div className="portfolio-upload-preview">
+            {preview.type.startsWith("video/") ? (
+              <video src={preview.url} controls playsInline />
+            ) : (
+              <Image
+                src={preview.url}
+                width={480}
+                height={360}
+                unoptimized
+                alt="Selected upload preview"
+              />
+            )}
+            <small>{preview.name} · preview only, not published</small>
+          </div>
+        )}
         <label>
           Describe your work
           <input name="altText" minLength={3} maxLength={200} required />
           <small>
-            This description is also used for accessibility and when choosing media for a post or Story.
+            This description is also used for accessibility and when choosing
+            media for a post or Story.
           </small>
         </label>
         <label className="policy-check">
@@ -137,8 +187,41 @@ export function PortfolioEditor({ assets }: { assets: PortfolioAsset[] }) {
         </p>
       )}
 
+      <div className="service-editor-tools">
+        <label>
+          Find portfolio media
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search descriptions"
+          />
+        </label>
+        <label>
+          Visibility
+          <select
+            value={visibility}
+            onChange={(event) => setVisibility(event.target.value)}
+          >
+            <option value="all">All media</option>
+            <option value="published">Published</option>
+            <option value="draft">Private drafts</option>
+            <option value="hidden">Hidden</option>
+          </select>
+        </label>
+        <p role="status">
+          {visibleAssets.length} of {assets.length} items shown
+        </p>
+      </div>
+      {!visibleAssets.length && (
+        <p className="lead">
+          {assets.length
+            ? "No media matches. Clear your search or change the visibility filter."
+            : "Your portfolio starts here. Choose a photo, preview it and upload privately before publishing."}
+        </p>
+      )}
       <div className="portfolio-grid">
-        {assets.map((asset) => (
+        {visibleAssets.map((asset) => (
           <article key={asset.id}>
             <div className="portfolio-image">
               {asset.media_type === "video" ? (
@@ -188,7 +271,9 @@ export function PortfolioEditor({ assets }: { assets: PortfolioAsset[] }) {
                     router.refresh();
                   } catch (error) {
                     setNotice(
-                      error instanceof Error ? error.message : "Could not save.",
+                      error instanceof Error
+                        ? error.message
+                        : "Could not save.",
                     );
                   } finally {
                     setBusy(false);

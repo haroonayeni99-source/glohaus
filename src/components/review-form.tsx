@@ -5,6 +5,7 @@ export function ReviewForm({ bookingId }: { bookingId: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  const [published, setPublished] = useState(false);
   return (
     <form
       className="editor-form"
@@ -27,11 +28,16 @@ export function ReviewForm({ bookingId }: { bookingId: string }) {
             throw new Error(
               "Your review could not be saved. Please refresh and try again.",
             );
+          setPublished(true);
+          setNotice(
+            "Your review has been published. Thank you for sharing your experience.",
+          );
           router.refresh();
         } catch (error) {
           setNotice(
             error instanceof Error ? error.message : "Could not save review.",
           );
+        } finally {
           setBusy(false);
         }
       }}
@@ -59,8 +65,12 @@ export function ReviewForm({ bookingId }: { bookingId: string }) {
         Your experience
         <textarea name="body" required minLength={20} maxLength={2000} />
       </label>
-      <button className="button" disabled={busy}>
-        Publish review
+      <button className="button" disabled={busy || published}>
+        {published
+          ? "Review published"
+          : busy
+            ? "Publishing…"
+            : "Publish review"}
       </button>
       {notice && (
         <p role="status" className="form-notice">

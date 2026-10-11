@@ -1,3 +1,7 @@
+import {
+  AdminWorkspaceView,
+  AdminSection,
+} from "@/components/admin-workspace-view";
 import { AdminSectionUnavailable } from "@/components/admin-section-unavailable";
 import { AdminLabelEditor } from "@/components/admin-label-editor";
 import { AdminCategoryManager } from "@/components/admin-category-manager";
@@ -19,7 +23,24 @@ import { WebsiteStatusControl } from "@/components/website-status-control";
 import { HomepageMediaControl } from "@/components/homepage-media-control";
 import { OwnerMarketingPanel } from "@/components/owner-marketing-panel";
 import { OwnerBackendHealthPanel } from "@/components/owner-backend-health-panel";
-import { adminCategories, adminFinanceOverview, adminOverview, emailLaunchReadiness, ownerAuthAccountOverview, ownerBookingFeeRule, ownerControls, ownerEmailDeliveryOverview, ownerProductFeeRule, ownerProfessionalCommissionOverview, ownerProfessionalReferralOverview, ownerPublicSiteStatus, ownerHomepageMedia, ownerMarketingOverview, ownerBackendHealth, paymentLaunchReadiness } from "@/modules/admin/repository";
+import {
+  adminCategories,
+  adminFinanceOverview,
+  adminOverview,
+  emailLaunchReadiness,
+  ownerAuthAccountOverview,
+  ownerBookingFeeRule,
+  ownerControls,
+  ownerEmailDeliveryOverview,
+  ownerProductFeeRule,
+  ownerProfessionalCommissionOverview,
+  ownerProfessionalReferralOverview,
+  ownerPublicSiteStatus,
+  ownerHomepageMedia,
+  ownerMarketingOverview,
+  ownerBackendHealth,
+  paymentLaunchReadiness,
+} from "@/modules/admin/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
@@ -37,16 +58,32 @@ export default async function Page() {
   const labels = await publicLabels();
   const categories = await adminCategories().catch(() => null);
   const owner = isOwner ? await ownerControls().catch(() => null) : null;
-  const productFee = isOwner ? await ownerProductFeeRule().catch(() => undefined) : null;
-  const bookingFee = isOwner ? await ownerBookingFeeRule().catch(() => null) : null;
+  const productFee = isOwner
+    ? await ownerProductFeeRule().catch(() => undefined)
+    : null;
+  const bookingFee = isOwner
+    ? await ownerBookingFeeRule().catch(() => null)
+    : null;
   const finance = await adminFinanceOverview().catch(() => null);
-  const paymentReadiness = isOwner ? await paymentLaunchReadiness().catch(() => null) : null;
-  const emailDelivery = isOwner ? await ownerEmailDeliveryOverview().catch(() => null) : null;
-  const authAccounts = isOwner ? await ownerAuthAccountOverview().catch(() => null) : [];
-  const commissions = isOwner ? await ownerProfessionalCommissionOverview().catch(() => null) : [];
-  const referrals = isOwner ? await ownerProfessionalReferralOverview().catch(() => null) : [];
+  const paymentReadiness = isOwner
+    ? await paymentLaunchReadiness().catch(() => null)
+    : null;
+  const emailDelivery = isOwner
+    ? await ownerEmailDeliveryOverview().catch(() => null)
+    : null;
+  const authAccounts = isOwner
+    ? await ownerAuthAccountOverview().catch(() => null)
+    : [];
+  const commissions = isOwner
+    ? await ownerProfessionalCommissionOverview().catch(() => null)
+    : [];
+  const referrals = isOwner
+    ? await ownerProfessionalReferralOverview().catch(() => null)
+    : [];
   const emailReadiness = isOwner ? emailLaunchReadiness() : null;
-  const publicSiteEnabled = isOwner ? await ownerPublicSiteStatus().catch(() => null) : true;
+  const publicSiteEnabled = isOwner
+    ? await ownerPublicSiteStatus().catch(() => null)
+    : true;
   const homepageMedia = isOwner
     ? await ownerHomepageMedia().catch(() => null)
     : null;
@@ -58,219 +95,355 @@ export default async function Page() {
     : null;
   return (
     <main id="main" className="admin-workspace">
-        <AdminNavigation account={result.account} />
-        <div className="admin-workspace-content">
-          <OwnerDashboardOverview
-            account={result.account}
-            data={data}
-            finance={finance}
-            bookingFee={bookingFee}
-            authAccounts={authAccounts}
-            commissions={commissions}
-            referrals={referrals}
-            owner={owner}
-          />
-          {isOwner && (
-            <section id="website-status" className="admin-workspace-section admin-detail-card owner-website-status-section">
-              {publicSiteEnabled === null ? <AdminSectionUnavailable label="Website status" /> : <WebsiteStatusControl initialEnabled={publicSiteEnabled} />}
-            </section>
-          )}
-          {isOwner && marketing && (
-            <section id="marketing" className="admin-workspace-section admin-detail-card">
-              <p className="eyebrow">MARKETING & FEEDBACK</p>
-              <h2>Preset campaigns and private feature votes</h2>
-              <p className="lead">
-                Launch optional marketing only to users who selected the matching preference. Transactional booking, order and security emails stay separate.
-              </p>
-              <OwnerMarketingPanel initial={marketing} />
-            </section>
-          )}
-          {isOwner && homepageMedia && (
-            <section id="homepage-media" className="admin-workspace-section admin-detail-card">
-              <p className="eyebrow">HOMEPAGE IMAGERY</p>
-              <h2>Homepage models</h2>
-              <p className="lead">
-                Change the main homepage model imagery without changing code. Desktop and mobile can use different images.
-              </p>
-              <HomepageMediaControl initial={homepageMedia} />
-            </section>
-          )}
+      <AdminNavigation account={result.account} />
+      <AdminWorkspaceView>
+        <OwnerDashboardOverview
+          account={result.account}
+          data={data}
+          finance={finance}
+          bookingFee={bookingFee}
+          authAccounts={authAccounts}
+          commissions={commissions}
+          referrals={referrals}
+          owner={owner}
+        />
+        {isOwner && (
+          <section
+            id="website-status"
+            className="admin-workspace-section admin-detail-card owner-website-status-section"
+          >
+            {publicSiteEnabled === null ? (
+              <AdminSectionUnavailable label="Website status" />
+            ) : (
+              <WebsiteStatusControl initialEnabled={publicSiteEnabled} />
+            )}
+          </section>
+        )}
+        {isOwner && marketing && (
+          <section
+            id="marketing"
+            className="admin-workspace-section admin-detail-card"
+          >
+            <p className="eyebrow">MARKETING & FEEDBACK</p>
+            <h2>Preset campaigns and private feature votes</h2>
+            <p className="lead">
+              Launch optional marketing only to users who selected the matching
+              preference. Transactional booking, order and security emails stay
+              separate.
+            </p>
+            <OwnerMarketingPanel initial={marketing} />
+          </section>
+        )}
+        {isOwner && homepageMedia && (
+          <section
+            id="homepage-media"
+            className="admin-workspace-section admin-detail-card"
+          >
+            <p className="eyebrow">HOMEPAGE IMAGERY</p>
+            <h2>Homepage models</h2>
+            <p className="lead">
+              Change the main homepage model imagery without changing code.
+              Desktop and mobile can use different images.
+            </p>
+            <HomepageMediaControl initial={homepageMedia} />
+          </section>
+        )}
 
-          <section id="settings" className="admin-workspace-section admin-detail-card">
-            <p className="eyebrow">PLATFORM LANGUAGE</p>
-            <h2>Platform labels</h2>
-            <p className="lead">Set the professional title and the category language that customers see across GLOHAUS.</p>
-            <AdminLabelEditor initial={labels} />
+        <section
+          id="settings"
+          className="admin-workspace-section admin-detail-card"
+        >
+          <p className="eyebrow">PLATFORM LANGUAGE</p>
+          <h2>Platform labels</h2>
+          <p className="lead">
+            Set the professional title and the category language that customers
+            see across GLOHAUS.
+          </p>
+          <AdminLabelEditor initial={labels} />
+        </section>
+        <section
+          id="categories"
+          className="admin-workspace-section admin-detail-card"
+        >
+          <p className="eyebrow">DISCOVERY & SERVICES</p>
+          <h2>Categories</h2>
+          <p className="lead">
+            Add new beauty categories, rename them, control their order, or hide
+            them without deleting existing data.
+          </p>
+          {categories ? (
+            <AdminCategoryManager initial={categories} />
+          ) : (
+            <AdminSectionUnavailable label="Categories" />
+          )}
+        </section>
+        {isOwner && bookingFee && (
+          <section
+            id="booking-fee"
+            className="admin-workspace-section admin-detail-card"
+          >
+            <p className="eyebrow">CUSTOMER BOOKING FEE</p>
+            <h2>Booking fee control</h2>
+            <p className="admin-action-warning">
+              Financial setting · affects future booking quotes
+            </p>
+            <p className="lead">
+              Change the customer-facing booking fee used by new service
+              bookings. Existing paid bookings keep the fee recorded when they
+              checked out, and every Owner change is added to the financial
+              audit log.
+            </p>
+            <BookingFeeControl initial={bookingFee} />
           </section>
-          <section id="categories" className="admin-workspace-section admin-detail-card">
-            <p className="eyebrow">DISCOVERY & SERVICES</p>
-            <h2>Categories</h2>
-            <p className="lead">Add new beauty categories, rename them, control their order, or hide them without deleting existing data.</p>
-            {categories ? <AdminCategoryManager initial={categories} /> : <AdminSectionUnavailable label="Categories" />}
+        )}
+        {owner && (
+          <section
+            id="shop-fees"
+            className="admin-workspace-section admin-detail-card"
+          >
+            <p className="eyebrow">MARKETPLACE MONEY</p>
+            <h2>Shop commission</h2>
+            <p className="admin-action-warning">
+              Financial setting · affects future Shop checkouts
+            </p>
+            <p className="lead">
+              Set the professional-paid commission used by new Shop checkouts.
+              Each paid order keeps an immutable snapshot of the rule used at
+              purchase.
+            </p>
+            {productFee === undefined ? (
+              <AdminSectionUnavailable label="Shop fees" />
+            ) : (
+              <ShopFeeControl initial={productFee} />
+            )}
           </section>
-          {isOwner && bookingFee && (
-            <section id="booking-fee" className="admin-workspace-section admin-detail-card">
-              <p className="eyebrow">CUSTOMER BOOKING FEE</p>
-              <h2>Booking fee control</h2>
+        )}
+        {isOwner && (
+          <section
+            id="auth-accounts"
+            className="admin-workspace-section admin-detail-card"
+          >
+            <p className="eyebrow">AUTH & ACCOUNT PROVISIONING</p>
+            <h2>All sign-ups and sign-ins</h2>
+            <p className="lead">
+              Supabase Auth users are shown here even if GLOHAUS account
+              provisioning has not completed yet. This lets the Owner see
+              email-confirmation, app-account linkage, roles and last successful
+              sign-in in one place.
+            </p>
+            {authAccounts ? (
+              <OwnerAuthAccounts accounts={authAccounts} />
+            ) : (
+              <AdminSectionUnavailable label="Authentication accounts" />
+            )}
+          </section>
+        )}
+        {isOwner && (
+          <section
+            id="professional-commission"
+            className="admin-workspace-section admin-detail-card"
+          >
+            <p className="eyebrow">PROFESSIONAL COMMISSION</p>
+            <h2>Individual service commission rates</h2>
+            <p className="admin-action-warning">
+              Financial setting · affects future quotes for the selected
+              professional
+            </p>
+            <p className="lead">
+              The normal plan commission remains the default. Use an audited
+              custom rate only when a specific professional needs a commercial
+              rate, such as a high-volume agreement. New booking quotes use the
+              effective rate; existing paid bookings keep their original
+              snapshot.
+            </p>
+            {commissions ? (
+              <ProfessionalCommissionControl professionals={commissions} />
+            ) : (
+              <AdminSectionUnavailable label="Professional commission" />
+            )}
+          </section>
+        )}
+        {isOwner && (
+          <section
+            id="referrals"
+            className="admin-workspace-section admin-detail-card"
+          >
+            <p className="eyebrow">PROFESSIONAL REFERRALS</p>
+            <h2>Referral leaderboard</h2>
+            <p className="lead">
+              View every professional referral code and the completed GLOHAUS
+              accounts attributed to it. Raw link clicks do not count toward
+              these totals.
+            </p>
+            {referrals ? (
+              <OwnerReferralOverview rows={referrals} />
+            ) : (
+              <AdminSectionUnavailable label="Referrals" />
+            )}
+          </section>
+        )}
+        {owner && (
+          <section
+            id="staff"
+            className="admin-workspace-section admin-detail-card"
+          >
+            <h2>Staff & admins</h2>
+            <p className="admin-action-warning">
+              Privileged access · review the user and role before confirming
+            </p>
+            <p className="lead">
+              Only the owner can delegate or remove privileged access. Owner
+              access cannot be granted here.
+            </p>
+            <OwnerControls data={owner} users={data.users} />
+          </section>
+        )}
+        {isOwner && backendHealth && (
+          <section
+            id="backend-health"
+            className="admin-workspace-section admin-detail-card"
+          >
+            <p className="eyebrow">BACKEND HEALTH</p>
+            <h2>Jobs, queues and payment runtime</h2>
+            <p className="lead">
+              Operational health for scheduled maintenance, automated emails and
+              launch-critical payment configuration.
+            </p>
+            <OwnerBackendHealthPanel
+              health={backendHealth}
+              payment={paymentReadiness}
+            />
+          </section>
+        )}
+        {isOwner && paymentReadiness && (
+          <section
+            id="payment-readiness"
+            className="admin-workspace-section admin-detail-card"
+          >
+            <p className="eyebrow">LAUNCH READINESS</p>
+            <h2>Booking → payment → payout</h2>
+            <p className="lead">
+              {paymentReadiness.ready
+                ? "All required server, Stripe and database boundaries for the core booking money flow are present."
+                : "One or more required payment boundaries still need configuration before real customer money should be accepted."}
+            </p>
+            <div className="service-edit-list">
+              {paymentReadiness.checks.map((check) => (
+                <article className="service-edit-row" key={check.key}>
+                  <div>
+                    <h3>{check.label}</h3>
+                    <p>
+                      {check.ready
+                        ? "Ready"
+                        : check.required
+                          ? "Needs setup"
+                          : "Optional / not configured"}
+                    </p>
+                  </div>
+                  <span
+                    className={`admin-status ${check.ready ? "admin-status-active" : "admin-status-suspended"}`}
+                  >
+                    {check.ready
+                      ? "READY"
+                      : check.required
+                        ? "BLOCKED"
+                        : "OPTIONAL"}
+                  </span>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+        {isOwner && emailReadiness && (
+          <section
+            id="email-readiness"
+            className="admin-workspace-section admin-detail-card"
+          >
+            <p className="eyebrow">EMAIL & AUTH READINESS</p>
+            <h2>Transactional email and account security</h2>
+            <div className="admin-readiness-summary">
               <p className="lead">
-                Change the customer-facing booking fee used by new service bookings. Existing paid bookings keep the fee recorded when they checked out, and every Owner change is added to the financial audit log.
+                <strong>Transactional email:</strong>{" "}
+                {emailReadiness.transactionalReady
+                  ? "Ready. Booking emails, reminder jobs and Resend delivery tracking are configured."
+                  : "Needs setup before GLOHAUS should rely on automated booking and reminder emails."}
               </p>
-              <BookingFeeControl initial={bookingFee} />
-            </section>
-          )}
-          {owner && (
-            <section id="shop-fees" className="admin-workspace-section admin-detail-card">
-              <p className="eyebrow">MARKETPLACE MONEY</p>
-              <h2>Shop commission</h2>
               <p className="lead">
-                Set the professional-paid commission used by new Shop checkouts.
-                Each paid order keeps an immutable snapshot of the rule used at purchase.
+                <strong>Auth security:</strong>{" "}
+                {emailReadiness.authSecurityReady
+                  ? "Required Supabase Auth safeguards are confirmed."
+                  : "Still needs hardening. This does not stop GLOHAUS transactional emails from sending."}
               </p>
-              {productFee === undefined ? <AdminSectionUnavailable label="Shop fees" /> : <ShopFeeControl initial={productFee} />}
-            </section>
-          )}
-          {isOwner && (
-            <section id="auth-accounts" className="admin-workspace-section admin-detail-card">
-              <p className="eyebrow">AUTH & ACCOUNT PROVISIONING</p>
-              <h2>All sign-ups and sign-ins</h2>
-              <p className="lead">
-                Supabase Auth users are shown here even if GLOHAUS account provisioning has not completed yet.
-                This lets the Owner see email-confirmation, app-account linkage, roles and last successful sign-in in one place.
-              </p>
-              {authAccounts ? <OwnerAuthAccounts accounts={authAccounts} /> : <AdminSectionUnavailable label="Authentication accounts" />}
-            </section>
-          )}
-          {isOwner && (
-            <section id="professional-commission" className="admin-workspace-section admin-detail-card">
-              <p className="eyebrow">PROFESSIONAL COMMISSION</p>
-              <h2>Individual service commission rates</h2>
-              <p className="lead">
-                The normal plan commission remains the default. Use an audited custom rate only when a specific professional needs a commercial rate, such as a high-volume agreement. New booking quotes use the effective rate; existing paid bookings keep their original snapshot.
-              </p>
-              {commissions ? <ProfessionalCommissionControl professionals={commissions} /> : <AdminSectionUnavailable label="Professional commission" />}
-            </section>
-          )}
-          {isOwner && (
-            <section id="referrals" className="admin-workspace-section admin-detail-card">
-              <p className="eyebrow">PROFESSIONAL REFERRALS</p>
-              <h2>Referral leaderboard</h2>
-              <p className="lead">
-                View every professional referral code and the completed GLOHAUS accounts attributed to it. Raw link clicks do not count toward these totals.
-              </p>
-              {referrals ? <OwnerReferralOverview rows={referrals} /> : <AdminSectionUnavailable label="Referrals" />}
-            </section>
-          )}
-          {owner && (
-            <section id="staff" className="admin-workspace-section admin-detail-card">
-              <h2>Staff & admins</h2>
-              <p className="lead">Only the owner can delegate or remove privileged access. Owner access cannot be granted here.</p>
-              <OwnerControls data={owner} users={data.users} />
-            </section>
-          )}
-          {isOwner && backendHealth && (
-            <section id="backend-health" className="admin-workspace-section admin-detail-card">
-              <p className="eyebrow">BACKEND HEALTH</p>
-              <h2>Jobs, queues and payment runtime</h2>
-              <p className="lead">
-                Operational health for scheduled maintenance, automated emails and launch-critical payment configuration.
-              </p>
-              <OwnerBackendHealthPanel health={backendHealth} payment={paymentReadiness} />
-            </section>
-          )}
-          {isOwner && paymentReadiness && (
-            <section id="payment-readiness" className="admin-workspace-section admin-detail-card">
-              <p className="eyebrow">LAUNCH READINESS</p>
-              <h2>Booking → payment → payout</h2>
-              <p className="lead">
-                {paymentReadiness.ready
-                  ? "All required server, Stripe and database boundaries for the core booking money flow are present."
-                  : "One or more required payment boundaries still need configuration before real customer money should be accepted."}
-              </p>
-              <div className="service-edit-list">
-                {paymentReadiness.checks.map((check) => (
-                  <article className="service-edit-row" key={check.key}>
-                    <div>
-                      <h3>{check.label}</h3>
-                      <p>
-                        {check.ready ? "Ready" : check.required ? "Needs setup" : "Optional / not configured"}
-                      </p>
-                    </div>
-                    <span className={`admin-status ${check.ready ? "admin-status-active" : "admin-status-suspended"}`}>
-                      {check.ready ? "READY" : check.required ? "BLOCKED" : "OPTIONAL"}
-                    </span>
-                  </article>
-                ))}
-              </div>
-            </section>
-          )}
-          {isOwner && emailReadiness && (
-            <section id="email-readiness" className="admin-workspace-section admin-detail-card">
-              <p className="eyebrow">EMAIL & AUTH READINESS</p>
-              <h2>Transactional email and account security</h2>
-              <div className="admin-readiness-summary">
-                <p className="lead">
-                  <strong>Transactional email:</strong>{" "}
-                  {emailReadiness.transactionalReady
-                    ? "Ready. Booking emails, reminder jobs and Resend delivery tracking are configured."
-                    : "Needs setup before GLOHAUS should rely on automated booking and reminder emails."}
-                </p>
-                <p className="lead">
-                  <strong>Auth security:</strong>{" "}
-                  {emailReadiness.authSecurityReady
-                    ? "Required Supabase Auth safeguards are confirmed."
-                    : "Still needs hardening. This does not stop GLOHAUS transactional emails from sending."}
-                </p>
-              </div>
-              <div className="service-edit-list">
-                {emailReadiness.checks.map((check) => (
-                  <article className="service-edit-row" key={check.key}>
-                    <div>
-                      <h3>{check.label}</h3>
-                      <p>
-                        {check.group === "transactional" ? "Transactional email" : "Authentication security"}
-                        {" · "}
-                        {check.ready ? "Ready" : check.required ? "Needs setup" : "Recommended"}
-                      </p>
-                    </div>
-                    <span className={`admin-status ${check.ready ? "admin-status-active" : "admin-status-suspended"}`}>
-                      {check.ready ? "READY" : check.required ? "NEEDS SETUP" : "RECOMMENDED"}
-                    </span>
-                  </article>
-                ))}
-              </div>
-            </section>
-          )}
-          {isOwner && emailDelivery && (
-            <section id="email-delivery-health" className="admin-workspace-section admin-detail-card">
-              <p className="eyebrow">TRANSACTIONAL EMAIL HEALTH</p>
-              <h2>Delivery outcomes</h2>
-              <p className="lead">
-                Provider-confirmed delivery totals only. Recipient addresses and raw webhook payloads are not exposed here.
-              </p>
-              <div className="service-edit-list">
-                {[
-                  ["Queued", emailDelivery.queued],
-                  ["Accepted by provider", emailDelivery.accepted],
-                  ["Delivered", emailDelivery.delivered],
-                  ["Bounced", emailDelivery.bounced],
-                  ["Complained", emailDelivery.complained],
-                  ["Failed", emailDelivery.failed],
-                  ["Suppressed recipients", emailDelivery.suppressed],
-                ].map(([label, value]) => (
-                  <article className="service-edit-row" key={String(label)}>
-                    <div><h3>{label}</h3></div>
-                    <strong>{value}</strong>
-                  </article>
-                ))}
-              </div>
-              <p className="lead">
-                {emailDelivery.lastProviderEventAt
-                  ? `Last provider event: ${new Date(emailDelivery.lastProviderEventAt).toLocaleString("en-GB", { timeZone: "Europe/London" })}`
-                  : "No provider delivery event has been recorded yet."}
-              </p>
-            </section>
-          )}
-          {isOwner && [
+            </div>
+            <div className="service-edit-list">
+              {emailReadiness.checks.map((check) => (
+                <article className="service-edit-row" key={check.key}>
+                  <div>
+                    <h3>{check.label}</h3>
+                    <p>
+                      {check.group === "transactional"
+                        ? "Transactional email"
+                        : "Authentication security"}
+                      {" · "}
+                      {check.ready
+                        ? "Ready"
+                        : check.required
+                          ? "Needs setup"
+                          : "Recommended"}
+                    </p>
+                  </div>
+                  <span
+                    className={`admin-status ${check.ready ? "admin-status-active" : "admin-status-suspended"}`}
+                  >
+                    {check.ready
+                      ? "READY"
+                      : check.required
+                        ? "NEEDS SETUP"
+                        : "RECOMMENDED"}
+                  </span>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+        {isOwner && emailDelivery && (
+          <section
+            id="email-delivery-health"
+            className="admin-workspace-section admin-detail-card"
+          >
+            <p className="eyebrow">TRANSACTIONAL EMAIL HEALTH</p>
+            <h2>Delivery outcomes</h2>
+            <p className="lead">
+              Provider-confirmed delivery totals only. Recipient addresses and
+              raw webhook payloads are not exposed here.
+            </p>
+            <div className="service-edit-list">
+              {[
+                ["Queued", emailDelivery.queued],
+                ["Accepted by provider", emailDelivery.accepted],
+                ["Delivered", emailDelivery.delivered],
+                ["Bounced", emailDelivery.bounced],
+                ["Complained", emailDelivery.complained],
+                ["Failed", emailDelivery.failed],
+                ["Suppressed recipients", emailDelivery.suppressed],
+              ].map(([label, value]) => (
+                <article className="service-edit-row" key={String(label)}>
+                  <div>
+                    <h3>{label}</h3>
+                  </div>
+                  <strong>{value}</strong>
+                </article>
+              ))}
+            </div>
+            <p className="lead">
+              {emailDelivery.lastProviderEventAt
+                ? `Last provider event: ${new Date(emailDelivery.lastProviderEventAt).toLocaleString("en-GB", { timeZone: "Europe/London" })}`
+                : "No provider delivery event has been recorded yet."}
+            </p>
+          </section>
+        )}
+        {isOwner &&
+          [
             ["marketing", "Marketing", marketing],
             ["homepage-media", "Homepage images", homepageMedia],
             ["booking-fee", "Booking fee", bookingFee],
@@ -280,31 +453,50 @@ export default async function Page() {
             ["backend-health", "Backend health", backendHealth],
             ["payment-readiness", "Payment readiness", paymentReadiness],
             ["email-delivery-health", "Email delivery", emailDelivery],
-          ].filter(([, , data]) => !data).map(([id, label]) => (
-            <section key={String(id)} id={String(id)} className="admin-workspace-section admin-detail-card">
-              <AdminSectionUnavailable label={String(label)} />
-            </section>
-          ))}
-          <AdminFinancePanel data={finance} />
-          <AdminManager data={data} owner={isOwner} hardDeleteConfigured={Boolean(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)} />
-          {owner && (
-            <section id="audit" className="admin-workspace-section admin-detail-card">
-              <h2>Owner audit log</h2>
-              <div className="service-edit-list">
-                {owner.audit.map((entry) => (
-                  <article className="service-edit-row" key={entry.id}>
-                    <div>
-                      <h3>{entry.action}</h3>
-                      <p>{entry.actor_role || "operator"} · {new Date(entry.created_at).toLocaleString("en-GB", { timeZone: "Europe/London" })}</p>
-                      <small>{entry.reason}</small>
-                    </div>
-                  </article>
-                ))}
-                {!owner.audit.length && <p className="lead">No owner audit events yet.</p>}
-              </div>
-            </section>
+          ]
+            .filter(([, , data]) => !data)
+            .map(([id, label]) => (
+              <section
+                key={String(id)}
+                id={String(id)}
+                className="admin-workspace-section admin-detail-card"
+              >
+                <AdminSectionUnavailable label={String(label)} />
+              </section>
+            ))}
+        <AdminFinancePanel data={finance} />
+        <AdminManager
+          data={data}
+          owner={isOwner}
+          hardDeleteConfigured={Boolean(
+            process.env.SUPABASE_SECRET_KEY ||
+            process.env.SUPABASE_SERVICE_ROLE_KEY,
           )}
-        </div>
+        />
+        {owner && (
+          <AdminSection id="audit" title="Owner audit log">
+            <div className="service-edit-list">
+              {owner.audit.map((entry) => (
+                <article className="service-edit-row" key={entry.id}>
+                  <div>
+                    <h3>{entry.action}</h3>
+                    <p>
+                      {entry.actor_role || "operator"} ·{" "}
+                      {new Date(entry.created_at).toLocaleString("en-GB", {
+                        timeZone: "Europe/London",
+                      })}
+                    </p>
+                    <small>{entry.reason}</small>
+                  </div>
+                </article>
+              ))}
+              {!owner.audit.length && (
+                <p className="lead">No owner audit events yet.</p>
+              )}
+            </div>
+          </AdminSection>
+        )}
+      </AdminWorkspaceView>
     </main>
   );
 }

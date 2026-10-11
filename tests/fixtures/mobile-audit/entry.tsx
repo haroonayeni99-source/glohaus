@@ -1,3 +1,8 @@
+import { VerificationRequirements } from "@/components/verification-requirements";
+import { BookingPicker } from "@/components/booking-picker";
+import { PortfolioEditor } from "@/components/portfolio-editor";
+import { ReviewForm } from "@/components/review-form";
+import { discoveryOptions } from "@/modules/professionals/discovery";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { PublicHeader } from "@/components/public-header";
@@ -42,9 +47,36 @@ window.fetch = async (url, init) => {
     "mobile-requests",
     JSON.stringify([
       ...JSON.parse(sessionStorage.getItem("mobile-requests") || "[]"),
-      { url: String(url), method: init?.method ?? "GET" },
+      { url: String(url), method: init?.method ?? "GET", body: init?.body },
     ]),
   );
+  if (params.get("journey") === "1") {
+    if (String(url).includes("/availability?")) {
+      const date = new URL(String(url), location.origin).searchParams.get(
+        "date",
+      );
+      return Response.json({
+        slots: [`${date}T12:00:00Z`, `${date}T14:00:00Z`],
+      });
+    }
+    if (String(url) === "/api/v1/professional/connect")
+      return Response.json({
+        started: true,
+        due: ["individual verification document"],
+        overdue: [],
+        pending: [],
+        deadline: null,
+      });
+    if (String(url) === "/api/v1/bookings")
+      return Response.json(
+        {
+          url: `/account/bookings/${booking.id}?journey=1`,
+          bookingId: booking.id,
+        },
+        { status: 201 },
+      );
+    return Response.json({ saved: true, id: professional.id }, { status: 201 });
+  }
   return Response.json({ error: { code: "UNAVAILABLE" } }, { status: 503 });
 };
 async function start() {
@@ -70,7 +102,19 @@ async function start() {
   else if (path === "/account") content = await AccountPage();
   else if (path === "/professional/tools") content = await ToolsPage();
   else if (path === "/professional")
-    content = <ProfessionalDashboard account={account} data={dashboard} />;
+    content = (
+      <ProfessionalDashboard
+        account={account}
+        data={dashboard}
+        setup={{
+          profile: true,
+          services: true,
+          availability: false,
+          portfolio: false,
+          published: true,
+        }}
+      />
+    );
   else if (path === "/cart")
     content = (
       <>
@@ -110,14 +154,14 @@ async function start() {
             service_style: "cards",
           }}
           booking={
-            <section className="booking-widget">
-              <h2>Book an appointment</h2>
-              <label>
-                Date
-                <input type="date" />
-              </label>
-              <button className="button">Check availability</button>
-            </section>
+            <BookingPicker
+              services={services}
+              ready
+              returnPath="/p/fictional-studio"
+              professionalName={professional.business_name}
+              bookingFeePence={100}
+              verificationStatus="verified"
+            />
           }
         />
       </>
@@ -129,21 +173,33 @@ async function start() {
         <main id="main">
           <ExploreMapExperience
             professionals={[professional]}
-            query=""
-            filters={{
-              verified: false,
-              under50: false,
-              topRated: false,
-              travels: false,
-              availableToday: false,
-            }}
+            query={params.get("q") || ""}
+            filters={discoveryOptions(Object.fromEntries(params)).filters}
           />
         </main>
         <BottomNavigation signedIn active="search" />
       </>
     );
+  else if (path === "/customer/review")
+    content = (
+      <main id="main" className="customer-account-page">
+        <ReviewForm bookingId={booking.id} />
+      </main>
+    );
   else {
-    const body = path.endsWith("/availability") ? (
+    const body = path.endsWith("/portfolio") ? (
+      <PortfolioEditor
+        assets={[
+          {
+            id: professional.id,
+            alt_text: "Signature manicure",
+            publication_status: "draft",
+            media_type: "image",
+            mime_type: "image/png",
+          },
+        ]}
+      />
+    ) : path.endsWith("/availability") ? (
       <AvailabilityCalendar
         rules={[{ weekday: 1, startMinute: 540, endMinute: 1020 }]}
         blocks={[]}
@@ -152,9 +208,11 @@ async function start() {
     ) : path.endsWith("/profile") ? (
       <>
         <ProfilePhotoEditor photo={null} published />
+        <VerificationRequirements />
         <ProfessionalEditor
           initial={profile}
           services={services}
+          marketplaceCategories={[{ name: "Nails", slug: "nails" }]}
           section="profile"
         />
       </>
@@ -162,6 +220,7 @@ async function start() {
       <ProfessionalEditor
         initial={profile}
         services={services}
+        marketplaceCategories={[{ name: "Nails", slug: "nails" }]}
         section="services"
         verificationStatus="verified"
       />

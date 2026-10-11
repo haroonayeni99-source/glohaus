@@ -83,3 +83,50 @@ export async function POST(request: Request) {
     return apiError(error);
   }
 }
+
+// Read-only provider requirements, scoped to the authenticated professional.
+// Personal values, bank information and the raw Stripe account never reach the browser.
+export async function GET() {
+  try {
+    const accountId = await withAccount(
+      "professional",
+      async (db, account) =>
+        (
+          await db.query<{ stripe_account_id: string }>(
+            "SELECT stripe_account_id FROM beauty.professional_payment_accounts WHERE professional_id=$1",
+            [account.professionalId],
+          )
+        ).rows[0]?.stripe_account_id,
+    );
+    if (!accountId)
+      return json({
+        started: false,
+        due: [],
+        overdue: [],
+        pending: [],
+        deadline: null,
+      });
+    const account = await stripe().accounts.retrieve(accountId);
+    const labels = (fields?: string[] | null) =>
+      Array.from(
+        new Set(
+          (fields || []).slice(0, 30).map((field) =>
+            field
+              .replace(/person_[^.]+/g, "person")
+              .replace(/[._]/g, " ")
+              .replace(/\s+/g, " ")
+              .slice(0, 120),
+          ),
+        ),
+      );
+    return json({
+      started: true,
+      due: labels(account.requirements?.currently_due),
+      overdue: labels(account.requirements?.past_due),
+      pending: labels(account.requirements?.pending_verification),
+      deadline: account.requirements?.current_deadline ?? null,
+    });
+  } catch (error) {
+    return apiError(error);
+  }
+}

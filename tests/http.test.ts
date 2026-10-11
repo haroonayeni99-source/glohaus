@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assertSameOrigin, smallJson } from "@/lib/http";
+import { apiError, assertSameOrigin, smallJson } from "@/lib/http";
 
 describe("request boundary", () => {
   it("rejects a cross-origin enrollment request", () => {
@@ -82,4 +82,19 @@ describe("request boundary", () => {
         }),
       ),
     ).resolves.toEqual({ role: "customer" }));
+});
+
+describe("Database decision responses", () => {
+  it("returns a recoverable conflict for a disallowed state transition", async () => {
+    const response = apiError({ code: "22023", message: "INVALID_TRANSITION" });
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      error: { code: "INVALID_REQUEST" },
+    });
+  });
+  it("returns forbidden for a known database access denial without leaking details", async () => {
+    const response = apiError({ code: "42501", message: "FORBIDDEN" });
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: { code: "FORBIDDEN" } });
+  });
 });

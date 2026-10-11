@@ -1,6 +1,6 @@
 "use client";
 import { useLabels } from "./platform-labels";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -38,6 +38,30 @@ export function ProfessionalEditor({
   const [busy, setBusy] = useState(false);
   const [filter, setFilter] = useState<"active" | "inactive" | "all">("active");
   const [editing, setEditing] = useState<Service | null>(null);
+  const serviceForm = useRef<HTMLFormElement>(null);
+  const [serviceSearch, setServiceSearch] = useState("");
+  const visibleServices = services.filter(
+    (service) =>
+      `${service.name} ${service.description} ${service.category}`
+        .toLowerCase()
+        .includes(serviceSearch.trim().toLowerCase()) &&
+      (filter === "all" ||
+        (filter === "active"
+          ? service.active !== false
+          : service.active === false)),
+  );
+  useEffect(() => {
+    if (editing) {
+      serviceForm.current?.scrollIntoView({
+        block: "center",
+        behavior: "instant",
+      });
+      serviceForm.current
+        ?.querySelector<HTMLInputElement>('input[name="name"]')
+        ?.focus({ preventScroll: true });
+    }
+  }, [editing]);
+
   const [servicePricePence, setServicePricePence] = useState(0);
   const [depositPence, setDepositPence] = useState(0);
   async function send(url: string, body: unknown, method: string) {
@@ -184,7 +208,8 @@ export function ProfessionalEditor({
                 <select name="category" defaultValue={initial.category}>
                   {marketplaceCategories.map((category) => (
                     <option key={category.slug} value={category.name}>
-                      {labels[category.name as keyof typeof labels] ?? category.name}
+                      {labels[category.name as keyof typeof labels] ??
+                        category.name}
                     </option>
                   ))}
                 </select>
@@ -234,8 +259,8 @@ export function ProfessionalEditor({
               />
               I travel to clients
               <small>
-                This adds a “Travels to you” discovery filter to your public profile.
-                Never publish a client’s private address.
+                This adds a “Travels to you” discovery filter to your public
+                profile. Never publish a client’s private address.
               </small>
             </label>
             <h3>How clients can reach you</h3>
@@ -322,7 +347,9 @@ export function ProfessionalEditor({
               </select>
               {verificationStatus !== "verified" && (
                 <small>
-                  You can publish on Starter access. Unverified profiles are limited to services up to £200, with full payment through GLOHAUS, and five starter bookings.
+                  You can publish on Starter access. Unverified profiles are
+                  limited to services up to £200, with full payment through
+                  GLOHAUS, and five starter bookings.
                 </small>
               )}
             </label>
@@ -368,93 +395,109 @@ export function ProfessionalEditor({
               </button>
             ))}
           </nav>
+          <div className="service-editor-tools">
+            <label>
+              Find a service
+              <input
+                type="search"
+                value={serviceSearch}
+                onChange={(event) => setServiceSearch(event.target.value)}
+                placeholder="Name or category"
+              />
+            </label>
+            <a
+              className="button small"
+              href="#service-editor-form"
+              onClick={() => {
+                setEditing(null);
+                setNotice("Add your service in the form below.");
+              }}
+            >
+              Add a service
+            </a>
+            <p role="status">
+              {visibleServices.length} of {services.length} services shown
+            </p>
+          </div>
           <section className="service-edit-list" aria-label="Your services">
-            {services
-              .filter(
-                (service) =>
-                  filter === "all" ||
-                  (filter === "active"
-                    ? service.active !== false
-                    : service.active === false),
-              )
-              .map((service) => (
-                <article key={service.id} className="service-edit-row">
-                  {service.asset_id && (
-                    <Image
-                      className="service-editor-image"
-                      src={`/api/media/${service.asset_id}`}
-                      alt={service.name}
-                      width={64}
-                      height={64}
-                    />
-                  )}
-                  <div>
-                    <h3>
-                      {service.name}
-                      {service.active === false ? " · Inactive" : ""}
-                    </h3>
-                    <p>
-                      {service.duration_minutes} minutes ·{" "}
-                      {money(service.price_pence)} ·{" "}
-                      {money(service.deposit_pence)} deposit
+            {visibleServices.map((service) => (
+              <article key={service.id} className="service-edit-row">
+                {service.asset_id && (
+                  <Image
+                    className="service-editor-image"
+                    src={`/api/media/${service.asset_id}`}
+                    alt={service.name}
+                    width={64}
+                    height={64}
+                  />
+                )}
+                <div>
+                  <h3>
+                    {service.name}
+                    {service.active === false ? " · Inactive" : ""}
+                  </h3>
+                  <p>
+                    {service.duration_minutes} minutes ·{" "}
+                    {money(service.price_pence)} ·{" "}
+                    {money(service.deposit_pence)} deposit
+                  </p>
+                  {service.deposit_pence >
+                    maximumRequiredDepositPence(service.price_pence) && (
+                    <p className="deposit-limit-error">
+                      This service needs a deposit update before it can be
+                      booked.
                     </p>
-                    {service.deposit_pence >
-                      maximumRequiredDepositPence(service.price_pence) && (
-                      <p className="deposit-limit-error">
-                        This service needs a deposit update before it can be
-                        booked.
-                      </p>
-                    )}
-                  </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => {
+                    setEditing(service);
+                    setServicePricePence(service.price_pence);
+                    setDepositPence(service.deposit_pence);
+                    setNotice("Edit the service using the form below.");
+                  }}
+                >
+                  Edit
+                </button>
+                {service.active !== false && (
                   <button
-                    onClick={() => {
-                      setEditing(service);
-                      setServicePricePence(service.price_pence);
-                      setDepositPence(service.deposit_pence);
-                      setNotice("Edit the service using the form below.");
+                    type="button"
+                    disabled={busy}
+                    onClick={async () => {
+                      setBusy(true);
+                      try {
+                        const response = await fetch(
+                          `/api/v1/professional/services/${service.id}`,
+                          {
+                            method: "DELETE",
+                            headers: { "Content-Type": "application/json" },
+                          },
+                        );
+                        if (!response.ok)
+                          throw new Error("Could not deactivate service.");
+                        if (editing?.id === service.id) {
+                          setEditing(null);
+                          setServicePricePence(0);
+                          setDepositPence(0);
+                        }
+                        setNotice(
+                          "Service deactivated. Existing bookings are preserved.",
+                        );
+                        router.refresh();
+                      } catch {
+                        setNotice(
+                          "Could not deactivate service. Please try again.",
+                        );
+                      } finally {
+                        setBusy(false);
+                      }
                     }}
                   >
-                    Edit
+                    Deactivate
                   </button>
-                  {service.active !== false && (
-                    <button
-                      type="button"
-                      disabled={busy}
-                      onClick={async () => {
-                        setBusy(true);
-                        try {
-                          const response = await fetch(
-                            `/api/v1/professional/services/${service.id}`,
-                            {
-                              method: "DELETE",
-                              headers: { "Content-Type": "application/json" },
-                            },
-                          );
-                          if (!response.ok)
-                            throw new Error("Could not deactivate service.");
-                          if (editing?.id === service.id) {
-                            setEditing(null);
-                            setServicePricePence(0);
-                            setDepositPence(0);
-                          }
-                          setNotice(
-                            "Service deactivated. Existing bookings are preserved.",
-                          );
-                          router.refresh();
-                        } catch {
-                          setNotice(
-                            "Could not deactivate service. Please try again.",
-                          );
-                        } finally {
-                          setBusy(false);
-                        }
-                      }}
-                    >
-                      Deactivate
-                    </button>
-                  )}
-                </article>
-              ))}
+                )}
+              </article>
+            ))}
             {!services.some(
               (service) =>
                 filter === "all" ||
@@ -467,8 +510,16 @@ export function ProfessionalEditor({
                 service below.
               </p>
             )}
+            {!visibleServices.length && services.length > 0 && (
+              <p role="status">
+                No services match. Clear your search or change the status
+                filter.
+              </p>
+            )}
           </section>
           <form
+            id="service-editor-form"
+            ref={serviceForm}
             key={editing?.id || "new"}
             className="editor-form"
             onSubmit={async (event) => {
@@ -524,9 +575,17 @@ export function ProfessionalEditor({
             </p>
             <label>
               Category
-              <select name="category" defaultValue={editing?.category || marketplaceCategories[0]?.name || ""} required>
+              <select
+                name="category"
+                defaultValue={
+                  editing?.category || marketplaceCategories[0]?.name || ""
+                }
+                required
+              >
                 {marketplaceCategories.map((category) => (
-                  <option key={category.slug} value={category.name}>{category.name}</option>
+                  <option key={category.slug} value={category.name}>
+                    {category.name}
+                  </option>
                 ))}
               </select>
             </label>

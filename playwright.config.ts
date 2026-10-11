@@ -4,11 +4,23 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
-  use: { baseURL: "http://127.0.0.1:3000", trace: "retain-on-failure",
-    ...(process.env.GLOHAUS_TEST_BROWSER ? { launchOptions: {
-      executablePath: process.env.GLOHAUS_TEST_BROWSER,
-      args: ["--no-sandbox", "--disable-dev-shm-usage", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
-    } } : {}),
+  use: {
+    baseURL: "http://127.0.0.1:3000",
+    trace: "retain-on-failure",
+    ...(process.env.GLOHAUS_TEST_BROWSER
+      ? {
+          launchOptions: {
+            executablePath: process.env.GLOHAUS_TEST_BROWSER,
+            args: [
+              "--no-sandbox",
+              "--disable-dev-shm-usage",
+              "--use-gl=angle",
+              "--use-angle=swiftshader",
+              "--enable-unsafe-swiftshader",
+            ],
+          },
+        }
+      : {}),
   },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
@@ -18,9 +30,12 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm dev",
+    command:
+      process.env.GLOHAUS_TEST_SERVER_MODE === "production"
+        ? "node node_modules/next/dist/bin/next start --hostname 127.0.0.1"
+        : "pnpm dev",
     url: "http://127.0.0.1:3000",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120000,
     env: {
       NEXT_PUBLIC_APP_URL: "http://127.0.0.1:3000",

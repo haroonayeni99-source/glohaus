@@ -155,7 +155,17 @@ async function start() {
           }}
           booking={
             <BookingPicker
-              services={services}
+              services={
+                params.has("invalidDeposit")
+                  ? services.map((service) => ({
+                      ...service,
+                      deposit_pence:
+                        params.get("invalidDeposit") === "high"
+                          ? service.price_pence
+                          : 0,
+                    }))
+                  : services
+              }
               ready
               returnPath="/p/fictional-studio"
               professionalName={professional.business_name}

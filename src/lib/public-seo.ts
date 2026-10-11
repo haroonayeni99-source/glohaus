@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 
 export const publicOrigin = "https://www.glohaus.shop";
+// This existing published listing explicitly identifies itself as a live QA fixture.
+// Keep it reachable for QA without advertising it in Google.
+export function isIndexablePublicProfile(slug: string) {
+  return slug !== "glohaus-test-studio";
+}
 export const publicPages = {
   "/": [
     "Find beauty professionals near you",
@@ -39,7 +44,8 @@ export function publicMetadata(
 ): Metadata {
   const index =
     process.env.VERCEL_ENV !== "preview" &&
-    process.env.VERCEL_ENV !== "development";
+    process.env.VERCEL_ENV !== "development" &&
+    (!path.startsWith("/p/") || isIndexablePublicProfile(path.slice(3)));
   return {
     title,
     description,

@@ -134,6 +134,28 @@ try {
         .getAttribute("href");
       expect(href).toContain("location=Brixton");
       expect(href).toContain("category=Hair");
+      for (const invalid of ["zero", "high"]) {
+        await go(`/p/fictional-studio?invalidDeposit=${invalid}`);
+        await expect(
+          page.getByText("Service setup needs attention", { exact: true }),
+        ).toBeVisible();
+        await expect(
+          page.getByRole("link", { name: "Find another professional" }),
+        ).toHaveAttribute("href", "/explore");
+        await page.locator(".booking-date-strip button").nth(1).click();
+        await page.locator(".booking-times button").first().click();
+        await expect(
+          page.getByRole("button", { name: "Continue", exact: true }),
+        ).toBeDisabled();
+        expect(
+          await page.evaluate(() =>
+            JSON.parse(sessionStorage.getItem("mobile-requests") || "[]").some(
+              (request) =>
+                request.url === "/api/v1/bookings" && request.method === "POST",
+            ),
+          ),
+        ).toBe(false);
+      }
       await go("/p/fictional-studio");
       await page.locator(".booking-date-strip button").nth(1).click();
       await page.locator(".booking-times button").first().click();
@@ -180,6 +202,7 @@ try {
           "verification",
           "combined discovery",
           "booking",
+          "invalid deposit guidance",
           "review",
         ],
         errors,

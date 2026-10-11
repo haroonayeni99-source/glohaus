@@ -1,5 +1,9 @@
 import type { MetadataRoute } from "next";
-import { publicOrigin, publicPages } from "@/lib/public-seo";
+import {
+  publicOrigin,
+  publicPages,
+  isIndexablePublicProfile,
+} from "@/lib/public-seo";
 import { withIdentity } from "@/lib/db";
 export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -21,7 +25,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       );
       pages.push(
         ...profiles
-          .filter((p) => /^[a-z0-9][a-z0-9-]{2,59}$/.test(p.slug))
+          .filter(
+            (p) =>
+              /^[a-z0-9][a-z0-9-]{2,59}$/.test(p.slug) &&
+              isIndexablePublicProfile(p.slug),
+          )
           .map((p) => ({
             url: `${publicOrigin}/p/${p.slug}`,
             changeFrequency: "weekly" as const,

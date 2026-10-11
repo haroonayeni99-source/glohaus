@@ -2,10 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowLeft, CalendarDays, CircleHelp, LockKeyhole } from "lucide-react";
 import { money, type Service } from "@/modules/professionals/domain";
 import { AuthGate } from "./auth-gate";
 import { PaymentSummary } from "./payment-summary";
+import {
+  isRequiredDepositWithinLimit,
+  depositLimitMessage,
+} from "@/modules/bookings/deposit-policy";
 
 function londonDateString(value = new Date()) {
   const parts = new Intl.DateTimeFormat("en-GB", {
@@ -85,6 +90,10 @@ export function BookingPicker({
 
   const service = services.find((item) => item.id === serviceId);
   const starterFullPrepayment = verificationStatus !== "verified";
+  const invalidVerifiedDeposit =
+    !!service &&
+    !starterFullPrepayment &&
+    !isRequiredDepositWithinLimit(service.price_pence, service.deposit_pence);
   const amountDueNowPence = service
     ? starterFullPrepayment
       ? service.price_pence + bookingFeePence
@@ -237,7 +246,8 @@ export function BookingPicker({
             >
               {services.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.name} · {money(item.price_pence + bookingFeePence)} total
+                  {item.name} · {money(item.price_pence + bookingFeePence)}{" "}
+                  total
                 </option>
               ))}
             </select>
@@ -259,7 +269,8 @@ export function BookingPicker({
               <strong>{service.name}</strong>
               <small>{professionalName}</small>
               <small>
-                {money(service.price_pence + bookingFeePence)} total · {service.duration_minutes} min
+                {money(service.price_pence + bookingFeePence)} total ·{" "}
+                {service.duration_minutes} min
               </small>
             </div>
           </div>
@@ -328,7 +339,9 @@ export function BookingPicker({
                 ))}
               </div>
             ) : !date ? (
-              <p className="booking-help">Choose a date to see available times.</p>
+              <p className="booking-help">
+                Choose a date to see available times.
+              </p>
             ) : null}
           </fieldset>
 
@@ -336,29 +349,44 @@ export function BookingPicker({
             <CircleHelp size={18} aria-hidden />
             <div>
               <strong>
-                {starterFullPrepayment
-                  ? "Starter booking · full payment online"
-                  : "Deposit required · " + money(service.deposit_pence)}
+                {invalidVerifiedDeposit
+                  ? "Service setup needs attention"
+                  : starterFullPrepayment
+                    ? "Starter booking · full payment online"
+                    : "Deposit required · " + money(service.deposit_pence)}
               </strong>
               <span>
-                {starterFullPrepayment
-                  ? "The full service price is paid securely through GLOHAUS at booking, plus the booking fee. This keeps the booking and GLOHAUS commission protected while the professional is unverified or pending verification."
-                  : "This secures the appointment. The remaining " +
-                    money(service.price_pence - service.deposit_pence) +
-                    " is due for the service."}
+                {invalidVerifiedDeposit
+                  ? "The professional needs to correct this service’s deposit before it can be booked online."
+                  : starterFullPrepayment
+                    ? "The full service price is paid securely through GLOHAUS at booking, plus the booking fee. This keeps the booking and GLOHAUS commission protected while the professional is unverified or pending verification."
+                    : "This secures the appointment. The remaining " +
+                      money(service.price_pence - service.deposit_pence) +
+                      " is due for the service."}
               </span>
               <small>
-                {starterFullPrepayment
-                  ? "Starter professionals cannot switch this booking to a zero-payment or cash-only booking."
-                  : "Verified professional deposits must be between 15% and 40% of the service price."}
+                {invalidVerifiedDeposit
+                  ? depositLimitMessage(service.price_pence)
+                  : starterFullPrepayment
+                    ? "Starter professionals cannot switch this booking to a zero-payment or cash-only booking."
+                    : "Verified professional deposits must be between 15% and 40% of the service price."}
               </small>
+              {invalidVerifiedDeposit && (
+                <Link href="/explore">Find another professional →</Link>
+              )}
             </div>
           </div>
 
           <button
             type="button"
             className="button full-width booking-continue"
-            disabled={!selected || loadingSlots || verificationStatus === "restricted" || starterBookingsRemaining === 0}
+            disabled={
+              !selected ||
+              loadingSlots ||
+              invalidVerifiedDeposit ||
+              verificationStatus === "restricted" ||
+              starterBookingsRemaining === 0
+            }
             onClick={() => {
               setAccepted(false);
               setNotice("");
@@ -423,8 +451,8 @@ export function BookingPicker({
               Cancel at least 24 hours before your appointment for a full
               deposit refund. Within 24 hours, reasonable circumstances are
               reviewed individually by the professional. Professional
-              cancellations receive a full deposit refund. Your statutory
-              rights still apply.
+              cancellations receive a full deposit refund. Your statutory rights
+              still apply.
             </p>
           </details>
 
@@ -443,11 +471,7 @@ export function BookingPicker({
           <button
             className="button full-width booking-pay-button"
             type="button"
-            disabled={
-              !ready ||
-              !accepted ||
-              submitting
-            }
+            disabled={!ready || !accepted || submitting}
             onClick={() => void submitBooking()}
           >
             {submitting
@@ -462,8 +486,8 @@ export function BookingPicker({
 
           {!ready && (
             <p className="form-notice">
-              Secure online payment is not connected yet, so this booking
-              cannot be paid through GLOHAUS right now.
+              Secure online payment is not connected yet, so this booking cannot
+              be paid through GLOHAUS right now.
             </p>
           )}
 

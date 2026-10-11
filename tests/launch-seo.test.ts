@@ -19,6 +19,12 @@ describe("Launch indexing boundary", () => {
     }
     expect(Object.keys(publicPages)).not.toContain("/professional-preview");
     expect(Object.keys(publicPages)).not.toContain("/admin");
+    expect(
+      publicMetadata("/p/glohaus-test-studio", "QA", "Test listing").robots,
+    ).toEqual({ index: false, follow: true });
+    expect(
+      publicMetadata("/p/real-studio", "Studio", "Public studio").robots,
+    ).toEqual({ index: true, follow: true });
     expect(robots().sitemap).toBe("https://www.glohaus.shop/sitemap.xml");
   });
   it("keeps preview deployments out of Google", () => {

@@ -13128,3 +13128,30 @@ select {
     width: max-content;
   }
 }
+
+/* Scoped customer identity and professional client controls. */
+.customer-profile-editor { margin-top:24px; max-width:640px; }
+.customer-profile-editor form { display:grid; gap:16px; }
+.customer-profile-editor form + form { border-top:1px solid var(--line); padding-top:24px; margin-top:24px; }
+.customer-profile-portrait { border-radius:50%; object-fit:cover; }
+.client-search { margin-top:24px; display:grid; grid-template-columns:minmax(0,1fr) minmax(140px,200px) auto; align-items:end; gap:16px; }
+.pro-client-avatar { overflow:hidden; }
+.pro-client-avatar img { width:100%; height:100%; object-fit:cover; }
+.client-block-control { grid-column:2 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:12px; min-width:0; }
+.client-block-control p { overflow-wrap:anywhere; }
+.client-block-confirmation { width:100%; display:grid; gap:12px; }
+.client-block-control .status-pill { font-size:.7rem; }
+@media(max-width:600px) { .client-search { grid-template-columns:minmax(0,1fr); } .client-search .button { width:100%; } }
+
+.customer-avatar { overflow:hidden; }
+.customer-avatar .customer-profile-portrait { width:100%; height:100%; object-fit:cover; }
+.pro-client-list h2 { overflow-wrap:anywhere; }
+
+.customer-profile-editor button.text-link,
+.client-block-control button.text-link { border:0; background:none; padding:8px 0; font:inherit; color:var(--ink); cursor:pointer; }
+.customer-profile-editor button.text-link:disabled,
+.client-block-control button.text-link:disabled { opacity:.6; cursor:wait; }
+.pro-clients-page .pro-client-list p,
+.pro-clients-page .pro-client-next { color:var(--muted); }
+.pro-clients-page .client-block-confirmation p { color:var(--ink); font-size:.85rem; line-height:1.55; }
+.customer-profile-editor h2 { font-family:inherit; }

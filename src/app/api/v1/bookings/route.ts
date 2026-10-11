@@ -208,6 +208,8 @@ export async function POST(request: Request) {
       "message" in error &&
       typeof error.message === "string"
     ) {
+      if (error.message === "CLIENT_BLOCKED")
+        return json({ error: { code: "CLIENT_BLOCKED" } }, 403);
       if (error.message.includes("PROFESSIONAL_RESTRICTED"))
         return json({ error: { code: "PROFESSIONAL_RESTRICTED" } }, 403);
       if (error.message.includes("TOO_MANY_ATTEMPTS"))

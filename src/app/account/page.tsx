@@ -1,5 +1,9 @@
+import Image from "next/image";
+import { withIdentity } from "@/lib/db";
+import { customerProfile } from "@/modules/accounts/customer-profile";
 import Link from "next/link";
 import {
+  UserRound,
   Bell,
   Bookmark,
   CalendarDays,
@@ -23,6 +27,7 @@ import { AccountControls } from "@/components/account-controls";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your account" };
 const links = [
+  ["Your profile", "Your name and photo", "/account/profile", UserRound],
   [
     "Upcoming bookings",
     "Your next moment of self-care",
@@ -84,18 +89,20 @@ export default async function Page() {
       </AuthFrame>
     );
   const account = result.account;
+  const profile = await withIdentity(account.authId, db => customerProfile(db, account.id));
   return (
     <>
       <PublicHeader signedIn />
       <main id="main" className="customer-account-page">
         <section className="customer-identity">
           <span className="customer-avatar" aria-hidden>
-            {account.displayName.slice(0, 1).toUpperCase()}
+            {profile?.has_photo ? <Image src={`/api/v1/customer-photos/${account.id}`} width={80} height={80} alt="" unoptimized className="customer-profile-portrait"/> : account.displayName.slice(0, 1).toUpperCase()}
           </span>
           <p className="eyebrow">YOUR GLOHAUS</p>
           <h1>{account.displayName}</h1>
           <p>Discover. Book. Get inspired.</p>
         </section>
+        {!profile?.first_name && <p className="form-notice"><Link href="/account/profile">Add your name and an optional photo</Link> so your professional can recognise you.</p>}
         <nav className="account-menu" aria-label="Your account">
           {links.map(([label, description, href, Icon]) => (
             <Link href={href} key={href}>

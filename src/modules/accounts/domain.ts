@@ -18,6 +18,7 @@ export type Identity = {
   email: string;
   displayName: string;
   secondFactorAge: number | null;
+  customerName?: { firstName: string; lastName: string };
 };
 export class AccessError extends Error {
   constructor(

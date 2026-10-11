@@ -1,3 +1,4 @@
+import { customerNameFromMetadata } from "@/modules/accounts/customer-profile-domain";
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { EmailOtpType } from "@supabase/supabase-js";
@@ -113,6 +114,7 @@ export async function GET(request: NextRequest) {
   }
 
   const identity: Identity = {
+    customerName: customerNameFromMetadata(user.user_metadata),
     authId: user.id,
     email: user.email,
     displayName: user.email.split("@")[0]?.slice(0, 120) || "Your account",

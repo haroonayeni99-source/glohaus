@@ -25,6 +25,8 @@ await build({
   alias: {
     "@/modules/admin/repository": resolve("tests/fixtures/ui-audit/data.ts"),
     "@/modules/platform/repository": resolve("tests/fixtures/ui-audit/data.ts"),
+    "@/lib/db": resolve("tests/fixtures/customer-profile-data.ts"),
+    "@/modules/accounts/customer-profile": resolve("tests/fixtures/customer-profile-data.ts"),
     "@/lib/page-access": resolve("tests/fixtures/ui-audit/data.ts"),
     "@/lib/supabase/client": resolve("tests/fixtures/ui-audit/data.ts"),
     "next/navigation": resolve("tests/fixtures/next-navigation.ts"),

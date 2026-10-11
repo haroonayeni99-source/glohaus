@@ -257,6 +257,8 @@ export async function professionalDashboard(
 export type ProfessionalClient = {
   customer_id: string;
   customer_name: string;
+  blocked: boolean;
+  has_photo: boolean;
   appointment_count: number;
   last_appointment_at: Date;
   next_appointment_at: Date | null;
@@ -266,19 +268,26 @@ export type ProfessionalClient = {
 export async function professionalClients(
   db: SqlClient,
   professionalId: string,
+  options: {q?:string;view?:string} = {},
 ): Promise<ProfessionalClient[]> {
   return (
     await db.query<ProfessionalClient>(
-      `SELECT b.customer_id,b.customer_name,count(*)::integer AS appointment_count,
-          max(b.starts_at) AS last_appointment_at,
-          min(b.starts_at) FILTER (WHERE b.starts_at >= now() AND b.status='confirmed') AS next_appointment_at
+      `SELECT b.customer_id,
+        coalesce(nullif(trim(concat(cp.first_name,' ',cp.last_name)),''),(array_agg(b.customer_name ORDER BY b.created_at DESC,b.id))[1]) AS customer_name,
+        coalesce(cb.blocked,false) AS blocked,(cp.photo IS NOT NULL) AS has_photo,
+        count(*) FILTER(WHERE b.status IN ('confirmed','completed','no_show','cancelled'))::integer AS appointment_count,
+        max(b.starts_at) AS last_appointment_at,
+        min(b.starts_at) FILTER(WHERE b.starts_at>=now() AND b.status='confirmed') AS next_appointment_at
         FROM beauty.bookings b
-        WHERE b.professional_id=$1
-          AND b.status IN ('confirmed','completed','no_show','cancelled')
-        GROUP BY b.customer_id,b.customer_name
-        ORDER BY max(b.starts_at) DESC,b.customer_name ASC
+        LEFT JOIN beauty.customer_profiles cp ON cp.user_id=b.customer_id
+        LEFT JOIN beauty.professional_client_blocks cb ON cb.professional_id=b.professional_id AND cb.customer_id=b.customer_id
+        WHERE b.professional_id=$1 AND (b.status IN ('confirmed','completed','no_show','cancelled') OR cb.customer_id IS NOT NULL)
+        AND ($3=false OR cb.blocked=true)
+        GROUP BY b.customer_id,cp.first_name,cp.last_name,cp.photo IS NOT NULL,cb.blocked
+        HAVING ($2='' OR strpos(lower(coalesce(nullif(trim(concat(cp.first_name,' ',cp.last_name)),''),(array_agg(b.customer_name ORDER BY b.created_at DESC,b.id))[1])),lower($2))>0)
+        ORDER BY max(b.starts_at) DESC,b.customer_id
         LIMIT 100`,
-      [professionalId],
+      [professionalId,(options.q??"").trim().slice(0,120),options.view==="blocked"],
     )
   ).rows;
 }

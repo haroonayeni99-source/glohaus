@@ -1,6 +1,10 @@
 import { z } from "zod";
 
 export type DiscoveryFilters = {
+  location?: string;
+  category?: string;
+  maxPricePence?: number;
+  minRating?: number;
   verified: boolean;
   under50: boolean;
   topRated: boolean;
@@ -18,6 +22,10 @@ export const defaultDiscoveryFilters: DiscoveryFilters = {
 
 const filtersSchema = z
   .object({
+    location: z.string().max(100).optional(),
+    category: z.string().max(60).optional(),
+    maxPricePence: z.number().int().min(100).max(1000000).optional(),
+    minRating: z.number().min(0).max(5).optional(),
     verified: z.boolean(),
     under50: z.boolean(),
     topRated: z.boolean(),
@@ -38,6 +46,10 @@ const cursorSchema = z
 export type DiscoveryCursor = z.infer<typeof cursorSchema>;
 
 export function discoveryOptions(params: {
+  location?: string | string[];
+  category?: string | string[];
+  price?: string | string[];
+  rating?: string | string[];
   q?: string | string[];
   after?: string | string[];
   verified?: string | string[];
@@ -57,6 +69,19 @@ export function discoveryOptions(params: {
     availableToday: params.today === "1",
   };
 
+  if (typeof params.location === "string" && params.location.trim())
+    filters.location = params.location.trim().slice(0, 100);
+  if (typeof params.category === "string" && params.category.trim())
+    filters.category = params.category.trim().slice(0, 60);
+  if (
+    typeof params.price === "string" &&
+    /^\d{1,5}$/.test(params.price) &&
+    Number(params.price) >= 1 &&
+    Number(params.price) <= 10000
+  )
+    filters.maxPricePence = Number(params.price) * 100;
+  if (params.rating === "4" || params.rating === "4.5")
+    filters.minRating = Number(params.rating);
   let after: DiscoveryCursor | undefined;
   if (typeof params.after === "string" && params.after.length <= 1800) {
     try {
@@ -66,7 +91,8 @@ export function discoveryOptions(params: {
       if (
         parsed.success &&
         parsed.data.query === query &&
-        JSON.stringify(parsed.data.filters) === JSON.stringify(filters)
+        JSON.stringify(filtersSchema.parse(parsed.data.filters)) ===
+          JSON.stringify(filtersSchema.parse(filters))
       )
         after = parsed.data;
     } catch {}
@@ -83,4 +109,28 @@ export function discoveryCursor(
   return Buffer.from(
     JSON.stringify({ id: row.id, name: row.business_name, query, filters }),
   ).toString("base64url");
+}
+
+export function discoveryHref(
+  query: string,
+  filters: DiscoveryFilters,
+  after?: string | null,
+) {
+  const params = new URLSearchParams();
+  if (query) params.set("q", query);
+  if (filters.location) params.set("location", filters.location);
+  if (filters.category) params.set("category", filters.category);
+  if (filters.maxPricePence)
+    params.set("price", String(filters.maxPricePence / 100));
+  if (filters.minRating) params.set("rating", String(filters.minRating));
+  for (const [key, value] of [
+    ["verified", filters.verified],
+    ["under50", filters.under50],
+    ["topRated", filters.topRated],
+    ["travels", filters.travels],
+    ["today", filters.availableToday],
+  ])
+    if (value) params.set(String(key), "1");
+  if (after) params.set("after", after);
+  return params.size ? `/explore?${params}` : "/explore";
 }

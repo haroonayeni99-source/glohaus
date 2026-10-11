@@ -1,3 +1,4 @@
+import { HomeMarketplaceGuide } from "./home-marketplace-guide";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -217,9 +218,9 @@ export function DesktopCustomerHome({
           <div className="desktop-hero-copy">
             <p className="eyebrow">DISCOVER. BOOK. GET INSPIRED.</p>
             <h1>
-              Beauty that
+              Find beauty professionals
               <br />
-              feels like you.
+              near you.
             </h1>
             <p>
               Find and book beauty professionals near you.
@@ -234,6 +235,17 @@ export function DesktopCustomerHome({
               />
               <button>Search</button>
             </form>
+            <div className="home-conversion-actions">
+              <Link className="button" href="/explore">
+                Find a professional
+              </Link>
+              <Link
+                className="button secondary"
+                href="/sign-up?intent=professional"
+              >
+                Join as a professional
+              </Link>
+            </div>
             <p className="home-browse-note">
               Explore freely. Create an account when you’re ready to book.
             </p>
@@ -267,6 +279,7 @@ export function DesktopCustomerHome({
             <strong>View all</strong>
           </Link>
         </nav>
+        {!signedIn && <HomeMarketplaceGuide />}
 
         {cards.length > 0 && (
           <section className="desktop-section">

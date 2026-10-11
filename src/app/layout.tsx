@@ -1,3 +1,4 @@
+import { jsonLd, publicOrigin } from "@/lib/public-seo";
 import { PlatformLabelsProvider } from "@/components/platform-labels";
 import { publicLabels } from "@/modules/platform/repository";
 import type { Metadata } from "next";
@@ -8,6 +9,7 @@ import "./ui-upgrades.css";
 import "./theme-compat.css";
 import "./customer-polish.css";
 import "./site-improvements.css";
+import "./design-system.css";
 
 const themeBootstrap = `(() => {
   try {
@@ -24,6 +26,7 @@ const themeBootstrap = `(() => {
 })();`;
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.glohaus.shop"),
   title: {
     default: "GLOHAUS — Beauty, community and bookings",
     template: "%s · GLOHAUS",
@@ -57,6 +60,19 @@ export default async function RootLayout({
         />
       </head>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLd({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "GLOHAUS",
+              url: publicOrigin,
+              description:
+                "Find and book independent beauty professionals near you.",
+            }),
+          }}
+        />
         {content}
         <SiteFooter />
         <ThemeToggle />

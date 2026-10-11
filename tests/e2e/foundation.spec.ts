@@ -1,9 +1,13 @@
 import { expect, test } from "@playwright/test";
 
-test("professional referral campaign link reaches the existing protected dashboard section", async ({ page }) => {
+test("professional referral campaign link reaches the existing protected dashboard section", async ({
+  page,
+}) => {
   await page.goto("/professional/referrals");
   await expect(page).toHaveURL(/\/professional#referrals$/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("We couldn’t load your account right now.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "We couldn’t load your account right now.",
+  );
 });
 
 test("public entry works on mobile and desktop", async ({ page }, testInfo) => {
@@ -12,19 +16,36 @@ test("public entry works on mobile and desktop", async ({ page }, testInfo) => {
   await page.goto("/");
 
   if (testInfo.project.name === "desktop") {
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Beauty that\s*feels like you\./);
-    await expect(page.getByRole("navigation", { name: "Customer navigation" }).getByRole("link", { name: "Explore", exact: true })).toHaveAttribute("href", "/explore");
-    await expect(page.locator(".customer-desktop-topbar").getByRole("link", { name: "Sign in", exact: true })).toHaveAttribute("href", "/sign-in");
-    await expect(page.locator(".customer-desktop-topbar").getByRole("link", { name: "Join GLOHAUS", exact: true })).toHaveAttribute("href", "/sign-up");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      /Find beauty professionals\s*near you\./,
+    );
+    await expect(
+      page
+        .getByRole("navigation", { name: "Customer navigation" })
+        .getByRole("link", { name: "Explore", exact: true }),
+    ).toHaveAttribute("href", "/explore");
+    await expect(
+      page
+        .locator(".customer-desktop-topbar")
+        .getByRole("link", { name: "Sign in", exact: true }),
+    ).toHaveAttribute("href", "/sign-in");
+    await expect(
+      page
+        .locator(".customer-desktop-topbar")
+        .getByRole("link", { name: "Join GLOHAUS", exact: true }),
+    ).toHaveAttribute("href", "/sign-up");
   } else {
     await expect(
-      page.getByRole("heading", { name: /Discover\.\s*Book\.\s*Get inspired\./ }),
+      page.getByRole("heading", {
+        name: /Find beauty professionals\s*near you\./,
+      }),
     ).toBeVisible();
-    await expect(page.getByRole("link", { name: "Find Your Glow" })).toHaveAttribute(
-      "href",
-      "/discover",
-    );
-    await expect(page.getByRole("navigation", { name: "Beauty categories" })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Find a professional", exact: true }),
+    ).toHaveAttribute("href", "/explore");
+    await expect(
+      page.getByRole("navigation", { name: "Beauty categories" }),
+    ).toBeVisible();
   }
 
   expect(
@@ -41,7 +62,9 @@ test("public entry works on mobile and desktop", async ({ page }, testInfo) => {
   expect(errors).toEqual([]);
 });
 
-test("sign-up asks whether the account is customer or professional", async ({ page }) => {
+test("sign-up asks whether the account is customer or professional", async ({
+  page,
+}) => {
   await page.goto("/sign-up");
 
   await expect(
@@ -57,46 +80,71 @@ test("sign-up asks whether the account is customer or professional", async ({ pa
   ).toHaveAttribute("href", "/sign-up?intent=professional");
 });
 
-test("signed-out desktop navigation exposes public destinations and account entry points", async ({ page }) => {
+test("signed-out desktop navigation exposes public destinations and account entry points", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
-  const navigation = page.getByRole("navigation", { name: "Customer navigation" });
-  for (const [name, href] of [["Home", "/"], ["Explore", "/explore"], ["Get inspired", "/discover"], ["Shop", "/shop"], ["How it works", "/how-it-works"], ["For professionals", "/sign-up?intent=professional"]]) {
-    await expect(navigation.getByRole("link", { name, exact: true })).toHaveAttribute("href", href);
+  const navigation = page.getByRole("navigation", {
+    name: "Customer navigation",
+  });
+  for (const [name, href] of [
+    ["Home", "/"],
+    ["Explore", "/explore"],
+    ["Get inspired", "/discover"],
+    ["Shop", "/shop"],
+    ["How it works", "/how-it-works"],
+    ["For professionals", "/sign-up?intent=professional"],
+  ]) {
+    await expect(
+      navigation.getByRole("link", { name, exact: true }),
+    ).toHaveAttribute("href", href);
   }
-  await expect(navigation.getByRole("link", { name: /Bookings|Messages|Wallet|Profile/ })).toHaveCount(0);
-  await expect(page.locator(".customer-desktop-topbar").getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
+  await expect(
+    navigation.getByRole("link", { name: /Bookings|Messages|Wallet|Profile/ }),
+  ).toHaveCount(0);
+  await expect(
+    page
+      .locator(".customer-desktop-topbar")
+      .getByRole("link", { name: "Sign in", exact: true }),
+  ).toBeVisible();
 });
 
-test("signed-out mobile navigation preserves private return routes", async ({ page }) => {
+test("signed-out mobile navigation preserves private return routes", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
 
   for (const route of ["/", "/discover", "/explore", "/shop"]) {
     await page.goto(route);
-    const navigation = page.getByRole("navigation", { name: "Mobile navigation" });
-    await expect(navigation.getByRole("link", { name: "Bookings" })).toHaveAttribute(
-      "href",
-      "/sign-in?returnTo=%2Faccount%2Fbookings",
-    );
-    await expect(navigation.getByRole("link", { name: "Messages" })).toHaveAttribute(
-      "href",
-      "/sign-in?returnTo=%2Fmessages",
-    );
-    await expect(navigation.getByRole("link", { name: "Profile" })).toHaveAttribute(
-      "href",
-      "/sign-in?returnTo=%2Fworkspace",
-    );
+    const navigation = page.getByRole("navigation", {
+      name: "Mobile navigation",
+    });
+    await expect(
+      navigation.getByRole("link", { name: "Bookings" }),
+    ).toHaveAttribute("href", "/sign-in?returnTo=%2Faccount%2Fbookings");
+    await expect(
+      navigation.getByRole("link", { name: "Messages" }),
+    ).toHaveAttribute("href", "/sign-in?returnTo=%2Fmessages");
+    await expect(
+      navigation.getByRole("link", { name: "Profile" }),
+    ).toHaveAttribute("href", "/sign-in?returnTo=%2Fworkspace");
   }
 
   await page.goto("/");
-  await expect(page.locator(".mobile-customer-home").getByRole("link", { name: "Sign in", exact: true })).toHaveAttribute("href", "/sign-in");
-  await page.goto("/share");
-  await expect(page.getByRole("link", { name: "Your notifications" })).toHaveAttribute(
-    "href",
-    "/sign-in?returnTo=%2Fnotifications",
-  );
   await expect(
-    page.locator(".discovery-sidebar a.discovery-nav").filter({ hasText: "Your space" }),
+    page
+      .locator(".mobile-customer-home")
+      .getByRole("link", { name: "Sign in", exact: true }),
+  ).toHaveAttribute("href", "/sign-in");
+  await page.goto("/share");
+  await expect(
+    page.getByRole("link", { name: "Your notifications" }),
+  ).toHaveAttribute("href", "/sign-in?returnTo=%2Fnotifications");
+  await expect(
+    page
+      .locator(".discovery-sidebar a.discovery-nav")
+      .filter({ hasText: "Your space" }),
   ).toHaveAttribute("href", "/sign-in?returnTo=%2Fworkspace");
 
   await page.goto("/shop");
@@ -148,21 +196,26 @@ test("missing pages offer a working route home", async ({ page }, testInfo) => {
 
   if (testInfo.project.name === "desktop") {
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Beauty that",
+      "Find beauty professionals",
     );
   } else {
     await expect(
-      page.getByRole("heading", { name: /Discover\.\s*Book\.\s*Get inspired\./ }),
+      page.getByRole("heading", {
+        name: /Find beauty professionals\s*near you\./,
+      }),
     ).toBeVisible();
   }
 });
 
-
-test("dedicated Discover route behaves like a full-screen mobile feed", async ({ page }) => {
+test("dedicated Discover route behaves like a full-screen mobile feed", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/discover");
 
-  const feed = page.getByLabel("Beauty inspiration feed. Scroll to see the next post.");
+  const feed = page.getByLabel(
+    "Beauty inspiration feed. Scroll to see the next post.",
+  );
   await expect(feed).toBeVisible();
 
   const metrics = await feed.evaluate((element) => {
@@ -186,8 +239,9 @@ test("dedicated Discover route behaves like a full-screen mobile feed", async ({
   await expect(page.getByLabel("Post link")).toHaveValue(/\/discover#post-/);
 });
 
-
-test("Share keeps its dedicated route and a working Discover entry", async ({ page }) => {
+test("Share keeps its dedicated route and a working Discover entry", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/share");
 
@@ -196,10 +250,11 @@ test("Share keeps its dedicated route and a working Discover entry", async ({ pa
   ).toHaveText("Discover");
   await expect(page.getByText("SHARE. CONNECT. BOOK.")).toHaveCount(1);
   await expect(
-    page.getByRole("navigation", { name: "Mobile navigation" }).getByRole("link", { name: "Discover" }),
+    page
+      .getByRole("navigation", { name: "Mobile navigation" })
+      .getByRole("link", { name: "Discover" }),
   ).toHaveAttribute("href", "/discover");
 });
-
 
 test("Following requires a customer session on Share", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -212,22 +267,27 @@ test("Following requires a customer session on Share", async ({ page }) => {
   );
 });
 
-
 test("professional auth preserves professional intent", async ({ page }) => {
   await page.goto("/sign-in?intent=professional&returnTo=/professional");
-  await expect(page.getByText("GLOHAUS PRO", { exact: true }).first()).toBeVisible();
+  await expect(
+    page.getByText("GLOHAUS PRO", { exact: true }).first(),
+  ).toBeVisible();
   await expect(
     page.getByRole("link", { name: /See a GLOHAUS PRO page preview/ }),
   ).toHaveAttribute("href", "/professional-preview");
 
   await page.goto("/sign-up?intent=professional");
-  await expect(page.getByText("GLOHAUS PRO", { exact: true }).first()).toBeVisible();
+  await expect(
+    page.getByText("GLOHAUS PRO", { exact: true }).first(),
+  ).toBeVisible();
   await expect(
     page.getByRole("link", { name: /See a GLOHAUS PRO page preview/ }),
   ).toHaveAttribute("href", "/professional-preview");
 });
 
-test("professional preview exposes real auth entry points", async ({ page }) => {
+test("professional preview exposes real auth entry points", async ({
+  page,
+}) => {
   await page.goto("/professional-preview");
   await expect(
     page.getByRole("link", { name: "Professional sign in" }).first(),
@@ -243,7 +303,9 @@ test("professional preview exposes real auth entry points", async ({ page }) => 
   );
 });
 
-test("theme toggle switches professional preview to night mode", async ({ page }) => {
+test("theme toggle switches professional preview to night mode", async ({
+  page,
+}) => {
   await page.goto("/professional-preview");
   const toggle = page.getByRole("button", { name: "Switch to night mode" });
   await expect(toggle).toBeVisible();
@@ -254,8 +316,9 @@ test("theme toggle switches professional preview to night mode", async ({ page }
   ).toBeVisible();
 });
 
-
-test("saved theme is restored and mobile Home changes with the selected mode", async ({ page }) => {
+test("saved theme is restored and mobile Home changes with the selected mode", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await page.evaluate(() => localStorage.setItem("glohaus-theme", "night"));
@@ -284,7 +347,6 @@ test("saved theme is restored and mobile Home changes with the selected mode", a
   );
 });
 
-
 test("Shop exposes catalogue without fake checkout", async ({ page }) => {
   await page.goto("/shop");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
@@ -299,8 +361,9 @@ test("Shop exposes catalogue without fake checkout", async ({ page }) => {
   await expect(page.getByRole("link", { name: /cart/i }).first()).toBeVisible();
 });
 
-
-test("public policy pages are reachable on mobile and desktop", async ({ page }) => {
+test("public policy pages are reachable on mobile and desktop", async ({
+  page,
+}) => {
   const pages = [
     ["/terms", "Terms of Use"],
     ["/privacy", "Privacy Policy"],
@@ -312,7 +375,9 @@ test("public policy pages are reachable on mobile and desktop", async ({ page })
   for (const [route, heading] of pages) {
     await page.goto(route);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(heading);
-    await expect(page.getByText("Draft for legal review", { exact: false })).toBeVisible();
+    await expect(
+      page.getByText("Draft for legal review", { exact: false }),
+    ).toBeVisible();
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
@@ -321,8 +386,9 @@ test("public policy pages are reachable on mobile and desktop", async ({ page })
   }
 });
 
-
-test("sign-in keeps password recovery visible for customer and professional accounts", async ({ page }) => {
+test("sign-in keeps password recovery visible for customer and professional accounts", async ({
+  page,
+}) => {
   for (const route of [
     "/sign-in",
     "/sign-in?intent=professional&returnTo=/professional",

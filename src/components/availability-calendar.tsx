@@ -71,6 +71,16 @@ export function AvailabilityCalendar({
               <ChevronRight size={20} />
             </button>
           </header>
+          <button
+            className="button small"
+            type="button"
+            onClick={() => {
+              setMonth(today.slice(0, 7));
+              setSelected(today);
+            }}
+          >
+            Back to today
+          </button>
           <div className="calendar-grid">
             {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
               <span className="calendar-weekday" key={day}>

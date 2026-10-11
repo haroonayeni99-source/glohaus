@@ -1,3 +1,4 @@
+import { publicMetadata, publicPages } from "@/lib/public-seo";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -21,7 +22,6 @@ import { money } from "@/modules/professionals/domain";
 import { publicViewerSignedIn } from "@/lib/public-viewer";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Marketplace" };
 
 const categories = [
   ["Hair", "Wigs, bundles, care"],
@@ -34,7 +34,13 @@ const categories = [
   ["Fragrance", "Perfume & body mist"],
 ] as const;
 
-const shopBy = ["New arrivals", "Bestsellers", "Trending", "Deals & offers", "Gift sets"] as const;
+const shopBy = [
+  "New arrivals",
+  "Bestsellers",
+  "Trending",
+  "Deals & offers",
+  "Gift sets",
+] as const;
 
 export default async function ShopPage({
   searchParams,
@@ -63,7 +69,10 @@ export default async function ShopPage({
     <>
       <PublicHeader signedIn={viewerSignedIn} />
       <main id="main" className="marketplace-shell">
-        <aside className="marketplace-sidebar" aria-label="Marketplace categories">
+        <aside
+          className="marketplace-sidebar"
+          aria-label="Marketplace categories"
+        >
           <Link className="marketplace-sidebar-active" href="/shop">
             <ShoppingBag size={17} aria-hidden /> Shop all
           </Link>
@@ -71,7 +80,10 @@ export default async function ShopPage({
           <p className="marketplace-side-label">Categories</p>
           <nav>
             {categories.map(([name]) => (
-              <Link key={name} href={`/shop?q=${encodeURIComponent(name)}#products`}>
+              <Link
+                key={name}
+                href={`/shop?q=${encodeURIComponent(name)}#products`}
+              >
                 <Sparkles size={15} aria-hidden /> {name}
               </Link>
             ))}
@@ -81,7 +93,10 @@ export default async function ShopPage({
           <p className="marketplace-side-label">Shop by</p>
           <nav>
             {shopBy.map((name) => (
-              <Link key={name} href={`/shop?q=${encodeURIComponent(name.split(" ")[0])}#products`}>
+              <Link
+                key={name}
+                href={`/shop?q=${encodeURIComponent(name.split(" ")[0])}#products`}
+              >
                 <Tag size={15} aria-hidden /> {name}
               </Link>
             ))}
@@ -90,8 +105,12 @@ export default async function ShopPage({
           <article className="marketplace-side-promo">
             <Sparkles size={22} aria-hidden />
             <strong>Beauty essentials</strong>
-            <span>Products from GLOHAUS professionals and approved sellers.</span>
-            <a href="#products">Shop products <ArrowRight size={14} /></a>
+            <span>
+              Products from GLOHAUS professionals and approved sellers.
+            </span>
+            <a href="#products">
+              Shop products <ArrowRight size={14} />
+            </a>
           </article>
         </aside>
 
@@ -110,12 +129,21 @@ export default async function ShopPage({
           <section className="marketplace-hero">
             <div className="marketplace-hero-copy">
               <p className="eyebrow">GLOHAUS MARKETPLACE</p>
-              <h1>The Beauty <span>Marketplace</span></h1>
-              <p>Shop hair, makeup, skincare, nails and more from the professionals behind the look.</p>
+              <h1>
+                The Beauty <span>Marketplace</span>
+              </h1>
+              <p>
+                Shop hair, makeup, skincare, nails and more from the
+                professionals behind the look.
+              </p>
               <div className="marketplace-hero-actions">
-                <a href="#products">Shop all products <ArrowRight size={16} /></a>
+                <a href="#products">
+                  Shop all products <ArrowRight size={16} />
+                </a>
                 <a href="#categories">Shop by category</a>
-                <Link href={cartHref}><ShoppingBag size={16} aria-hidden /> Cart</Link>
+                <Link href={cartHref}>
+                  <ShoppingBag size={16} aria-hidden /> Cart
+                </Link>
               </div>
             </div>
             <div className="marketplace-hero-art" aria-hidden>
@@ -125,18 +153,39 @@ export default async function ShopPage({
               <div className="marketplace-beauty-mark">G</div>
             </div>
             <div className="marketplace-hero-benefits">
-              <span><Sparkles size={15} /> Curated beauty products</span>
-              <span><ShieldCheck size={15} /> Marketplace protection</span>
-              <span><Truck size={15} /> Seller-managed shipping</span>
+              <span>
+                <Sparkles size={15} /> Curated beauty products
+              </span>
+              <span>
+                <ShieldCheck size={15} /> Marketplace protection
+              </span>
+              <span>
+                <Truck size={15} /> Seller-managed shipping
+              </span>
             </div>
           </section>
 
-          <section id="categories" className="marketplace-category-strip" aria-label="Product categories">
+          <section
+            id="categories"
+            className="marketplace-category-strip"
+            aria-label="Product categories"
+          >
             {categories.map(([name, description], index) => (
-              <Link key={name} href={`/shop?q=${encodeURIComponent(name)}#products`} className={`marketplace-category marketplace-category-${index + 1}`}>
-                <div className="marketplace-category-art"><Sparkles size={26} aria-hidden /></div>
-                <span><strong>{name}</strong><small>{description}</small></span>
-                <i><ArrowRight size={14} /></i>
+              <Link
+                key={name}
+                href={`/shop?q=${encodeURIComponent(name)}#products`}
+                className={`marketplace-category marketplace-category-${index + 1}`}
+              >
+                <div className="marketplace-category-art">
+                  <Sparkles size={26} aria-hidden />
+                </div>
+                <span>
+                  <strong>{name}</strong>
+                  <small>{description}</small>
+                </span>
+                <i>
+                  <ArrowRight size={14} />
+                </i>
               </Link>
             ))}
           </section>
@@ -144,16 +193,24 @@ export default async function ShopPage({
           <section id="products" className="marketplace-products-section">
             <div className="marketplace-section-heading">
               <div>
-                <p className="eyebrow">{query ? "SEARCH RESULTS" : "MARKETPLACE"}</p>
+                <p className="eyebrow">
+                  {query ? "SEARCH RESULTS" : "MARKETPLACE"}
+                </p>
                 <h2>{query ? `Results for “${q}”` : "Popular products"}</h2>
               </div>
               {query && <Link href="/shop#products">Clear search</Link>}
             </div>
 
             {visibleProducts.length ? (
-              <div className="marketplace-product-grid" aria-label="Published products">
+              <div
+                className="marketplace-product-grid"
+                aria-label="Published products"
+              >
                 {visibleProducts.map((product) => (
-                  <article className="marketplace-product-card" key={product.id}>
+                  <article
+                    className="marketplace-product-card"
+                    key={product.id}
+                  >
                     <div className="marketplace-product-image">
                       {product.image_asset_id ? (
                         <Image
@@ -164,27 +221,45 @@ export default async function ShopPage({
                           alt={product.name}
                         />
                       ) : (
-                        <span className="marketplace-product-placeholder" aria-hidden>
+                        <span
+                          className="marketplace-product-placeholder"
+                          aria-hidden
+                        >
                           <ShoppingBag size={34} />
                         </span>
                       )}
                       <span className="marketplace-heart" aria-hidden>
                         <Heart size={17} />
                       </span>
-                      <span className={product.in_stock ? "marketplace-stock" : "marketplace-stock is-out"}>
+                      <span
+                        className={
+                          product.in_stock
+                            ? "marketplace-stock"
+                            : "marketplace-stock is-out"
+                        }
+                      >
                         {product.in_stock ? "In stock" : "Out of stock"}
                       </span>
                     </div>
                     <div className="marketplace-product-copy">
-                      <Link className="marketplace-seller" href={`/p/${product.professional_slug}`}>
+                      <Link
+                        className="marketplace-seller"
+                        href={`/p/${product.professional_slug}`}
+                      >
                         {product.professional_name}
                       </Link>
                       <h3>{product.name}</h3>
                       <p>{product.description}</p>
-                      <div className="marketplace-rating"><Star size={13} fill="currentColor" /> New marketplace listing</div>
+                      <div className="marketplace-rating">
+                        <Star size={13} fill="currentColor" /> New marketplace
+                        listing
+                      </div>
                       <div className="marketplace-product-buy">
                         <strong>{money(product.price_pence)}</strong>
-                        <AddToCartButton productId={product.id} disabled={!product.in_stock} />
+                        <AddToCartButton
+                          productId={product.id}
+                          disabled={!product.in_stock}
+                        />
                       </div>
                     </div>
                   </article>
@@ -194,14 +269,22 @@ export default async function ShopPage({
               <section className="marketplace-empty">
                 <PackageCheck size={30} aria-hidden />
                 <div>
-                  <h3>{query ? "No matching products yet." : "Marketplace products are coming in."}</h3>
+                  <h3>
+                    {query
+                      ? "No matching products yet."
+                      : "Marketplace products are coming in."}
+                  </h3>
                   <p>
                     {query
                       ? "Try another category or search term."
                       : "Real products will appear here as GLOHAUS professionals publish stock. We do not show fake listings or placeholder prices."}
                   </p>
                 </div>
-                {query ? <Link href="/shop">Show all products</Link> : <Link href="/explore">Explore professionals</Link>}
+                {query ? (
+                  <Link href="/shop">Show all products</Link>
+                ) : (
+                  <Link href="/explore">Explore professionals</Link>
+                )}
               </section>
             )}
           </section>
@@ -210,7 +293,11 @@ export default async function ShopPage({
             <ShieldCheck size={20} aria-hidden />
             <div>
               <strong>Protected marketplace rollout</strong>
-              <p>Browsing and cart features are connected to real GLOHAUS product data. Checkout stays protected until order, delivery, refund and payment safeguards are fully ready.</p>
+              <p>
+                Browsing and cart features are connected to real GLOHAUS product
+                data. Checkout stays protected until order, delivery, refund and
+                payment safeguards are fully ready.
+              </p>
             </div>
           </section>
         </section>
@@ -218,14 +305,20 @@ export default async function ShopPage({
         <aside className="marketplace-right-rail">
           <article className="marketplace-offer-card">
             <p>NEW TO GLOHAUS?</p>
-            <strong>Discover products from independent beauty professionals.</strong>
+            <strong>
+              Discover products from independent beauty professionals.
+            </strong>
             <span>Build your basket as the marketplace grows.</span>
-            <a href="#products">Browse now <ArrowRight size={14} /></a>
+            <a href="#products">
+              Browse now <ArrowRight size={14} />
+            </a>
           </article>
 
           <article className="marketplace-deal-card">
             <span className="eyebrow">MARKETPLACE SPOTLIGHT</span>
-            <div className="marketplace-deal-art"><ShoppingBag size={34} /></div>
+            <div className="marketplace-deal-art">
+              <ShoppingBag size={34} />
+            </div>
             <strong>Beauty products, all in one place.</strong>
             <p>Hair, skincare, tools, lashes, makeup and more.</p>
           </article>
@@ -237,21 +330,36 @@ export default async function ShopPage({
             </div>
             {bestsellers.length ? (
               bestsellers.map((product, index) => (
-                <Link key={product.id} href="#products" className="marketplace-bestseller-row">
+                <Link
+                  key={product.id}
+                  href="#products"
+                  className="marketplace-bestseller-row"
+                >
                   <span className="marketplace-rank">{index + 1}</span>
                   <span className="marketplace-rank-thumb">
                     {product.image_asset_id ? (
-                      <Image fill unoptimized sizes="46px" src={`/api/media/${product.image_asset_id}`} alt="" />
+                      <Image
+                        fill
+                        unoptimized
+                        sizes="46px"
+                        src={`/api/media/${product.image_asset_id}`}
+                        alt=""
+                      />
                     ) : (
                       <ShoppingBag size={17} />
                     )}
                   </span>
-                  <span><strong>{product.name}</strong><small>{product.professional_name}</small></span>
+                  <span>
+                    <strong>{product.name}</strong>
+                    <small>{product.professional_name}</small>
+                  </span>
                   <em>{money(product.price_pence)}</em>
                 </Link>
               ))
             ) : (
-              <p className="marketplace-rail-empty">Featured products will appear as sellers publish stock.</p>
+              <p className="marketplace-rail-empty">
+                Featured products will appear as sellers publish stock.
+              </p>
             )}
           </article>
         </aside>
@@ -260,3 +368,5 @@ export default async function ShopPage({
     </>
   );
 }
+
+export const metadata = publicMetadata("/shop", ...publicPages["/shop"]);

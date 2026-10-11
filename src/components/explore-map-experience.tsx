@@ -16,7 +16,10 @@ import {
   Star,
 } from "lucide-react";
 import type { PublicProfessional } from "@/modules/professionals/domain";
-import type { DiscoveryFilters } from "@/modules/professionals/discovery";
+import {
+  discoveryHref,
+  type DiscoveryFilters,
+} from "@/modules/professionals/discovery";
 
 const areas = [
   { name: "All London", street: "Across the city", className: "london" },
@@ -98,13 +101,15 @@ export function ExploreMapExperience({
   const [selectedArea, setSelectedArea] = useState(
     () =>
       clusters.find(
-        (area) => area.name.toLowerCase() === query.trim().toLowerCase(),
+        (area) =>
+          area.name.toLowerCase() ===
+          (filters.location || query).trim().toLowerCase(),
       )?.name ?? "",
   );
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [mobileView, setMobileView] = useState<"map" | "list">("list");
   const nearby = professionals;
-  const selected = query.trim().toLowerCase();
+
   const filterPairs = [
     ["verified", filters.verified],
     ["under50", filters.under50],
@@ -116,16 +121,22 @@ export function ExploreMapExperience({
     nextQuery = query,
     toggle?: (typeof filterPairs)[number][0],
   ) => {
-    const params = new URLSearchParams();
-    if (nextQuery) params.set("q", nextQuery);
-    for (const [key, active] of filterPairs) {
-      const nextActive = key === toggle ? !active : active;
-      if (nextActive) params.set(key, "1");
-    }
-    const value = params.toString();
-    return value ? `/explore?${value}` : "/explore";
+    const updated = { ...filters };
+    const keys = {
+      verified: "verified",
+      under50: "under50",
+      topRated: "topRated",
+      travels: "travels",
+      today: "availableToday",
+    } as const;
+    if (toggle) updated[keys[toggle]] = !updated[keys[toggle]];
+    return discoveryHref(nextQuery, updated);
   };
-  const anySecondaryFilter = filterPairs.some(([, active]) => active);
+
+  const anySecondaryFilter =
+    filterPairs.some(([, active]) => active) ||
+    !!filters.maxPricePence ||
+    !!filters.minRating;
 
   function useMyLocation() {
     if (!("geolocation" in navigator)) {
@@ -158,7 +169,12 @@ export function ExploreMapExperience({
 
         setLocationNotice(`Nearest area: ${nearest.name}`);
         setLocating(false);
-        router.push(hrefFor(nearest.name));
+        setLocationNotice(
+          `Nearest search area: ${nearest.name}. This uses area centres, not exact professional distances.`,
+        );
+        router.push(
+          discoveryHref(query, { ...filters, location: nearest.name }),
+        );
       },
       () => {
         setLocationNotice(
@@ -179,7 +195,8 @@ export function ExploreMapExperience({
               Find Beauty Professionals <em>Near You</em>
             </h1>
             <p>
-              Explore by borough, area or street and book trusted professionals.
+              Search services and areas together. Compare prices, ratings and
+              verified profiles.
             </p>
           </div>
           <form className="map-explore-search" role="search">
@@ -197,6 +214,22 @@ export function ExploreMapExperience({
             )}
             {filters.availableToday && (
               <input type="hidden" name="today" value="1" />
+            )}
+            {filters.location && (
+              <input type="hidden" name="location" value={filters.location} />
+            )}
+            {filters.category && (
+              <input type="hidden" name="category" value={filters.category} />
+            )}
+            {filters.maxPricePence && (
+              <input
+                type="hidden"
+                name="price"
+                value={filters.maxPricePence / 100}
+              />
+            )}
+            {filters.minRating && (
+              <input type="hidden" name="rating" value={filters.minRating} />
             )}
             <Search size={20} aria-hidden />
             <label htmlFor="map-search" className="sr-only">
@@ -219,11 +252,14 @@ export function ExploreMapExperience({
           {areas.map((area) => (
             <Link
               key={area.name}
-              href={hrefFor(area.name === "All London" ? "" : area.name)}
+              href={discoveryHref(query, {
+                ...filters,
+                location: area.name === "All London" ? "" : area.name,
+              })}
               className={`map-area-card ${area.className} ${
-                (area.name === "All London" && !selected) ||
-                selected === area.name.toLowerCase() ||
-                selected === area.street.toLowerCase()
+                (area.name === "All London" && !filters.location) ||
+                filters.location?.toLowerCase() === area.name.toLowerCase() ||
+                filters.location?.toLowerCase() === area.street.toLowerCase()
                   ? "active"
                   : ""
               }`}
@@ -240,9 +276,13 @@ export function ExploreMapExperience({
           {serviceFilters.map((filter, index) => (
             <Link
               key={filter}
-              href={hrefFor(filter === "All Services" ? "" : filter)}
+              href={discoveryHref(query, {
+                ...filters,
+                category: filter === "All Services" ? "" : filter,
+              })}
               className={
-                (index === 0 && !selected) || selected === filter.toLowerCase()
+                (index === 0 && !filters.category) ||
+                filters.category?.toLowerCase() === filter.toLowerCase()
                   ? "active"
                   : undefined
               }
@@ -285,9 +325,15 @@ export function ExploreMapExperience({
           </Link>
           {anySecondaryFilter ? (
             <Link
-              href={
-                query ? `/explore?q=${encodeURIComponent(query)}` : "/explore"
-              }
+              href={discoveryHref(query, {
+                verified: false,
+                under50: false,
+                topRated: false,
+                travels: false,
+                availableToday: false,
+                location: filters.location,
+                category: filters.category,
+              })}
             >
               <SlidersHorizontal size={16} aria-hidden /> Clear filters
             </Link>
@@ -299,11 +345,86 @@ export function ExploreMapExperience({
         </div>
       </section>
 
-      <div className="map-mobile-view-toggle" role="group" aria-label="Explore view">
-        <button type="button" aria-pressed={mobileView === "list"} className={mobileView === "list" ? "is-active" : undefined} onClick={() => setMobileView("list")}>
+      <details className="discovery-refine">
+        <summary>Refine area, service, price and rating</summary>
+        <form action="/explore" className="discovery-refine-form">
+          {query && <input type="hidden" name="q" value={query} />}
+          {filterPairs
+            .filter(([, active]) => active)
+            .map(([key]) => (
+              <input key={key} type="hidden" name={key} value="1" />
+            ))}
+          <label>
+            Area or city
+            <input
+              name="location"
+              defaultValue={filters.location || ""}
+              placeholder="e.g. Brixton"
+              maxLength={100}
+            />
+          </label>
+          <label>
+            Service or category
+            <input
+              name="category"
+              defaultValue={filters.category || ""}
+              placeholder="e.g. Nails"
+              maxLength={60}
+            />
+          </label>
+          <label>
+            Maximum price (£)
+            <input
+              name="price"
+              type="number"
+              min={1}
+              max={10000}
+              step={1}
+              defaultValue={
+                filters.maxPricePence ? filters.maxPricePence / 100 : ""
+              }
+              placeholder="Any price"
+            />
+          </label>
+          <label>
+            Minimum rating
+            <select name="rating" defaultValue={filters.minRating || ""}>
+              <option value="">Any rating</option>
+              <option value="4">4 stars and above</option>
+              <option value="4.5">4.5 stars and above</option>
+            </select>
+          </label>
+          <button className="button" type="submit">
+            Apply filters
+          </button>
+          <Link
+            href={
+              query ? `/explore?q=${encodeURIComponent(query)}` : "/explore"
+            }
+          >
+            Clear all filters
+          </Link>
+        </form>
+      </details>
+      <div
+        className="map-mobile-view-toggle"
+        role="group"
+        aria-label="Explore view"
+      >
+        <button
+          type="button"
+          aria-pressed={mobileView === "list"}
+          className={mobileView === "list" ? "is-active" : undefined}
+          onClick={() => setMobileView("list")}
+        >
           List
         </button>
-        <button type="button" aria-pressed={mobileView === "map"} className={mobileView === "map" ? "is-active" : undefined} onClick={() => setMobileView("map")}>
+        <button
+          type="button"
+          aria-pressed={mobileView === "map"}
+          className={mobileView === "map" ? "is-active" : undefined}
+          onClick={() => setMobileView("map")}
+        >
           Map
         </button>
       </div>
@@ -441,7 +562,12 @@ export function ExploreMapExperience({
             <div>
               <strong>{selectedArea || "Explore London"}</strong>
               <span>Illustrated area guide · select an area to search</span>
-              <Link href={hrefFor(selectedArea)}>
+              <Link
+                href={discoveryHref(query, {
+                  ...filters,
+                  location: selectedArea,
+                })}
+              >
                 {selectedArea ? `Search ${selectedArea}` : "Search all areas"} →
               </Link>
             </div>
@@ -463,7 +589,9 @@ export function ExploreMapExperience({
               <h2>
                 {query
                   ? `Professionals for “${query}”`
-                  : "Professionals near London"}
+                  : filters.location
+                    ? `Professionals in ${filters.location}`
+                    : "Professionals near London"}
               </h2>
               <p>
                 {professionals.length
@@ -497,6 +625,12 @@ export function ExploreMapExperience({
                   <div className="map-pro-copy">
                     <Link href={`/p/${pro.slug}`} className="map-pro-name">
                       {pro.business_name}
+                    </Link>
+                    <Link
+                      className="map-next-availability"
+                      href={`/p/${pro.slug}#booking`}
+                    >
+                      Check next availability →
                     </Link>
                     <span className="map-pro-rating">
                       <Star size={13} fill="currentColor" aria-hidden />{" "}

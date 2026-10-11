@@ -1,6 +1,11 @@
 import { serviceSchema } from "./domain";
 import "server-only";
-import { discoveryCursor, defaultDiscoveryFilters, type DiscoveryCursor, type DiscoveryFilters } from "./discovery";
+import {
+  discoveryCursor,
+  defaultDiscoveryFilters,
+  type DiscoveryCursor,
+  type DiscoveryFilters,
+} from "./discovery";
 import type { SqlClient } from "@/modules/accounts/repository";
 import type {
   ProfileInput,
@@ -144,6 +149,10 @@ export async function publicProfessionals(
          NOT $6::boolean
          OR beauty.public_professional_available_today(p.id)
        )
+       AND ($9::text = '' OR p.city ILIKE $9 OR d.location_details ILIKE $9)
+       AND ($10::text = '' OR p.category ILIKE $10 OR EXISTS(SELECT 1 FROM beauty.public_services svc WHERE svc.professional_id=p.id AND (svc.category ILIKE $10 OR svc.name ILIKE $10)))
+       AND ($11::integer IS NULL OR s.from_price_pence <= $11)
+       AND ($12::float IS NULL OR coalesce(r.rating,0) >= $12)
        AND (
          $7::text IS NULL
          OR (p.business_name,p.id)>($7::text,$8::uuid)
@@ -159,6 +168,14 @@ export async function publicProfessionals(
         filters.availableToday,
         after?.name ?? null,
         after?.id ?? null,
+        filters.location
+          ? `%${filters.location.replace(/[\\%_]/g, "\\$&")}%`
+          : "",
+        filters.category
+          ? `%${filters.category.replace(/[\\%_]/g, "\\$&")}%`
+          : "",
+        filters.maxPricePence ?? null,
+        filters.minRating ?? null,
       ],
     )
   ).rows;
@@ -199,7 +216,11 @@ export async function discoveryPage(
     professionals,
     next:
       rows.length > 24
-        ? discoveryCursor(professionals[professionals.length - 1], query, filters)
+        ? discoveryCursor(
+            professionals[professionals.length - 1],
+            query,
+            filters,
+          )
         : null,
   };
 }

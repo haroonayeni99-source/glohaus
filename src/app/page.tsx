@@ -1,3 +1,4 @@
+import { publicMetadata, publicPages } from "@/lib/public-seo";
 import { DesktopCustomerHome } from "@/components/desktop-customer-home";
 import { MobileCustomerHome } from "@/components/mobile-customer-home";
 import { withIdentity } from "@/lib/db";
@@ -140,3 +141,5 @@ export default async function Home({
     </>
   );
 }
+
+export const metadata = publicMetadata("/", ...publicPages["/"]);

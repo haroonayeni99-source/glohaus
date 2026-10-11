@@ -1,5 +1,6 @@
 "use client";
 
+import { openAdminSection } from "@/components/admin-workspace-view";
 import { Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -11,35 +12,86 @@ type SearchItem = {
 };
 
 const staticItems: SearchItem[] = [
-    ["website", "Website Status", "Public access and maintenance", "website-status"],
-    ["homepage", "Homepage images", "Change desktop and mobile photos", "homepage-media"],
-    ["marketing", "Marketing", "Campaigns and feature feedback", "marketing"],
-    ["settings", "Platform labels", "Community names", "settings"],
-    ["categories", "Categories", "Discovery categories", "categories"],
-    ["shop-fees", "Shop Fees", "Marketplace commission", "shop-fees"],
-    ["backend", "Backend Health", "Jobs and queues", "backend-health"],
-    ["payment-readiness", "Payment Readiness", "Payment configuration", "payment-readiness"],
-    ["email-readiness", "Email Readiness", "Email configuration", "email-readiness"],
-    ["email-health", "Email Delivery", "Delivery outcomes", "email-delivery-health"],
-    ["disputes", "Payment disputes", "Booking dispute responses", "payment-disputes"],
-    ["overview", "Overview", "Owner dashboard", "overview"],
-    ["users", "App Users", "Manage accounts, restrictions and deletion", "users"],
-    ["professionals", "Professionals", "Professional account management", "professionals"],
-    ["bookings", "Bookings", "Booking overview", "bookings"],
-    ["orders", "Orders", "Shop order oversight", "orders"],
-    ["payments", "Payments", "Finance and payouts", "payments"],
-    ["analytics", "Analytics", "Platform analytics", "analytics"],
-    ["live", "LIVE", "Verification and LIVE access", "live-access"],
-    ["content", "Content", "Content moderation", "content"],
-    ["reports", "Reports", "Safety reports", "reports"],
-    ["reviews", "Reviews", "Review moderation", "reviews"],
-    ["auth", "Auth Accounts", "Supabase authentication accounts", "auth-accounts"],
-    ["commission", "Pro Commission", "Professional commission controls", "professional-commission"],
-    ["fee", "Booking Fee", "Customer booking fee", "booking-fee"],
-    ["referrals", "Referrals", "Professional referral leaderboard", "referrals"],
-    ["staff", "Staff & Admins", "Delegated access controls", "staff"],
-    ["audit", "Audit Log", "Owner action history", "audit"],
-  ].map(([key,label,detail,targetId]) => ({ key,label,detail,targetId }));
+  [
+    "website",
+    "Website Status",
+    "Public access and maintenance",
+    "website-status",
+  ],
+  [
+    "homepage",
+    "Homepage images",
+    "Change desktop and mobile photos",
+    "homepage-media",
+  ],
+  ["marketing", "Marketing", "Campaigns and feature feedback", "marketing"],
+  ["settings", "Platform labels", "Community names", "settings"],
+  ["categories", "Categories", "Discovery categories", "categories"],
+  ["shop-fees", "Shop Fees", "Marketplace commission", "shop-fees"],
+  ["backend", "Backend Health", "Jobs and queues", "backend-health"],
+  [
+    "payment-readiness",
+    "Payment Readiness",
+    "Payment configuration",
+    "payment-readiness",
+  ],
+  [
+    "email-readiness",
+    "Email Readiness",
+    "Email configuration",
+    "email-readiness",
+  ],
+  [
+    "email-health",
+    "Email Delivery",
+    "Delivery outcomes",
+    "email-delivery-health",
+  ],
+  [
+    "refund-appeals",
+    "Refund appeals",
+    "Review customer refund requests",
+    "refund-appeals",
+  ],
+  [
+    "disputes",
+    "Payment disputes",
+    "Booking dispute responses",
+    "payment-disputes",
+  ],
+  ["overview", "Overview", "Owner dashboard", "overview"],
+  ["users", "App Users", "Manage accounts, restrictions and deletion", "users"],
+  [
+    "professionals",
+    "Professionals",
+    "Professional account management",
+    "professionals",
+  ],
+  ["bookings", "Bookings", "Booking overview", "bookings"],
+  ["orders", "Orders", "Shop order oversight", "orders"],
+  ["payments", "Payments", "Finance and payouts", "payments"],
+  ["analytics", "Analytics", "Platform analytics", "analytics"],
+  ["live", "LIVE", "Verification and LIVE access", "live-access"],
+  ["content", "Content", "Content moderation", "content"],
+  ["reports", "Reports", "Safety reports", "reports"],
+  ["reviews", "Reviews", "Review moderation", "reviews"],
+  [
+    "auth",
+    "Auth Accounts",
+    "Supabase authentication accounts",
+    "auth-accounts",
+  ],
+  [
+    "commission",
+    "Pro Commission",
+    "Professional commission controls",
+    "professional-commission",
+  ],
+  ["fee", "Booking Fee", "Customer booking fee", "booking-fee"],
+  ["referrals", "Referrals", "Professional referral leaderboard", "referrals"],
+  ["staff", "Staff & Admins", "Delegated access controls", "staff"],
+  ["audit", "Audit Log", "Owner action history", "audit"],
+].map(([key, label, detail, targetId]) => ({ key, label, detail, targetId }));
 
 export function OwnerAdminSearch({
   users,
@@ -48,12 +100,15 @@ export function OwnerAdminSearch({
 }: {
   users: { id: string; display_name: string; email: string; roles: string[] }[];
   professionals: { id: string; business_name: string }[];
-  bookings: { id: string; service_name: string; professional_name: string; customer_name: string }[];
+  bookings: {
+    id: string;
+    service_name: string;
+    professional_name: string;
+    customer_name: string;
+  }[];
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-
-
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -84,17 +139,31 @@ export function OwnerAdminSearch({
       .filter((item) =>
         `${item.label} ${item.detail}`.toLowerCase().includes(q),
       )
-      .filter(item => typeof document !== "undefined" && document.getElementById(item.targetId))
+      .filter(
+        (item) =>
+          typeof document !== "undefined" &&
+          (document.getElementById(item.targetId) ||
+            (item.key.startsWith("user-") && document.getElementById("users"))),
+      )
       .slice(0, 8);
   }, [bookings, professionals, query, users]);
 
   function go(targetId: string) {
-    const target = document.getElementById(targetId);
-    if (!target) return;
-    target.scrollIntoView({ behavior: "smooth", block: "center" });
-    history.replaceState(history.state, "", `#${targetId}`);
-    target.classList.add("owner-search-hit");
-    window.setTimeout(() => target.classList.remove("owner-search-hit"), 1400);
+    window.dispatchEvent(new Event("glohaus:admin-search-reveal"));
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        openAdminSection(targetId);
+        const target = document.getElementById(targetId);
+        if (!target) return;
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        history.replaceState(history.state, "", `#${targetId}`);
+        target.classList.add("owner-search-hit");
+        window.setTimeout(
+          () => target.classList.remove("owner-search-hit"),
+          1400,
+        );
+      }),
+    );
     setOpen(false);
   }
 
@@ -120,7 +189,11 @@ export function OwnerAdminSearch({
           aria-label="Search Owner controls"
         />
         {query && (
-          <button type="button" aria-label="Clear search" onClick={() => setQuery("")}>
+          <button
+            type="button"
+            aria-label="Clear search"
+            onClick={() => setQuery("")}
+          >
             <X size={14} />
           </button>
         )}
@@ -128,7 +201,11 @@ export function OwnerAdminSearch({
       {open && query.trim() && (
         <div className="owner-search-results" role="listbox">
           {results.map((item) => (
-            <button key={item.key} type="button" onClick={() => go(item.targetId)}>
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => go(item.targetId)}
+            >
               <strong>{item.label}</strong>
               <small>{item.detail}</small>
             </button>

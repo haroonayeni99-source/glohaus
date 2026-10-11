@@ -95,10 +95,7 @@ export default async function ProfessionalSetup() {
   const progressPercent = Math.round((complete / steps.length) * 100);
   return (
     <div className="pro-app">
-      <ProfessionalNavigation
-        active="more"
-        displayName={account.displayName}
-      />
+      <ProfessionalNavigation active="more" displayName={account.displayName} />
       <main id="main" className="pro-main pro-management-page">
         <Link className="back-link" href="/professional">
           ← Your workspace
@@ -114,11 +111,19 @@ export default async function ProfessionalSetup() {
           your work when you are ready.
         </p>
         <div className="editor-actions">
-          <Link className="text-link setup-preview-link" href="/professional-preview">
-            See a GLOHAUS PRO page preview <ArrowUpRight size={17} aria-hidden />
+          <Link
+            className="text-link setup-preview-link"
+            href="/professional-preview"
+          >
+            See a GLOHAUS PRO page preview{" "}
+            <ArrowUpRight size={17} aria-hidden />
           </Link>
-          <Link className="text-link setup-preview-link" href="/professional/plans">
-            Review plans, commission and withdrawal fees <ArrowUpRight size={17} aria-hidden />
+          <Link
+            className="text-link setup-preview-link"
+            href="/professional/plans"
+          >
+            Review plans, commission and withdrawal fees{" "}
+            <ArrowUpRight size={17} aria-hidden />
           </Link>
         </div>
         <section className="pro-panel" aria-label="Verification status">
@@ -141,11 +146,14 @@ export default async function ProfessionalSetup() {
                 ? "Your verification is in progress. Your profile can stay in draft while Stripe completes any required checks."
                 : progress.verification.status === "restricted"
                   ? "New paid marketplace activity is restricted while this account is reviewed."
-                  : `You can start on Starter access without verification. You have ${progress.verification.starterBookingsRemaining ?? 0} of 5 starter bookings remaining. Unverified services are limited to £200 or less with no online deposit. Verification unlocks deposits, higher-value services, product selling and withdrawals.`}
+                  : `You can start on Starter access without verification. You have ${progress.verification.starterBookingsRemaining ?? 0} of 5 starter bookings remaining. Unverified services are limited to £200 or less and paid in full through GLOHAUS at booking. Verification unlocks partial deposits, higher-value services, product selling and withdrawals.`}
           </p>
           {progress.verification.status !== "verified" &&
             progress.verification.status !== "restricted" && (
-              <Link className="button small" href="/professional/profile#verification">
+              <Link
+                className="button small"
+                href="/professional/profile#verification"
+              >
                 {progress.verification.status === "pending"
                   ? "Continue verification"
                   : "Verify identity"}
@@ -165,8 +173,9 @@ export default async function ProfessionalSetup() {
             This progress tracks the core steps needed to make your professional
             page usable. Identity verification is optional for Starter access
             and does not reduce your setup percentage. Unverified services are
-            limited to £200 or less, no online deposit, and up to five starter
-            bookings. Verification unlocks the wider marketplace features.
+            limited to £200 or less, full payment through GLOHAUS at booking,
+            and up to five starter bookings. Verification unlocks the wider
+            marketplace features.
           </p>
         </section>
         <section
@@ -179,7 +188,11 @@ export default async function ProfessionalSetup() {
               className={`service-edit-row setup-step ${done ? "is-complete" : ""}`}
             >
               <span className="setup-step-number" aria-hidden>
-                {done ? <Check size={17} /> : String(index + 1).padStart(2, "0")}
+                {done ? (
+                  <Check size={17} />
+                ) : (
+                  String(index + 1).padStart(2, "0")
+                )}
               </span>
               <div>
                 <p className="eyebrow">STEP {index + 1}</p>

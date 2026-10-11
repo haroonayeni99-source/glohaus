@@ -1,3 +1,4 @@
+import { AdminSection } from "@/components/admin-workspace-view";
 import { AdminSectionUnavailable } from "@/components/admin-section-unavailable";
 import { money } from "@/modules/professionals/domain";
 import type { AdminFinanceOverview } from "@/modules/admin/repository";
@@ -19,20 +20,23 @@ export function AdminFinancePanel({
   if (!data)
     return (
       <>
-        <section id="payments" className="admin-workspace-section"><AdminSectionUnavailable label="Payments reporting" /></section>
-        <section id="analytics" className="admin-workspace-section"><AdminSectionUnavailable label="Analytics" /></section>
+        <section id="payments" className="admin-workspace-section">
+          <AdminSectionUnavailable label="Payments reporting" />
+        </section>
+        <section id="analytics" className="admin-workspace-section">
+          <AdminSectionUnavailable label="Analytics" />
+        </section>
       </>
     );
 
   const m = data.metrics;
   return (
     <>
-      <section id="payments" className="admin-workspace-section">
-        <p className="eyebrow">PLATFORM PAYMENTS</p>
-        <h2>Money moving through GLOHAUS</h2>
+      <AdminSection id="payments" title="Money moving through GLOHAUS">
+        <p className="eyebrow">PLATFORM PAYMENTS · READ ONLY</p>
         <p className="lead">
-          Read-only operational totals from the protected ledger, booking payments,
-          professional subscriptions and payout records.
+          Read-only operational totals from the protected ledger, booking
+          payments, professional subscriptions and payout records.
         </p>
 
         <div className="analytics-grid">
@@ -68,7 +72,9 @@ export function AdminFinancePanel({
             <span>Payouts paid</span>
           </article>
           <article>
-            <strong>{data.payoutCounts.failed + data.payoutCounts.cancelled}</strong>
+            <strong>
+              {data.payoutCounts.failed + data.payoutCounts.cancelled}
+            </strong>
             <span>Payouts failed / cancelled</span>
           </article>
         </div>
@@ -98,14 +104,16 @@ export function AdminFinancePanel({
                 </tr>
               ))}
               {!data.recentPayouts.length && (
-                <tr><td colSpan={6}>No payout requests yet.</td></tr>
+                <tr>
+                  <td colSpan={6}>No payout requests yet.</td>
+                </tr>
               )}
             </tbody>
           </table>
         </div>
-      </section>
+      </AdminSection>
 
-      <section id="analytics" className="admin-workspace-section">
+      <AdminSection id="analytics" title="Platform analytics">
         <p className="eyebrow">BUSINESS ANALYTICS</p>
         <h2>Revenue and platform obligations</h2>
         <p className="lead">
@@ -161,10 +169,13 @@ export function AdminFinancePanel({
             </article>
           ))}
           {!data.revenueBySource30d.length && (
-            <p className="lead">No platform-fee ledger revenue has been posted in the last 30 days.</p>
+            <p className="lead">
+              No platform-fee ledger revenue has been posted in the last 30
+              days.
+            </p>
           )}
         </div>
-      </section>
+      </AdminSection>
     </>
   );
 }

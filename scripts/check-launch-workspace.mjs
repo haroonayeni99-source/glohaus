@@ -1,0 +1,176 @@
+// Focused Owner/Admin navigation, search and confirmation checks. Mutations are local fixtures.
+import { chromium, expect } from "@playwright/test";
+import { writeFile } from "node:fs/promises";
+import { server } from "./ui-audit.mjs";
+const browser = await chromium.launch({
+  executablePath: process.env.GLOHAUS_TEST_BROWSER,
+  args: [
+    "--no-sandbox",
+    "--disable-dev-shm-usage",
+    "--use-gl=angle",
+    "--use-angle=swiftshader",
+    "--enable-unsafe-swiftshader",
+  ],
+});
+const results = [];
+try {
+  for (const role of ["owner", "admin"])
+    for (const theme of ["light", "night"])
+      for (const width of [320, 390, 820, 1440]) {
+        const page = await browser.newPage({
+          viewport: { width, height: 1000 },
+        });
+        const errors = [];
+        page.on("pageerror", (error) => errors.push(error.message));
+        await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, (route) =>
+          route.abort(),
+        );
+        await page.goto(
+          `http://127.0.0.1:3004/admin?role=${role}&theme=${theme}`,
+        );
+        await page.locator("#overview").waitFor();
+        await page.addStyleTag({
+          content: "html { scroll-behavior: auto !important; }",
+        });
+        await expect(page.locator("#categories")).not.toBeVisible();
+        const sections = await page
+          .locator(".admin-section-picker option")
+          .evaluateAll((options) => options.map((option) => option.value));
+        for (const id of sections) {
+          if (width <= 880)
+            await page
+              .getByLabel("Go to section", { exact: true })
+              .selectOption(id);
+          else
+            await page
+              .locator(`.admin-navigation nav a[href="#${id}"]`)
+              .click();
+          await expect(page.locator(`#${id}`)).toBeVisible();
+          expect(
+            await page
+              .locator(".admin-workspace-section:visible, #overview:visible")
+              .count(),
+          ).toBe(1);
+          expect(
+            await page.evaluate(
+              () => document.documentElement.scrollWidth - innerWidth,
+            ),
+          ).toBeLessThanOrEqual(1);
+        }
+        if (width <= 880)
+          await page
+            .getByLabel("Go to section", { exact: true })
+            .selectOption("users");
+        else
+          await page.locator('.admin-navigation nav a[href="#users"]').click();
+        await page.getByLabel("Search users and professionals").fill("Alex");
+        await expect(page.getByText("1 of 2 accounts shown")).toBeVisible();
+        if (role === "owner") {
+          // A global result must reveal accounts hidden by an earlier section filter.
+          await page.getByLabel("Search Owner controls").fill("Maya Studio");
+          await page.locator(".owner-search-results button").first().click();
+          await expect(
+            page.getByLabel("Search users and professionals"),
+          ).toHaveValue("");
+          await expect(page.locator("#users")).toBeVisible();
+          await page.getByLabel("Search users and professionals").fill("Alex");
+        }
+        await page
+          .getByRole("button", { name: "Manage status", exact: true })
+          .click();
+        const decision = page.locator(".admin-decision-form");
+        await decision
+          .locator('[name="reason"]')
+          .fill("Isolated confirmation check");
+        const before = await page.evaluate(
+          () =>
+            JSON.parse(sessionStorage.getItem("audit-requests") || "[]").length,
+        );
+        page.once("dialog", (dialog) => dialog.dismiss());
+        await decision
+          .getByRole("button", { name: "Save decision", exact: true })
+          .click();
+        expect(
+          await page.evaluate(
+            () =>
+              JSON.parse(sessionStorage.getItem("audit-requests") || "[]")
+                .length,
+          ),
+        ).toBe(before);
+        await expect(decision).toBeVisible();
+        page.once("dialog", (dialog) => dialog.accept());
+        await decision
+          .getByRole("button", { name: "Save decision", exact: true })
+          .click();
+        await expect(
+          page.getByText("Change saved and recorded in the audit log.", {
+            exact: true,
+          }),
+        ).toBeVisible();
+        if (width <= 880)
+          await page
+            .getByLabel("Go to section", { exact: true })
+            .selectOption("bookings");
+        else
+          await page
+            .locator('.admin-navigation nav a[href="#bookings"]')
+            .click();
+        await page
+          .locator('#bookings input[type="search"]')
+          .fill("not-a-booking");
+        await expect(page.locator("#bookings [role=status]")).toHaveText(
+          "No matching records. Try another search or clear the filter.",
+        );
+        await expect(
+          page.locator("#bookings .service-edit-row"),
+        ).not.toBeVisible();
+        await page.locator('#bookings input[type="search"]').fill("");
+        await expect(page.locator("#bookings .service-edit-row")).toBeVisible();
+        await page
+          .getByRole("button", { name: "Show all sections", exact: true })
+          .click();
+        await expect(page.locator("#categories")).toBeVisible();
+        await page
+          .getByRole("button", { name: "Focus one section", exact: true })
+          .click();
+        await expect(page.locator("#bookings")).toBeVisible();
+        if (width > 880) {
+          await page
+            .getByLabel("Find a tool", { exact: true })
+            .fill("categories");
+          await expect(page.locator(".admin-navigation nav a")).toHaveCount(1);
+          await page.getByLabel("Find a tool", { exact: true }).fill("");
+          await page
+            .getByRole("button", { name: "Minimise administration menu" })
+            .click();
+          await page
+            .getByRole("button", { name: "Expand administration menu" })
+            .click();
+        }
+        expect(errors).toEqual([]);
+        console.log(
+          `${role} ${theme} ${width}: ${sections.length} sections checked`,
+        );
+        results.push({
+          role,
+          theme,
+          width,
+          sections: sections.length,
+          confirmationCancel: true,
+          search: true,
+          errors,
+        });
+        await page.screenshot({
+          path: `reports/launch-${role}-${theme}-${width}.png`,
+        });
+        await page.close();
+      }
+  await writeFile(
+    "reports/launch-workspace-results.json",
+    JSON.stringify(results, null, 2),
+  );
+  console.log(`${results.length} focused workspace cases passed`);
+} finally {
+  await browser.close();
+  server.close();
+}

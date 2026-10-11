@@ -1,3 +1,4 @@
+import { HomeMarketplaceGuide } from "./home-marketplace-guide";
 import Image from "next/image";
 import Link from "next/link";
 import { Bell, Search, ShieldCheck } from "lucide-react";
@@ -142,23 +143,28 @@ export function MobileCustomerHome({
           <div className="mobile-home-hero-shade" />
           <div className="mobile-home-hero-copy">
             <h1>
-              Discover.
+              Find beauty professionals
               <br />
-              Book.
-              <br />
-              Get inspired.
+              near you.
             </h1>
             <p>Find and book beauty professionals near you.</p>
-            <Link className="mobile-home-glow" href="/discover">
-              Find Your Glow
+            <Link className="mobile-home-glow" href="/explore">
+              Find a professional
             </Link>
           </div>
         </section>
 
+        <Link
+          className="mobile-home-professional-join"
+          href="/sign-up?intent=professional"
+        >
+          Join as a professional <span aria-hidden>→</span>
+        </Link>
         <Link className="mobile-home-discover-link" href="/discover">
           Discover more beauty inspiration
           <span aria-hidden>→</span>
         </Link>
+        {!signedIn && <HomeMarketplaceGuide />}
         {signedIn && (
           <section
             className="mobile-home-account"

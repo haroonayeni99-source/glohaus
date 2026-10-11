@@ -18,7 +18,7 @@ const next = spawn(
   process.execPath,
   [
     "node_modules/next/dist/bin/next",
-    "dev",
+    process.env.GLOHAUS_TEST_SERVER_MODE === "production" ? "start" : "dev",
     "--hostname",
     "127.0.0.1",
     "--port",

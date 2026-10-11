@@ -1,20 +1,35 @@
+import { publicMetadata, publicPages } from "@/lib/public-seo";
 import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { ExploreMapExperience } from "@/components/explore-map-experience";
 import { withIdentity } from "@/lib/db";
-import { discoveryOptions } from "@/modules/professionals/discovery";
+import {
+  discoveryOptions,
+  discoveryHref,
+} from "@/modules/professionals/discovery";
 import { discoveryPage } from "@/modules/professionals/repository";
 import type { PublicProfessional } from "@/modules/professionals/domain";
 import { publicViewerSignedIn } from "@/lib/public-viewer";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Find a Professional | GLOHAUS" };
 
 export default async function Explore({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; after?: string; verified?: string; under50?: string; topRated?: string; travels?: string; today?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    location?: string;
+    category?: string;
+    price?: string;
+    rating?: string;
+    after?: string;
+    verified?: string;
+    under50?: string;
+    topRated?: string;
+    travels?: string;
+    today?: string;
+  }>;
 }) {
   const { query: q, filters, after } = discoveryOptions(await searchParams);
   const viewerSignedIn = await publicViewerSignedIn();
@@ -24,7 +39,9 @@ export default async function Explore({
 
   if (process.env.DATABASE_URL) {
     try {
-      const result = await withIdentity("", (db) => discoveryPage(db, q, after, filters));
+      const result = await withIdentity("", (db) =>
+        discoveryPage(db, q, after, filters),
+      );
       professionals = result.professionals;
       next = result.next;
     } catch (error) {
@@ -56,36 +73,24 @@ export default async function Explore({
     <>
       <PublicHeader signedIn={viewerSignedIn} />
       <main id="main">
-        <ExploreMapExperience key={q} professionals={professionals} query={q} filters={filters} />
+        <ExploreMapExperience
+          key={JSON.stringify({ q, filters })}
+          professionals={professionals}
+          query={q}
+          filters={filters}
+        />
         {(after || next) && (
-          <nav className="map-pagination" aria-label="Professional search pages">
+          <nav
+            className="map-pagination"
+            aria-label="Professional search pages"
+          >
             {after && (
-              <Link href={(() => {
-                const params = new URLSearchParams();
-                if (q) params.set("q", q);
-                if (filters.verified) params.set("verified", "1");
-                if (filters.under50) params.set("under50", "1");
-                if (filters.topRated) params.set("topRated", "1");
-                if (filters.travels) params.set("travels", "1");
-                if (filters.availableToday) params.set("today", "1");
-                const value = params.toString();
-                return value ? `/explore?${value}` : "/explore";
-              })()}>
+              <Link href={discoveryHref(q, filters)}>
                 ← Back to first results
               </Link>
             )}
             {next && (
-              <Link href={(() => {
-                const params = new URLSearchParams();
-                if (q) params.set("q", q);
-                if (filters.verified) params.set("verified", "1");
-                if (filters.under50) params.set("under50", "1");
-                if (filters.topRated) params.set("topRated", "1");
-                if (filters.travels) params.set("travels", "1");
-                if (filters.availableToday) params.set("today", "1");
-                params.set("after", next);
-                return `/explore?${params.toString()}`;
-              })()}>
+              <Link href={discoveryHref(q, filters, next)}>
                 More professionals →
               </Link>
             )}
@@ -96,3 +101,5 @@ export default async function Explore({
     </>
   );
 }
+
+export const metadata = publicMetadata("/explore", ...publicPages["/explore"]);

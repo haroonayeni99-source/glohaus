@@ -1,5 +1,6 @@
 import { serviceSchema } from "./domain";
 import "server-only";
+import type { NearbySearch } from "./location";
 import {
   discoveryCursor,
   defaultDiscoveryFilters,
@@ -89,6 +90,7 @@ export async function publicProfessionals(
   search = "",
   after?: DiscoveryCursor,
   filters: DiscoveryFilters = defaultDiscoveryFilters,
+  near?: NearbySearch,
 ) {
   const escaped = `%${search.replace(/[\\%_]/g, "\\$&")}%`;
   return (
@@ -99,9 +101,20 @@ export async function publicProfessionals(
          r.rating,r.review_count,
          s.from_price_pence,
          beauty.public_professional_available_today(p.id) AS available_today,
-         s.popular_services
+         s.popular_services,
+         loc.latitude AS public_latitude, loc.longitude AS public_longitude,
+         loc.confirmed_at AS public_location_confirmed_at,
+         geo.distance_miles
        FROM beauty.public_professionals p
        LEFT JOIN beauty.public_profile_details d ON d.id=p.id
+       LEFT JOIN beauty.public_professional_locations loc ON loc.professional_id=p.id
+       CROSS JOIN LATERAL (
+         SELECT CASE WHEN $13::float IS NOT NULL AND loc.latitude IS NOT NULL THEN
+           3958.7613 * acos(least(1::float,greatest(-1::float,
+             sin(radians($13::float))*sin(radians(loc.latitude)) +
+             cos(radians($13::float))*cos(radians(loc.latitude))*cos(radians(loc.longitude-$14::float))
+           ))) ELSE NULL END AS distance_miles
+       ) geo
        LEFT JOIN LATERAL (
          SELECT round(avg(rating),1)::float AS rating,
                 count(*)::integer AS review_count
@@ -153,12 +166,13 @@ export async function publicProfessionals(
        AND ($10::text = '' OR p.category ILIKE $10 OR EXISTS(SELECT 1 FROM beauty.public_services svc WHERE svc.professional_id=p.id AND (svc.category ILIKE $10 OR svc.name ILIKE $10)))
        AND ($11::integer IS NULL OR s.from_price_pence <= $11)
        AND ($12::float IS NULL OR coalesce(r.rating,0) >= $12)
+       AND ($13::float IS NULL OR geo.distance_miles <= $15::float)
        AND (
          $7::text IS NULL
          OR (p.business_name,p.id)>($7::text,$8::uuid)
        )
-       ORDER BY p.business_name,p.id
-       LIMIT 25`,
+       ORDER BY geo.distance_miles NULLS LAST,p.business_name,p.id
+       LIMIT $16`,
       [
         escaped,
         filters.verified,
@@ -176,6 +190,10 @@ export async function publicProfessionals(
           : "",
         filters.maxPricePence ?? null,
         filters.minRating ?? null,
+        near?.latitude ?? null,
+        near?.longitude ?? null,
+        near?.radiusMiles ?? null,
+        near ? 101 : 25,
       ],
     )
   ).rows;
@@ -184,7 +202,9 @@ export async function publicProfessionals(
 export async function publicProfile(db: SqlClient, slug: string) {
   const professional = (
     await db.query<PublicProfessional>(
-      "SELECT id,slug,business_name,bio,city,category,verification_status FROM beauty.public_professionals WHERE slug=$1",
+      `SELECT p.id,p.slug,p.business_name,p.bio,p.city,p.category,p.verification_status,
+         loc.latitude AS public_latitude,loc.longitude AS public_longitude,loc.confirmed_at AS public_location_confirmed_at
+       FROM beauty.public_professionals p LEFT JOIN beauty.public_professional_locations loc ON loc.professional_id=p.id WHERE p.slug=$1`,
       [slug],
     )
   ).rows[0];

@@ -2,8 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import {
   BadgeCheck,
   ChevronDown,
@@ -15,6 +14,12 @@ import {
   Sparkles,
   Star,
 } from "lucide-react";
+import { GeographicMap } from "./geographic-map";
+import {
+  coordinatesSchema,
+  distanceLabel,
+  type Coordinates,
+} from "@/modules/professionals/location";
 import type { PublicProfessional } from "@/modules/professionals/domain";
 import {
   discoveryHref,
@@ -74,17 +79,6 @@ function ratingText(pro: PublicProfessional) {
   return `${pro.rating.toFixed(1)} (${pro.review_count ?? 0})`;
 }
 
-function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
-  const toRad = (value: number) => (value * Math.PI) / 180;
-  const earthKm = 6371;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return earthKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
 export function ExploreMapExperience({
   professionals,
   query,
@@ -94,7 +88,6 @@ export function ExploreMapExperience({
   query: string;
   filters: DiscoveryFilters;
 }) {
-  const router = useRouter();
   const [zoom, setZoom] = useState(1);
   const [locationNotice, setLocationNotice] = useState("");
   const [locating, setLocating] = useState(false);
@@ -108,7 +101,59 @@ export function ExploreMapExperience({
   );
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [mobileView, setMobileView] = useState<"map" | "list">("list");
-  const nearby = professionals;
+  const [nearbyResults, setNearbyResults] = useState<
+    PublicProfessional[] | null
+  >(null);
+  const [position, setPosition] = useState<Coordinates | null>(null);
+  const [radius, setRadius] = useState(10);
+  const requestSequence = useRef(0);
+  const nearby = nearbyResults ?? professionals;
+  const mapped = nearby.filter(
+    (pro) =>
+      pro.public_location_confirmed_at &&
+      coordinatesSchema.safeParse({
+        latitude: pro.public_latitude,
+        longitude: pro.public_longitude,
+      }).success,
+  );
+
+  async function findNearby(point: Coordinates, radiusMiles = radius) {
+    const sequence = ++requestSequence.current;
+    setLocating(true);
+    setLocationNotice("Finding professionals with confirmed public pins…");
+    try {
+      const response = await fetch("/api/v1/explore/nearby", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...point, radiusMiles, query, filters }),
+        signal: AbortSignal.timeout(12000),
+      });
+      if (!response.ok) throw new Error();
+      const result = await response.json();
+      if (sequence !== requestSequence.current) return;
+      setNearbyResults(result.professionals);
+      setPosition(point);
+      setLocationNotice(
+        `${result.professionals.length} professionals with confirmed public pins within ${radiusMiles} miles.${result.truncated ? " Showing the closest 100; narrow your radius or filters to see fewer results." : ""} Distances are approximate straight-line distances, not travel distances. Profiles with area details only are excluded from this distance search.`,
+      );
+    } catch {
+      if (sequence !== requestSequence.current) return;
+      setNearbyResults(null);
+      setPosition(null);
+      setLocationNotice(
+        "Nearby search is unavailable. Your normal search results remain available; try location search again.",
+      );
+    } finally {
+      if (sequence === requestSequence.current) setLocating(false);
+    }
+  }
+  function clearLocation() {
+    requestSequence.current++;
+    setNearbyResults(null);
+    setPosition(null);
+    setLocating(false);
+    setLocationNotice("Location cleared. Showing normal search results.");
+  }
 
   const filterPairs = [
     ["verified", filters.verified],
@@ -139,55 +184,50 @@ export function ExploreMapExperience({
     !!filters.minRating;
 
   function useMyLocation() {
-    if (!("geolocation" in navigator)) {
-      setLocationNotice("Location is not available in this browser.");
+    if (!navigator.geolocation) {
+      setLocationNotice(
+        "Location is not available in this browser. Search by area instead.",
+      );
       return;
     }
+    const sequence = ++requestSequence.current;
     setLocating(true);
-    setLocationNotice("Checking your nearest GLOHAUS area…");
+    setLocationNotice("Checking your location for this search…");
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
-        const nearest = clusters
-          .map((cluster) => ({
-            ...cluster,
-            distance: distanceKm(
-              coords.latitude,
-              coords.longitude,
-              cluster.lat,
-              cluster.lng,
-            ),
-          }))
-          .sort((a, b) => a.distance - b.distance)[0];
-
-        if (!nearest || nearest.distance > 35) {
-          setLocationNotice(
-            "You appear to be outside the current London discovery area.",
-          );
+        if (sequence !== requestSequence.current) return;
+        const parsed = coordinatesSchema.safeParse({
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        });
+        if (
+          !parsed.success ||
+          !Number.isFinite(coords.accuracy) ||
+          coords.accuracy > 200
+        ) {
           setLocating(false);
+          setLocationNotice(
+            "Your device location is too approximate for useful distances. Try again or search by area.",
+          );
           return;
         }
-
-        setLocationNotice(`Nearest area: ${nearest.name}`);
-        setLocating(false);
-        setLocationNotice(
-          `Nearest search area: ${nearest.name}. This uses area centres, not exact professional distances.`,
-        );
-        router.push(
-          discoveryHref(query, { ...filters, location: nearest.name }),
-        );
+        void findNearby(parsed.data);
       },
       () => {
+        if (sequence !== requestSequence.current) return;
+        setLocating(false);
         setLocationNotice(
           "Location permission was not granted. You can still search by area or street.",
         );
-        setLocating(false);
       },
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
     );
   }
 
   return (
-    <div className="map-explore-page">
+    <div
+      className={`map-explore-page${nearbyResults !== null ? " is-nearby" : ""}`}
+    >
       <section className="map-explore-hero">
         <div className="map-explore-title-row">
           <div>
@@ -429,160 +469,216 @@ export function ExploreMapExperience({
         </button>
       </div>
 
-      <section className={`map-results-layout mobile-view-${mobileView}`}>
-        <div
-          className="glohaus-map"
-          aria-label="Stylised London beauty discovery map"
+      <section className="nearby-search-tools" aria-label="Distance search">
+        <button
+          type="button"
+          className="button secondary"
+          aria-busy={locating}
+          disabled={locating}
+          onClick={useMyLocation}
         >
-          <div
-            className="map-canvas"
-            style={
-              {
-                "--map-scale": zoom,
-                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-              } as CSSProperties
-            }
+          <LocateFixed size={17} aria-hidden />
+          {locating ? "Finding nearby…" : "Use my location"}
+        </button>
+        <label>
+          Distance radius
+          <select
+            value={radius}
+            disabled={locating}
+            onChange={(event) => {
+              const value = Number(event.target.value);
+              setRadius(value);
+              if (position) void findNearby(position, value);
+            }}
           >
-            <div className="map-road map-road-a" />
-            <div className="map-road map-road-b" />
-            <div className="map-road map-road-c" />
-            <div className="map-river" />
-            <span className="map-city-label">London</span>
-            <span className="map-borough-label map-label-hackney">HACKNEY</span>
-            <span className="map-borough-label map-label-westminster">
-              WESTMINSTER
-            </span>
-            <span className="map-borough-label map-label-lewisham">
-              LEWISHAM
-            </span>
+            {[1, 5, 10, 25, 50, 100].map((value) => (
+              <option key={value} value={value}>
+                Within {value} miles
+              </option>
+            ))}
+          </select>
+        </label>
+        {(position || locating) && (
+          <button
+            type="button"
+            className="button secondary"
+            onClick={clearLocation}
+          >
+            Clear my location
+          </button>
+        )}
+        <p>
+          Location is used only for this search. It isn’t stored or added to the
+          page URL.
+        </p>
+        {locationNotice && <p role="status">{locationNotice}</p>}
+      </section>
+      <section className={`map-results-layout mobile-view-${mobileView}`}>
+        {mapped.length > 0 ? (
+          <div className="glohaus-map geographic-results">
+            <GeographicMap
+              pins={mapped.map((pro) => ({
+                id: pro.id,
+                label: pro.business_name,
+                href: `/p/${pro.slug}`,
+                latitude: pro.public_latitude!,
+                longitude: pro.public_longitude!,
+              }))}
+              focus={{
+                latitude: mapped[0].public_latitude!,
+                longitude: mapped[0].public_longitude!,
+              }}
+            />
+            <p>
+              Public business pins confirmed by the professionals.{" "}
+              {nearby.length - mapped.length > 0
+                ? `${nearby.length - mapped.length} profiles have area details only.`
+                : ""}
+            </p>
+          </div>
+        ) : (
+          <div
+            className="glohaus-map"
+            aria-label="Stylised London beauty discovery map"
+          >
+            <div
+              className="map-canvas"
+              style={
+                {
+                  "--map-scale": zoom,
+                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                } as CSSProperties
+              }
+            >
+              <div className="map-road map-road-a" />
+              <div className="map-road map-road-b" />
+              <div className="map-road map-road-c" />
+              <div className="map-river" />
+              <span className="map-city-label">London</span>
+              <span className="map-borough-label map-label-hackney">
+                HACKNEY
+              </span>
+              <span className="map-borough-label map-label-westminster">
+                WESTMINSTER
+              </span>
+              <span className="map-borough-label map-label-lewisham">
+                LEWISHAM
+              </span>
 
-            {clusters.map((cluster) => (
+              {clusters.map((cluster) => (
+                <button
+                  type="button"
+                  key={cluster.name}
+                  className={`map-cluster ${cluster.pos} ${selectedArea === cluster.name ? "is-selected" : ""}`}
+                  aria-pressed={selectedArea === cluster.name}
+                  onClick={() => setSelectedArea(cluster.name)}
+                >
+                  <strong>{cluster.name}</strong>
+                  <small>
+                    {selectedArea === cluster.name ? "Selected" : "Choose area"}
+                  </small>
+                </button>
+              ))}
+            </div>
+            <div className="map-controls">
               <button
                 type="button"
-                key={cluster.name}
-                className={`map-cluster ${cluster.pos} ${selectedArea === cluster.name ? "is-selected" : ""}`}
-                aria-pressed={selectedArea === cluster.name}
-                onClick={() => setSelectedArea(cluster.name)}
+                aria-label="Zoom in"
+                disabled={zoom >= 1.35}
+                onClick={() =>
+                  setZoom((value) => Math.min(1.35, +(value + 0.1).toFixed(2)))
+                }
               >
-                <strong>{cluster.name}</strong>
-                <small>
-                  {selectedArea === cluster.name ? "Selected" : "Choose area"}
-                </small>
+                +
               </button>
-            ))}
-          </div>
-          <div className="map-controls">
-            <button
-              type="button"
-              aria-label="Zoom in"
-              disabled={zoom >= 1.35}
-              onClick={() =>
-                setZoom((value) => Math.min(1.35, +(value + 0.1).toFixed(2)))
-              }
-            >
-              +
-            </button>
-            <button
-              type="button"
-              aria-label="Zoom out"
-              disabled={zoom <= 0.85}
-              onClick={() =>
-                setZoom((value) => Math.max(0.85, +(value - 0.1).toFixed(2)))
-              }
-            >
-              −
-            </button>
-            <button
-              type="button"
-              aria-label="Use my location"
-              aria-busy={locating}
-              onClick={useMyLocation}
-            >
-              <LocateFixed size={17} />
-            </button>
-          </div>
-          {locationNotice && (
-            <div className="map-location-notice" role="status">
-              {locationNotice}
-            </div>
-          )}
-
-          <div className="map-pan-controls" aria-label="Move map">
-            <button
-              type="button"
-              aria-label="Move map left"
-              onClick={() =>
-                setPan((p) => ({ ...p, x: Math.max(-160, p.x - 60) }))
-              }
-            >
-              ←
-            </button>
-            <button
-              type="button"
-              aria-label="Move map right"
-              onClick={() =>
-                setPan((p) => ({ ...p, x: Math.min(160, p.x + 60) }))
-              }
-            >
-              →
-            </button>
-            <button
-              type="button"
-              aria-label="Move map up"
-              onClick={() =>
-                setPan((p) => ({ ...p, y: Math.max(-160, p.y - 60) }))
-              }
-            >
-              ↑
-            </button>
-            <button
-              type="button"
-              aria-label="Move map down"
-              onClick={() =>
-                setPan((p) => ({ ...p, y: Math.min(160, p.y + 60) }))
-              }
-            >
-              ↓
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setPan({ x: 0, y: 0 });
-                setZoom(1);
-                setSelectedArea("");
-              }}
-            >
-              Reset
-            </button>
-          </div>
-          <div className="map-street-card">
-            <div className="map-street-thumb">
-              <MapPin size={24} aria-hidden />
-            </div>
-            <div>
-              <strong>{selectedArea || "Explore London"}</strong>
-              <span>Illustrated area guide · select an area to search</span>
-              <Link
-                href={discoveryHref(query, {
-                  ...filters,
-                  location: selectedArea,
-                })}
+              <button
+                type="button"
+                aria-label="Zoom out"
+                disabled={zoom <= 0.85}
+                onClick={() =>
+                  setZoom((value) => Math.max(0.85, +(value - 0.1).toFixed(2)))
+                }
               >
-                {selectedArea ? `Search ${selectedArea}` : "Search all areas"} →
-              </Link>
+                −
+              </button>
+            </div>
+            <div className="map-pan-controls" aria-label="Move map">
+              <button
+                type="button"
+                aria-label="Move map left"
+                onClick={() =>
+                  setPan((p) => ({ ...p, x: Math.max(-160, p.x - 60) }))
+                }
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                aria-label="Move map right"
+                onClick={() =>
+                  setPan((p) => ({ ...p, x: Math.min(160, p.x + 60) }))
+                }
+              >
+                →
+              </button>
+              <button
+                type="button"
+                aria-label="Move map up"
+                onClick={() =>
+                  setPan((p) => ({ ...p, y: Math.max(-160, p.y - 60) }))
+                }
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                aria-label="Move map down"
+                onClick={() =>
+                  setPan((p) => ({ ...p, y: Math.min(160, p.y + 60) }))
+                }
+              >
+                ↓
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setPan({ x: 0, y: 0 });
+                  setZoom(1);
+                  setSelectedArea("");
+                }}
+              >
+                Reset
+              </button>
+            </div>
+            <div className="map-street-card">
+              <div className="map-street-thumb">
+                <MapPin size={24} aria-hidden />
+              </div>
+              <div>
+                <strong>{selectedArea || "Explore London"}</strong>
+                <span>Illustrated area guide · select an area to search</span>
+                <Link
+                  href={discoveryHref(query, {
+                    ...filters,
+                    location: selectedArea,
+                  })}
+                >
+                  {selectedArea ? `Search ${selectedArea}` : "Search all areas"}{" "}
+                  →
+                </Link>
+              </div>
+            </div>
+
+            <div className="map-legend">
+              <span>
+                <i className="bubble" /> Explore area
+              </span>
+              <span>
+                <i className="square" /> Illustrated guide
+              </span>
             </div>
           </div>
-
-          <div className="map-legend">
-            <span>
-              <i className="bubble" /> Explore area
-            </span>
-            <span>
-              <i className="square" /> Illustrated guide
-            </span>
-          </div>
-        </div>
-
+        )}
         <aside className="map-pro-results">
           <div className="map-pro-heading">
             <div>
@@ -591,11 +687,11 @@ export function ExploreMapExperience({
                   ? `Professionals for “${query}”`
                   : filters.location
                     ? `Professionals in ${filters.location}`
-                    : "Professionals near London"}
+                    : "Professionals"}
               </h2>
               <p>
-                {professionals.length
-                  ? `${professionals.length} matching profiles`
+                {nearby.length
+                  ? `${nearby.length} matching profiles`
                   : "Discover independent beauty talent"}
               </p>
             </div>
@@ -639,6 +735,18 @@ export function ExploreMapExperience({
                     <div className="map-pro-tags">
                       <span>{pro.category}</span>
                       <span>{pro.city}</span>
+                      {pro.distance_miles != null && (
+                        <span className="map-pro-distance">
+                          {distanceLabel(pro.distance_miles)} · straight line
+                        </span>
+                      )}
+                      {pro.distance_miles == null && (
+                        <span>
+                          {pro.public_location_confirmed_at
+                            ? "Public pin confirmed"
+                            : "Area only · distance unavailable"}
+                        </span>
+                      )}
                       {pro.verification_status === "verified" && (
                         <span>Verified</span>
                       )}
@@ -663,7 +771,8 @@ export function ExploreMapExperience({
               <Sparkles size={28} aria-hidden />
               <h3>No matching professionals yet.</h3>
               <p>
-                Try another area or service while the GLOHAUS directory grows.
+                Try another area, a wider distance radius or a different service
+                while the GLOHAUS directory grows.
               </p>
             </div>
           )}

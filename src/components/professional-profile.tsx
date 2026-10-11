@@ -192,6 +192,17 @@ export function ProfessionalProfile({
                   {d.location_details ? `${d.location_details}, ` : ""}
                   {p.city}, England
                 </p>
+                {p.public_location_confirmed_at &&
+                  p.public_latitude != null &&
+                  p.public_longitude != null && (
+                    <a
+                      href={`https://www.openstreetmap.org/?mlat=${p.public_latitude}&mlon=${p.public_longitude}#map=18/${p.public_latitude}/${p.public_longitude}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View professional-confirmed studio pin
+                    </a>
+                  )}
               </div>
               <div>
                 <h3>Get in touch</h3>

@@ -81,6 +81,7 @@ export function BookingPicker({
   const [selected, setSelected] = useState(
     initialDate && initialSelection?.startsAt ? initialSelection.startsAt : "",
   );
+  const [clientBlocked, setClientBlocked] = useState(false);
   const [notice, setNotice] = useState("");
   const [loadingSlots, setLoadingSlots] = useState(Boolean(initialDate));
   const [submitting, setSubmitting] = useState(false);
@@ -172,6 +173,7 @@ export function BookingPicker({
       });
       const result = await response.json();
       if (!response.ok) {
+        setClientBlocked(result.error?.code === "CLIENT_BLOCKED");
         if (
           response.status === 401 ||
           result.error?.code === "ONBOARDING_REQUIRED"
@@ -181,7 +183,9 @@ export function BookingPicker({
           return;
         }
         throw new Error(
-          result.error?.code === "SLOT_TAKEN"
+          result.error?.code === "CLIENT_BLOCKED"
+            ? "This professional is not accepting new bookings from your account. You can choose another professional on Explore."
+            : result.error?.code === "SLOT_TAKEN"
             ? "That time has just been taken. Please choose another."
             : result.error?.code === "VERIFICATION_REQUIRED"
               ? "This professional has reached an unverified account limit. They need to complete identity verification before taking this booking."
@@ -398,6 +402,7 @@ export function BookingPicker({
           {notice && (
             <p className="form-notice" role="status">
               {notice}
+              {clientBlocked && <Link className="text-link" href="/explore">Find another professional</Link>}
             </p>
           )}
         </>
@@ -494,6 +499,7 @@ export function BookingPicker({
           {notice && (
             <p className="form-notice" role="status">
               {notice}
+              {clientBlocked && <Link className="text-link" href="/explore">Find another professional</Link>}
             </p>
           )}
         </>

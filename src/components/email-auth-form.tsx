@@ -1,5 +1,6 @@
 "use client";
 
+import { customerNameSchema } from "@/modules/accounts/customer-profile-domain";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -99,12 +100,14 @@ export function EmailAuthForm({
       const supabase = createClient();
       let result;
       if (mode === "sign-up") {
+        const name = audience === "customer" ? customerNameSchema.safeParse({firstName: formData.get("firstName"),lastName: formData.get("lastName") || ""}) : null;
+        if (name && !name.success) { setError("Enter your first name. Your surname is optional."); setPending(false); return; }
         result = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: authCallbackUrl(confirmationDestination()),
-            data: { glohaus_audience: audience },
+            data: { glohaus_audience: audience, ...(name?.success ? {first_name:name.data.firstName,last_name:name.data.lastName} : {}) },
           },
         });
       } else {
@@ -249,6 +252,11 @@ export function EmailAuthForm({
       <p className="eyebrow">{professional ? "GLOHAUS PRO" : "GLOHAUS"}</p>
       <h1>{title}</h1>
       <p className="auth-email-intro">{description}</p>
+      {mode === "sign-up" && audience === "customer" && <>
+        <label>First name<input name="firstName" autoComplete="given-name" maxLength={60} required /></label>
+        <label>Last name (optional)<input name="lastName" autoComplete="family-name" maxLength={59} /></label>
+        <p className="auth-email-intro">You can use your full name or just your first name. Add a profile photo from your account.</p>
+      </>}
       <label>
         Email
         <input name="email" type="email" autoComplete="email" required />

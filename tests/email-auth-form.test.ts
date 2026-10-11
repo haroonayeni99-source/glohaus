@@ -39,6 +39,8 @@ const credentials = new NativeFormData();
 credentials.set("email", "test@example.com");
 credentials.set("password", "test-password");
 beforeEach(() => {
+  credentials.set("firstName", "Test");
+  credentials.set("lastName", "Customer");
   vi.resetAllMocks();
   mocks.signOut.mockResolvedValue({ error: null });
   mocks.setters.length = 0;
@@ -83,6 +85,24 @@ describe("email authentication submission", () => {
       expect(mocks.push).not.toHaveBeenCalled();
     },
   );
+  it("saves optional full-name display data on customer signup", async () => {
+    mocks.signUp.mockResolvedValue({ data: { session: null }, error: null });
+    await submit("sign-up");
+    expect(mocks.signUp).toHaveBeenCalledWith(expect.objectContaining({options:expect.objectContaining({data:{glohaus_audience:"customer",first_name:"Test",last_name:"Customer"}})}));
+    expect(mocks.fetch).not.toHaveBeenCalled();
+  });
+  it("allows first-name-only signup", async () => {
+    credentials.set("lastName", "");
+    mocks.signUp.mockResolvedValue({ data: { session: null }, error: null });
+    await submit("sign-up");
+    expect(mocks.signUp).toHaveBeenCalledWith(expect.objectContaining({options:expect.objectContaining({data:expect.objectContaining({first_name:"Test",last_name:""})})}));
+  });
+  it("rejects missing first names before creating a customer login", async () => {
+    credentials.set("firstName", " ");
+    await submit("sign-up");
+    expect(mocks.signUp).not.toHaveBeenCalled();
+    expect(mocks.push).not.toHaveBeenCalled();
+  });
   it("recovers when internal account provisioning is unavailable", async () => {
     mocks.signIn.mockResolvedValue({
       data: { session: {}, user: {} },

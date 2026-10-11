@@ -1,3 +1,4 @@
+import { initialiseCustomerName } from "./customer-profile";
 import type { Account, Identity, Role } from "./domain";
 import { AccessError, authorize } from "./domain";
 
@@ -51,7 +52,14 @@ export async function ensureCustomerAccount(
   identity: Identity,
 ): Promise<Account> {
   const existing = await findAccount(db, identity.authId);
-  if (existing) return authorize(existing, identity);
+  if (existing) {
+    const account = authorize(existing, identity);
+    if (account.roles.includes("customer") && identity.customerName) {
+      await initialiseCustomerName(db, account.id, identity.customerName);
+      return (await findAccount(db, identity.authId))!;
+    }
+    return account;
+  }
   return enrolAccount(db, identity, "customer");
 }
 
@@ -91,6 +99,7 @@ export async function enrolAccount(
       [user.id],
     );
   }
+  if (role === "customer") await initialiseCustomerName(db,user.id,identity.customerName);
   const account = await findAccount(db, identity.authId);
   if (!account) throw new AccessError("UNAVAILABLE", 503);
   return account;

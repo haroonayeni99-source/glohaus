@@ -1,4 +1,5 @@
 import "server-only";
+import { customerNameFromMetadata } from "@/modules/accounts/customer-profile-domain";
 import { AccessError, type Identity } from "@/modules/accounts/domain";
 import { authConfigured } from "./config";
 import { createClient } from "@/lib/supabase/server";
@@ -15,6 +16,8 @@ export async function getIdentity(): Promise<Identity> {
   return {
     authId,
     email,
+    // Customer-provided identity details are display data, never authorization.
+    customerName: customerNameFromMetadata(claims?.user_metadata),
     displayName: email.split("@")[0]?.slice(0, 120) || "Your account",
     // getClaims() has verified the signature before these assurance details are
     // considered. A missing or stale MFA timestamp fails closed in authorize().

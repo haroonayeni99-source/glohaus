@@ -183,8 +183,7 @@ export function OwnerDashboardOverview({
         <div>
           <h1>GLOHAUS {isOwner ? "Owner" : "Admin"} Control Centre</h1>
           <p>
-            Manage your beauty marketplace · Users · Professionals · Bookings ·
-            Revenue · Growth
+            Find an account, review what needs attention or choose a tool below.
           </p>
         </div>
         <div className="owner-topbar-actions">
@@ -498,7 +497,7 @@ export function OwnerDashboardOverview({
               <article className="owner-dashboard-card owner-auth-summary">
                 <div className="owner-card-heading">
                   <div>
-                    <strong>Auth Accounts</strong>
+                    <strong>Sign-ups & sign-ins</strong>
                   </div>
                   <a href="#auth-accounts">View details →</a>
                 </div>
@@ -518,7 +517,7 @@ export function OwnerDashboardOverview({
                     </strong>
                   </div>
                   <div>
-                    <span>Linked app accounts</span>
+                    <span>GLOHAUS accounts set up</span>
                     <strong>
                       {authAccounts
                         ?.filter((a) => a.appUserId)
@@ -634,7 +633,7 @@ export function OwnerDashboardOverview({
                     <p>
                       {owner === null
                         ? "Audit data unavailable. Open Audit Log to retry."
-                        : "No owner audit events yet."}
+                        : "No changes recorded yet. Owner actions will appear here."}
                     </p>
                   )}
                 </div>

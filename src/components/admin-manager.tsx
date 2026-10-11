@@ -180,7 +180,7 @@ export function AdminManager({
           </div>
         </form>
       )}
-      <AdminSection id="users" title="App Users" search={false}>
+      <AdminSection id="users" title="Users" search={false}>
         <label className="admin-account-search">
           <span>Search users and professionals</span>
           <input
@@ -255,8 +255,8 @@ export function AdminManager({
                 <tr>
                   <td colSpan={5}>
                     {accountQuery
-                      ? "No accounts match your search."
-                      : "No accounts found."}
+                      ? "No accounts match. Try a name or email, or clear your search."
+                      : "No accounts yet. Customer and professional accounts will appear here after setup."}
                   </td>
                 </tr>
               )}
@@ -447,7 +447,7 @@ export function AdminManager({
           ) : (
             !data.professionalTrust?.length && (
               <p className="lead">
-                No professional profiles are available yet.
+                No professionals yet. Verification and LIVE controls will appear here when a professional sets up their profile.
               </p>
             )
           )}
@@ -475,6 +475,9 @@ export function AdminManager({
               </div>
             </article>
           ))}
+          {data.bookings?.length === 0 && (
+            <p className="lead">No bookings yet. Customer bookings and their status will appear here.</p>
+          )}
         </div>
       </AdminSection>
       <AdminSection
@@ -705,6 +708,9 @@ export function AdminManager({
               </button>
             </article>
           ))}
+          {data.reviews?.length === 0 && (
+            <p className="lead">No reviews yet. Reviews from completed bookings will appear here for moderation.</p>
+          )}
         </div>
       </AdminSection>
       <AdminSection id="reports" title="Safety reports" search={true}>
@@ -783,6 +789,9 @@ export function AdminManager({
               </button>
             </article>
           ))}
+          {!data.posts.length && (
+            <p className="lead">No posts yet. Professional posts will appear here for moderation.</p>
+          )}
         </div>
       </AdminSection>
     </>

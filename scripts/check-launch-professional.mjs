@@ -108,7 +108,7 @@ try {
       await page.getByLabel("Find portfolio media").fill("missing");
       await expect(
         page.getByText(
-          "No media matches. Clear your search or change the visibility filter.",
+          "No photos or videos match. Clear your search or change the visibility filter.",
         ),
       ).toBeVisible();
       await go("/professional/profile");

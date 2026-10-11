@@ -92,6 +92,7 @@ export default async function ProfessionalSetup() {
     ],
   ] as const;
   const complete = steps.filter((step) => step[3]).length;
+  const next = steps.find((step) => !step[3]);
   const progressPercent = Math.round((complete / steps.length) * 100);
   return (
     <div className="pro-app">
@@ -101,7 +102,7 @@ export default async function ProfessionalSetup() {
           ← Your workspace
         </Link>
         <p className="eyebrow">
-          PROFESSIONAL SETUP · {complete} OF {steps.length} CORE STEPS READY
+          PROFESSIONAL SETUP · {complete} OF {steps.length} STEPS COMPLETE
         </p>
         <h1>
           Build your page, <em>one simple step at a time.</em>
@@ -170,12 +171,15 @@ export default async function ProfessionalSetup() {
             {progressPercent}%
           </progress>
           <p>
-            This progress tracks the core steps needed to make your professional
-            page usable. Identity verification is optional for Starter access
-            and does not reduce your setup percentage. Unverified services are
-            limited to £200 or less, full payment through GLOHAUS at booking,
-            and up to five starter bookings. Verification unlocks the wider
-            marketplace features.
+            This checklist tracks your profile, services, hours and portfolio.
+            Verification is separate and does not change this percentage.
+            Check your verification status above for your booking limits and
+            available features.
+          </p>
+          <p>
+            <Link href={next?.[2] || "/professional/profile"}>
+              {next ? `Next: ${next[0]}` : "Setup complete — review your profile"} →
+            </Link>
           </p>
         </section>
         <section
@@ -212,7 +216,7 @@ export default async function ProfessionalSetup() {
                   )}
                 </span>
                 <Link className="button small" href={href}>
-                  {done ? "Edit" : "Continue"}
+                  {done ? "Edit" : ["Add profile details", "Add services", "Set working hours", "Add your work", "Publish your page"][index]}
                 </Link>
               </div>
             </article>

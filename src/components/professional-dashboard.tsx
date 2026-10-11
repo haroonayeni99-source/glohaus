@@ -190,7 +190,7 @@ export function ProfessionalDashboard({
           <div className="pro-panel-title">
             <div>
               <p className="pro-kicker">BUSINESS INSIGHTS</p>
-              <h2>Understand how your business is moving.</h2>
+              <h2>Your business at a glance</h2>
             </div>
             <span className="pro-status pro-status-confirmed">
               {data.plan === "starter"
@@ -249,11 +249,11 @@ export function ProfessionalDashboard({
             <div className="pro-empty-state">
               <CircleDollarSign size={29} aria-hidden />
               <h3>
-                Advanced business insights are available on Pro and Premium.
+                See more about your bookings
               </h3>
               <p>
-                Upgrade to see completed service value, repeat-client activity,
-                cancellation rate and booking-pattern insights.
+                Pro and Premium include booking trends, repeat clients and
+                cancellation rates. Compare plans to see what is included.
               </p>
               <Link href="/professional/plans">Compare professional plans</Link>
             </div>
@@ -399,7 +399,7 @@ export function ProfessionalDashboard({
           <Link href="/professional/products">
             <ShoppingBag size={18} aria-hidden />
             <span>
-              <strong>Shop / Products</strong>
+              <strong>Products</strong>
               <small>Create products and manage stock</small>
             </span>
           </Link>
@@ -456,7 +456,10 @@ export function ProfessionalDashboard({
               <div className="pro-empty-state">
                 <CalendarDays size={29} aria-hidden />
                 <h3>No upcoming appointments</h3>
-                <p>When clients confirm a booking, it will appear here.</p>
+                <p>
+                  Confirmed bookings will appear here. Check your working hours
+                  so clients can find a time that suits them.
+                </p>
                 <Link href="/professional/availability">
                   Review availability
                 </Link>

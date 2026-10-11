@@ -14,7 +14,7 @@ type SearchItem = {
 const staticItems: SearchItem[] = [
   [
     "website",
-    "Website Status",
+    "Website ON / OFF",
     "Public access and maintenance",
     "website-status",
   ],
@@ -26,19 +26,19 @@ const staticItems: SearchItem[] = [
   ],
   ["marketing", "Marketing", "Campaigns and feature feedback", "marketing"],
   ["settings", "Platform labels", "Community names", "settings"],
-  ["categories", "Categories", "Discovery categories", "categories"],
+  ["categories", "Categories", "Beauty services shown in search", "categories"],
   ["shop-fees", "Shop Fees", "Marketplace commission", "shop-fees"],
-  ["backend", "Backend Health", "Jobs and queues", "backend-health"],
+  ["backend", "System health", "Background tasks and emails", "backend-health"],
   [
     "payment-readiness",
-    "Payment Readiness",
-    "Payment configuration",
+    "Payment setup",
+    "Check booking payments and payouts",
     "payment-readiness",
   ],
   [
     "email-readiness",
-    "Email Readiness",
-    "Email configuration",
+    "Email setup",
+    "Check booking emails and sign-in security",
     "email-readiness",
   ],
   [
@@ -60,7 +60,7 @@ const staticItems: SearchItem[] = [
     "payment-disputes",
   ],
   ["overview", "Overview", "Owner dashboard", "overview"],
-  ["users", "App Users", "Manage accounts, restrictions and deletion", "users"],
+  ["users", "Users", "Manage accounts, restrictions and deletion", "users"],
   [
     "professionals",
     "Professionals",
@@ -77,19 +77,19 @@ const staticItems: SearchItem[] = [
   ["reviews", "Reviews", "Review moderation", "reviews"],
   [
     "auth",
-    "Auth Accounts",
-    "Supabase authentication accounts",
+    "Sign-ups & sign-ins",
+    "Email confirmation and account setup",
     "auth-accounts",
   ],
   [
     "commission",
-    "Pro Commission",
+    "Professional commission",
     "Professional commission controls",
     "professional-commission",
   ],
   ["fee", "Booking Fee", "Customer booking fee", "booking-fee"],
   ["referrals", "Referrals", "Professional referral leaderboard", "referrals"],
-  ["staff", "Staff & Admins", "Delegated access controls", "staff"],
+  ["staff", "Staff & Admins", "Staff roles and permissions", "staff"],
   ["audit", "Audit Log", "Owner action history", "audit"],
 ].map(([key, label, detail, targetId]) => ({ key, label, detail, targetId }));
 
@@ -210,7 +210,7 @@ export function OwnerAdminSearch({
               <small>{item.detail}</small>
             </button>
           ))}
-          {!results.length && <p>No matching Owner/Admin item found.</p>}
+          {!results.length && <p>No results. Try a name, email or tool such as Categories, Website or Email.</p>}
         </div>
       )}
     </div>

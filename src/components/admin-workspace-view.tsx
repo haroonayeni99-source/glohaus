@@ -84,7 +84,7 @@ export function AdminWorkspaceView({
           section?.querySelector("h2")?.textContent ||
           "administration change";
         const status = new FormData(form).get("status");
-        const message = `Confirm ${title}${status ? ` → ${String(status).replaceAll("_", " ")}` : ""}?\n\n${form.dataset.adminRefund ? "Approving this appeal authorises a refund. Review the percentage and reason carefully." : section?.id === "website-status" ? "This changes public access to the website." : section && ["booking-fee", "shop-fees", "professional-commission"].includes(section.id) ? "This changes the rule for future transactions. Review the values carefully." : "This may change account access or a moderation decision."}\nThe server will check your access and record the decision in the audit log.`;
+        const message = `Confirm ${title}${status ? ` → ${String(status).replaceAll("_", " ")}` : ""}?\n\n${form.dataset.adminRefund ? "Approving this appeal authorises a refund. Review the percentage and reason carefully." : section?.id === "website-status" ? "This changes public access to the website." : section && ["booking-fee", "shop-fees", "professional-commission"].includes(section.id) ? "This changes the rule for future transactions. Review the values carefully." : "This may change account access or a moderation decision."}\nGLOHAUS checks your permission before saving and records the decision in the audit log.`;
         if (!window.confirm(message)) {
           event.preventDefault();
           event.stopPropagation();
@@ -93,8 +93,8 @@ export function AdminWorkspaceView({
     >
       <div className="admin-view-toolbar">
         <span>
-          Choose a section from the menu. Your drafts stay here while you
-          navigate.
+          Choose a section. Switching sections keeps your unsaved entries.
+          Save before leaving this page.
         </span>
         <button
           type="button"

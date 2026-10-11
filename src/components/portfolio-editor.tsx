@@ -216,8 +216,8 @@ export function PortfolioEditor({ assets }: { assets: PortfolioAsset[] }) {
       {!visibleAssets.length && (
         <p className="lead">
           {assets.length
-            ? "No media matches. Clear your search or change the visibility filter."
-            : "Your portfolio starts here. Choose a photo, preview it and upload privately before publishing."}
+            ? "No photos or videos match. Clear your search or change the visibility filter."
+            : "Show clients your work. Choose a photo or video above, add a description and upload it. It stays private until you publish it."}
         </p>
       )}
       <div className="portfolio-grid">

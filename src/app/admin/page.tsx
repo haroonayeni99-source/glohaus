@@ -208,8 +208,8 @@ export default async function Page() {
             </p>
             <p className="lead">
               Set the professional-paid commission used by new Shop checkouts.
-              Each paid order keeps an immutable snapshot of the rule used at
-              purchase.
+              Each paid order keeps the commission rate that applied when it
+              was purchased.
             </p>
             {productFee === undefined ? (
               <AdminSectionUnavailable label="Shop fees" />
@@ -223,18 +223,17 @@ export default async function Page() {
             id="auth-accounts"
             className="admin-workspace-section admin-detail-card"
           >
-            <p className="eyebrow">AUTH & ACCOUNT PROVISIONING</p>
+            <p className="eyebrow">SIGN-UPS & SIGN-INS</p>
             <h2>All sign-ups and sign-ins</h2>
             <p className="lead">
-              Supabase Auth users are shown here even if GLOHAUS account
-              provisioning has not completed yet. This lets the Owner see
-              email-confirmation, app-account linkage, roles and last successful
-              sign-in in one place.
+              See every sign-up, including accounts whose GLOHAUS setup is not
+              complete. Check their email confirmation,
+              account status, roles and most recent successful sign-in.
             </p>
             {authAccounts ? (
               <OwnerAuthAccounts accounts={authAccounts} />
             ) : (
-              <AdminSectionUnavailable label="Authentication accounts" />
+              <AdminSectionUnavailable label="Sign-ups and sign-ins" />
             )}
           </section>
         )}
@@ -292,8 +291,8 @@ export default async function Page() {
               Privileged access · review the user and role before confirming
             </p>
             <p className="lead">
-              Only the owner can delegate or remove privileged access. Owner
-              access cannot be granted here.
+              Only the owner can add or remove staff permissions. You cannot
+              grant owner access here.
             </p>
             <OwnerControls data={owner} users={data.users} />
           </section>
@@ -303,11 +302,11 @@ export default async function Page() {
             id="backend-health"
             className="admin-workspace-section admin-detail-card"
           >
-            <p className="eyebrow">BACKEND HEALTH</p>
-            <h2>Jobs, queues and payment runtime</h2>
+            <p className="eyebrow">SYSTEM HEALTH</p>
+            <h2>Background tasks, emails and payments</h2>
             <p className="lead">
-              Operational health for scheduled maintenance, automated emails and
-              launch-critical payment configuration.
+              Check whether scheduled tasks, automated emails and payment setup
+              are working. These checks do not change settings or move money.
             </p>
             <OwnerBackendHealthPanel
               health={backendHealth}
@@ -324,8 +323,8 @@ export default async function Page() {
             <h2>Booking → payment → payout</h2>
             <p className="lead">
               {paymentReadiness.ready
-                ? "All required server, Stripe and database boundaries for the core booking money flow are present."
-                : "One or more required payment boundaries still need configuration before real customer money should be accepted."}
+                ? "All required setup checks for booking payments and payouts are passing."
+                : "Required payment setup is incomplete. Resolve the checks below before accepting real customer payments."}
             </p>
             <div className="service-edit-list">
               {paymentReadiness.checks.map((check) => (
@@ -359,20 +358,20 @@ export default async function Page() {
             id="email-readiness"
             className="admin-workspace-section admin-detail-card"
           >
-            <p className="eyebrow">EMAIL & AUTH READINESS</p>
-            <h2>Transactional email and account security</h2>
+            <p className="eyebrow">EMAIL & SIGN-IN SETUP</p>
+            <h2>Booking emails and sign-in security</h2>
             <div className="admin-readiness-summary">
               <p className="lead">
-                <strong>Transactional email:</strong>{" "}
+                <strong>Booking and order emails:</strong>{" "}
                 {emailReadiness.transactionalReady
                   ? "Ready. Booking emails, reminder jobs and Resend delivery tracking are configured."
                   : "Needs setup before GLOHAUS should rely on automated booking and reminder emails."}
               </p>
               <p className="lead">
-                <strong>Auth security:</strong>{" "}
+                <strong>Sign-in security:</strong>{" "}
                 {emailReadiness.authSecurityReady
-                  ? "Required Supabase Auth safeguards are confirmed."
-                  : "Still needs hardening. This does not stop GLOHAUS transactional emails from sending."}
+                  ? "Required sign-in security checks are confirmed."
+                  : "Some sign-in protections still need setup. This does not stop booking and order emails from sending."}
               </p>
             </div>
             <div className="service-edit-list">
@@ -382,8 +381,8 @@ export default async function Page() {
                     <h3>{check.label}</h3>
                     <p>
                       {check.group === "transactional"
-                        ? "Transactional email"
-                        : "Authentication security"}
+                        ? "Booking and order emails"
+                        : "Sign-in security"}
                       {" · "}
                       {check.ready
                         ? "Ready"
@@ -414,18 +413,19 @@ export default async function Page() {
             <p className="eyebrow">TRANSACTIONAL EMAIL HEALTH</p>
             <h2>Delivery outcomes</h2>
             <p className="lead">
-              Provider-confirmed delivery totals only. Recipient addresses and
-              raw webhook payloads are not exposed here.
+              Track booking and order emails. Accepted means Resend received the
+              email; delivered means delivery was confirmed. Sending and
+              delivery are separate steps.
             </p>
             <div className="service-edit-list">
               {[
                 ["Queued", emailDelivery.queued],
-                ["Accepted by provider", emailDelivery.accepted],
+                ["Accepted for sending", emailDelivery.accepted],
                 ["Delivered", emailDelivery.delivered],
                 ["Bounced", emailDelivery.bounced],
-                ["Complained", emailDelivery.complained],
+                ["Marked as spam", emailDelivery.complained],
                 ["Failed", emailDelivery.failed],
-                ["Suppressed recipients", emailDelivery.suppressed],
+                ["Blocked from sending", emailDelivery.suppressed],
               ].map(([label, value]) => (
                 <article className="service-edit-row" key={String(label)}>
                   <div>
@@ -437,8 +437,8 @@ export default async function Page() {
             </div>
             <p className="lead">
               {emailDelivery.lastProviderEventAt
-                ? `Last provider event: ${new Date(emailDelivery.lastProviderEventAt).toLocaleString("en-GB", { timeZone: "Europe/London" })}`
-                : "No provider delivery event has been recorded yet."}
+                ? `Last delivery update: ${new Date(emailDelivery.lastProviderEventAt).toLocaleString("en-GB", { timeZone: "Europe/London" })}`
+                : "No delivery updates yet. Confirmed email results will appear here."}
             </p>
           </section>
         )}
@@ -450,8 +450,8 @@ export default async function Page() {
             ["shop-fees", "Shop fees", owner],
             ["staff", "Staff and admins", owner],
             ["audit", "Audit log", owner],
-            ["backend-health", "Backend health", backendHealth],
-            ["payment-readiness", "Payment readiness", paymentReadiness],
+            ["backend-health", "System health", backendHealth],
+            ["payment-readiness", "Payment setup", paymentReadiness],
             ["email-delivery-health", "Email delivery", emailDelivery],
           ]
             .filter(([, , data]) => !data)
@@ -479,7 +479,7 @@ export default async function Page() {
               {owner.audit.map((entry) => (
                 <article className="service-edit-row" key={entry.id}>
                   <div>
-                    <h3>{entry.action}</h3>
+                    <h3>{entry.action.replaceAll("_", " ")}</h3>
                     <p>
                       {entry.actor_role || "operator"} ·{" "}
                       {new Date(entry.created_at).toLocaleString("en-GB", {
@@ -491,7 +491,7 @@ export default async function Page() {
                 </article>
               ))}
               {!owner.audit.length && (
-                <p className="lead">No owner audit events yet.</p>
+                <p className="lead">No changes recorded yet. Owner actions and their reasons will appear here.</p>
               )}
             </div>
           </AdminSection>

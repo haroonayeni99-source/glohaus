@@ -44,7 +44,7 @@ const coreSections = [
   ["Overview", "overview", LayoutDashboard],
   ["Settings", "settings", Settings],
   ["Categories", "categories", BookOpenCheck],
-  ["App Users", "users", UsersRound],
+  ["Users", "users", UsersRound],
   ["Professionals", "professionals", BadgeCheck],
   ["Verification & LIVE", "live-access", Radio],
   ["Bookings", "bookings", CalendarDays],
@@ -59,18 +59,18 @@ const coreSections = [
 ] as const;
 
 const ownerSections = [
-  ["Website Status", "website-status", Globe2],
+  ["Website ON / OFF", "website-status", Globe2],
   ["Marketing", "marketing", MessageSquareWarning],
   ["Homepage Images", "homepage-media", Settings],
   ["Booking Fee", "booking-fee", CreditCard],
   ["Shop Fees", "shop-fees", CreditCard],
-  ["Auth Accounts", "auth-accounts", UsersRound],
-  ["Pro Commission", "professional-commission", CreditCard],
+  ["Sign-ups & sign-ins", "auth-accounts", UsersRound],
+  ["Professional commission", "professional-commission", CreditCard],
   ["Referrals", "referrals", UsersRound],
   ["Admins & Access", "staff", ShieldCheck],
-  ["Backend Health", "backend-health", BarChart3],
-  ["Payment Readiness", "payment-readiness", CreditCard],
-  ["Email Readiness", "email-readiness", ShieldCheck],
+  ["System health", "backend-health", BarChart3],
+  ["Payment setup", "payment-readiness", CreditCard],
+  ["Email setup", "email-readiness", ShieldCheck],
   ["Email Delivery", "email-delivery-health", MessageSquareWarning],
   ["Audit Log", "audit", BarChart3],
 ] as const;

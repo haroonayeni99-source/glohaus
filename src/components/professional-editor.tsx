@@ -500,22 +500,15 @@ export function ProfessionalEditor({
                 )}
               </article>
             ))}
-            {!services.some(
-              (service) =>
-                filter === "all" ||
-                (filter === "active"
-                  ? service.active !== false
-                  : service.active === false),
-            ) && (
-              <p className="service-empty">
-                No {filter === "all" ? "" : filter} services yet. Add your
-                service below.
-              </p>
-            )}
-            {!visibleServices.length && services.length > 0 && (
-              <p role="status">
-                No services match. Clear your search or change the status
-                filter.
+            {!visibleServices.length && (
+              <p className="service-empty" role="status">
+                {serviceSearch.trim()
+                  ? "No services match. Clear your search or change the status filter."
+                  : !services.length
+                    ? "No services yet. Add your first service below with its name, price and duration."
+                    : filter === "inactive"
+                      ? "No inactive services. Services you turn off will appear here."
+                      : "No active services. Add a service below, or edit a saved service and choose Active under Availability in your menu."}
               </p>
             )}
           </section>

@@ -42,19 +42,19 @@ export function OwnerBackendHealthPanel({
         </article>
         <article>
           <strong>{health.jobs.notifications.failures24h}</strong>
-          <span>Email worker failures · 24h</span>
+          <span>Automated email failures · 24h</span>
         </article>
         <article>
           <strong>{exhausted}</strong>
-          <span>Exhausted email jobs</span>
+          <span>Emails that used all retry attempts</span>
         </article>
         <article>
-          <strong>{requiredPaymentBlocked.length}</strong>
-          <span>Required payment checks blocked</span>
+          <strong>{payment ? requiredPaymentBlocked.length : "—"}</strong>
+          <span>Payment setup checks needing attention</span>
         </article>
         <article>
           <strong>{integrityIssues}</strong>
-          <span>Financial integrity issues</span>
+          <span>Payment record issues</span>
         </article>
       </div>
 
@@ -71,7 +71,7 @@ export function OwnerBackendHealthPanel({
 
         <article className="service-edit-row">
           <div>
-            <h3>Notification & email worker</h3>
+            <h3>Automated notifications and emails</h3>
             <p>Last success: {dateTime(health.jobs.notifications.lastSuccessAt)}</p>
             <small>
               Last failure: {dateTime(health.jobs.notifications.lastFailureAt)}
@@ -81,14 +81,14 @@ export function OwnerBackendHealthPanel({
 
         <article className="service-edit-row">
           <div>
-            <h3>Email queues</h3>
+            <h3>Emails waiting to send</h3>
             <p>
               Booking {health.queues.bookingEmailPending} pending · Shop{" "}
               {health.queues.productEmailPending} pending · Marketing{" "}
               {health.queues.marketingPending} pending
             </p>
             <small>
-              Exhausted: booking {health.queues.bookingEmailExhausted}, Shop{" "}
+              All retry attempts used: booking {health.queues.bookingEmailExhausted}, Shop{" "}
               {health.queues.productEmailExhausted}, marketing{" "}
               {health.queues.marketingExhausted}
             </small>
@@ -97,18 +97,18 @@ export function OwnerBackendHealthPanel({
 
         <article className="service-edit-row">
           <div>
-            <h3>Financial integrity</h3>
+            <h3>Payment record checks</h3>
             <p>
-              Ledger {health.integrity.unbalancedLedgerTransactions} unbalanced ·
+              Unbalanced payment records {health.integrity.unbalancedLedgerTransactions} ·
               negative balances {health.integrity.negativeProfessionalAvailableBalances}
             </p>
             <small>
-              Missing booking quotes {health.integrity.bookingsMissingQuote} ·
-              paid Shop orders missing ledger {health.integrity.paidOrdersMissingPaymentLedger}
+              Missing booking price records {health.integrity.bookingsMissingQuote} ·
+              paid Shop orders missing payment records {health.integrity.paidOrdersMissingPaymentLedger}
             </small>
             <small>
               Refund mismatches {health.integrity.bookingRefundAmountMismatches} ·
-              transfer ID gaps {health.integrity.bookingTransfersMissingProviderId + health.integrity.productTransfersMissingProviderId} ·
+              missing transfer references {health.integrity.bookingTransfersMissingProviderId + health.integrity.productTransfersMissingProviderId} ·
               payout mismatches {health.integrity.payoutAmountMismatches} ·
               dispute reserve mismatches {health.integrity.openDisputeReserveMismatches}
             </small>
@@ -120,26 +120,29 @@ export function OwnerBackendHealthPanel({
 
         <article className="service-edit-row">
           <div>
-            <h3>Payment runtime</h3>
+            <h3>Payment setup</h3>
             <p>
-              {requiredPaymentBlocked.length
-                ? "Real-money flows are not launch-ready."
-                : "All required payment readiness checks are passing."}
+              {!payment
+                ? "Payment setup status could not be loaded. Open Payment setup and retry loading the page."
+                : requiredPaymentBlocked.length
+                  ? "Required payment setup is incomplete. Review the checks before accepting real customer payments."
+                  : "All required payment setup checks are passing."}
             </p>
             {requiredPaymentBlocked.length > 0 && (
               <small>
                 Blocked: {requiredPaymentBlocked.map((check) => check.label).join(", ")}
               </small>
             )}
+            <a href="#payment-readiness">View payment setup checks →</a>
           </div>
           <span
             className={`admin-status ${
-              requiredPaymentBlocked.length
+              !payment || requiredPaymentBlocked.length
                 ? "admin-status-suspended"
                 : "admin-status-active"
             }`}
           >
-            {requiredPaymentBlocked.length ? "ATTENTION" : "HEALTHY"}
+            {!payment ? "UNAVAILABLE" : requiredPaymentBlocked.length ? "ATTENTION" : "HEALTHY"}
           </span>
         </article>
       </div>

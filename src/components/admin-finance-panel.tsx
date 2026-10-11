@@ -35,8 +35,8 @@ export function AdminFinancePanel({
       <AdminSection id="payments" title="Money moving through GLOHAUS">
         <p className="eyebrow">PLATFORM PAYMENTS · READ ONLY</p>
         <p className="lead">
-          Read-only operational totals from the protected ledger, booking
-          payments, professional subscriptions and payout records.
+          View totals for booking payments, professional subscriptions and
+          payouts. Viewing this page does not move money.
         </p>
 
         <div className="analytics-grid">
@@ -117,9 +117,9 @@ export function AdminFinancePanel({
         <p className="eyebrow">BUSINESS ANALYTICS</p>
         <h2>Revenue and platform obligations</h2>
         <p className="lead">
-          Ledger revenue is net of any ledger reversals. Subscription MRR is the
-          current monthly list value of active Pro/Premium subscriptions, not a
-          promise that every invoice has been collected.
+          Revenue is reduced when a revenue entry is reversed. Monthly
+          subscription value uses the current prices of active Pro and Premium
+          plans; it does not mean every invoice has been paid.
         </p>
 
         <div className="analytics-grid">
@@ -163,15 +163,15 @@ export function AdminFinancePanel({
             <article className="service-edit-row" key={row.source}>
               <div>
                 <h3>{sourceLabel(row.source)}</h3>
-                <p>Ledger-recognised platform fees during the last 30 days.</p>
+                <p>Platform fees recorded during the last 30 days.</p>
               </div>
               <strong>{money(row.revenuePence)}</strong>
             </article>
           ))}
           {!data.revenueBySource30d.length && (
             <p className="lead">
-              No platform-fee ledger revenue has been posted in the last 30
-              days.
+              No platform fees recorded in the last 30 days. New fee revenue will
+              appear here once it is recorded.
             </p>
           )}
         </div>

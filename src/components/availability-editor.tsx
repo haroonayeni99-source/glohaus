@@ -42,8 +42,8 @@ export function AvailabilityEditor({ initial }: { initial: Rule[] }) {
     >
       <h2>Your usual working week.</h2>
       <p className="lead">
-        Times are in Europe/London and automatically follow British Summer Time.
-        Unchecked days are closed.
+        Choose your working days, then set your start and finish times. Times
+        follow the UK clock, including British Summer Time. Unchecked days are closed.
       </p>
       {[1, 2, 3, 4, 5, 6, 0].map((weekday) => {
         const rule = rules.find((r) => r.weekday === weekday);

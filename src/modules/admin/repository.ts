@@ -339,21 +339,21 @@ export async function paymentLaunchReadiness(): Promise<PaymentLaunchReadiness> 
   });
 
   const checks = [
-    { key: "stripe-key", label: "Stripe secret key", ready: Boolean(process.env.STRIPE_SECRET_KEY), required: true },
-    { key: "stripe-webhook", label: "Stripe booking/payment webhook secret", ready: Boolean(process.env.STRIPE_WEBHOOK_SECRET), required: true },
-    { key: "connect-webhook", label: "Stripe Connect webhook secret", ready: Boolean(process.env.STRIPE_CONNECT_WEBHOOK_SECRET), required: true },
-    { key: "payment-db", label: "Protected payment-worker database connection", ready: Boolean(process.env.PAYMENT_DATABASE_URL), required: true },
-    { key: "app-url", label: "Canonical GLOHAUS app URL", ready: Boolean(process.env.NEXT_PUBLIC_APP_URL), required: true },
-    { key: "reserve-booking", label: "Booking reservation boundary", ready: Boolean(database?.reserve_booking), required: true },
-    { key: "booking-quote", label: "Immutable booking financial quote", ready: Boolean(database?.prepare_quote), required: true },
-    { key: "checkout-webhook-db", label: "Paid checkout application", ready: Boolean(database?.apply_checkout), required: true },
-    { key: "booking-finance", label: "Booking finance ledger recording", ready: Boolean(database?.record_finance), required: true },
+    { key: "stripe-key", label: "Stripe payment connection", ready: Boolean(process.env.STRIPE_SECRET_KEY), required: true },
+    { key: "stripe-webhook", label: "Booking payment updates from Stripe", ready: Boolean(process.env.STRIPE_WEBHOOK_SECRET), required: true },
+    { key: "connect-webhook", label: "Professional account updates from Stripe", ready: Boolean(process.env.STRIPE_CONNECT_WEBHOOK_SECRET), required: true },
+    { key: "payment-db", label: "Secure payment database connection", ready: Boolean(process.env.PAYMENT_DATABASE_URL), required: true },
+    { key: "app-url", label: "GLOHAUS website address", ready: Boolean(process.env.NEXT_PUBLIC_APP_URL), required: true },
+    { key: "reserve-booking", label: "Booking reservations", ready: Boolean(database?.reserve_booking), required: true },
+    { key: "booking-quote", label: "Saved booking prices and fees", ready: Boolean(database?.prepare_quote), required: true },
+    { key: "checkout-webhook-db", label: "Checkout payment confirmation", ready: Boolean(database?.apply_checkout), required: true },
+    { key: "booking-finance", label: "Booking payment records", ready: Boolean(database?.record_finance), required: true },
     { key: "booking-release", label: "24-hour booking proceeds release", ready: Boolean(database?.release_booking), required: true },
-    { key: "connect-sync", label: "Stripe Connect payout readiness sync", ready: Boolean(database?.sync_connect), required: true },
-    { key: "verification-sync", label: "Stripe KYC verification sync", ready: Boolean(database?.sync_verification), required: true },
-    { key: "payout-request", label: "Professional payout reservation", ready: Boolean(database?.request_payout), required: true },
-    { key: "payout-provider", label: "Stripe payout reconciliation", ready: Boolean(database?.record_payout && database?.apply_payout), required: true },
-    { key: "instant-fee", label: "Instant payout 4% provider-fee configuration", ready: process.env.STRIPE_INSTANT_PAYOUT_FEE_CONFIGURED === "true", required: false },
+    { key: "connect-sync", label: "Professional payout account updates", ready: Boolean(database?.sync_connect), required: true },
+    { key: "verification-sync", label: "Professional verification updates", ready: Boolean(database?.sync_verification), required: true },
+    { key: "payout-request", label: "Professional withdrawal requests", ready: Boolean(database?.request_payout), required: true },
+    { key: "payout-provider", label: "Payout status updates from Stripe", ready: Boolean(database?.record_payout && database?.apply_payout), required: true },
+    { key: "instant-fee", label: "Instant withdrawal 4% fee setup", ready: process.env.STRIPE_INSTANT_PAYOUT_FEE_CONFIGURED === "true", required: false },
   ];
 
   return {
@@ -377,14 +377,14 @@ export type EmailLaunchReadiness = {
 
 export function emailLaunchReadiness(): EmailLaunchReadiness {
   const checks: EmailLaunchReadiness["checks"] = [
-    { key: "resend-key", label: "Resend transactional email API key", ready: Boolean(process.env.RESEND_API_KEY), required: true, group: "transactional" },
+    { key: "resend-key", label: "Resend email connection", ready: Boolean(process.env.RESEND_API_KEY), required: true, group: "transactional" },
     { key: "email-from", label: "Verified GLOHAUS sender address", ready: Boolean(process.env.EMAIL_FROM), required: true, group: "transactional" },
-    { key: "resend-webhook", label: "Verified Resend delivery webhook secret", ready: Boolean(process.env.RESEND_WEBHOOK_SECRET), required: true, group: "transactional" },
-    { key: "notification-cron", label: "Protected notification scheduler secret", ready: Boolean(process.env.CRON_SECRET), required: true, group: "transactional" },
-    { key: "email-app-url", label: "Canonical HTTPS link origin", ready: Boolean(process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://")), required: true, group: "transactional" },
-    { key: "supabase-smtp", label: "Supabase Auth custom SMTP confirmed", ready: process.env.SUPABASE_CUSTOM_SMTP_CONFIGURED === "true", required: true, group: "auth" },
-    { key: "leaked-passwords", label: "Supabase leaked-password protection confirmed", ready: process.env.SUPABASE_LEAKED_PASSWORD_PROTECTION_CONFIGURED === "true", required: true, group: "auth" },
-    { key: "auth-captcha", label: "Supabase Auth CAPTCHA / bot protection confirmed", ready: process.env.SUPABASE_AUTH_CAPTCHA_CONFIGURED === "true", required: false, group: "auth" },
+    { key: "resend-webhook", label: "Email delivery updates from Resend", ready: Boolean(process.env.RESEND_WEBHOOK_SECRET), required: true, group: "transactional" },
+    { key: "notification-cron", label: "Secure automated email schedule", ready: Boolean(process.env.CRON_SECRET), required: true, group: "transactional" },
+    { key: "email-app-url", label: "Secure GLOHAUS links in emails", ready: Boolean(process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://")), required: true, group: "transactional" },
+    { key: "supabase-smtp", label: "Sign-in email service confirmed", ready: process.env.SUPABASE_CUSTOM_SMTP_CONFIGURED === "true", required: true, group: "auth" },
+    { key: "leaked-passwords", label: "Leaked-password protection confirmed", ready: process.env.SUPABASE_LEAKED_PASSWORD_PROTECTION_CONFIGURED === "true", required: true, group: "auth" },
+    { key: "auth-captcha", label: "Sign-in CAPTCHA and bot protection confirmed", ready: process.env.SUPABASE_AUTH_CAPTCHA_CONFIGURED === "true", required: false, group: "auth" },
   ];
 
   const requiredReady = (group: "transactional" | "auth") =>

@@ -1,5 +1,17 @@
 import Link from "next/link";
 import { setupSteps, type SetupProgress } from "@/modules/professionals/setup";
+const stepGuidance = {
+  profile:
+    "Add your business name, a short introduction and the area you serve.",
+  services:
+    "Add a service with its price and duration so clients know what they can book.",
+  availability:
+    "Choose the days and times clients can book you. You can add time off separately.",
+  portfolio:
+    "Add a photo of your work, then publish it when you are ready to share it.",
+  published:
+    "Preview your page, then choose Published in your profile settings to make it visible.",
+} satisfies Record<keyof SetupProgress, string>;
 export function ProfessionalNextSteps({
   progress,
 }: {
@@ -13,7 +25,7 @@ export function ProfessionalNextSteps({
       aria-label="Profile completion and next step"
     >
       <div className="pro-panel-title">
-        <h2>{next ? "Your next step" : "Your page is ready"}</h2>
+        <h2>{next ? "Your next step" : "Setup checklist complete"}</h2>
         <strong>
           {complete} / {setupSteps.length} complete
         </strong>
@@ -25,7 +37,7 @@ export function ProfessionalNextSteps({
       />
       <p>
         {next
-          ? `${next[0]} to help customers discover and book your work.`
+          ? stepGuidance[next[2]]
           : "Keep your portfolio and availability up to date so customers know what they can book."}
       </p>
       <div className="editor-actions">

@@ -28,7 +28,7 @@ export function OwnerAuthAccounts({ accounts }: { accounts: OwnerAuthAccount[] }
   return (
     <>
       <label className="admin-account-search">
-        <span>Search authentication accounts</span>
+        <span>Search sign-ups</span>
         <input
           type="search"
           value={search}
@@ -36,14 +36,14 @@ export function OwnerAuthAccounts({ accounts }: { accounts: OwnerAuthAccount[] }
           placeholder="Email, role or account status"
           autoComplete="off"
         />
-        <small>{visibleAccounts.length} of {accounts.length} auth accounts shown</small>
+        <small>{visibleAccounts.length} of {accounts.length} sign-ups shown</small>
       </label>
       <div className="admin-table-wrap">
       <table className="admin-table">
         <thead>
           <tr>
             <th>Email</th>
-            <th>Supabase</th>
+            <th>Email confirmation</th>
             <th>GLOHAUS account</th>
             <th>Roles</th>
             <th>Last sign in</th>
@@ -55,12 +55,12 @@ export function OwnerAuthAccounts({ accounts }: { accounts: OwnerAuthAccount[] }
               <td>{account.email}</td>
               <td>
                 <span className={`admin-status ${account.emailConfirmedAt ? "admin-status-active" : "admin-status-suspended"}`}>
-                  {account.emailConfirmedAt ? "EMAIL CONFIRMED" : "AWAITING EMAIL"}
+                  {account.emailConfirmedAt ? "EMAIL CONFIRMED" : "AWAITING CONFIRMATION"}
                 </span>
               </td>
               <td>
                 <span className={`admin-status ${account.appUserId ? "admin-status-active" : "admin-status-suspended"}`}>
-                  {account.appUserId ? account.appStatus || "linked" : "NOT PROVISIONED"}
+                  {account.appUserId ? account.appStatus || "linked" : "SETUP NOT FINISHED"}
                 </span>
               </td>
               <td>{account.roles.length ? account.roles.join(", ") : "None yet"}</td>
@@ -68,7 +68,7 @@ export function OwnerAuthAccounts({ accounts }: { accounts: OwnerAuthAccount[] }
             </tr>
           ))}
           {!visibleAccounts.length && (
-            <tr><td colSpan={5}>{query ? "No authentication accounts match your search." : "No Supabase Auth users found."}</td></tr>
+            <tr><td colSpan={5}>{query ? "No sign-ups match. Try another email or clear your search." : "No sign-ups yet. New accounts will appear here when someone signs up."}</td></tr>
           )}
         </tbody>
       </table>

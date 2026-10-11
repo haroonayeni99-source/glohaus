@@ -58,6 +58,81 @@
   :where(.lead, small, .admin-section-intro) {
   color: var(--ui-muted);
 }
+/* Legacy professional cards set pale text independently of their light surface. */
+:root:not([data-theme="night"])
+  .pro-app
+  :is(
+    .pro-live-card,
+    .pro-live-card h2,
+    .pro-live-requirements strong,
+    .pro-appointment-list strong
+  ) {
+  color: var(--ui-text);
+}
+:root:not([data-theme="night"])
+  .pro-app
+  :is(
+    .pro-live-card > p,
+    .pro-live-card small,
+    .pro-live-requirements span,
+    .pro-appointment-list time,
+    .pro-appointment-list div > span,
+    .pro-footnote
+  ) {
+  color: var(--ui-muted);
+}
+:root:not([data-theme="night"])
+  .pro-app
+  :is(
+    .pro-main h1,
+    .pro-main h3,
+    .service-edit-row strong,
+    .pro-product-editor label,
+    .pro-icon-button,
+    .button
+  ) {
+  color: var(--ui-text);
+}
+:root:not([data-theme="night"])
+  .pro-app
+  :is(
+    .pro-kicker,
+    .pro-back-link,
+    .pro-panel-title > a,
+    .pro-profile-panel > a,
+    .pro-desktop-nav a[aria-current="page"]
+  ) {
+  color: #933055;
+}
+:root:not([data-theme="night"])
+  .pro-app
+  .pro-desktop-nav
+  a:not([aria-current="page"]) {
+  color: var(--ui-muted);
+}
+:root:not([data-theme="night"])
+  .pro-app
+  :is(
+    .pro-header-shortcuts a,
+    .pro-account-name,
+    .pro-header .mobile-site-menu summary
+  ) {
+  color: #fdf8fa;
+}
+:root:not([data-theme="night"]) .pro-app .pro-header-account .text-link {
+  color: var(--ui-text);
+  background: var(--ui-surface);
+}
+:root:not([data-theme="night"])
+  .pro-app
+  .product-order-card
+  :is(header small, .product-order-items small) {
+  color: var(--ui-muted);
+}
+:root:not([data-theme="night"]) .pro-app .product-order-actions button {
+  background: #933055;
+  color: #fff;
+}
 .admin-workspace [hidden] {
   display: none !important;
 }

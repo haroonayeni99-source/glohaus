@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   BadgeCheck,
   ChevronDown,
@@ -107,6 +107,12 @@ export function ExploreMapExperience({
   const [position, setPosition] = useState<Coordinates | null>(null);
   const [radius, setRadius] = useState(10);
   const requestSequence = useRef(0);
+  useEffect(
+    () => () => {
+      requestSequence.current++;
+    },
+    [],
+  );
   const nearby = nearbyResults ?? professionals;
   const mapped = nearby.filter(
     (pro) =>

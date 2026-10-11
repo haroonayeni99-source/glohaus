@@ -5,7 +5,7 @@
 - Professional Profile includes an optional public map-pin editor. A UK business postcode lookup finds an area centre; the professional must choose a studio pin and explicitly confirm public display. Device location is offered only on request, with an accuracy guard. Publishing, changing, removing and retrying a failed load have clear results.
 - Confirmed pins use actual latitude/longitude on an interactive street map. Missing pins retain area-only discovery without invented distances. The location label is **professional-confirmed**, separate from identity verification.
 - Explore offers a bounded distance radius and nearest-first results across the full matching directory. All existing service, area, price, rating, travel, verification and today filters apply before the 100-result cap. Capped searches explain how to narrow them. Distances are approximate straight-line miles, not route or travel estimates.
-- Visitor coordinates travel only in a same-origin, uncached POST body, are not stored, and never enter URLs or cursors. Clearing a location invalidates pending callbacks and searches. Denied, coarse or failed location searches preserve normal browsing.
+- Visitor coordinates travel only in a same-origin, uncached POST body, are not stored, and never enter URLs or cursors. Clearing a location or leaving Explore invalidates pending callbacks and searches. Denied, coarse or failed location searches preserve normal browsing.
 - Street tiles load only after a user asks for them, with visible OpenStreetMap attribution and privacy information. Tests mock tiles, geocoding and all mutations; they make no external map requests.
 
 ## Data boundaries
@@ -16,10 +16,10 @@ Production verification: table has zero records, RLS and FORCE RLS are enabled, 
 
 ## Verification
 
-- 596 tests across 68 files, including real database ownership, consent, visibility, coordinate constraints, global nearest ordering beyond the first directory page, radius and combined-filter checks, and route failure/privacy checks.
+- 597 tests across 69 files, including real database ownership, consent, visibility, coordinate constraints, global nearest ordering beyond the first directory page, radius and combined-filter checks, and route failure/privacy checks.
 - Lint, TypeScript and production build pass.
 - 36 desktop/mobile production-mode browser regression cases pass.
-- Eight complete public-pin/Explore journeys: light and night at widths 320, 390, 768 and 1440. Includes postcode area to confirmed pin, disabled publication before confirmation, publish/remove, device pin, failed-load retry, accurate distance sorting, radius filtering, no coordinate URL, map links/controls/attribution, clear-location race, server failure, coarse device position and denied permission. No horizontal overflow or browser errors.
+- Eight complete public-pin/Explore journeys: light and night at widths 320, 390, 768 and 1440. Includes postcode area to confirmed pin, disabled publication before confirmation, publish/remove, device pin, failed-load retry, accurate distance sorting, radius filtering, no coordinate URL, map links/controls/attribution, clear-location race, server failure, coarse device position and denied permission. No horizontal overflow or browser errors. A separate React regression reproduces a delayed device callback after leaving Explore and confirms that it sends no search request.
 - New location journeys run in the existing foundation CI after browser tests.
 
 ## Google Search Console

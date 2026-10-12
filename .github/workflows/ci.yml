@@ -30,6 +30,16 @@ jobs:
         run: node scripts/check-location-journeys.mjs
       - name: Verify client blocking and customer identity journeys
         run: node scripts/check-client-blocking.mjs
+      - name: Verify desktop homepage and unchanged mobile layouts
+        run: node scripts/check-desktop-home.mjs
+      - name: Save desktop visual checks
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: desktop-home-visual-checks
+          path: |
+            reports/desktop-home-*.png
+            reports/desktop-home-results.json
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

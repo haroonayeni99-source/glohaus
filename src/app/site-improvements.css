@@ -496,3 +496,43 @@
 :root[data-theme="night"] .mobile-home-account a,
 :root[data-theme="night"] .mobile-home-section-title a,
 :root[data-theme="night"] .mobile-home-shop-link { color: var(--ink); }
+
+/* Desktop home only: keep the brand inside the sidebar and give sign-out the
+   same polished control treatment as the account chip. Mobile stays intact. */
+@media (min-width: 1100px) {
+  .desktop-customer-home .customer-desktop-sidebar > .brand {
+    max-width: 100%;
+    margin: 0 0 34px;
+    gap: 8px;
+    font-size: 1.55rem;
+    line-height: 1.1;
+    letter-spacing: -.045em;
+  }
+  .desktop-customer-home .customer-desktop-sidebar > .brand .brand-crown {
+    width: 17px;
+    height: 17px;
+    transform: none;
+  }
+  .desktop-customer-home .customer-desktop-topbar > div > button.text-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 7px 16px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--ink);
+    font-size: .82rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-decoration: none;
+    box-shadow: 0 2px 5px rgb(28 24 25 / 4%);
+    transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .desktop-customer-home .customer-desktop-topbar > div > button.text-link:hover {
+    background: var(--paper);
+    border-color: var(--muted);
+    box-shadow: 0 3px 8px rgb(28 24 25 / 8%);
+  }
+}

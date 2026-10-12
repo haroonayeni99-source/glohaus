@@ -11,6 +11,7 @@ export function ReviewForm({ bookingId }: { bookingId: string }) {
       className="editor-form"
       onSubmit={async (event) => {
         event.preventDefault();
+        if (busy || published) return;
         const data = new FormData(event.currentTarget);
         setBusy(true);
         try {
@@ -24,6 +25,19 @@ export function ReviewForm({ bookingId }: { bookingId: string }) {
               publicName: data.get("publicName"),
             }),
           });
+          if (response.status === 409) {
+            const result = await response.json();
+            if (result.error?.code === "REVIEW_ALREADY_EXISTS") {
+              setPublished(true);
+              setNotice("You have already reviewed this appointment.");
+              router.refresh();
+              return;
+            }
+          }
+          if (response.status === 403)
+            throw new Error(
+              "You can review only your own completed appointments after they have ended.",
+            );
           if (!response.ok)
             throw new Error(
               "Your review could not be saved. Please refresh and try again.",

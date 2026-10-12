@@ -48,7 +48,10 @@ try {
           await button.focus();
           expect(await button.evaluate(el => getComputedStyle(el).outlineStyle)).not.toBe("none");
         }
-        if (width === 1440 && !guest) await page.screenshot({ path: `reports/desktop-home-${theme}.png`, fullPage: false });
+        if (width === 1440 && !guest) {
+          await page.locator(".home-topline").click();
+          await page.screenshot({ path: `reports/desktop-home-${theme}.png`, fullPage: false });
+        }
         expect(errors).toEqual([]);
         results.push({ theme, width, guest, passed: true });
         await page.close();
@@ -58,7 +61,7 @@ try {
       const page = await browser.newPage({ viewport: { width, height: 1000 } });
       await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.request().resourceType() === "image" ? route.fulfill({ contentType: "image/png", body: placeholder }) : route.abort());
       await page.goto(`http://127.0.0.1:3004/?theme=${theme}`);
-      await expect(page.locator(".mobile-existing-home")).toBeVisible();
+      await expect(page.locator(".mobile-customer-home")).toBeVisible();
       await expect(page.locator(".desktop-customer-home")).toBeHidden();
       const before = await page.screenshot();
       await page.evaluate(css => {

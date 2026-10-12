@@ -137,6 +137,8 @@ export type PublicProfessional = {
   photo_alt?: string | null;
   rating?: number | null;
   review_count?: number;
+  // Discovery confidence score; never displayed as the professional's star rating.
+  ranking_score?: number;
   from_price_pence?: number | null;
   travels_to_you?: boolean;
   available_today?: boolean;

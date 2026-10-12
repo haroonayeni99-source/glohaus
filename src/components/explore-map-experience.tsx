@@ -700,6 +700,9 @@ export function ExploreMapExperience({
                   ? `${nearby.length} matching profiles`
                   : "Discover independent beauty talent"}
               </p>
+              <p className="map-next-availability">
+                {position ? "Closest first · confirmed public locations" : "Recommended · ratings and review history"}
+              </p>
             </div>
           </div>
 

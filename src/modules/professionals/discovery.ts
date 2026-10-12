@@ -40,6 +40,7 @@ const cursorSchema = z
   .object({
     name: z.string().min(2).max(100),
     id: z.uuid(),
+    score: z.number().min(1).max(5),
     query: z.string().max(100),
     filters: filtersSchema,
   })
@@ -104,12 +105,18 @@ export function discoveryOptions(params: {
 }
 
 export function discoveryCursor(
-  row: { id: string; business_name: string },
+  row: { id: string; business_name: string; ranking_score?: number },
   query: string,
   filters: DiscoveryFilters = defaultDiscoveryFilters,
 ) {
   return Buffer.from(
-    JSON.stringify({ id: row.id, name: row.business_name, query, filters }),
+    JSON.stringify({
+      id: row.id,
+      name: row.business_name,
+      score: row.ranking_score ?? 4,
+      query,
+      filters,
+    }),
   ).toString("base64url");
 }
 

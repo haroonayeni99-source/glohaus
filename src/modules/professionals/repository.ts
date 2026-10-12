@@ -98,7 +98,7 @@ export async function publicProfessionals(
       `SELECT
          p.id,p.slug,p.business_name,p.bio,p.city,p.category,p.verification_status,
          d.photo_id,d.photo_alt,d.travels_to_you,
-         r.rating,r.review_count,
+         r.rating,r.review_count,r.ranking_score,
          s.from_price_pence,
          beauty.public_professional_available_today(p.id) AS available_today,
          s.popular_services,
@@ -116,8 +116,11 @@ export async function publicProfessionals(
            ))) ELSE NULL END AS distance_miles
        ) geo
        LEFT JOIN LATERAL (
+         -- Use ten neutral 4-star observations for ordering only, so one
+         -- glowing review cannot outweigh a well-supported high rating.
          SELECT round(avg(rating),1)::float AS rating,
-                count(*)::integer AS review_count
+                count(*)::integer AS review_count,
+                (coalesce(sum(rating),0)::float + 40) / (count(*) + 10)::float AS ranking_score
          FROM beauty.public_reviews
          WHERE professional_id=p.id
        ) r ON true
@@ -169,9 +172,10 @@ export async function publicProfessionals(
        AND ($13::float IS NULL OR geo.distance_miles <= $15::float)
        AND (
          $7::text IS NULL
-         OR (p.business_name,p.id)>($7::text,$8::uuid)
+         OR r.ranking_score < $17::float
+         OR (r.ranking_score = $17::float AND (p.business_name,p.id)>($7::text,$8::uuid))
        )
-       ORDER BY geo.distance_miles NULLS LAST,p.business_name,p.id
+       ORDER BY geo.distance_miles NULLS LAST,r.ranking_score DESC,p.business_name,p.id
        LIMIT $16`,
       [
         escaped,
@@ -194,6 +198,7 @@ export async function publicProfessionals(
         near?.longitude ?? null,
         near?.radiusMiles ?? null,
         near ? 101 : 25,
+        after?.score ?? null,
       ],
     )
   ).rows;

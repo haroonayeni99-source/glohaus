@@ -90,6 +90,7 @@ describe.sequential("professional publishing and private ownership", () => {
       "public_latitude",
       "public_location_confirmed_at",
       "public_longitude",
+      "ranking_score",
       "rating",
       "review_count",
       "slug",

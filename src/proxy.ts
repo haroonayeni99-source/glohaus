@@ -13,6 +13,9 @@ const maintenanceExempt = [
 ];
 
 function isMaintenanceExempt(pathname: string) {
+  // Crawlers still need the real discovery files while the Owner pauses the
+  // public site. Never rewrite XML or robots.txt to an HTML maintenance page.
+  if (pathname === "/robots.txt" || pathname === "/sitemap.xml") return true;
   return maintenanceExempt.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`),
   );
@@ -54,13 +57,16 @@ async function canBypassMaintenance(request: NextRequest) {
         cookies: {
           getAll: () => request.cookies.getAll(),
           setAll: (items) => {
-            items.forEach(({ name, value }) => request.cookies.set(name, value));
+            items.forEach(({ name, value }) =>
+              request.cookies.set(name, value),
+            );
           },
         },
       },
     );
 
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
+    const { data: claimsData, error: claimsError } =
+      await supabase.auth.getClaims();
     if (claimsError || !claimsData?.claims?.sub) return false;
 
     const { data, error } = await supabase.rpc("glohaus_my_account");
@@ -102,6 +108,21 @@ function carrySessionCookies(from: NextResponse, to: NextResponse) {
   return to;
 }
 
+function maintenanceResponse(request: NextRequest, session: NextResponse) {
+  const maintenance = request.nextUrl.clone();
+  maintenance.pathname = "/maintenance";
+  maintenance.search = "";
+  const response = carrySessionCookies(
+    session,
+    NextResponse.rewrite(maintenance, { status: 503 }),
+  );
+  // Temporary downtime must not look like a successful page with an instruction
+  // to remove the original URL from Search. Prevent caching this paused state.
+  response.headers.set("Retry-After", "3600");
+  response.headers.set("Cache-Control", "private, no-store");
+  return response;
+}
+
 export default async function proxy(request: NextRequest) {
   // Keep production auth on one hostname. Splitting Supabase session cookies
   // between the apex and www hosts creates hard-to-reproduce SSR sessions.
@@ -115,6 +136,10 @@ export default async function proxy(request: NextRequest) {
     ? await updateSession(request)
     : NextResponse.next({ request });
 
+  if (request.nextUrl.pathname === "/maintenance") {
+    return maintenanceResponse(request, sessionResponse);
+  }
+
   if (!isMaintenanceExempt(request.nextUrl.pathname)) {
     const enabled = await publicSiteEnabled();
 
@@ -122,13 +147,7 @@ export default async function proxy(request: NextRequest) {
       const privileged = await canBypassMaintenance(request);
       if (privileged) return sessionResponse;
 
-      const maintenance = request.nextUrl.clone();
-      maintenance.pathname = "/maintenance";
-      maintenance.search = "";
-      return carrySessionCookies(
-        sessionResponse,
-        NextResponse.rewrite(maintenance),
-      );
+      return maintenanceResponse(request, sessionResponse);
     }
   }
 

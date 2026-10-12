@@ -24,23 +24,23 @@ import type { CustomerHomeSummary } from "@/modules/home/repository";
 const serviceTiles = [
   [
     "Hair",
-    "https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=240&q=80",
+    "/images/categories/hair-v1.webp",
   ],
   [
     "Nails",
-    "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=240&q=80",
+    "/images/categories/nails-v1.webp",
   ],
   [
     "Barber",
-    "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=240&q=80",
+    "/images/categories/barber-v1.webp",
   ],
   [
     "Waxing",
-    "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=240&q=80",
+    "/images/categories/waxing-v1.webp",
   ],
   [
     "Injectables",
-    "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=240&q=80",
+    "/images/categories/injectables-v1.webp",
   ],
 ] as const;
 const trends = [

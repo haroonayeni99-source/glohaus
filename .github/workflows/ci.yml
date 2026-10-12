@@ -32,6 +32,16 @@ jobs:
         run: node scripts/check-client-blocking.mjs
       - name: Verify desktop homepage and unchanged mobile layouts
         run: node scripts/check-desktop-home.mjs
+      - name: Verify Owner image upload, preview, save and independent devices
+        run: node scripts/check-homepage-media.mjs
+      - name: Save homepage media visual checks
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: homepage-media-visual-checks
+          path: |
+            reports/homepage-media-*.png
+            reports/homepage-media-results.json
       - name: Save desktop visual checks
         uses: actions/upload-artifact@v4
         if: always()

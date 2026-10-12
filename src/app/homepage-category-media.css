@@ -1,0 +1,43 @@
+/* Owner image editor only; public homepage layouts remain unchanged. */
+.owner-category-media {
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.owner-category-media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: 18px;
+}
+.owner-category-media-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper);
+}
+.owner-category-media-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.owner-category-media-title img {
+  flex: 0 0 100px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+.owner-category-media-title h4 {
+  margin: 0;
+}
+.owner-category-media-card input {
+  min-width: 0;
+  max-width: 100%;
+}
+.owner-category-media-card button {
+  justify-self: start;
+}

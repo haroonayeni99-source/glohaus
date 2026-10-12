@@ -1,3 +1,4 @@
+import { homepageCategories, categoryImage, type HomepageMedia } from "@/modules/platform/homepage-images";
 import { HomeMarketplaceGuide } from "./home-marketplace-guide";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,28 +22,7 @@ import { HomeStory } from "./home-story";
 import { money, type PublicProfessional } from "@/modules/professionals/domain";
 import type { CustomerHomeSummary } from "@/modules/home/repository";
 
-const serviceTiles = [
-  [
-    "Hair",
-    "/images/categories/hair-v1.webp",
-  ],
-  [
-    "Nails",
-    "/images/categories/nails-v1.webp",
-  ],
-  [
-    "Barber",
-    "/images/categories/barber-v1.webp",
-  ],
-  [
-    "Waxing",
-    "/images/categories/waxing-v1.webp",
-  ],
-  [
-    "Injectables",
-    "/images/categories/injectables-v1.webp",
-  ],
-] as const;
+const serviceTiles = homepageCategories.desktop;
 const trends = [
   [
     "The Hair Edit",
@@ -92,7 +72,7 @@ export function DesktopCustomerHome({
   displayName?: string;
   canAccessAdmin?: boolean;
   summary?: CustomerHomeSummary | null;
-  homepageMedia?: { desktopHero: string | null; mobileHero: string | null };
+  homepageMedia?: HomepageMedia;
 }) {
   const protectedHref = (path: string) =>
     signedIn ? path : `/sign-in?returnTo=${encodeURIComponent(path)}`;
@@ -264,12 +244,13 @@ export function DesktopCustomerHome({
         </section>
 
         <nav className="desktop-service-row" aria-label="Beauty services">
-          {serviceTiles.map(([label, img]) => (
-            <Link href={"/explore?q=" + encodeURIComponent(label)} key={label}>
+          {serviceTiles.map((slot) => (
+            <Link href={"/explore?q=" + encodeURIComponent(slot.label)} key={slot.key}>
               <span>
-                <Image fill sizes="100px" src={img} alt="" />
+                <Image fill sizes="100px" src={categoryImage(homepageMedia.categoryImages, "desktop", slot)}
+                  unoptimized={Boolean(homepageMedia.categoryImages?.desktop?.[slot.key])} alt="" />
               </span>
-              <strong>{label}</strong>
+              <strong>{slot.label}</strong>
             </Link>
           ))}
           <Link href="/explore">

@@ -1,3 +1,4 @@
+import { HomepageCategoryMediaControl } from "@/components/homepage-category-media-control";
 import {
   AdminWorkspaceView,
   AdminSection,
@@ -140,12 +141,13 @@ export default async function Page() {
             className="admin-workspace-section admin-detail-card"
           >
             <p className="eyebrow">HOMEPAGE IMAGERY</p>
-            <h2>Homepage models</h2>
+            <h2>Homepage and category images</h2>
             <p className="lead">
-              Change the main homepage model imagery without changing code.
+              Change the main homepage and category photos without changing code.
               Desktop and mobile can use different images.
             </p>
             <HomepageMediaControl initial={homepageMedia} />
+            <HomepageCategoryMediaControl initial={homepageMedia.categoryImages} />
           </section>
         )}
 

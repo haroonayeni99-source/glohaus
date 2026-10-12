@@ -526,10 +526,7 @@ export async function ownerPublicSiteStatus(): Promise<boolean> {
 }
 
 
-export type OwnerHomepageMedia = {
-  desktopHero: string | null;
-  mobileHero: string | null;
-};
+export type OwnerHomepageMedia = import("@/modules/platform/homepage-images").HomepageMedia;
 
 export async function ownerHomepageMedia(): Promise<OwnerHomepageMedia> {
   return withOwner(async (db) => {

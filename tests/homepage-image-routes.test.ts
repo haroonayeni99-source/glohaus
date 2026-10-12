@@ -30,6 +30,17 @@ it("serves only the published homepage image publicly", async () => {
   expect(mocks.owner).not.toHaveBeenCalled();
   expect(mocks.get).toHaveBeenCalledWith(path, expect.objectContaining({ access: "private" }));
 });
+it.each(["desktop", "mobile"])("serves a published %s category upload publicly", async device => {
+  mocks.media.mockResolvedValue({ desktopHero: null, mobileHero: null, categoryImages: { [device]: { nails: imageUrl } } });
+  expect((await GET(new Request(imageUrl))).status).toBe(200);
+  expect(mocks.owner).not.toHaveBeenCalled();
+});
+it("does not make a category upload public when its reference belongs to another origin", async () => {
+  mocks.media.mockResolvedValue({ categoryImages: { desktop: { nails: imageUrl.replace("glohaus.test", "untrusted.test") } } });
+  mocks.owner.mockRejectedValue(new AccessError("FORBIDDEN", 403));
+  expect((await GET(new Request(imageUrl))).status).toBe(404);
+  expect(mocks.get).not.toHaveBeenCalled();
+});
 it.each(["UNAUTHENTICATED", "FORBIDDEN", "MFA_REQUIRED"])("hides unpublished uploads from %s viewers", async code => {
   mocks.owner.mockRejectedValue(new AccessError(code as "FORBIDDEN", 403));
   expect((await GET(new Request(imageUrl))).status).toBe(404);

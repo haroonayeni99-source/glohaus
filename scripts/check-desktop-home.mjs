@@ -20,7 +20,7 @@ try {
         await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.request().resourceType() === "image" ? route.fulfill({ contentType: "image/png", body: placeholder }) : route.abort());
         await page.route("**/images/categories/*", async route => {
           const name = new URL(route.request().url()).pathname.split("/").pop();
-          expect(categories.some(category => name === `${category}-v1.webp`)).toBe(true);
+          expect(categories.some(category => name === `${category}-v2.webp`)).toBe(true);
           await route.fulfill({ contentType: "image/webp", body: await readFile(`public/images/categories/${name}`) });
         });
         await page.goto(`http://127.0.0.1:3004/?theme=${theme}${guest ? "&guest=1" : ""}`);
@@ -32,7 +32,7 @@ try {
         const bounds = await logo.boundingBox();
         expect(bounds.x + bounds.width).toBeLessThanOrEqual(sidebar.x + sidebar.width - 16);
         for (const category of categories) {
-          const image = page.locator(`.desktop-service-row img[src='/images/categories/${category}-v1.webp']`);
+          const image = page.locator(`.desktop-service-row img[src='/images/categories/${category}-v2.webp']`);
           await expect(image).toBeVisible();
           await expect.poll(() => image.evaluate(img => img.complete && img.naturalWidth === 360)).toBe(true);
         }

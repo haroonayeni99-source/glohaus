@@ -33,12 +33,14 @@ await build({
     "next/link": resolve("tests/fixtures/next-link.tsx"),
     "next/image": resolve("tests/fixtures/next-image.tsx"),
   },
+  loader: { ".css": "empty" },
   tsconfig: "tsconfig.json",
 });
 const css = (
   await Promise.all(
     [
       "globals",
+      "homepage-category-media",
       "ui-upgrades",
       "theme-compat",
       "customer-polish",

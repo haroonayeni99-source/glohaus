@@ -64,10 +64,8 @@ export async function categoryIsActive(
 }
 
 
-export type HomepageMedia = {
-  desktopHero: string | null;
-  mobileHero: string | null;
-};
+export type { HomepageMedia } from "./homepage-images";
+import type { HomepageMedia } from "./homepage-images";
 
 export async function publicHomepageMedia(): Promise<HomepageMedia> {
   const fallback: HomepageMedia = { desktopHero: null, mobileHero: null };

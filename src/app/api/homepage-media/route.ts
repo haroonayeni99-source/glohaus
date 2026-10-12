@@ -11,7 +11,11 @@ export async function GET(request: Request) {
   }
   try {
     const media = await publicHomepageMedia();
-    const published = [media.desktopHero, media.mobileHero].some(value => {
+    const published = [
+      media.desktopHero, media.mobileHero,
+      ...Object.values(media.categoryImages?.desktop ?? {}),
+      ...Object.values(media.categoryImages?.mobile ?? {}),
+    ].some(value => {
       if (!value) return false;
       try {
         const url = new URL(value);

@@ -1,3 +1,4 @@
+import { homepageCategories, categoryImage, type HomepageMedia } from "@/modules/platform/homepage-images";
 import { HomeMarketplaceGuide } from "./home-marketplace-guide";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,28 +12,7 @@ import { money, type PublicProfessional } from "@/modules/professionals/domain";
 import type { CustomerHomeSummary } from "@/modules/home/repository";
 import { BottomNavigation } from "./bottom-navigation";
 
-const mobileCategories = [
-  [
-    "Hair",
-    "https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=240&q=82",
-  ],
-  [
-    "Nails",
-    "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=240&q=82",
-  ],
-  [
-    "Lashes",
-    "https://images.unsplash.com/photo-1583001931096-959e9a1a6223?auto=format&fit=crop&w=240&q=82",
-  ],
-  [
-    "Skin",
-    "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=240&q=82",
-  ],
-  [
-    "Makeup",
-    "https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=240&q=82",
-  ],
-] as const;
+const mobileCategories = homepageCategories.mobile;
 
 export function MobileCustomerHome({
   signedIn = false,
@@ -45,7 +25,7 @@ export function MobileCustomerHome({
   professionals?: PublicProfessional[];
   summary?: CustomerHomeSummary | null;
   canAccessAdmin?: boolean;
-  homepageMedia?: { desktopHero: string | null; mobileHero: string | null };
+  homepageMedia?: HomepageMedia;
 }) {
   const notificationHref = signedIn
     ? "/notifications"
@@ -106,12 +86,13 @@ export function MobileCustomerHome({
         </form>
 
         <nav className="mobile-home-categories" aria-label="Beauty categories">
-          {mobileCategories.map(([label, image]) => (
-            <Link href={`/explore?q=${encodeURIComponent(label)}`} key={label}>
+          {mobileCategories.map((slot) => (
+            <Link href={`/explore?q=${encodeURIComponent(slot.label)}`} key={slot.key}>
               <span>
-                <Image fill sizes="64px" src={image} alt="" />
+                <Image fill sizes="64px" src={categoryImage(homepageMedia.categoryImages, "mobile", slot)}
+                  unoptimized={Boolean(homepageMedia.categoryImages?.mobile?.[slot.key])} alt="" />
               </span>
-              <strong>{label}</strong>
+              <strong>{slot.label}</strong>
             </Link>
           ))}
         </nav>
@@ -134,7 +115,6 @@ export function MobileCustomerHome({
             sizes="(max-width: 760px) calc(100vw - 28px), 100vw"
             src={
               homepageMedia.mobileHero ||
-              homepageMedia.desktopHero ||
               "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=1100&q=90"
             }
             unoptimized

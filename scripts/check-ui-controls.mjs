@@ -162,14 +162,14 @@ try {
             page.getByRole("img", { name: "Mobile homepage model preview" }),
           ).toBeVisible();
           await submit(
-            page.locator("#homepage-media form"),
+            page.locator("#homepage-media form").first(),
             "Save homepage images",
           );
           await page
             .getByRole("button", { name: "Use GLOHAUS defaults" })
             .click();
           await submit(
-            page.locator("#homepage-media form"),
+            page.locator("#homepage-media form").first(),
             "Save homepage images",
           );
           const add = page

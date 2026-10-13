@@ -15,7 +15,7 @@ export async function createStory(
        FROM beauty.portfolio_assets
        WHERE id=$1
          AND professional_id=$2
-         AND publication_status='published'`,
+         AND publication_status IN ('draft','published')`,
       [parsed.assetId, professionalId],
     )
   ).rows[0];
@@ -39,6 +39,10 @@ export async function createStory(
      VALUES($1,$2,$3,$4)
      RETURNING id`,
     [professionalId, parsed.assetId, parsed.serviceId, parsed.caption],
+  );
+  await db.query(
+    "UPDATE beauty.portfolio_assets SET publication_status='published' WHERE id=$1 AND professional_id=$2 AND publication_status='draft'",
+    [parsed.assetId, professionalId],
   );
   return result.rows[0];
 }

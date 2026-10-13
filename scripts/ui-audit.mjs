@@ -23,6 +23,9 @@ await build({
   jsx: "automatic",
   define: { "process.env": "{}" },
   alias: {
+    ...(process.env.GLOHAUS_UI_AUDIT_MOCK_BLOB === "1" ? {
+      "@vercel/blob/client": resolve("tests/fixtures/content-blob-client.ts"),
+    } : {}),
     "@/modules/admin/repository": resolve("tests/fixtures/ui-audit/data.ts"),
     "@/modules/platform/repository": resolve("tests/fixtures/ui-audit/data.ts"),
     "@/lib/db": resolve("tests/fixtures/customer-profile-data.ts"),

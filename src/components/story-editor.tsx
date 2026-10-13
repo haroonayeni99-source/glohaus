@@ -2,6 +2,10 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  ContentMediaUpload,
+  type ContentMediaAsset,
+} from "./content-media-upload";
 import type { Service } from "@/modules/professionals/domain";
 
 type StoryRow = {
@@ -16,6 +20,7 @@ type StoryAsset = {
   id: string;
   alt_text: string;
   media_type: "image" | "video";
+  publication_status?: "draft" | "published" | "hidden";
 };
 
 export function StoryEditor({
@@ -30,6 +35,20 @@ export function StoryEditor({
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const router = useRouter();
+  const [uploads, setUploads] = useState<ContentMediaAsset[]>([]);
+  const media = [
+    ...uploads.filter((item) => !assets.some((asset) => asset.id === item.id)),
+    ...assets,
+  ];
+  const [selectedAsset, setSelectedAsset] = useState("");
+  const [uploading, setUploading] = useState(false);
+  function attach(asset: ContentMediaAsset) {
+    setUploads((current) => [
+      asset,
+      ...current.filter((item) => item.id !== asset.id),
+    ]);
+    setSelectedAsset(asset.id);
+  }
 
   return (
     <section className="story-editor">
@@ -56,7 +75,13 @@ export function StoryEditor({
                   preload="metadata"
                 />
               ) : (
-                <Image src={`/api/media/${story.asset_id}`} width={72} height={72} unoptimized alt="" />
+                <Image
+                  src={`/api/media/${story.asset_id}`}
+                  width={72}
+                  height={72}
+                  unoptimized
+                  alt=""
+                />
               )}
               <div>
                 <strong>{story.caption || "Your Story"}</strong>
@@ -76,13 +101,19 @@ export function StoryEditor({
                   try {
                     const response = await fetch(
                       `/api/v1/professional/stories/${story.id}`,
-                      { method: "DELETE", headers: { "Content-Type": "application/json" } },
+                      {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                      },
                     );
-                    if (!response.ok) throw new Error("Could not remove Story.");
+                    if (!response.ok)
+                      throw new Error("Could not remove Story.");
                     router.refresh();
                   } catch (error) {
                     setNotice(
-                      error instanceof Error ? error.message : "Could not remove Story.",
+                      error instanceof Error
+                        ? error.message
+                        : "Could not remove Story.",
                     );
                   } finally {
                     setBusy(false);
@@ -107,7 +138,7 @@ export function StoryEditor({
           const caption = String(data.get("caption") || "").trim();
 
           if (!assetId) {
-            setNotice("Publish a portfolio photo or video first.");
+            setNotice("Upload or choose a photo or video first.");
             return;
           }
 
@@ -121,26 +152,42 @@ export function StoryEditor({
             });
             if (!response.ok) throw new Error("Could not publish this Story.");
             setNotice("Story is live for 24 hours.");
+            setSelectedAsset("");
             form.reset();
             router.refresh();
           } catch (error) {
             setNotice(
-              error instanceof Error ? error.message : "Could not publish Story.",
+              error instanceof Error
+                ? error.message
+                : "Could not publish Story.",
             );
           } finally {
             setBusy(false);
           }
         }}
       >
+        <ContentMediaUpload
+          disabled={busy}
+          onUploaded={attach}
+          onUploading={setUploading}
+        />
         <label>
           Photo or video
-          <select name="assetId" required defaultValue="">
+          <select
+            name="assetId"
+            required
+            value={selectedAsset}
+            disabled={busy || uploading}
+            onChange={(event) => setSelectedAsset(event.target.value)}
+          >
             <option value="" disabled>
-              Choose published media
+              Choose uploaded or portfolio media
             </option>
-            {assets.map((asset) => (
+            {media.map((asset) => (
               <option key={asset.id} value={asset.id}>
-                {asset.media_type === "video" ? "Video" : "Photo"} · {asset.alt_text}
+                {asset.media_type === "video" ? "Video" : "Photo"} ·{" "}
+                {asset.alt_text}
+                {asset.publication_status === "draft" ? " · Private draft" : ""}
               </option>
             ))}
           </select>
@@ -164,11 +211,18 @@ export function StoryEditor({
             ))}
           </select>
         </label>
-        <button className="button" disabled={busy || !assets.length}>
+        <button
+          className="button"
+          disabled={busy || uploading || !selectedAsset}
+        >
           {busy ? "Publishing…" : "Add to Story"}
         </button>
       </form>
-      {notice && <p className="form-notice" role="status">{notice}</p>}
+      {notice && (
+        <p className="form-notice" role="status">
+          {notice}
+        </p>
+      )}
     </section>
   );
 }

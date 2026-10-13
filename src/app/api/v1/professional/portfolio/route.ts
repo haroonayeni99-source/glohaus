@@ -61,3 +61,30 @@ export async function POST(request: Request) {
     return apiError(error);
   }
 }
+
+// Resolve only this professional's signed, registered private upload.
+export async function GET(request: Request) {
+  try {
+    const path = new URL(request.url).searchParams.get("path") || "";
+    if (path.length > 500 || !/^portfolio\/video-[A-Za-z0-9._-]+$/.test(path))
+      throw new AccessError("INVALID_REQUEST", 400);
+    const asset = await withAccount(
+      "professional",
+      async (db, account) =>
+        (
+          await db.query<{
+            id: string;
+            alt_text: string;
+            media_type: string;
+            publication_status: string;
+          }>(
+            "SELECT id,alt_text,media_type,publication_status FROM beauty.portfolio_assets WHERE professional_id=$1 AND blob_path=$2 ORDER BY created_at DESC LIMIT 1",
+            [account.professionalId, path],
+          )
+        ).rows[0],
+    );
+    return asset ? json({ asset }) : json({ processing: true }, 202);
+  } catch (error) {
+    return apiError(error);
+  }
+}

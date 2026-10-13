@@ -1,5 +1,8 @@
 "use client";
-import Link from "next/link";
+import {
+  ContentMediaUpload,
+  type ContentMediaAsset,
+} from "./content-media-upload";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { postSchema, type OwnPost } from "@/modules/posts/domain";
@@ -11,18 +14,39 @@ export function PostEditor({
 }: {
   posts: OwnPost[];
   services: Service[];
-  assets: { id: string; alt_text: string; media_type?: "image" | "video" }[];
+  assets: {
+    id: string;
+    alt_text: string;
+    media_type?: "image" | "video";
+    publication_status?: "draft" | "published" | "hidden";
+  }[];
 }) {
   const [editing, setEditing] = useState<OwnPost | null>(null);
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const router = useRouter();
+  const [uploads, setUploads] = useState<ContentMediaAsset[]>([]);
+  const media = [
+    ...uploads.filter((item) => !assets.some((asset) => asset.id === item.id)),
+    ...assets,
+  ];
+  const [selectedAsset, setSelectedAsset] = useState("");
+  const [uploading, setUploading] = useState(false);
+  function attach(asset: ContentMediaAsset) {
+    setUploads((current) => [
+      asset,
+      ...current.filter((item) => item.id !== asset.id),
+    ]);
+    setSelectedAsset(asset.id);
+  }
   return (
     <>
       <p className="form-notice">
-        Publish a photo or video of your work, a design story, or a written tutorial. Your professional profile must also be published for posts to appear in Discover. Attach any published portfolio media.
+        Publish a photo or video of your work, a design story, or a written
+        tutorial. Your professional profile must also be published for posts to
+        appear in Discover. Upload a photo or video here, or attach your
+        portfolio media.
       </p>
-      <p className="post-upload-link"><Link href="/professional/portfolio">Upload photos or videos</Link> to your portfolio, then attach them to your post below.</p>
       <div className="service-edit-list">
         {posts.map((post) => (
           <article className="service-edit-row" key={post.id}>
@@ -32,7 +56,15 @@ export function PostEditor({
                 {post.kind} · {post.publication_status}
               </p>
             </div>
-            <button onClick={() => setEditing(post)}>Edit</button>
+            <button
+              disabled={busy || uploading}
+              onClick={() => {
+                setEditing(post);
+                setSelectedAsset(post.asset_id || "");
+              }}
+            >
+              Edit
+            </button>
           </article>
         ))}
       </div>
@@ -73,6 +105,7 @@ export function PostEditor({
               );
             setNotice("Post saved.");
             setEditing(null);
+            setSelectedAsset("");
             form.reset();
             router.refresh();
           } catch (error) {
@@ -123,13 +156,25 @@ export function PostEditor({
             ))}
           </select>
         </label>
+        <ContentMediaUpload
+          disabled={busy}
+          onUploaded={attach}
+          onUploading={setUploading}
+        />
         <label>
-          Portfolio media (optional)
-          <select name="assetId" defaultValue={editing?.asset_id || ""}>
+          Attached photo or video (optional)
+          <select
+            name="assetId"
+            value={selectedAsset}
+            disabled={busy || uploading}
+            onChange={(event) => setSelectedAsset(event.target.value)}
+          >
             <option value="">No media</option>
-            {assets.map((asset) => (
+            {media.map((asset) => (
               <option key={asset.id} value={asset.id}>
-                {asset.media_type === "video" ? "Video" : "Photo"} · {asset.alt_text}
+                {asset.media_type === "video" ? "Video" : "Photo"} ·{" "}
+                {asset.alt_text}
+                {asset.publication_status === "draft" ? " · Private draft" : ""}
               </option>
             ))}
           </select>
@@ -146,11 +191,18 @@ export function PostEditor({
           </select>
         </label>
         <div className="editor-actions">
-          <button className="button" disabled={busy}>
+          <button className="button" disabled={busy || uploading}>
             Save post
           </button>
           {editing && (
-            <button type="button" onClick={() => setEditing(null)}>
+            <button
+              type="button"
+              disabled={busy || uploading}
+              onClick={() => {
+                setEditing(null);
+                setSelectedAsset("");
+              }}
+            >
               Cancel
             </button>
           )}

@@ -6,7 +6,7 @@ import { withAccount } from "@/lib/api-account";
 type MediaPath = { blob_path: string; mime_type: string };
 
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
@@ -53,15 +53,37 @@ export async function GET(
 
     if (!media) return new Response("Not found", { status: 404 });
 
-    const result = await get(media.blob_path, {
-      access: "private",
-      abortSignal: AbortSignal.timeout(10000),
-    });
+    const video = media.mime_type.startsWith("video/");
+    const range = video ? request.headers.get("range") : null;
+    if (
+      range &&
+      (range.length > 128 || !/^bytes=(?:\d+-\d*|-\d+)$/.test(range))
+    )
+      return new Response("Invalid range", { status: 416 });
+    // Bound the provider handshake, without cutting off a large video's stream.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    let result;
+    try {
+      result = await get(media.blob_path, {
+        access: "private",
+        ...(range ? { headers: { Range: range } } : {}),
+        abortSignal: AbortSignal.any([request.signal, controller.signal]),
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
     if (result?.statusCode !== 200)
       return new Response("Not found", { status: 404 });
 
+    const contentRange = result.headers?.get("content-range");
+    const contentLength = result.headers?.get("content-length");
     return new Response(result.stream, {
+      status: contentRange ? 206 : 200,
       headers: {
+        ...(video ? { "Accept-Ranges": "bytes" } : {}),
+        ...(contentRange ? { "Content-Range": contentRange } : {}),
+        ...(contentLength ? { "Content-Length": contentLength } : {}),
         "Content-Type": media.mime_type,
         "Cache-Control": "private, no-store",
         "X-Content-Type-Options": "nosniff",

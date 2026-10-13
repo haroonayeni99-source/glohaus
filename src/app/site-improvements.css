@@ -542,6 +542,12 @@
 .pro-preview-auth-bar nav { flex-wrap: wrap; gap: 12px 16px; }
 .pro-preview-auth-bar nav > a { line-height: 1.5; }
 
+/* Direct media attachments in the professional post and Story editors. */
+.pro-management-page .content-media-upload { border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin: 20px 0; min-width: 0; display: grid; gap: 16px; }
+.pro-management-page .content-media-upload legend { padding: 0 8px; font-weight: 700; }
+.pro-management-page .content-media-preview { width: 100%; max-width: 480px; max-height: 360px; height: auto; object-fit: contain; border-radius: 12px; background: var(--white); }
+.pro-management-page .content-media-upload .button { justify-self: start; }
+
 /* Desktop home only: keep the brand inside the sidebar and give sign-out the
    same polished control treatment as the account chip. Mobile stays intact. */
 @media (min-width: 1100px) {

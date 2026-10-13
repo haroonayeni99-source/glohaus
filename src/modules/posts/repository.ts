@@ -55,6 +55,11 @@ export async function savePost(
       result.rows[0].id,
       input.assetId,
     ]);
+  if (input.assetId && input.publicationStatus === "published")
+    await db.query(
+      "UPDATE beauty.portfolio_assets SET publication_status='published' WHERE id=$1 AND professional_id=$2 AND publication_status='draft'",
+      [input.assetId, professionalId],
+    );
   return result.rows[0];
 }
 
@@ -148,4 +153,15 @@ export async function followedPostPage(
         ? encodePostCursor({ id: last.id, createdAt: last.cursor_created_at })
         : null,
   };
+}
+
+export async function publicPost(db: SqlClient, id: string) {
+  return (
+    await db.query<PublicPost>(
+      `SELECT ${postSelect} FROM beauty.public_posts feed
+     LEFT JOIN beauty.public_media_assets media ON media.id=(to_jsonb(feed)->>'asset_id')::uuid
+     WHERE feed.id=$1`,
+      [id],
+    )
+  ).rows[0];
 }

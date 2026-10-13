@@ -3,7 +3,11 @@ import { DiscoveryFeed } from "@/components/discovery-feed";
 import { withIdentity } from "@/lib/db";
 import { getIdentity } from "@/lib/identity";
 import { findAccount } from "@/modules/accounts/repository";
-import { followedPostPage, publicPostPage } from "@/modules/posts/repository";
+import {
+  followedPostPage,
+  publicPost,
+  publicPostPage,
+} from "@/modules/posts/repository";
 import { savedPosts, viewerEngagement } from "@/modules/engagement/repository";
 import {
   followStates,
@@ -24,6 +28,7 @@ type FeedData = {
   accountMode: boolean;
   viewerSignedIn: boolean;
   canFollow: boolean;
+  canPublish: boolean;
   hasMore: boolean;
   viewer: string;
   next: string | null;
@@ -38,6 +43,7 @@ const emptyFeedData: FeedData = {
   accountMode: false,
   viewerSignedIn: false,
   canFollow: false,
+  canPublish: false,
   hasMore: false,
   viewer: "",
   next: null,
@@ -88,24 +94,18 @@ export async function FeedPage({
               : null;
 
         const rows = postId.success
-          ? (
-              await db.query<PublicPost>(
-                "SELECT * FROM beauty.public_posts WHERE id=$1",
-                [postId.data],
-              )
-            ).rows
+          ? [await publicPost(db, postId.data)].filter(
+              (post): post is PublicPost => Boolean(post),
+            )
           : savedView && accountMode
             ? await savedPosts(db, page)
             : pageData?.posts || [];
         const posts = rows.slice(0, 40);
-        const stories =
-          mode === "share"
-            ? (
-                await db.query<PublicStory>(
-                  "SELECT * FROM beauty.public_stories ORDER BY created_at DESC LIMIT 30",
-                )
-              ).rows
-            : [];
+        const stories = (
+          await db.query<PublicStory>(
+            "SELECT * FROM beauty.public_stories ORDER BY created_at DESC LIMIT 30",
+          )
+        ).rows;
         const lastMinute =
           mode === "share"
             ? (
@@ -131,6 +131,11 @@ export async function FeedPage({
           accountMode,
           viewerSignedIn: Boolean(accountMode),
           canFollow: Boolean(customerId),
+          canPublish: Boolean(
+            accountMode &&
+            account?.roles.includes("professional") &&
+            account.professionalId,
+          ),
           hasMore:
             (savedView && rows.length > 40) ||
             Boolean(
@@ -158,6 +163,7 @@ export async function FeedPage({
       accountMode={data.accountMode}
       viewerSignedIn={data.viewerSignedIn}
       canFollow={data.canFollow}
+      canPublish={data.canPublish}
       savedView={savedView}
       followingView={followingView}
       savedPage={page}

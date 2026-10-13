@@ -20,8 +20,13 @@ export default async function Posts() {
   const account = result.account!;
   const data = await withIdentity(account.authId, async (db) => ({
     assets: (
-      await db.query<{ id: string; alt_text: string; media_type: "image" | "video" }>(
-        "SELECT id,alt_text,media_type FROM beauty.portfolio_assets WHERE professional_id=$1 AND publication_status='published' ORDER BY created_at DESC",
+      await db.query<{
+        id: string;
+        alt_text: string;
+        media_type: "image" | "video";
+        publication_status: "draft" | "published" | "hidden";
+      }>(
+        "SELECT id,alt_text,media_type,publication_status FROM beauty.portfolio_assets WHERE professional_id=$1 AND publication_status IN ('draft','published') ORDER BY created_at DESC",
         [account.professionalId],
       )
     ).rows,
@@ -32,7 +37,13 @@ export default async function Posts() {
       )
     ).rows,
     stories: (
-      await db.query<{ id: string; asset_id: string; caption: string; expires_at: string; media_type: "image" | "video" }>(
+      await db.query<{
+        id: string;
+        asset_id: string;
+        caption: string;
+        expires_at: string;
+        media_type: "image" | "video";
+      }>(
         `SELECT story.id,story.asset_id,story.caption,story.expires_at,asset.media_type
          FROM beauty.professional_stories story
          JOIN beauty.portfolio_assets asset ON asset.id=story.asset_id
@@ -54,11 +65,21 @@ export default async function Posts() {
     <div className="pro-app">
       <ProfessionalNavigation active="more" displayName={account.displayName} />
       <main id="main" className="pro-main pro-management-page">
-        <Link className="pro-back-link" href="/professional">← Dashboard</Link>
+        <Link className="pro-back-link" href="/professional">
+          ← Dashboard
+        </Link>
         <p className="pro-kicker">YOUR VOICE. YOUR CRAFT.</p>
         <h1>Let your work be discovered.</h1>
-        <section className="pro-editor-surface"><PostEditor {...data} /></section>
-        <section className="pro-editor-surface"><StoryEditor stories={data.stories} assets={data.assets} services={data.services} /></section>
+        <section className="pro-editor-surface">
+          <PostEditor {...data} />
+        </section>
+        <section className="pro-editor-surface">
+          <StoryEditor
+            stories={data.stories}
+            assets={data.assets}
+            services={data.services}
+          />
+        </section>
       </main>
     </div>
   );

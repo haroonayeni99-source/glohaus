@@ -62,6 +62,7 @@ export function DiscoveryFeed({
   accountMode = false,
   viewerSignedIn = false,
   canFollow = false,
+  canPublish = false,
   savedView = false,
   followingView = false,
   savedPage = 1,
@@ -78,6 +79,7 @@ export function DiscoveryFeed({
   accountMode?: boolean;
   viewerSignedIn?: boolean;
   canFollow?: boolean;
+  canPublish?: boolean;
   savedView?: boolean;
   followingView?: boolean;
   savedPage?: number;
@@ -391,8 +393,8 @@ export function DiscoveryFeed({
             >
               <Bell size={19} aria-hidden />
             </Link>
-            <Link className="button small discovery-join" href="/sign-up">
-              Join GLOHAUS
+            <Link className="button small discovery-join" href={canPublish ? "/professional/posts" : "/sign-up"}>
+              {canPublish ? "Post / Story" : "Join GLOHAUS"}
               <ArrowUpRight size={16} />
             </Link>
           </div>
@@ -410,7 +412,7 @@ export function DiscoveryFeed({
             </button>
           ))}
         </div>
-        {routeBase === "/share" && <DiscoveryLiveStrip stories={stories} lastMinute={lastMinute} />}
+        <DiscoveryLiveStrip stories={stories} lastMinute={lastMinute} />
         <div className="feed-layout">
           <div
             className="feed-scroll"

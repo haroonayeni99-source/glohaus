@@ -353,7 +353,7 @@ test("Shop exposes catalogue without fake checkout", async ({ page }) => {
     "The Beauty Marketplace",
   );
   await expect(
-    page.getByText("Protected marketplace rollout", { exact: true }),
+    page.getByText("Shopping with GLOHAUS", { exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: /buy now|checkout/i }),

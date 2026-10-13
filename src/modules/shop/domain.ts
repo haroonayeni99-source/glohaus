@@ -6,11 +6,27 @@ export const productInputSchema = z
     description: z.string().trim().max(1200),
     sku: z.string().trim().min(1).max(80).nullable(),
     pricePence: z.number().int().min(50).max(100_000_000),
+    compareAtPricePence: z
+      .number()
+      .int()
+      .min(50)
+      .max(100_000_000)
+      .nullable()
+      .optional(),
     stockQuantity: z.number().int().min(0).max(1_000_000),
     imageAssetId: z.uuid().nullable(),
     publicationStatus: z.enum(["draft", "published", "archived"]),
   })
-  .strict();
+  .strict()
+  .refine(
+    (input) =>
+      input.compareAtPricePence == null ||
+      input.compareAtPricePence > input.pricePence,
+    {
+      message: "Previous price must be higher than the current price.",
+      path: ["compareAtPricePence"],
+    },
+  );
 
 export type ProductInput = z.infer<typeof productInputSchema>;
 
@@ -22,6 +38,7 @@ export type ProfessionalProduct = {
   description: string;
   sku: string | null;
   price_pence: number;
+  compare_at_price_pence?: number | null;
   stock_quantity: number;
   publication_status: "draft" | "published" | "archived";
   created_at: Date;
@@ -29,18 +46,21 @@ export type ProfessionalProduct = {
 };
 
 export type PublicProduct = {
+  created_at?: Date;
+  sold_units?: number | string;
+  recent_sold_units?: number | string;
   id: string;
   professional_id: string;
   image_asset_id: string | null;
   name: string;
   description: string;
   price_pence: number;
+  compare_at_price_pence?: number | null;
   in_stock: boolean;
   professional_slug: string;
   professional_name: string;
   updated_at: Date;
 };
-
 
 export const cartItemInputSchema = z
   .object({
@@ -69,7 +89,6 @@ export type CartOverview = {
   totalPence: number;
   itemCount: number;
 };
-
 
 export type ProductOrderItem = {
   id: string;
@@ -131,7 +150,6 @@ export const fulfilmentUpdateSchema = z
       });
     }
   });
-
 
 export type ShopCheckoutItem = {
   productId: string;

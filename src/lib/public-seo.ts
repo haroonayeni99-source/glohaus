@@ -27,6 +27,7 @@ export const publicPages = {
     "About GLOHAUS",
     "Meet GLOHAUS: a marketplace connecting customers with independent beauty professionals and their work.",
   ],
+  "/contact": ["Contact GLOHAUS support", "Get help with your GLOHAUS account, bookings and Shop orders."],
   "/faq": [
     "Frequently asked questions",
     "Find answers about GLOHAUS accounts, professional pages, bookings, payments and support.",

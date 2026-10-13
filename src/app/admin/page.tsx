@@ -1,3 +1,6 @@
+import { AdminSupportInbox } from "@/components/admin-support-inbox";
+import { supportInbox } from "@/modules/support/repository";
+import { withAdmin } from "@/modules/admin/repository";
 import { HomepageCategoryMediaControl } from "@/components/homepage-category-media-control";
 import {
   AdminWorkspaceView,
@@ -56,6 +59,7 @@ export default async function Page() {
   // The serverless runtime intentionally has a one-connection pool. Avoid
   // starting a dozen transactions at once and timing out while they queue.
   const data = await adminOverview();
+  const support = await withAdmin(supportInbox).catch(() => null);
   const labels = await publicLabels();
   const categories = await adminCategories().catch(() => null);
   const owner = isOwner ? await ownerControls().catch(() => null) : null;
@@ -466,6 +470,7 @@ export default async function Page() {
                 <AdminSectionUnavailable label={String(label)} />
               </section>
             ))}
+        <AdminSection id="support" title="Support inbox"><AdminSupportInbox initial={support} /></AdminSection>
         <AdminFinancePanel data={finance} />
         <AdminManager
           data={data}

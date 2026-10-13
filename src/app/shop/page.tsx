@@ -1,3 +1,9 @@
+import {
+  catalogueProducts,
+  shopCollection,
+  shopCollections,
+  shopHref,
+} from "@/modules/shop/catalogue";
 import { publicMetadata, publicPages } from "@/lib/public-seo";
 import Image from "next/image";
 import Link from "next/link";
@@ -34,35 +40,30 @@ const categories = [
   ["Fragrance", "Perfume & body mist"],
 ] as const;
 
-const shopBy = [
-  "New arrivals",
-  "Bestsellers",
-  "Trending",
-  "Deals & offers",
-  "Gift sets",
-] as const;
-
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{
+    q?: string | string[];
+    collection?: string | string[];
+  }>;
 }) {
-  const { q = "" } = await searchParams;
+  const params = await searchParams;
+  const q = typeof params.q === "string" ? params.q : "";
+  const collection = shopCollection(params.collection);
+  const selectedCollection = collection
+    ? shopCollections[collection]
+    : undefined;
   const viewerSignedIn = await publicViewerSignedIn();
   const cartHref = viewerSignedIn ? "/cart" : "/sign-in?returnTo=%2Fcart";
   const products = process.env.DATABASE_URL
-    ? await withIdentity("", publicProducts).catch(() => [])
+    ? await withIdentity("", (db) =>
+        publicProducts(db, { query: q, collection }),
+      ).catch(() => [])
     : [];
 
   const query = q.trim().toLowerCase();
-  const visibleProducts = query
-    ? products.filter((product) =>
-        [product.name, product.description, product.professional_name]
-          .join(" ")
-          .toLowerCase()
-          .includes(query),
-      )
-    : products;
+  const visibleProducts = catalogueProducts(products, q, collection);
   const bestsellers = products.slice(0, 5);
 
   return (
@@ -92,14 +93,18 @@ export default async function ShopPage({
           <div className="marketplace-side-divider" />
           <p className="marketplace-side-label">Shop by</p>
           <nav>
-            {shopBy.map((name) => (
+            {Object.entries(shopCollections).map(([key, { label: name }]) => (
               <Link
                 key={name}
-                href={`/shop?q=${encodeURIComponent(name.split(" ")[0])}#products`}
+                href={shopHref(shopCollection(key), q)}
+                aria-current={collection === key ? "page" : undefined}
               >
                 <Tag size={15} aria-hidden /> {name}
               </Link>
             ))}
+            <Link href={shopHref(undefined, "Gift")}>
+              <Tag size={15} aria-hidden /> Gift sets
+            </Link>
           </nav>
 
           <article className="marketplace-side-promo">
@@ -116,6 +121,9 @@ export default async function ShopPage({
 
         <section className="marketplace-main">
           <form className="marketplace-search" action="/shop" method="get">
+            {collection && (
+              <input type="hidden" name="collection" value={collection} />
+            )}
             <Search size={18} aria-hidden />
             <input
               name="q"
@@ -194,11 +202,24 @@ export default async function ShopPage({
             <div className="marketplace-section-heading">
               <div>
                 <p className="eyebrow">
-                  {query ? "SEARCH RESULTS" : "MARKETPLACE"}
+                  {selectedCollection
+                    ? "SHOP BY"
+                    : query
+                      ? "SEARCH RESULTS"
+                      : "MARKETPLACE"}
                 </p>
-                <h2>{query ? `Results for “${q}”` : "Popular products"}</h2>
+                <h2>
+                  {selectedCollection
+                    ? `${selectedCollection.label}${query ? ` for “${q}”` : ""}`
+                    : query
+                      ? `Results for “${q}”`
+                      : "Popular products"}
+                </h2>
+                {selectedCollection && <p>{selectedCollection.description}</p>}
               </div>
-              {query && <Link href="/shop#products">Clear search</Link>}
+              {(query || collection) && (
+                <Link href="/shop#products">Clear filters</Link>
+              )}
             </div>
 
             {visibleProducts.length ? (
@@ -255,7 +276,26 @@ export default async function ShopPage({
                         listing
                       </div>
                       <div className="marketplace-product-buy">
-                        <strong>{money(product.price_pence)}</strong>
+                        <div>
+                          {(product.compare_at_price_pence ?? 0) >
+                            product.price_pence && (
+                            <>
+                              <del aria-label="Previous selling price">
+                                {money(product.compare_at_price_pence!)}
+                              </del>
+                              <span>
+                                {" "}
+                                Save{" "}
+                                {money(
+                                  product.compare_at_price_pence! -
+                                    product.price_pence,
+                                )}
+                              </span>
+                              <br />
+                            </>
+                          )}
+                          <strong>{money(product.price_pence)}</strong>
+                        </div>
                         <AddToCartButton
                           productId={product.id}
                           disabled={!product.in_stock}
@@ -270,17 +310,24 @@ export default async function ShopPage({
                 <PackageCheck size={30} aria-hidden />
                 <div>
                   <h3>
-                    {query
-                      ? "No matching products yet."
-                      : "Marketplace products are coming in."}
+                    {collection === "deals"
+                      ? "No offers available right now."
+                      : collection === "bestsellers" ||
+                          collection === "trending"
+                        ? "No paid sales to show yet."
+                        : query
+                          ? "No matching products yet."
+                          : "Marketplace products are coming in."}
                   </h3>
                   <p>
-                    {query
-                      ? "Try another category or search term."
-                      : "Real products will appear here as GLOHAUS professionals publish stock. We do not show fake listings or placeholder prices."}
+                    {collection
+                      ? "Try clearing the filters or browse all products."
+                      : query
+                        ? "Try another category or search term."
+                        : "Real products will appear here as GLOHAUS professionals publish stock. We do not show fake listings or placeholder prices."}
                   </p>
                 </div>
-                {query ? (
+                {query || collection ? (
                   <Link href="/shop">Show all products</Link>
                 ) : (
                   <Link href="/explore">Explore professionals</Link>
@@ -292,11 +339,14 @@ export default async function ShopPage({
           <section className="marketplace-protection-note">
             <ShieldCheck size={20} aria-hidden />
             <div>
-              <strong>Protected marketplace rollout</strong>
+              <strong>Shopping with GLOHAUS</strong>
               <p>
-                Browsing and cart features are connected to real GLOHAUS product
-                data. Checkout stays protected until order, delivery, refund and
-                payment safeguards are fully ready.
+                Sign in to build your basket and see the available checkout
+                options. Review your total and delivery details before paying.
+                Sellers prepare and ship their orders. For help with an order,
+                <Link href="/contact"> contact GLOHAUS support</Link> or read
+                our{" "}
+                <Link href="/refunds">cancellations and refunds guidance</Link>.
               </p>
             </div>
           </section>

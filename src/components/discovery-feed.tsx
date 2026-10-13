@@ -361,6 +361,7 @@ export function DiscoveryFeed({
         </div>
         <div className="discovery-sidebar-foot">
           <span>ENGLAND · GBP £</span>
+          <Link href="/contact">Contact Us</Link>
           <Link href={viewerSignedIn ? "/workspace" : "/sign-in"}>
             {viewerSignedIn ? "Your space" : "Sign in"}
           </Link>

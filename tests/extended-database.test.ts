@@ -176,6 +176,8 @@ describe.sequential("private media, notification delivery and refunds", () => {
       asUser("customer", (sql) => addTimeOff(sql, professional, input)),
     ).rejects.toThrow("FORBIDDEN");
     await asUser("pro", (sql) => removeTimeOff(sql, professional, block.id));
+    // Remove this disposable fixture snapshot before deleting its unpaid booking.
+    await db.query("DELETE FROM beauty.booking_commission_terms WHERE booking_id=$1", [appointment]);
     await db.query("DELETE FROM beauty.bookings WHERE id=$1", [appointment]);
   });
   it("keeps unpublished image paths private", async () => {

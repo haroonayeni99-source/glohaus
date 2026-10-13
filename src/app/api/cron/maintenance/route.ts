@@ -1,3 +1,4 @@
+import { retryBookingProviderCosts } from "@/modules/commission/provider-cost";
 import { timingSafeEqual } from "node:crypto";
 import { withPaymentWorker } from "@/modules/payments/worker";
 
@@ -9,8 +10,8 @@ function authorized(request: Request) {
   const expected = Buffer.from(`Bearer ${secret || ""}`);
   return Boolean(
     secret &&
-      actual.length === expected.length &&
-      timingSafeEqual(actual, expected),
+    actual.length === expected.length &&
+    timingSafeEqual(actual, expected),
   );
 }
 
@@ -26,27 +27,37 @@ export async function GET(request: Request) {
       return row.rows[0]?.result ?? {};
     });
 
+    const providerCosts = await retryBookingProviderCosts();
+
     await withPaymentWorker((db) =>
-      db.query(
-        "SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)",
-        ["maintenance", true, JSON.stringify(result)],
-      ),
+      db.query("SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)", [
+        "maintenance",
+        true,
+        JSON.stringify(result),
+      ]),
     ).catch((error) => {
       console.error("Failed to record maintenance worker health", error);
     });
 
-    return Response.json(result, {
-      headers: { "Cache-Control": "private, no-store" },
-    });
+    return Response.json(
+      { ...result, providerCosts },
+      {
+        headers: { "Cache-Control": "private, no-store" },
+      },
+    );
   } catch {
     console.error("Scheduled maintenance worker failed");
     await withPaymentWorker((db) =>
-      db.query(
-        "SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)",
-        ["maintenance", false, JSON.stringify({ code: "WORKER_FAILED" })],
-      ),
+      db.query("SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)", [
+        "maintenance",
+        false,
+        JSON.stringify({ code: "WORKER_FAILED" }),
+      ]),
     ).catch((error) => {
-      console.error("Failed to record maintenance worker failure health", error);
+      console.error(
+        "Failed to record maintenance worker failure health",
+        error,
+      );
     });
     return new Response("Retry later", { status: 503 });
   }

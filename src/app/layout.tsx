@@ -1,3 +1,4 @@
+import "@/components/commission-control-centre.css";
 import { jsonLd, publicOrigin } from "@/lib/public-seo";
 import { PlatformLabelsProvider } from "@/components/platform-labels";
 import { publicLabels } from "@/modules/platform/repository";

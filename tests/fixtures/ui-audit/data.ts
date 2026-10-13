@@ -57,3 +57,6 @@ export async function withAdmin<T>(work: (db: import("@/modules/accounts/reposit
     status: "open", created_at: date,
   }] }] as unknown as Row[] }) });
 }
+
+export async function withOwner<T>(work:(db:import("@/modules/accounts/repository").SqlClient)=>Promise<T>){ return withAdmin(work); }
+export async function commissionOverview(){fail("commission");return {asOf:date,settings:{enabled:false,new_promotions_enabled:true,version:1},professionals:[{id:ids.pro,name:"Maya Studio",effective:{basisPoints:800,standardBasisPoints:800,ruleId:null,ruleReference:"standard:starter",pricingVersion:"commission-v2-baseline",expiresAt:null}}],rules:[],founding:[],metrics:{commissionEarnedPence:0,waivedPence:0,capturedPence:0,paymentCostsPence:0,costsPending:0,legacyWithoutTerms:0},performance:[],audit:[]};}

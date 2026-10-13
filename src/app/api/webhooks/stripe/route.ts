@@ -1,3 +1,4 @@
+import { reconcileBookingProviderCost } from "@/modules/commission/provider-cost";
 import type Stripe from "stripe";
 import { stripe } from "@/modules/payments/stripe";
 import { withPaymentWorker } from "@/modules/payments/worker";
@@ -37,22 +38,34 @@ async function applyPaidSession(
     return;
   }
 
-  if (session.metadata?.booking_id)
+  if (session.metadata?.booking_id) {
     await withPaymentWorker(async (db) => {
-      await db.query("SELECT beauty.apply_checkout_payment($1,$2,$3,$4,$5,$6)", [
-        eventId,
-        session.metadata!.booking_id,
-        session.id,
-        intent,
-        session.amount_total,
-        session.currency,
-      ]);
+      await db.query(
+        "SELECT beauty.apply_checkout_payment($1,$2,$3,$4,$5,$6)",
+        [
+          eventId,
+          session.metadata!.booking_id,
+          session.id,
+          intent,
+          session.amount_total,
+          session.currency,
+        ],
+      );
       if (intent)
         await db.query("SELECT beauty.record_booking_payment_finance($1,$2)", [
           session.metadata!.booking_id,
           intent,
         ]);
     });
+    if (intent)
+      await reconcileBookingProviderCost(
+        session.metadata.booking_id,
+        intent,
+      ).catch(() => {
+        // Pricing/payment already reconciled. Maintenance retries unavailable Stripe fees.
+        console.error("Booking provider fee reconciliation pending");
+      });
+  }
 }
 
 function subscriptionStatus(status: Stripe.Subscription.Status) {
@@ -120,7 +133,6 @@ async function releaseShopSession(
   );
 }
 
-
 type ConnectPayout = Stripe.Payout & {
   application_fee?: string | Stripe.ApplicationFee | null;
   application_fee_amount?: number | null;
@@ -142,17 +154,14 @@ async function applyPayoutEvent(
 
   if (transferId)
     await withPaymentWorker((db) =>
-      db.query(
-        "SELECT beauty.record_payout_provider($1,$2,$3,$4,$5,$6)",
-        [
-          targetId,
-          transferId,
-          payout.id,
-          applicationFeeId ?? null,
-          payout.application_fee_amount ?? 0,
-          new Date(payout.arrival_date * 1000),
-        ],
-      ),
+      db.query("SELECT beauty.record_payout_provider($1,$2,$3,$4,$5,$6)", [
+        targetId,
+        transferId,
+        payout.id,
+        applicationFeeId ?? null,
+        payout.application_fee_amount ?? 0,
+        new Date(payout.arrival_date * 1000),
+      ]),
     );
 
   if (nextStatus !== "paid") {
@@ -171,11 +180,9 @@ async function applyPayoutEvent(
     // Stripe automatically refunds Instant Payout application fees when the
     // payout fails. Only reverse the GLOHAUS transfer back to the platform.
     if (details.transferId)
-      await stripe().transfers.createReversal(
-        details.transferId,
-        undefined,
-        { idempotencyKey: `payout-transfer-reversal-${payout.id}` },
-      );
+      await stripe().transfers.createReversal(details.transferId, undefined, {
+        idempotencyKey: `payout-transfer-reversal-${payout.id}`,
+      });
   }
 
   await withPaymentWorker((db) =>
@@ -325,8 +332,7 @@ export async function POST(request: Request) {
     } else if (event.type === "account.updated") {
       const account = event.data.object;
       const ready = Boolean(
-        account.capabilities?.transfers === "active" &&
-          account.payouts_enabled,
+        account.capabilities?.transfers === "active" && account.payouts_enabled,
       );
       await withPaymentWorker(async (db) => {
         await db.query("SELECT beauty.sync_connect_account($1,$2)", [

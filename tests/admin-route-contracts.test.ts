@@ -84,8 +84,13 @@ it("connects the authorised delete action using a fictional provider only", asyn
   expect(mocks.query).toHaveBeenLastCalledWith("SELECT beauty.owner_mark_user_deleted($1,$2)", [id, reason]);
 });
 it.each(cases)("accepts the $name UI payload through its existing protected routine", async item => {
-  expect((await item.handler(request(item))).status).toBe(200);
-  expect(mocks.query.mock.calls.some(([sql]) => sql.includes(item.sql))).toBe(true);
+  if (item.name === "professional commission") {
+    expect((await item.handler(request(item))).status).toBe(409);
+    expect(mocks.query.mock.calls.some(([sql]) => sql.includes(item.sql))).toBe(false);
+  } else {
+    expect((await item.handler(request(item))).status).toBe(200);
+    expect(mocks.query.mock.calls.some(([sql]) => sql.includes(item.sql))).toBe(true);
+  }
   expect(mocks.stripe).not.toHaveBeenCalled();
 });
 it.each(cases)("rejects malformed $name payloads before writes", async item => {

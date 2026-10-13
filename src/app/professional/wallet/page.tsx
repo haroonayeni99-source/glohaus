@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { ArrowUpRight, CircleAlert, ShieldCheck, WalletCards } from "lucide-react";
+import {
+  ArrowUpRight,
+  CircleAlert,
+  ShieldCheck,
+  WalletCards,
+} from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
 import { AccessMessage } from "@/components/access-message";
@@ -47,7 +52,10 @@ export default async function ProfessionalWalletPage() {
         };
       }>("SELECT beauty.my_professional_pricing() AS data")
     ).rows[0].data;
-    const access = await professionalAccessState(db, result.account!.professionalId!);
+    const access = await professionalAccessState(
+      db,
+      result.account!.professionalId!,
+    );
     const paymentAccount = (
       await db.query<{ stripe_account_id: string }>(
         "SELECT stripe_account_id FROM beauty.professional_payment_accounts WHERE professional_id=$1",
@@ -85,20 +93,30 @@ export default async function ProfessionalWalletPage() {
   const restricted = tieredFullFreeze || wallet.instantPayoutBlocked;
   return (
     <div className="pro-app">
-      <ProfessionalNavigation active="wallet" displayName={result.account.displayName} />
+      <ProfessionalNavigation
+        active="wallet"
+        displayName={result.account.displayName}
+      />
       <main id="main" className="pro-main pro-list-page">
         <p className="pro-kicker">GLOHAUS WALLET</p>
         <h1>Money, made clear.</h1>
+        <Link className="button button-light" href="/professional/commission">
+          Your commission and founding rewards
+        </Link>
         <p className="pro-page-lead">
           Your balance is calculated from protected transaction records. If a
           booking is disputed, GLOHAUS normally ring-fences the disputed amount
-          and keeps an additional 50% safety buffer in your wallet while allowing
-          the rest of your eligible balance to remain withdrawable. A full
-          withdrawal freeze is used only when the reserve cannot be covered,
-          multiple disputes are open, or another account risk restriction applies.
+          and keeps an additional 50% safety buffer in your wallet while
+          allowing the rest of your eligible balance to remain withdrawable. A
+          full withdrawal freeze is used only when the reserve cannot be
+          covered, multiple disputes are open, or another account risk
+          restriction applies.
         </p>
 
-        <section className="pro-stat-grid pro-wallet-balances" aria-label="Wallet balances">
+        <section
+          className="pro-stat-grid pro-wallet-balances"
+          aria-label="Wallet balances"
+        >
           <article>
             <strong>{money(withdrawablePence)}</strong>
             <span>Available to withdraw now</span>
@@ -136,10 +154,10 @@ export default async function ProfessionalWalletPage() {
             <p>
               Money linked to a disputed booking is ring-fenced while the
               payment provider reviews the case. For a single ordinary dispute,
-              GLOHAUS also keeps a 50% safety buffer while allowing the remaining
-              eligible balance to be withdrawn. Multiple disputes, an uncovered
-              reserve or another risk restriction can trigger a full withdrawal
-              freeze.
+              GLOHAUS also keeps a 50% safety buffer while allowing the
+              remaining eligible balance to be withdrawn. Multiple disputes, an
+              uncovered reserve or another risk restriction can trigger a full
+              withdrawal freeze.
             </p>
             <div className="pro-dispute-list">
               {disputes.disputes.map((dispute) => {
@@ -163,14 +181,20 @@ export default async function ProfessionalWalletPage() {
                       </small>
                     </div>
                     <div>
-                      <span className={open ? "pro-dispute-open" : "pro-dispute-closed"}>
+                      <span
+                        className={
+                          open ? "pro-dispute-open" : "pro-dispute-closed"
+                        }
+                      >
                         {statusLabel}
                       </span>
                       <strong>{money(dispute.reservedPence)} held</strong>
                     </div>
                     <p>
                       Disputed payment: {money(dispute.amountPence)}
-                      {dispute.reason ? ` · Reason: ${dispute.reason.replaceAll("_", " ")}` : ""}
+                      {dispute.reason
+                        ? ` · Reason: ${dispute.reason.replaceAll("_", " ")}`
+                        : ""}
                     </p>
                     {dispute.reserveShortfallPence > 0 && (
                       <p className="pro-dispute-warning">
@@ -191,7 +215,9 @@ export default async function ProfessionalWalletPage() {
                       />
                     )}
                     {!open && dispute.responseStatement && (
-                      <small>Response saved in GLOHAUS for this closed dispute.</small>
+                      <small>
+                        Response saved in GLOHAUS for this closed dispute.
+                      </small>
                     )}
                     <Link href={`/professional/bookings/${dispute.bookingId}`}>
                       View booking <ArrowUpRight size={15} aria-hidden />
@@ -207,7 +233,9 @@ export default async function ProfessionalWalletPage() {
           <section className="pro-finance-notice" role="status">
             <CircleAlert size={18} aria-hidden />
             <span>
-              One dispute is open. GLOHAUS is keeping {money(disputeSafetyBufferPence)} as a temporary safety buffer while the rest of your eligible balance remains withdrawable.
+              One dispute is open. GLOHAUS is keeping{" "}
+              {money(disputeSafetyBufferPence)} as a temporary safety buffer
+              while the rest of your eligible balance remains withdrawable.
             </span>
           </section>
         )}
@@ -224,12 +252,17 @@ export default async function ProfessionalWalletPage() {
         <section className="pro-panel">
           <div className="pro-panel-title">
             <h2>Your GLOHAUS pricing</h2>
-            <span className="pro-status pro-status-confirmed">{pricing.planName}</span>
+            <span className="pro-status pro-status-confirmed">
+              {pricing.planName}
+            </span>
           </div>
           <p>
-            Service commission: {(pricing.serviceCommissionBasisPoints / 100).toFixed(0)}% ·
-            Product commission: {(pricing.productCommissionBasisPoints / 100).toFixed(0)}% ·
-            Standard withdrawal: Free · Instant withdrawal: {(pricing.instantWithdrawalBasisPoints / 100).toFixed(0)}%
+            Service commission:{" "}
+            {(pricing.serviceCommissionBasisPoints / 100).toFixed(0)}% · Product
+            commission:{" "}
+            {(pricing.productCommissionBasisPoints / 100).toFixed(0)}% ·
+            Standard withdrawal: Free · Instant withdrawal:{" "}
+            {(pricing.instantWithdrawalBasisPoints / 100).toFixed(0)}%
           </p>
           <p>
             {pricing.monthlyPricePence
@@ -287,10 +320,15 @@ export default async function ProfessionalWalletPage() {
             <PayoutDashboardButton />
           ) : access.verified && hasStripeAccount ? (
             <p className="form-notice" role="status">
-              Payout management is temporarily unavailable because the protected Stripe payment runtime is not fully configured. Your GLOHAUS wallet balance remains recorded and protected.
+              Payout management is temporarily unavailable because the protected
+              Stripe payment runtime is not fully configured. Your GLOHAUS
+              wallet balance remains recorded and protected.
             </p>
           ) : (
-            <ConnectButton status={access.status} runtimeReady={paymentReady()} />
+            <ConnectButton
+              status={access.status}
+              runtimeReady={paymentReady()}
+            />
           )}
         </section>
 
@@ -303,11 +341,11 @@ export default async function ProfessionalWalletPage() {
             <p>
               Service deposit proceeds begin as pending and become eligible
               after a completed appointment has remained clear for 24 hours.
-              Product proceeds remain pending until tracked delivery is confirmed
-              by the customer, then become eligible after 48 hours. A booking
-              dispute ring-fences the amount connected to that booking in your
-              disputed balance. A 50% safety buffer normally remains in the
-              wallet while other eligible earnings stay withdrawable; higher
+              Product proceeds remain pending until tracked delivery is
+              confirmed by the customer, then become eligible after 48 hours. A
+              booking dispute ring-fences the amount connected to that booking
+              in your disputed balance. A 50% safety buffer normally remains in
+              the wallet while other eligible earnings stay withdrawable; higher
               dispute risk can trigger a full freeze.
             </p>
           </div>
@@ -317,7 +355,9 @@ export default async function ProfessionalWalletPage() {
         <section className="pro-panel pro-tax-panel">
           <div className="pro-panel-title">
             <h2>Tax Centre</h2>
-            <span className="pro-status pro-status-confirmed">Earnings records</span>
+            <span className="pro-status pro-status-confirmed">
+              Earnings records
+            </span>
           </div>
           <div className="pro-tax-copy">
             <h3>Your records, in one place.</h3>

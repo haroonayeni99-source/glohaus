@@ -27,6 +27,7 @@ await build({
       "@vercel/blob/client": resolve("tests/fixtures/content-blob-client.ts"),
     } : {}),
     "@/modules/admin/repository": resolve("tests/fixtures/ui-audit/data.ts"),
+    "@/modules/commission/repository": resolve("tests/fixtures/ui-audit/data.ts"),
     "@/modules/platform/repository": resolve("tests/fixtures/ui-audit/data.ts"),
     "@/lib/db": resolve("tests/fixtures/customer-profile-data.ts"),
     "@/modules/accounts/customer-profile": resolve("tests/fixtures/customer-profile-data.ts"),
@@ -52,6 +53,7 @@ const css = (
       "location",
       "../components/professional-profile",
       "../components/viewport-video",
+      "../components/commission-control-centre",
     ].map((name) => readFile(`src/app/${name}.css`, "utf8")),
   )
 ).join("\n");

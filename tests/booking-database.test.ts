@@ -489,7 +489,8 @@ describe.sequential("starter full-prepayment checkout", () => {
     expect(quote).toMatchObject({
       customerTotalPence: 5100,
       customerPlatformFeePence: 100,
-      professionalProceedsPence: 4600,
+      // Canonical live trial commission is 10%, as verified read-only.
+      professionalProceedsPence: 4500,
     });
 
     await asUser("alice", (sql) =>

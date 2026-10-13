@@ -20,7 +20,9 @@ import { ShopFeeControl } from "@/components/shop-fee-control";
 import { BookingFeeControl } from "@/components/booking-fee-control";
 import { OwnerControls } from "@/components/owner-controls";
 import { OwnerAuthAccounts } from "@/components/owner-auth-accounts";
-import { ProfessionalCommissionControl } from "@/components/professional-commission-control";
+import { CommissionControlCentre } from "@/components/commission-control-centre";
+import { commissionOverview } from "@/modules/commission/repository";
+import { withOwner } from "@/modules/admin/repository";
 import { OwnerReferralOverview } from "@/components/owner-referral-overview";
 import { OwnerDashboardOverview } from "@/components/owner-dashboard-overview";
 import { WebsiteStatusControl } from "@/components/website-status-control";
@@ -82,6 +84,9 @@ export default async function Page() {
   const commissions = isOwner
     ? await ownerProfessionalCommissionOverview().catch(() => null)
     : [];
+  const commissionCentre = isOwner
+    ? await withOwner(commissionOverview).catch(() => null)
+    : null;
   const referrals = isOwner
     ? await ownerProfessionalReferralOverview().catch(() => null)
     : [];
@@ -147,11 +152,13 @@ export default async function Page() {
             <p className="eyebrow">HOMEPAGE IMAGERY</p>
             <h2>Homepage and category images</h2>
             <p className="lead">
-              Change the main homepage and category photos without changing code.
-              Desktop and mobile can use different images.
+              Change the main homepage and category photos without changing
+              code. Desktop and mobile can use different images.
             </p>
             <HomepageMediaControl initial={homepageMedia} />
-            <HomepageCategoryMediaControl initial={homepageMedia.categoryImages} />
+            <HomepageCategoryMediaControl
+              initial={homepageMedia.categoryImages}
+            />
           </section>
         )}
 
@@ -214,8 +221,8 @@ export default async function Page() {
             </p>
             <p className="lead">
               Set the professional-paid commission used by new Shop checkouts.
-              Each paid order keeps the commission rate that applied when it
-              was purchased.
+              Each paid order keeps the commission rate that applied when it was
+              purchased.
             </p>
             {productFee === undefined ? (
               <AdminSectionUnavailable label="Shop fees" />
@@ -233,8 +240,8 @@ export default async function Page() {
             <h2>All sign-ups and sign-ins</h2>
             <p className="lead">
               See every sign-up, including accounts whose GLOHAUS setup is not
-              complete. Check their email confirmation,
-              account status, roles and most recent successful sign-in.
+              complete. Check their email confirmation, account status, roles
+              and most recent successful sign-in.
             </p>
             {authAccounts ? (
               <OwnerAuthAccounts accounts={authAccounts} />
@@ -249,22 +256,20 @@ export default async function Page() {
             className="admin-workspace-section admin-detail-card"
           >
             <p className="eyebrow">PROFESSIONAL COMMISSION</p>
-            <h2>Individual service commission rates</h2>
+            <h2>Commission Control Centre</h2>
             <p className="admin-action-warning">
               Financial setting · affects future quotes for the selected
               professional
             </p>
             <p className="lead">
-              The normal plan commission remains the default. Use an audited
-              custom rate only when a specific professional needs a commercial
-              rate, such as a high-volume agreement. New booking quotes use the
-              effective rate; existing paid bookings keep their original
-              snapshot.
+              Manage scheduled service commission, founding rewards and
+              read-only financial simulations. Every live change requires Owner
+              confirmation.
             </p>
-            {commissions ? (
-              <ProfessionalCommissionControl professionals={commissions} />
+            {commissionCentre ? (
+              <CommissionControlCentre data={commissionCentre} />
             ) : (
-              <AdminSectionUnavailable label="Professional commission" />
+              <AdminSectionUnavailable label="Commission Control Centre" />
             )}
           </section>
         )}
@@ -470,7 +475,9 @@ export default async function Page() {
                 <AdminSectionUnavailable label={String(label)} />
               </section>
             ))}
-        <AdminSection id="support" title="Support inbox"><AdminSupportInbox initial={support} /></AdminSection>
+        <AdminSection id="support" title="Support inbox">
+          <AdminSupportInbox initial={support} />
+        </AdminSection>
         <AdminFinancePanel data={finance} />
         <AdminManager
           data={data}
@@ -498,7 +505,10 @@ export default async function Page() {
                 </article>
               ))}
               {!owner.audit.length && (
-                <p className="lead">No changes recorded yet. Owner actions and their reasons will appear here.</p>
+                <p className="lead">
+                  No changes recorded yet. Owner actions and their reasons will
+                  appear here.
+                </p>
               )}
             </div>
           </AdminSection>

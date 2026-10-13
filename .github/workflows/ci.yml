@@ -29,6 +29,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Verify direct Discover and Story photo/video uploads
         run: node scripts/check-discover-story-media.mjs
+      - name: Verify shared sign-out and approved verification badges
+        run: node scripts/check-signout-badges.mjs
       - name: Verify profile logos, large images, theme and actual plan prices
         run: node scripts/check-media-theme-pricing.mjs
       - run: pnpm test:e2e
@@ -48,6 +50,12 @@ jobs:
           path: |
             reports/discover-story-*.png
             reports/discover-story-media-results.json
+      - name: Save sign-out and verification checks
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: signout-badges-checks
+          path: reports/signout-badges-*
       - name: Save profile and pricing visual checks
         uses: actions/upload-artifact@v4
         if: always()

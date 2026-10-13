@@ -365,6 +365,11 @@ export function AdminManager({
                         type: "professionalTrust",
                         id: pro.id,
                         verification: form.get("verification"),
+                        badges: {
+                          identity: form.get("identityVerified") === "on",
+                          business: form.get("businessVerified") === "on",
+                          professional: form.get("professionalVerified") === "on",
+                        },
                         standing: form.get("standing"),
                         restrictedUntil: form.get("restrictedUntil")
                           ? new Date(
@@ -404,6 +409,13 @@ export function AdminManager({
                     ),
                   )}
                 </select>
+                <fieldset className="admin-verification-checks">
+                  <legend>Approved verification checks</legend>
+                  <label><input type="checkbox" name="identityVerified" defaultChecked={pro.identity_verified || pro.verification_status === "verified"} />Identity verified</label>
+                  <label><input type="checkbox" name="businessVerified" defaultChecked={pro.business_verified === true} />Business verified</label>
+                  <label><input type="checkbox" name="professionalVerified" defaultChecked={pro.professional_verified === true} />Professional verified</label>
+                  <small>Approve each check after reviewing evidence. Business and professional checks require identity verification.</small>
+                </fieldset>
                 <select
                   name="standing"
                   defaultValue={pro.standing_status}

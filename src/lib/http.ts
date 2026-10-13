@@ -7,7 +7,10 @@ export function json(body: unknown, status = 200): Response {
   });
 }
 
-export function apiError(error: unknown): Response {
+export function apiError(
+  error: unknown,
+  diagnostics?: { operation: string; code: string },
+): Response {
   if (error instanceof AccessError)
     return json({ error: { code: error.code } }, error.status);
   // Translate only known database decisions; keep SQL text and unknown failures private.
@@ -25,6 +28,7 @@ export function apiError(error: unknown): Response {
   // Never log raw provider/database errors: they may contain customer data or credentials.
   console.error("Account request failed", {
     type: error instanceof Error ? error.name : "UnknownError",
+    ...diagnostics,
   });
   return json({ error: { code: "UNAVAILABLE" } }, 503);
 }

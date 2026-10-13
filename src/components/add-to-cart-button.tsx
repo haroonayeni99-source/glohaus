@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ShoppingBag } from "lucide-react";
 import { useState } from "react";
+import { cartErrorMessage } from "@/modules/shop/cart-feedback";
 
 export function AddToCartButton({
   productId,
@@ -42,9 +43,10 @@ export function AddToCartButton({
           return;
         }
         throw new Error(
-          code === "INVALID_REQUEST"
-            ? "This product cannot be added right now."
-            : "Cart is temporarily unavailable.",
+          cartErrorMessage(code) ??
+            (code === "INVALID_REQUEST"
+              ? "This product cannot be added right now."
+              : "Cart is temporarily unavailable."),
         );
       }
       setNotice(

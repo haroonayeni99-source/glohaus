@@ -592,3 +592,47 @@
     box-shadow: 0 3px 8px rgb(28 24 25 / 8%);
   }
 }
+
+/* The same sign-out control everywhere, without styling other text links. */
+button.text-link.glohaus-signout,
+.admin-workspace .admin-navigation-bottom button.glohaus-signout,
+.mobile-site-menu .mobile-menu-signout button.glohaus-signout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 7px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--ink);
+  font-size: .82rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+  box-shadow: 0 2px 5px rgb(28 24 25 / 4%);
+  transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+button.text-link.glohaus-signout:hover {
+  background: var(--paper);
+  border-color: var(--muted);
+  box-shadow: 0 3px 8px rgb(28 24 25 / 8%);
+}
+button.glohaus-signout:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+@media (max-width: 850px) { button.text-link.glohaus-signout, .mobile-site-menu .mobile-menu-signout button.glohaus-signout { min-height: 44px; } }
+@media (max-width: 760px) { .pro-header-account button.glohaus-signout { display: none; } }
+@media (prefers-reduced-motion: reduce) { button.glohaus-signout { transition: none; } }
+
+.professional-verification-badges { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; max-width: 100%; }
+.professional-verification-badges .verification-crest { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border: 1px solid currentColor; border-radius: 9px; font-size: .72rem; line-height: 1.4; font-weight: 700; }
+.verification-crest svg { flex-shrink: 0; }
+.professional-verification-badges .verification-crest-identity { color: #236049; background: #edf8f0; }
+.professional-verification-badges .verification-crest-business { color: #235582; background: #edf5fc; }
+.professional-verification-badges .verification-crest-professional { color: #654182; background: #f5eefb; }
+[data-theme="night"] .verification-crest-identity { color: #b2e6c5; background: #20372c; }
+[data-theme="night"] .verification-crest-business { color: #b8dbfb; background: #223344; }
+[data-theme="night"] .verification-crest-professional { color: #ddc0f1; background: #35253f; }
+.admin-verification-checks { min-width: 0; display: grid; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); }
+.admin-verification-checks label { display: flex; align-items: center; gap: 7px; font-size: .8rem; }
+.admin-verification-checks input[type="checkbox"] { width: auto; flex: 0 0 auto; }
+.admin-verification-checks small { line-height: 1.5; }

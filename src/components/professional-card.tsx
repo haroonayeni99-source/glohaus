@@ -1,7 +1,8 @@
 import { PlatformLabel } from "./platform-labels";
+import { ProfessionalVerificationBadges } from "./professional-verification-badges";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Star, ArrowUpRight, BadgeCheck, ShieldQuestion, CalendarCheck2, Sparkles } from "lucide-react";
+import { MapPin, Star, ArrowUpRight, CalendarCheck2, Sparkles } from "lucide-react";
 import { money, type PublicProfessional } from "@/modules/professionals/domain";
 export function ProfessionalCard({
   professional: pro,
@@ -44,13 +45,7 @@ export function ProfessionalCard({
             {pro.available_today ? "Available today" : "Check availability"}
           </span>
         </div>
-        <span className={pro.verification_status === "verified" ? "professional-card-verification is-verified" : "professional-card-verification"}>
-          {pro.verification_status === "verified" ? (
-            <><BadgeCheck size={14} aria-hidden /> Identity verified</>
-          ) : (
-            <><ShieldQuestion size={14} aria-hidden /> Not yet verified</>
-          )}
-        </span>
+        <ProfessionalVerificationBadges professional={pro} />
         <p className="professional-card-bio">{pro.bio}</p>
         {!!pro.popular_services?.length && (
           <div className="professional-card-services" aria-label="Popular services">

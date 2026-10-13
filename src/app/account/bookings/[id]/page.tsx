@@ -4,7 +4,8 @@ import { RefundForm } from "@/components/refund-form";
 import { RefundAppealForm } from "@/components/refund-appeal-form";
 import { ReviewForm } from "@/components/review-form";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { isCheckoutReturn } from "@/modules/payments/return-url";
 import { z } from "zod";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
@@ -18,8 +19,10 @@ import { bookingById } from "@/modules/bookings/repository";
 import { money } from "@/modules/professionals/domain";
 export default async function Booking({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ checkout?: string | string[] }>;
 }) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
@@ -61,7 +64,10 @@ export default async function Booking({
         )
       ).rows[0] ?? null,
   }));
-  if (!data.booking) notFound();
+  if (!data.booking) {
+    if (isCheckoutReturn((await searchParams)?.checkout)) redirect("/account/bookings");
+    notFound();
+  }
   const b = data.booking;
   const detail = (
     <>

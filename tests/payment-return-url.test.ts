@@ -62,10 +62,10 @@ describe("Checkout return navigation", () => {
     "/account/orders?checkout=success",
     "/professional/plans?subscription=cancelled",
   ])("repairs an already-issued legacy return link: %s", (path) => {
-    expect(
-      legacyCheckoutReturn(new Request(`https://glohaus1.vercel.app${path}`))
-        ?.href,
-    ).toBe(`https://www.glohaus.shop${path}`);
+    const target = legacyCheckoutReturn(new Request(`https://glohaus1.vercel.app${path}`));
+    expect(target?.hostname).toBe("www.glohaus.shop");
+    if (path.startsWith("/account/bookings/")) expect(target?.searchParams.get("checkout")).toBe("returned");
+    else expect(target?.href).toBe(`https://www.glohaus.shop${path}`);
   });
   it("keeps POST requests, canonical URLs and unrelated/preview pages unchanged", () => {
     expect(

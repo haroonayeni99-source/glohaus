@@ -47,5 +47,15 @@ export function legacyCheckoutReturn(request: Request): URL | null {
     !/^\/account\/bookings\/[0-9a-f-]{36}$/i.test(url.pathname)
   )
     return null;
-  return new URL(url.pathname + url.search, mainOrigin);
+  const target = new URL(url.pathname + url.search, mainOrigin);
+  if (
+    /^\/account\/bookings\/[0-9a-f-]{36}$/i.test(target.pathname) &&
+    !target.searchParams.has("checkout")
+  )
+    target.searchParams.set("checkout", "returned");
+  return target;
+}
+
+export function isCheckoutReturn(value: unknown): boolean {
+  return value === "cancelled" || value === "returned";
 }

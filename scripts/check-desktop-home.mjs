@@ -67,13 +67,24 @@ try {
       await page.goto(`http://127.0.0.1:3004/?theme=${theme}`);
       await expect(page.locator(".mobile-customer-home")).toBeVisible();
       await expect(page.locator(".desktop-customer-home")).toBeHidden();
-      const before = await page.screenshot();
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+        await Promise.all([...document.querySelectorAll(".mobile-customer-home img")].filter(img => {
+          const rect = img.getBoundingClientRect();
+          return rect.width && rect.height && rect.top < innerHeight && rect.bottom > 0;
+        }).map(img => img.decode().catch(() => {})));
+      });
+      const before = await page.screenshot({ animations: "disabled", caret: "hide" });
       await page.evaluate(css => {
         const style = document.querySelector("style");
         if (!style.textContent.includes(css)) throw new Error("Cannot establish mobile baseline");
         style.textContent = style.textContent.replace(css, "");
       }, desktopCss);
-      const baseline = await page.screenshot();
+      const baseline = await page.screenshot({ animations: "disabled", caret: "hide" });
+      if (!before.equals(baseline)) {
+        await writeFile(`reports/desktop-home-mobile-${theme}-${width}-before.png`, before);
+        await writeFile(`reports/desktop-home-mobile-${theme}-${width}-baseline.png`, baseline);
+      }
       expect(before.equals(baseline), `Mobile pixels changed at ${width}px in ${theme}`).toBe(true);
       results.push({ theme, width, mobileUnchanged: true, passed: true });
       await page.close();

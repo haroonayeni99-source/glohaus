@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { CartOverview } from "@/modules/shop/domain";
+import { cartErrorMessage } from "@/modules/shop/cart-feedback";
 
 function money(pence: number) {
   return new Intl.NumberFormat("en-GB", {
@@ -30,9 +31,10 @@ export function CartManager({ initialCart }: { initialCart: CartOverview }) {
       const data = await response.json();
       if (!response.ok) {
         setNotice(
-          data.error?.code === "INVALID_REQUEST"
-            ? "That quantity is not available."
-            : "Your cart could not be updated.",
+          cartErrorMessage(data.error?.code) ??
+            (data.error?.code === "INVALID_REQUEST"
+              ? "That quantity is not available."
+              : "Your cart could not be updated."),
         );
         return;
       }

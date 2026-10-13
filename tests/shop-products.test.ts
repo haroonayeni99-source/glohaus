@@ -2,6 +2,7 @@ import { createTestDatabase, applyTestMigrations } from "./test-database";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { enrolAccount, type SqlClient } from "@/modules/accounts/repository";
 import { updateProfile } from "@/modules/professionals/repository";
+import { cartApiError } from "@/modules/shop/cart-api-error";
 import {
   addCartItem,
   clearCart,
@@ -232,6 +233,20 @@ describe.sequential("Shop product catalogue", () => {
         ),
       ),
     ).rejects.toThrow();
+  });
+
+  it("translates real stock and missing-product rejections without changing the cart", async () => {
+    const before = await asUser("shop-customer", customerCart);
+    for (const [targetId, quantity, code] of [
+      [productId, 20, "INSUFFICIENT_STOCK"],
+      ["11111111-1111-4111-8111-111111111111", 1, "PRODUCT_UNAVAILABLE"],
+    ] as const) {
+      const error = await asUser("shop-customer", (sql) => addCartItem(sql, targetId, quantity)).catch((error: unknown) => error);
+      const response = cartApiError(error, "cart.add");
+      expect(response.status).toBe(409);
+      expect(await response.json()).toEqual({ error: { code } });
+    }
+    expect(await asUser("shop-customer", customerCart)).toEqual(before);
   });
 
   it("removes archived inventory from the public catalogue", async () => {

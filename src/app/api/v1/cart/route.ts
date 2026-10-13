@@ -1,5 +1,6 @@
 import { withAccount } from "@/lib/api-account";
-import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
+import { assertSameOrigin, json, smallJson } from "@/lib/http";
+import { cartApiError } from "@/modules/shop/cart-api-error";
 import { AccessError } from "@/modules/accounts/domain";
 import { cartItemInputSchema } from "@/modules/shop/domain";
 import {
@@ -14,14 +15,16 @@ export async function GET() {
     const cart = await withAccount("customer", (db) => customerCart(db));
     return json({ cart });
   } catch (error) {
-    return apiError(error);
+    return cartApiError(error, "cart.read");
   }
 }
 
 export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
-    const parsed = cartItemInputSchema.safeParse(await smallJson(request, 2048));
+    const parsed = cartItemInputSchema.safeParse(
+      await smallJson(request, 2048),
+    );
     if (!parsed.success || parsed.data.quantity < 1)
       throw new AccessError("INVALID_REQUEST", 400);
 
@@ -30,14 +33,16 @@ export async function POST(request: Request) {
     );
     return json({ cart }, 201);
   } catch (error) {
-    return apiError(error);
+    return cartApiError(error, "cart.add");
   }
 }
 
 export async function PUT(request: Request) {
   try {
     assertSameOrigin(request);
-    const parsed = cartItemInputSchema.safeParse(await smallJson(request, 2048));
+    const parsed = cartItemInputSchema.safeParse(
+      await smallJson(request, 2048),
+    );
     if (!parsed.success) throw new AccessError("INVALID_REQUEST", 400);
 
     const cart = await withAccount("customer", (db) =>
@@ -45,7 +50,7 @@ export async function PUT(request: Request) {
     );
     return json({ cart });
   } catch (error) {
-    return apiError(error);
+    return cartApiError(error, "cart.update");
   }
 }
 
@@ -55,6 +60,6 @@ export async function DELETE(request: Request) {
     const cart = await withAccount("customer", (db) => clearCart(db));
     return json({ cart });
   } catch (error) {
-    return apiError(error);
+    return cartApiError(error, "cart.clear");
   }
 }

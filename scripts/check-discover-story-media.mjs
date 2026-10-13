@@ -33,7 +33,8 @@ try {
         }, [...video]);
         const save = editor.getByRole("button", { name: context === "post" ? "Save post" : "Add to Story", exact: true });
         await expect(save).toBeDisabled();
-        await editor.getByLabel("Media description").fill(`${kind} of finished work`);
+        await expect(editor.getByRole("button", { name: "Upload and attach", exact: true })).toBeEnabled();
+        await editor.getByLabel("Media description").fill(context === "post" ? "" : `${kind} of finished work`);
         await editor.getByRole("button", { name: "Upload and attach", exact: true }).click();
         await expect(editor.getByText("Media attached privately. Publish your post or Story when you are ready.", { exact: true })).toBeVisible();
         if (context === "post") {

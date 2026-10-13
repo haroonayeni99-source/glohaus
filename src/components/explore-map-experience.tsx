@@ -1,4 +1,5 @@
 "use client";
+import { ProfessionalVerificationBadges } from "./professional-verification-badges";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -756,9 +757,7 @@ export function ExploreMapExperience({
                             : "Area only · distance unavailable"}
                         </span>
                       )}
-                      {pro.verification_status === "verified" && (
-                        <span>Verified</span>
-                      )}
+                      <ProfessionalVerificationBadges professional={pro} />
                       {pro.travels_to_you && <span>Travels to you</span>}
                     </div>
                   </div>

@@ -129,20 +129,32 @@ export function ContentMediaUpload({
           />
         ))}
       <label>
-        Media description
+        Media description (optional)
         <input
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           maxLength={200}
           placeholder="Describe this photo or video"
         />
+        <small>Add a description to help people understand your work.</small>
       </label>
       <button
         className="button"
         type="button"
-        disabled={disabled || busy || !file || description.trim().length < 3}
+        disabled={disabled || busy || !file}
         onClick={async () => {
           if (!file) return;
+          const altText =
+            description.trim() ||
+            (file.type.startsWith("image/")
+              ? "Photo of my beauty work"
+              : "Video of my beauty work");
+          if (altText.length < 3) {
+            setNotice(
+              "Use at least 3 characters for the description, or leave it blank.",
+            );
+            return;
+          }
           setBusy(true);
           onUploading(true);
           setNotice("Uploading privately…");
@@ -154,16 +166,23 @@ export function ContentMediaUpload({
               const response = await fetch("/api/v1/professional/portfolio", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ base64, altText: description.trim() }),
+                body: JSON.stringify({ base64, altText }),
               });
-              if (!response.ok)
+              if (!response.ok) {
+                const body = await response.json().catch(() => null);
+                const code = body?.error?.code;
                 throw new Error(
-                  "Could not upload this photo. Please try again.",
+                  code === "UNAUTHENTICATED"
+                    ? "Your session has expired. Sign in again to upload."
+                    : code === "INVALID_REQUEST"
+                      ? "This photo could not be accepted. Check the file or your portfolio limit, then try again."
+                      : "Could not upload this photo. Please try again.",
                 );
+              }
               const saved = await response.json();
               asset = {
                 id: saved.id,
-                alt_text: description.trim(),
+                alt_text: altText,
                 media_type: "image",
                 publication_status: "draft",
               };
@@ -185,7 +204,7 @@ export function ContentMediaUpload({
                     contentType: file.type,
                     multipart: file.size > 10 * 1024 * 1024,
                     clientPayload: JSON.stringify({
-                      altText: description.trim(),
+                      altText,
                     }),
                     onUploadProgress: ({ percentage }) =>
                       setNotice(`Uploading video… ${Math.round(percentage)}%`),

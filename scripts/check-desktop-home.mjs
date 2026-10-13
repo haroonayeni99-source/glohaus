@@ -4,9 +4,13 @@ import { readFile, writeFile } from "node:fs/promises";
 process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/desktop-home-entry.tsx";
 const { server } = await import("./ui-audit.mjs");
 const browser = await chromium.launch();
-const patch = (await readFile("src/app/site-improvements.css", "utf8")).split("/* Desktop home only:")[1];
-if (!patch) throw new Error("Desktop CSS boundary not found");
-const desktopCss = "/* Desktop home only:" + patch;
+const styles = await readFile("src/app/site-improvements.css", "utf8");
+const desktopStart = styles.indexOf("/* Desktop home only:");
+const desktopEnd = styles.indexOf("/* The same sign-out control everywhere", desktopStart);
+if (desktopStart < 0 || desktopEnd < 0) throw new Error("Desktop CSS boundary not found");
+// Shared sign-out/badge rules apply in both comparison states. Remove only the
+// desktop homepage block when checking that its media query leaves mobile intact.
+const desktopCss = styles.slice(desktopStart, desktopEnd);
 const categories = ["hair", "nails", "barber", "waxing", "injectables"];
 const placeholder = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a3ioAAAAASUVORK5CYII=", "base64");
 const results = [];

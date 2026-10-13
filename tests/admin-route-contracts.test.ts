@@ -58,6 +58,16 @@ it("never attempts account deletion when its existing server configuration is mi
   expect((await account(request(item, { action: "delete", userId: id, reason }))).status).toBe(503);
   expect(mocks.deleteUser).not.toHaveBeenCalled();
 });
+it("saves only explicit verification badges through the protected audited routine", async () => {
+  const item = cases.find(item => item.name === "verification and LIVE")!;
+  expect((await manage(request(item, { ...item.payload, badges: { identity: true, business: true, professional: false } }))).status).toBe(200);
+  expect(mocks.query).toHaveBeenCalledWith("SELECT beauty.admin_set_professional_trust($1,$2,$3,$4,$5,$6,$7,$8)", [id, "verified", "good", null, true, true, false, reason]);
+});
+it("rejects higher verification badges without identity approval before writing", async () => {
+  const item = cases.find(item => item.name === "verification and LIVE")!;
+  expect((await manage(request(item, { ...item.payload, badges: { identity: false, business: true, professional: false } }))).status).toBe(400);
+  expect(mocks.query).not.toHaveBeenCalled();
+});
 it.each(["admin", "MFA_REQUIRED"])("protects configured deletion from %s before calling the provider", async mode => {
   mocks.configured = true;
   if (mode === "admin") mocks.roles = ["admin"]; else mocks.denial = "MFA_REQUIRED";

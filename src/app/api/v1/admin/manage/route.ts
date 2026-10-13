@@ -34,6 +34,14 @@ const schema = z.discriminatedUnion("type", [
       verification: z.enum(["unverified", "pending", "verified", "rejected"]),
       standing: z.enum(["good", "restricted"]),
       restrictedUntil: z.iso.datetime().nullable(),
+      badges: z
+        .object({
+          identity: z.boolean(),
+          business: z.boolean(),
+          professional: z.boolean(),
+        })
+        .strict()
+        .optional(),
       reason: z.string().trim().min(5).max(500),
     })
     .strict(),
@@ -52,6 +60,15 @@ export async function POST(request: Request) {
     const parsed = schema.safeParse(await smallJson(request, 4096));
     if (!parsed.success) throw new AccessError("INVALID_REQUEST", 400);
     const input = parsed.data;
+    if (
+      input.type === "professionalTrust" &&
+      input.badges &&
+      (input.verification === "verified" ||
+        input.badges.business ||
+        input.badges.professional) &&
+      !input.badges.identity
+    )
+      throw new AccessError("INVALID_REQUEST", 400);
     await withAdmin((db) =>
       db.query(
         input.type === "user"
@@ -61,10 +78,29 @@ export async function POST(request: Request) {
             : input.type === "report"
               ? "SELECT beauty.admin_resolve_safety_report($1,$2,$3)"
               : input.type === "professionalTrust"
-                ? "SELECT beauty.admin_set_professional_trust($1,$2,$3,$4,$5)"
+                ? input.badges
+                  ? "SELECT beauty.admin_set_professional_trust($1,$2,$3,$4,$5,$6,$7,$8)"
+                  : "SELECT beauty.admin_set_professional_trust($1,$2,$3,$4,$5)"
                 : "SELECT beauty.admin_moderate_post($1,$2,$3)",
         input.type === "professionalTrust"
-          ? [input.id, input.verification, input.standing, input.restrictedUntil, input.reason]
+          ? input.badges
+            ? [
+                input.id,
+                input.verification,
+                input.standing,
+                input.restrictedUntil,
+                input.badges.identity,
+                input.badges.business,
+                input.badges.professional,
+                input.reason,
+              ]
+            : [
+                input.id,
+                input.verification,
+                input.standing,
+                input.restrictedUntil,
+                input.reason,
+              ]
           : [input.id, input.status, input.reason],
       ),
     );

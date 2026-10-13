@@ -1,3 +1,4 @@
+import type { ShopCollection } from "./catalogue";
 import "server-only";
 
 import type { SqlClient } from "@/modules/accounts/repository";
@@ -17,7 +18,7 @@ export async function professionalProducts(
   return (
     await db.query<ProfessionalProduct>(
       `SELECT id,professional_id,image_asset_id,name,description,sku,
-        price_pence,stock_quantity,publication_status,created_at,updated_at
+        price_pence,stock_quantity,publication_status,created_at,updated_at,compare_at_price_pence
        FROM beauty.products
        WHERE professional_id=$1
        ORDER BY updated_at DESC,id DESC`,
@@ -34,36 +35,41 @@ export async function saveProduct(
 ) {
   if (id) {
     return (
-      await db.query<ProfessionalProduct>(
-        `UPDATE beauty.products
+      (
+        await db.query<ProfessionalProduct>(
+          `UPDATE beauty.products
          SET image_asset_id=$3,name=$4,description=$5,sku=$6,price_pence=$7,
-             stock_quantity=$8,publication_status=$9,updated_at=now()
+             stock_quantity=$8,publication_status=$9,updated_at=now(),
+             compare_at_price_pence=CASE WHEN $10::boolean THEN $11::integer ELSE CASE WHEN compare_at_price_pence>$7 THEN compare_at_price_pence ELSE NULL END END
          WHERE id=$1 AND professional_id=$2
          RETURNING id,professional_id,image_asset_id,name,description,sku,
-           price_pence,stock_quantity,publication_status,created_at,updated_at`,
-        [
-          id,
-          professionalId,
-          input.imageAssetId,
-          input.name,
-          input.description,
-          input.sku,
-          input.pricePence,
-          input.stockQuantity,
-          input.publicationStatus,
-        ],
-      )
-    ).rows[0] ?? null;
+           price_pence,stock_quantity,publication_status,created_at,updated_at,compare_at_price_pence`,
+          [
+            id,
+            professionalId,
+            input.imageAssetId,
+            input.name,
+            input.description,
+            input.sku,
+            input.pricePence,
+            input.stockQuantity,
+            input.publicationStatus,
+            input.compareAtPricePence !== undefined,
+            input.compareAtPricePence ?? null,
+          ],
+        )
+      ).rows[0] ?? null
+    );
   }
 
   return (
     await db.query<ProfessionalProduct>(
       `INSERT INTO beauty.products(
          professional_id,image_asset_id,name,description,sku,price_pence,
-         stock_quantity,publication_status
-       ) VALUES($1,$2,$3,$4,$5,$6,$7,$8)
+         stock_quantity,publication_status,compare_at_price_pence
+       ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)
        RETURNING id,professional_id,image_asset_id,name,description,sku,
-         price_pence,stock_quantity,publication_status,created_at,updated_at`,
+         price_pence,stock_quantity,publication_status,created_at,updated_at,compare_at_price_pence`,
       [
         professionalId,
         input.imageAssetId,
@@ -73,23 +79,35 @@ export async function saveProduct(
         input.pricePence,
         input.stockQuantity,
         input.publicationStatus,
+        input.compareAtPricePence ?? null,
       ],
     )
   ).rows[0];
 }
 
-export async function publicProducts(db: SqlClient) {
+export async function publicProducts(
+  db: SqlClient,
+  options: { query?: string; collection?: ShopCollection } = {},
+) {
   return (
     await db.query<PublicProduct>(
-      `SELECT id,professional_id,image_asset_id,name,description,price_pence,
-        in_stock,professional_slug,professional_name,updated_at
-       FROM beauty.public_products
-       ORDER BY updated_at DESC,id DESC
+      `SELECT p.id,p.professional_id,p.image_asset_id,p.name,p.description,p.price_pence,
+        p.in_stock,p.professional_slug,p.professional_name,p.updated_at,p.created_at,p.compare_at_price_pence,
+        coalesce(s.sold_units,0) AS sold_units,coalesce(s.recent_sold_units,0) AS recent_sold_units
+       FROM beauty.public_products p
+       LEFT JOIN beauty.public_product_sales s ON s.product_id=p.id
+       WHERE ($1='' OR strpos(lower(p.name||' '||p.description||' '||p.professional_name),$1)>0)
+         AND ($2<>'bestsellers' OR coalesce(s.sold_units,0)>0)
+         AND ($2<>'trending' OR coalesce(s.recent_sold_units,0)>0)
+         AND ($2<>'deals' OR p.compare_at_price_pence>p.price_pence)
+       ORDER BY CASE WHEN $2='bestsellers' THEN coalesce(s.sold_units,0)
+                     WHEN $2='trending' THEN coalesce(s.recent_sold_units,0) ELSE 0 END DESC,
+                CASE WHEN $2='new' THEN p.created_at ELSE p.updated_at END DESC,p.id DESC
        LIMIT 100`,
+      [(options.query ?? "").trim().toLowerCase(), options.collection ?? ""],
     )
   ).rows;
 }
-
 
 export async function customerCart(db: SqlClient): Promise<CartOverview> {
   const result = await db.query<{ data: CartOverview }>(
@@ -128,7 +146,6 @@ export async function clearCart(db: SqlClient): Promise<CartOverview> {
   );
   return result.rows[0].data;
 }
-
 
 async function productOrders(
   db: SqlClient,
@@ -216,10 +233,7 @@ async function productOrders(
   }));
 }
 
-export function customerProductOrders(
-  db: SqlClient,
-  customerId: string,
-) {
+export function customerProductOrders(db: SqlClient, customerId: string) {
   return productOrders(db, "customer_id", customerId);
 }
 
@@ -230,8 +244,9 @@ export function professionalProductOrders(
   return productOrders(db, "professional_id", professionalId);
 }
 
-
-export async function prepareShopCheckout(db: SqlClient): Promise<ShopCheckout> {
+export async function prepareShopCheckout(
+  db: SqlClient,
+): Promise<ShopCheckout> {
   const result = await db.query<{ data: ShopCheckout }>(
     "SELECT beauty.prepare_shop_checkout() AS data",
   );
@@ -254,24 +269,20 @@ export async function releaseUnattachedShopCheckout(
   db: SqlClient,
   checkoutId: string,
 ) {
-  await db.query(
-    "SELECT beauty.release_unattached_shop_checkout($1)",
-    [checkoutId],
-  );
+  await db.query("SELECT beauty.release_unattached_shop_checkout($1)", [
+    checkoutId,
+  ]);
 }
-
 
 export async function confirmProductOrderDelivery(
   db: SqlClient,
   orderId: string,
 ): Promise<{ id: string; status: "delivered"; deliveredAt: string }> {
-  const result = await db.query<{ data: { id: string; status: "delivered"; deliveredAt: string } }>(
-    "SELECT beauty.confirm_product_order_delivery($1) AS data",
-    [orderId],
-  );
+  const result = await db.query<{
+    data: { id: string; status: "delivered"; deliveredAt: string };
+  }>("SELECT beauty.confirm_product_order_delivery($1) AS data", [orderId]);
   return result.rows[0].data;
 }
-
 
 export async function shopCartPayoutsReady(db: SqlClient): Promise<boolean> {
   const result = await db.query<{ ready: boolean }>(

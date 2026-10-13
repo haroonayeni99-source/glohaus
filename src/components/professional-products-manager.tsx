@@ -13,6 +13,7 @@ type Draft = {
   description: string;
   sku: string;
   price: string;
+  previousPrice: string;
   stock: string;
   imageAssetId: string;
   publicationStatus: "draft" | "published" | "archived";
@@ -23,6 +24,7 @@ const emptyDraft: Draft = {
   description: "",
   sku: "",
   price: "",
+  previousPrice: "",
   stock: "0",
   imageAssetId: "",
   publicationStatus: "draft",
@@ -55,6 +57,7 @@ export function ProfessionalProductsManager({
       description: product.description,
       sku: product.sku || "",
       price: (product.price_pence / 100).toFixed(2),
+      previousPrice: product.compare_at_price_pence ? (product.compare_at_price_pence / 100).toFixed(2) : "",
       stock: String(product.stock_quantity),
       imageAssetId: product.image_asset_id || "",
       publicationStatus: product.publication_status,
@@ -67,6 +70,11 @@ export function ProfessionalProductsManager({
     event.preventDefault();
     const pricePence = Math.round(Number(draft.price) * 100);
     const stockQuantity = Number(draft.stock);
+    const compareAtPricePence = draft.previousPrice.trim() ? Math.round(Number(draft.previousPrice) * 100) : null;
+    if (compareAtPricePence !== null && (!Number.isFinite(compareAtPricePence) || compareAtPricePence <= pricePence)) {
+      setNotice("Previous price must be higher than the current price, or leave it blank.");
+      return;
+    }
     if (!Number.isFinite(pricePence) || pricePence < 50) {
       setNotice("Enter a valid product price of at least £0.50.");
       return;
@@ -91,6 +99,7 @@ export function ProfessionalProductsManager({
             description: draft.description,
             sku: draft.sku.trim() || null,
             pricePence,
+            compareAtPricePence,
             stockQuantity,
             imageAssetId: draft.imageAssetId || null,
             publicationStatus: draft.publicationStatus,
@@ -213,6 +222,19 @@ export function ProfessionalProductsManager({
               />
             </label>
           </div>
+          <label>
+            Previous selling price (£, optional)
+            <input
+              value={draft.previousPrice}
+              inputMode="decimal"
+              aria-describedby="product-offer-help"
+              onChange={event => setDraft(current => ({ ...current, previousPrice: event.target.value }))}
+            />
+            <small id="product-offer-help">
+              For Deals & offers, enter your genuine previous selling price.
+              Leave blank when there is no offer.
+            </small>
+          </label>
           <label>
             SKU (optional)
             <input

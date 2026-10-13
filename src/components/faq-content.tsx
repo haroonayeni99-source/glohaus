@@ -736,7 +736,7 @@ const items: FaqItem[] = [
     question: "How do I contact GLOHAUS?",
     answer: (
       <>
-        Use the GLOHAUS support or Contact Us option for account problems,
+        Use <Link href="/contact">Contact Us</Link> for account problems,
         bookings, payments, withdrawals, refunds, product orders, verification,
         reports, reviews, safety issues and technical problems.
       </>
@@ -831,26 +831,11 @@ export function FaqContent() {
             })}
         </div>
 
-        <footer className="faq-footer">
-          <div className="faq-wordmark">
-            <strong>GLOHAUS</strong>
-            <span>Beauty. Bookings. Business. One place.</span>
-          </div>
-          <nav aria-label="GLOHAUS information">
-            <Link href="/faq">FAQ</Link>
-            <Link href="/terms">Terms of Service</Link>
-            <Link href="/privacy">Privacy Policy</Link>
-            <Link href="/professional-terms">Professional Policy</Link>
-            <Link href="/refunds">Cancellation & Refund Policy</Link>
-          </nav>
-          <p>
-            GLOHAUS is a marketplace connecting customers with independent
-            beauty and personal-care professionals. Professionals are
-            responsible for their own services, business obligations and
-            applicable taxes.
-          </p>
-          <p>© 2026 GLOHAUS. All rights reserved.</p>
-        </footer>
+        <p className="lead">
+          GLOHAUS is a marketplace connecting customers with independent beauty
+          and personal-care professionals. Professionals are responsible for
+          their own services, business obligations and applicable taxes.
+        </p>
       </main>
     </div>
   );

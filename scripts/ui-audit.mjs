@@ -50,6 +50,8 @@ const css = (
       "site-improvements",
       "design-system",
       "location",
+      "../components/professional-profile",
+      "../components/viewport-video",
     ].map((name) => readFile(`src/app/${name}.css`, "utf8")),
   )
 ).join("\n");

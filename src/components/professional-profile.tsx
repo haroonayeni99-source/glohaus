@@ -1,6 +1,7 @@
 import { PlatformLabel } from "./platform-labels";
 import { ProfessionalVerificationBadges } from "./professional-verification-badges";
 import { FollowProfessionalButton } from "./follow-professional-button";
+import { ViewportVideo } from "./viewport-video";
 import Image from "next/image";
 import {
   MapPin,
@@ -242,13 +243,10 @@ export function ProfessionalProfile({
               <div className={`professional-gallery portfolio-layout-${presentation.portfolio_layout}`}>
                 {assets.map((asset) =>
                   asset.media_type === "video" ? (
-                    <video
+                    <ViewportVideo
                       key={asset.id}
                       src={`/api/media/${asset.id}`}
-                      controls
-                      playsInline
-                      preload="metadata"
-                      aria-label={asset.alt_text}
+                      label={asset.alt_text}
                     />
                   ) : (
                     <Image

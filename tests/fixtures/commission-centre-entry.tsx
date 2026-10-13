@@ -1,4 +1,7 @@
 import React from "react";
+import { AdminNavigation } from "@/components/admin-navigation";
+import { AdminWorkspaceView } from "@/components/admin-workspace-view";
+import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { createRoot } from "react-dom/client";
 import { CommissionControlCentre } from "@/components/commission-control-centre";
 import { ProfessionalCommissionPanel } from "@/components/professional-commission-panel";
@@ -8,6 +11,7 @@ import type {
 } from "@/modules/commission/domain";
 const params = new URLSearchParams(location.search);
 document.documentElement.dataset.theme = params.get("theme") || "light";
+if (!params.has("professional")) location.hash = "professional-commission";
 const pro = "11111111-1111-4111-8111-111111111111";
 const rule = "22222222-2222-4222-8222-222222222222";
 const effective = {
@@ -108,16 +112,38 @@ const professional: ProfessionalCommissionOverview = {
 };
 createRoot(document.getElementById("root")!).render(
   params.has("professional") ? (
-    <main className="pro-main pro-management-page">
-      <h1>Your commission and founding rewards</h1>
-      <ProfessionalCommissionPanel data={professional} />
-    </main>
+    <div className="pro-app">
+      <ProfessionalNavigation
+        active="wallet"
+        displayName="Fictional Professional"
+      />
+      <main id="main" className="pro-main pro-management-page">
+        <h1>Your commission and founding rewards</h1>
+        <ProfessionalCommissionPanel data={professional} />
+      </main>
+    </div>
   ) : (
-    <main className="admin-workspace">
-      <section className="admin-detail-card">
-        <h1>Commission Control Centre</h1>
-        <CommissionControlCentre data={data} />
-      </section>
+    <main id="main" className="admin-workspace">
+      <AdminNavigation
+        account={{
+          id: pro,
+          authId: "fictional-owner",
+          email: "owner@example.test",
+          displayName: "Fictional Owner",
+          status: "active",
+          roles: ["owner", "admin"],
+          professionalId: null,
+        }}
+      />
+      <AdminWorkspaceView>
+        <section
+          id="professional-commission"
+          className="admin-workspace-section admin-detail-card"
+        >
+          <h1>Commission Control Centre</h1>
+          <CommissionControlCentre data={data} />
+        </section>
+      </AdminWorkspaceView>
     </main>
   ),
 );

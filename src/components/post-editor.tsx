@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { postSchema, type OwnPost } from "@/modules/posts/domain";
@@ -21,6 +22,7 @@ export function PostEditor({
       <p className="form-notice">
         Publish a photo or video of your work, a design story, or a written tutorial. Your professional profile must also be published for posts to appear in Discover. Attach any published portfolio media.
       </p>
+      <p className="post-upload-link"><Link href="/professional/portfolio">Upload photos or videos</Link> to your portfolio, then attach them to your post below.</p>
       <div className="service-edit-list">
         {posts.map((post) => (
           <article className="service-edit-row" key={post.id}>

@@ -1,5 +1,11 @@
 "use client";
 import Image from "next/image";
+import { readImageFile } from "@/lib/image-file";
+import {
+  VIDEO_MAX_BYTES,
+  imageTypes,
+  videoTypes,
+} from "@/modules/media/limits";
 import { upload } from "@vercel/blob/client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -36,14 +42,7 @@ export function PortfolioEditor({ assets }: { assets: PortfolioAsset[] }) {
   );
 
   async function uploadImage(file: File, altText: string) {
-    if (file.size > 3 * 1024 * 1024)
-      throw new Error("Images must be 3 MB or smaller.");
-    const base64 = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result).split(",")[1]);
-      reader.onerror = () => reject(new Error("Could not read this image."));
-      reader.readAsDataURL(file);
-    });
+    const base64 = (await readImageFile(file)).split(",")[1];
     const response = await fetch("/api/v1/professional/portfolio", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -56,8 +55,8 @@ export function PortfolioEditor({ assets }: { assets: PortfolioAsset[] }) {
   }
 
   async function uploadVideo(file: File, altText: string) {
-    if (file.size > 50 * 1024 * 1024)
-      throw new Error("Videos must be 50 MB or smaller.");
+    if (file.size > VIDEO_MAX_BYTES)
+      throw new Error("Videos must be 250 MB or smaller.");
     const extension =
       file.type === "video/webm"
         ? "webm"
@@ -93,9 +92,11 @@ export function PortfolioEditor({ assets }: { assets: PortfolioAsset[] }) {
             return;
           }
 
-          const imageTypes = ["image/jpeg", "image/png", "image/webp"];
-          const videoTypes = ["video/mp4", "video/webm", "video/quicktime"];
-          if (![...imageTypes, ...videoTypes].includes(file.type)) {
+          if (
+            !([...imageTypes, ...videoTypes] as readonly string[]).includes(
+              file.type,
+            )
+          ) {
             setNotice("Use JPEG, PNG, WebP, MP4, WebM or MOV.");
             return;
           }
@@ -103,7 +104,7 @@ export function PortfolioEditor({ assets }: { assets: PortfolioAsset[] }) {
           setBusy(true);
           setNotice("");
           try {
-            if (imageTypes.includes(file.type))
+            if (imageTypes.includes(file.type as (typeof imageTypes)[number]))
               await uploadImage(file, altText);
             else await uploadVideo(file, altText);
 
@@ -144,8 +145,8 @@ export function PortfolioEditor({ assets }: { assets: PortfolioAsset[] }) {
             required
           />
           <small>
-            Images: JPEG, PNG or WebP up to 3 MB · Videos: MP4, WebM or MOV up
-            to 50 MB
+            Images: JPEG, PNG or WebP up to 20 MB · Videos: MP4, WebM or MOV up
+            to 250 MB
           </small>
         </label>
         {preview && (

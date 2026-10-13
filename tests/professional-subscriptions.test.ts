@@ -100,7 +100,7 @@ describe.sequential("professional subscription billing state", () => {
     expect(await pricing()).toMatchObject({
       planKey: "pro",
       serviceCommissionBasisPoints: 600,
-      monthlyPricePence: 1999,
+      monthlyPricePence: 999,
     });
   });
 
@@ -150,7 +150,7 @@ describe.sequential("professional subscription billing state", () => {
     expect(await pricing()).toMatchObject({
       planKey: "premium",
       serviceCommissionBasisPoints: 400,
-      monthlyPricePence: 3999,
+      monthlyPricePence: 1999,
     });
 
     await asPaymentWorker((sql) =>

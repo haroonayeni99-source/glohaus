@@ -1,33 +1,35 @@
 import { randomBytes } from "node:crypto";
+import { z } from "zod";
 import { withAccount } from "@/lib/api-account";
-import { apiError, assertSameOrigin, json } from "@/lib/http";
+import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
 import { paymentReady, stripe } from "@/modules/payments/stripe";
+import {
+  configuredPlanPrice,
+  matchesMonthlyPlanPrice,
+} from "@/modules/payments/plan-offers";
 
-const PRICING_ACK_VERSION = "professional-pricing-v1";
+const PRICING_ACK_VERSION = "professional-pricing-v2";
 
-const paidPlans = {
-  pro: {
-    priceId: () => process.env.STRIPE_PRO_MONTHLY_PRICE_ID,
-  },
-  premium: {
-    priceId: () => process.env.STRIPE_PREMIUM_MONTHLY_PRICE_ID,
-  },
-} as const;
+const schema = z
+  .object({
+    plan: z.enum(["pro", "premium"]),
+    pricingAccepted: z.literal(true),
+    quotedPriceId: z.string().startsWith("price_").max(200),
+    quotedMonthlyPricePence: z.number().int().positive(),
+  })
+  .strict();
 
 export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
     if (!paymentReady()) throw new AccessError("UNAVAILABLE", 503);
 
-    const body = (await request.json()) as {
-      plan?: keyof typeof paidPlans;
-      pricingAccepted?: boolean;
-    };
-    if (!body.plan || !(body.plan in paidPlans) || body.pricingAccepted !== true)
-      throw new AccessError("INVALID_REQUEST", 400);
+    const parsed = schema.safeParse(await smallJson(request, 2048));
+    if (!parsed.success) throw new AccessError("INVALID_REQUEST", 400);
+    const body = parsed.data;
 
-    const priceId = paidPlans[body.plan].priceId();
+    const priceId = configuredPlanPrice(body.plan);
     if (!priceId) throw new AccessError("UNAVAILABLE", 503);
 
     const account = await withAccount("professional", async (db, account) => {
@@ -47,12 +49,32 @@ export async function POST(request: Request) {
       if (existing?.provider_subscription_id && existing.status === "active")
         throw new AccessError("INVALID_REQUEST", 409);
 
+      const definition = (
+        await db.query<{ monthly_price_pence: number }>(
+          "SELECT monthly_price_pence FROM beauty.professional_plan_definitions WHERE plan_key=$1 AND active",
+          [body.plan],
+        )
+      ).rows[0];
+      if (!definition) throw new AccessError("UNAVAILABLE", 503);
+      if (
+        body.quotedPriceId !== priceId ||
+        body.quotedMonthlyPricePence !== definition.monthly_price_pence
+      )
+        throw new AccessError("INVALID_REQUEST", 409);
+
       return {
         professionalId: account.professionalId!,
         email: account.email,
         customerId: existing?.provider_customer_id ?? undefined,
+        monthlyPricePence: definition.monthly_price_pence,
       };
     });
+
+    // Validate the current provider price again before opening checkout.
+    // Never charge a different amount, currency or billing interval to the quote.
+    const currentPrice = await stripe().prices.retrieve(priceId);
+    if (!matchesMonthlyPlanPrice(currentPrice, account.monthlyPricePence))
+      throw new AccessError("UNAVAILABLE", 503);
 
     const origin = new URL(process.env.NEXT_PUBLIC_APP_URL!).origin;
     const metadata = {
@@ -60,6 +82,7 @@ export async function POST(request: Request) {
       glohaus_plan_key: body.plan,
       glohaus_pricing_ack_version: PRICING_ACK_VERSION,
       glohaus_price_id: priceId,
+      glohaus_monthly_price_pence: String(account.monthlyPricePence),
     };
 
     const session = await stripe().checkout.sessions.create({

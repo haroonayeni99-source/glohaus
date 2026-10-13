@@ -147,7 +147,7 @@ describe("verified admin finance overview", () => {
       bookingCapturedPence: 5100,
       bookingRefundedPence: 1000,
       activePaidSubscriptions: 1,
-      activeSubscriptionMrrPence: 1999,
+      activeSubscriptionMrrPence: 999,
       professionalPendingPence: 4000,
       payoutPaidPence: 960,
     });

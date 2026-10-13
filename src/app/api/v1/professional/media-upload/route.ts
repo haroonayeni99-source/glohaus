@@ -4,7 +4,7 @@ import { withAccount } from "@/lib/api-account";
 import { withIdentity } from "@/lib/db";
 import { AccessError } from "@/modules/accounts/domain";
 
-const allowed = ["video/mp4", "video/webm", "video/quicktime"] as const;
+import { VIDEO_MAX_BYTES, videoTypes as allowed } from "@/modules/media/limits";
 
 export async function POST(request: Request) {
   if (!process.env.BLOB_READ_WRITE_TOKEN)
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
         return {
           allowedContentTypes: [...allowed],
-          maximumSizeInBytes: 50 * 1024 * 1024,
+          maximumSizeInBytes: VIDEO_MAX_BYTES,
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({
             ...owner,

@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { ProfessionalPlanCards } from "@/components/professional-plan-cards";
+import { professionalPlanOffers } from "@/modules/payments/plan-offers";
+import { planPercent as percent } from "@/modules/professionals/plan-pricing";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
 import { AccessMessage } from "@/components/access-message";
@@ -19,14 +22,6 @@ type Pricing = {
   instantWithdrawalBasisPoints: number;
   customerBookingFeePence: number;
 };
-
-const plans = [
-  { key: "starter", name: "Starter", monthly: 0, commission: 800 },
-  { key: "pro", name: "Pro", monthly: 1999, commission: 600 },
-  { key: "premium", name: "Premium", monthly: 3999, commission: 400 },
-] as const;
-
-const percent = (basisPoints: number) => (basisPoints / 100).toFixed(basisPoints % 100 ? 2 : 0) + "%";
 
 export default async function ProfessionalPlansPage() {
   const result = await pageAccount("professional");
@@ -58,10 +53,14 @@ export default async function ProfessionalPlansPage() {
     return { pricing, subscription };
   });
   const { pricing, subscription } = finance;
+  const plans = await professionalPlanOffers();
 
   return (
     <div className="pro-app">
-      <ProfessionalNavigation active="more" displayName={result.account.displayName} />
+      <ProfessionalNavigation
+        active="more"
+        displayName={result.account.displayName}
+      />
       <main id="main" className="pro-main pro-management-page">
         <p className="pro-kicker">GLOHAUS PRO PRICING</p>
         <h1>Your fees, clearly explained.</h1>
@@ -72,22 +71,12 @@ export default async function ProfessionalPlansPage() {
           commission rate.
         </p>
 
-        <section className="analytics-grid" aria-label="Professional plans">
-          {plans.map((plan) => (
-            <article key={plan.key}>
-              <strong>{plan.key === "starter" ? "Starter · Free" : plan.name}</strong>
-              <span>{plan.monthly === 0 ? "£0/month" : money(plan.monthly) + "/month"}</span>
-              <span>{percent(plan.commission)} GLOHAUS service commission</span>
-              {pricing.planKey === plan.key && <small>Current plan</small>}
-            </article>
-          ))}
-        </section>
+        <ProfessionalPlanCards plans={plans} currentPlan={pricing.planKey} />
 
         <ProfessionalPlanActions
           currentPlan={pricing.planKey}
           hasBillingCustomer={Boolean(subscription?.provider_customer_id)}
-          proReady={Boolean(process.env.STRIPE_PRO_MONTHLY_PRICE_ID)}
-          premiumReady={Boolean(process.env.STRIPE_PREMIUM_MONTHLY_PRICE_ID)}
+          offers={plans.filter((plan) => plan.key !== "starter")}
         />
 
         {subscription?.cancel_at_period_end && (
@@ -102,8 +91,9 @@ export default async function ProfessionalPlansPage() {
           <h2>Verification and plans are separate</h2>
           <p>
             You do not need a paid plan to become verified. A verified Starter
-            professional keeps the £0 monthly plan while unlocking verification-gated
-            features such as paid deposits, product selling and payouts.
+            professional keeps the £0 monthly plan while unlocking
+            verification-gated features such as paid deposits, product selling
+            and payouts.
           </p>
         </section>
 
@@ -113,21 +103,34 @@ export default async function ProfessionalPlansPage() {
             <article className="service-edit-row">
               <div>
                 <h3>{pricing.planName}</h3>
-                <p>{percent(pricing.serviceCommissionBasisPoints)} service commission</p>
-                <small>{pricing.monthlyPricePence ? money(pricing.monthlyPricePence) + " per month" : "No monthly subscription fee"}</small>
+                <p>
+                  {percent(pricing.serviceCommissionBasisPoints)} service
+                  commission
+                </p>
+                <small>
+                  {pricing.monthlyPricePence
+                    ? money(pricing.monthlyPricePence) + " per month"
+                    : "No monthly subscription fee"}
+                </small>
               </div>
             </article>
             <article className="service-edit-row">
               <div>
                 <h3>Product sales</h3>
-                <p>{percent(pricing.productCommissionBasisPoints)} GLOHAUS commission</p>
+                <p>
+                  {percent(pricing.productCommissionBasisPoints)} GLOHAUS
+                  commission
+                </p>
               </div>
             </article>
             <article className="service-edit-row">
               <div>
                 <h3>Withdrawals</h3>
                 <p>Standard withdrawal: Free</p>
-                <small>Instant withdrawal: {percent(pricing.instantWithdrawalBasisPoints)}</small>
+                <small>
+                  Instant withdrawal:{" "}
+                  {percent(pricing.instantWithdrawalBasisPoints)}
+                </small>
               </div>
             </article>
           </div>
@@ -138,8 +141,8 @@ export default async function ProfessionalPlansPage() {
           <p>
             Example on Starter: a £100 service has an £8 GLOHAUS commission,
             leaving £92 professional earnings before any other applicable
-            adjustments. The customer&apos;s separate £1 booking fee is not deducted
-            from your service price and is not shown as your earnings.
+            adjustments. The customer&apos;s separate £1 booking fee is not
+            deducted from your service price and is not shown as your earnings.
           </p>
         </section>
 
@@ -154,10 +157,12 @@ export default async function ProfessionalPlansPage() {
 
         <p className="lead">
           Paid plan commission changes only after verified Stripe subscription
-          events. The pricing acknowledgement above does not replace GLOHAUS&apos;s
-          final Professional Terms.
+          events. The pricing acknowledgement above does not replace
+          GLOHAUS&apos;s final Professional Terms.
         </p>
-        <Link className="button" href="/professional/setup">Back to setup</Link>
+        <Link className="button" href="/professional/setup">
+          Back to setup
+        </Link>
       </main>
     </div>
   );

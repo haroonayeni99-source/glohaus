@@ -1,0 +1,63 @@
+// Verify real components in a local fixture, with no live accounts or payments.
+import { chromium, expect } from "@playwright/test";
+import sharp from "sharp";
+import { writeFile } from "node:fs/promises";
+process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/media-theme-pricing-entry.tsx";
+const { server } = await import("./ui-audit.mjs");
+const browser = await chromium.launch();
+const largePhoto = await sharp({ create: { width: 2000, height: 1600, channels: 3, background: "#c86588" } }).png({ compressionLevel: 0 }).toBuffer();
+expect(largePhoto.length).toBeGreaterThan(3 * 1024 * 1024);
+const logo = await sharp(Buffer.from('<svg width="1200" height="200"><rect width="400" height="200" fill="red"/><rect x="400" width="400" height="200" fill="green"/><rect x="800" width="400" height="200" fill="blue"/></svg>')).png().toBuffer();
+const results = [];
+try {
+  for (const theme of ["light", "night"]) for (const width of [390, 1440]) {
+    const page = await browser.newPage({ viewport: { width, height: 1000 } });
+    const errors = [];
+    page.on("pageerror", error => errors.push(error.message));
+    await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.abort());
+    await page.goto(`http://127.0.0.1:3004/?theme=${theme}`);
+    const editor = page.locator(".profile-photo-editor");
+    await editor.getByLabel("Profile image", { exact: true }).setInputFiles({ name: "large.png", mimeType: "image/png", buffer: largePhoto });
+    await expect(editor.getByRole("button", { name: "Save profile photo" })).toBeEnabled();
+    let dataUrl = await editor.locator("img").getAttribute("src");
+    let bytes = Buffer.from(dataUrl.split(",")[1], "base64");
+    expect(bytes.length).toBeLessThanOrEqual(3 * 1024 * 1024);
+    let metadata = await sharp(bytes).metadata();
+    expect(metadata.width).toBe(1600);
+    expect(metadata.height).toBe(1280);
+    await editor.getByLabel("Profile image style").selectOption("logo");
+    await expect(editor.getByRole("status")).toContainText("Full logo preview ready");
+    await editor.getByLabel("Profile image", { exact: true }).setInputFiles({ name: "wide-logo.png", mimeType: "image/png", buffer: logo });
+    await expect(editor.getByRole("button", { name: "Save profile photo" })).toBeEnabled();
+    dataUrl = await editor.locator("img").getAttribute("src");
+    bytes = Buffer.from(dataUrl.split(",")[1], "base64");
+    metadata = await sharp(bytes).metadata();
+    expect([metadata.width, metadata.height]).toEqual([800, 800]);
+    const { data, info } = await sharp(bytes).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const pixel = (x, y) => [...data.subarray((y * info.width + x) * 4, (y * info.width + x) * 4 + 4)];
+    expect(pixel(0, 0)[3]).toBe(0);
+    expect(pixel(55, 400)[0]).toBeGreaterThan(200);
+    expect(pixel(745, 400)[2]).toBeGreaterThan(200);
+    await editor.getByRole("checkbox").check();
+    await editor.getByRole("button", { name: "Save profile photo" }).click();
+    await expect(editor.getByRole("status")).toContainText("Profile photo saved");
+    const request = await page.evaluate(() => JSON.parse(sessionStorage.getItem("last-request")));
+    expect(request.url).toBe("/api/v1/professional/profile/photo");
+    expect(JSON.parse(request.body).base64).toBe(dataUrl.split(",")[1]);
+    const plans = page.getByRole("region", { name: "Professional plans" });
+    await expect(plans).toContainText("£9.99/month");
+    await expect(plans).toContainText("£19.99/month");
+    await expect(page.getByRole("button", { name: "Pro · £9.99/month · 6%" })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: `reports/media-theme-pricing-${theme}-${width}.png`, fullPage: true });
+    await page.goto(`http://127.0.0.1:3004/preview?theme=${theme}`);
+    const title = page.locator(".pro-quick-actions strong").first();
+    await expect(title).toBeVisible();
+    expect(await title.evaluate(el => getComputedStyle(el).color === getComputedStyle(el.closest("a")).backgroundColor)).toBe(false);
+    expect(errors).toEqual([]);
+    results.push({ theme, width, largePhoto: true, fullLogoSaved: true, actualPrices: true, previewTitles: true });
+    await page.close();
+  }
+  await writeFile("reports/media-theme-pricing-results.json", JSON.stringify(results, null, 2));
+  console.log(JSON.stringify(results));
+} finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }

@@ -53,7 +53,7 @@ export function HomepageCategoryMediaControl({
       });
       await requireAdminResponse(
         response,
-        "Image could not be uploaded. Try a valid image up to 3 MB.",
+        "Image could not be uploaded. Try a valid image up to 20 MB.",
       );
       const data = await response.json();
       change(key, data.url);
@@ -156,7 +156,7 @@ export function HomepageCategoryMediaControl({
                 />
               </label>
               <small>
-                JPEG, PNG or WebP · up to 3 MB. A square photo works best.
+                JPEG, PNG or WebP · up to 20 MB. A square photo works best.
               </small>
               <details className="image-url-option">
                 <summary>Or use an image link</summary>

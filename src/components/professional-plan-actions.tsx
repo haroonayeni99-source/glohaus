@@ -2,23 +2,21 @@
 
 import { useState } from "react";
 
-type PlanKey = "starter" | "pro" | "premium";
-
-const paidPlans = {
-  pro: { name: "Pro", monthly: "£19.99", commission: "6%" },
-  premium: { name: "Premium", monthly: "£39.99", commission: "4%" },
-} as const;
+import { money } from "@/modules/professionals/domain";
+import {
+  planPercent,
+  type PlanKey,
+  type PlanOffer,
+} from "@/modules/professionals/plan-pricing";
 
 export function ProfessionalPlanActions({
   currentPlan,
   hasBillingCustomer,
-  proReady,
-  premiumReady,
+  offers,
 }: {
   currentPlan: PlanKey;
   hasBillingCustomer: boolean;
-  proReady: boolean;
-  premiumReady: boolean;
+  offers: PlanOffer[];
 }) {
   const [accepted, setAccepted] = useState(false);
   const [busy, setBusy] = useState<PlanKey | "portal" | null>(null);
@@ -31,19 +29,27 @@ export function ProfessionalPlanActions({
       const response = await fetch("/api/v1/professional/plans/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, pricingAccepted: accepted }),
+        body: JSON.stringify({
+          plan,
+          pricingAccepted: accepted,
+          quotedPriceId: offers.find((offer) => offer.key === plan)?.priceId,
+          quotedMonthlyPricePence: offers.find((offer) => offer.key === plan)
+            ?.monthlyPricePence,
+        }),
       });
       const data = await response.json();
       if (!response.ok)
         throw new Error(
           response.status === 409
-            ? "You already have a paid subscription. Manage it through Stripe."
+            ? "Plan pricing or subscription status has changed. Reload this page before continuing."
             : "Paid plan checkout is unavailable right now.",
         );
       window.location.assign(data.url);
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "Could not open plan checkout.",
+        error instanceof Error
+          ? error.message
+          : "Could not open plan checkout.",
       );
       setBusy(null);
     }
@@ -86,7 +92,11 @@ export function ProfessionalPlanActions({
         >
           {busy === "portal" ? "Opening Stripe…" : "Manage subscription"}
         </button>
-        {message && <p className="form-notice" role="status">{message}</p>}
+        {message && (
+          <p className="form-notice" role="status">
+            {message}
+          </p>
+        )}
       </section>
     );
 
@@ -112,9 +122,9 @@ export function ProfessionalPlanActions({
       </label>
 
       <div className="editor-actions">
-        {(Object.keys(paidPlans) as Array<"pro" | "premium">).map((plan) => {
-          const details = paidPlans[plan];
-          const ready = plan === "pro" ? proReady : premiumReady;
+        {offers.map((details) => {
+          const plan = details.key as "pro" | "premium";
+          const ready = details.ready;
           return (
             <button
               key={plan}
@@ -125,20 +135,24 @@ export function ProfessionalPlanActions({
             >
               {busy === plan
                 ? "Opening Stripe…"
-                : `${details.name} · ${details.monthly}/month · ${details.commission}`}
+                : `${details.name} · ${money(details.monthlyPricePence)}/month · ${planPercent(details.serviceCommissionBasisPoints)}`}
             </button>
           );
         })}
       </div>
 
-      {(!proReady || !premiumReady) && (
+      {offers.some((offer) => !offer.ready) && (
         <p className="form-help">
-          Paid plan checkout remains disabled until the matching Stripe monthly
-          price is configured. Starter remains available at £0/month; identity
-          verification limits are separate from subscription pricing.
+          A paid plan is temporarily unavailable. Starter remains available at
+          £0/month. Your verification and existing account access are
+          unaffected.
         </p>
       )}
-      {message && <p className="form-notice" role="status">{message}</p>}
+      {message && (
+        <p className="form-notice" role="status">
+          {message}
+        </p>
+      )}
     </section>
   );
 }

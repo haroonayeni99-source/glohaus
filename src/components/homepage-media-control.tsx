@@ -32,7 +32,7 @@ export function HomepageMediaControl({
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ base64: image.split(",")[1], altText: `${target} homepage image` }),
       });
-      await requireAdminResponse(response, "Image could not be uploaded. Try a valid image up to 3 MB.");
+      await requireAdminResponse(response, "Image could not be uploaded. Try a valid image up to 20 MB.");
       const data = await response.json();
       if (target === "desktop") setDesktopHero(data.url); else setMobileHero(data.url);
       if (!reason.trim()) setReason("Refresh homepage imagery");
@@ -78,7 +78,7 @@ export function HomepageMediaControl({
       <label>Desktop homepage image
         <input type="file" aria-label="Desktop homepage image" accept="image/jpeg,image/png,image/webp" disabled={busy}
           onChange={event => void choose(event.target.files?.[0], "desktop")} />
-        <small>JPEG, PNG or WebP · up to 3 MB. Choose an image you have permission to use.</small>
+        <small>JPEG, PNG or WebP · up to 20 MB. Choose an image you have permission to use.</small>
       </label>
       <details className="image-url-option"><summary>Or use a desktop image link</summary><label>
         Desktop hero model image URL

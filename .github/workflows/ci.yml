@@ -34,6 +34,16 @@ jobs:
         run: node scripts/check-desktop-home.mjs
       - name: Verify Owner image upload, preview, save and independent devices
         run: node scripts/check-homepage-media.mjs
+      - name: Verify profile logos, large images, theme and actual plan prices
+        run: node scripts/check-media-theme-pricing.mjs
+      - name: Save profile and pricing visual checks
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: media-theme-pricing-checks
+          path: |
+            reports/media-theme-pricing-*.png
+            reports/media-theme-pricing-results.json
       - name: Save homepage media visual checks
         uses: actions/upload-artifact@v4
         if: always()

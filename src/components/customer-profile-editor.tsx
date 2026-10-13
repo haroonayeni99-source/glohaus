@@ -162,7 +162,7 @@ export function CustomerProfileEditor({
             }}
           />
           <small>
-            JPEG, PNG or WebP, up to 3 MB. Location metadata is removed.
+            JPEG, PNG or WebP, up to 20 MB. Location metadata is removed.
           </small>
         </label>
         <label className="policy-check">

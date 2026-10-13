@@ -159,6 +159,20 @@ it("offers manual playback when autoplay is blocked or reduced motion is enabled
   await click();
   expect(video.paused).toBe(false);
 });
+it("keeps hidden-tab handling when a neighbouring clip is removed", async () => {
+  const [first] = await render(2);
+  await act(async () => {
+    observers[0].show(1);
+    observers[1].show(1);
+  });
+  await render(1);
+  expect(first.paused).toBe(false);
+  await act(async () => {
+    hidden = true;
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  expect(first.paused).toBe(true);
+});
 it("starts muted with inline looping and lets viewers switch sound independently", async () => {
   const [video] = await render();
   expect(video.muted).toBe(true);

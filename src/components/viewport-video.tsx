@@ -87,7 +87,8 @@ export function ViewportVideo({
     video.addEventListener("pause", onPause);
     video.addEventListener("canplay", onReady);
     motion.addEventListener("change", onMotionChange);
-    document.addEventListener("visibilitychange", selectPlayer);
+    if (players.size === 1)
+      document.addEventListener("visibilitychange", selectPlayer);
     const observer = new IntersectionObserver(
       ([entry]) => {
         const player = players.get(video);
@@ -106,9 +107,10 @@ export function ViewportVideo({
       video.removeEventListener("pause", onPause);
       video.removeEventListener("canplay", onReady);
       motion.removeEventListener("change", onMotionChange);
-      document.removeEventListener("visibilitychange", selectPlayer);
       video.pause();
       players.delete(video);
+      if (players.size === 0)
+        document.removeEventListener("visibilitychange", selectPlayer);
       active.current = false;
       selectPlayer();
     };

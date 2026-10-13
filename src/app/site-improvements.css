@@ -497,6 +497,25 @@
 :root[data-theme="night"] .mobile-home-section-title a,
 :root[data-theme="night"] .mobile-home-shop-link { color: var(--ink); }
 
+/* Discovery/Share sidebar logo: use the approved homepage lockup scale
+   so the wordmark keeps clear space before the vertical divider. */
+@media (min-width: 761px) {
+  .discover-app > .discovery-sidebar > .brand {
+    align-self: flex-start;
+    max-width: 100%;
+    gap: 8px;
+    font-size: 1.55rem;
+    line-height: 1.1;
+    letter-spacing: -.045em;
+  }
+  .discover-app > .discovery-sidebar > .brand .brand-crown {
+    flex-shrink: 0;
+    width: 17px;
+    height: 17px;
+    transform: none;
+  }
+}
+
 /* Desktop home only: keep the brand inside the sidebar and give sign-out the
    same polished control treatment as the account chip. Mobile stays intact. */
 @media (min-width: 1100px) {

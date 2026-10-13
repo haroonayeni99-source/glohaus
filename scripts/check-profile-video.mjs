@@ -25,10 +25,13 @@ try {
     expect(await section.locator("h2").evaluate(el => getComputedStyle(el).fontFamily)).not.toMatch(/Georgia/);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: `reports/profile-video-layout-${theme}-${width}.png`, fullPage: true });
-    const player = page.locator(".viewport-video").first();
+    await page.locator(".viewport-video").first().scrollIntoViewIfNeeded();
+    // A grid can show two equally visible clips. Verify the selected clip, not
+    // an assumed tile index; the user-facing contract is one autoplaying video.
+    await expect.poll(() => page.locator("video").evaluateAll(videos => videos.filter(v => !v.paused && v.currentTime > 0).length)).toBe(1);
+    const activeIndex = await page.locator("video").evaluateAll(videos => videos.findIndex(v => !v.paused));
+    const player = page.locator(".viewport-video").nth(activeIndex);
     const video = player.locator("video");
-    await player.scrollIntoViewIfNeeded();
-    console.log(await video.evaluate(el => ({ paused: el.paused, readyState: el.readyState, rect: el.getBoundingClientRect().toJSON(), error: el.error?.message })));
     await expect.poll(() => video.evaluate(el => !el.paused && el.currentTime > 0)).toBe(true);
     expect(await page.locator("video").evaluateAll(videos => videos.filter(v => !v.paused).length)).toBe(1);
     await player.getByRole("button", { name: /^Pause video:/ }).click();

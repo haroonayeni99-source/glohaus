@@ -17,7 +17,7 @@ function selectPlayer() {
       best = players.get(selected)!.ratio;
     }
     for (const [video, player] of players)
-      if (player.ratio >= 0.5 && (!next || player.ratio > best)) {
+      if (player.ratio >= 0.5 && (!next || player.ratio > best + 0.01)) {
         next = video;
         best = player.ratio;
       }

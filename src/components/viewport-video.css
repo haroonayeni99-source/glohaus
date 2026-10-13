@@ -6,6 +6,8 @@
   isolation: isolate;
 }
 .viewport-video video {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
@@ -66,6 +68,12 @@
 }
 .viewport-video--feed .viewport-video-sound {
   top: 76px;
+}
+@media (max-width: 700px) {
+  .discover-app .viewport-video--feed .viewport-video-sound {
+    top: 164px;
+    right: 16px;
+  }
 }
 .viewport-video-toggle:focus-visible {
   outline: 3px solid #fff;

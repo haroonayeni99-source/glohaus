@@ -53,6 +53,15 @@
 .professional-public .professional-contact :is(p, a) {
   line-height: 1.65;
 }
+.professional-public .professional-contact a {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.professional-public .professional-contact svg {
+  vertical-align: middle;
+  margin-right: 6px;
+}
 .professional-public .profile-long-description {
   font-size: 1rem;
   line-height: 1.7;
@@ -109,6 +118,7 @@
   }
   .professional-public .service-list article {
     flex-wrap: wrap;
+    flex-direction: row;
   }
   .professional-public .service-list article > div:not(.profile-service-price) {
     flex: 1 1 150px;

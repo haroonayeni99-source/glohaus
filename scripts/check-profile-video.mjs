@@ -13,6 +13,7 @@ const browser = await chromium.launch({
 const results = [];
 try {
   for (const theme of ["light", "night"]) for (const width of [390, 1440]) {
+    console.log(`Checking ${theme} at ${width}px`);
     const page = await browser.newPage({ viewport: { width, height: 1000 } });
     const errors = [];
     page.on("pageerror", e => errors.push(e.message));
@@ -24,9 +25,10 @@ try {
     expect(await section.locator("h2").evaluate(el => getComputedStyle(el).fontFamily)).not.toMatch(/Georgia/);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: `reports/profile-video-layout-${theme}-${width}.png`, fullPage: true });
-    await page.locator("#portfolio").scrollIntoViewIfNeeded();
     const player = page.locator(".viewport-video").first();
     const video = player.locator("video");
+    await player.scrollIntoViewIfNeeded();
+    console.log(await video.evaluate(el => ({ paused: el.paused, readyState: el.readyState, rect: el.getBoundingClientRect().toJSON(), error: el.error?.message })));
     await expect.poll(() => video.evaluate(el => !el.paused && el.currentTime > 0)).toBe(true);
     expect(await page.locator("video").evaluateAll(videos => videos.filter(v => !v.paused).length)).toBe(1);
     await player.getByRole("button", { name: /^Pause video:/ }).click();
@@ -42,6 +44,12 @@ try {
     const feedPlayer = page.locator(".viewport-video").first();
     const feedVideo = feedPlayer.locator("video");
     await expect.poll(() => feedVideo.evaluate(el => !el.paused && el.currentTime > 0)).toBe(true);
+    await feedPlayer.getByRole("button", { name: /^Unmute video:/ }).click();
+    expect(await feedVideo.evaluate(el => el.muted)).toBe(false);
+    await page.locator(".community-slide").first().locator(".post-reader summary").click();
+    await expect(page.locator(".community-slide").first().locator(".post-reader")).toHaveAttribute("open", "");
+    expect(await feedVideo.evaluate(el => el.paused)).toBe(false);
+    await page.locator(".community-slide").first().locator(".post-reader summary").click();
     await feedPlayer.getByRole("button", { name: /^Pause video:/ }).click({ position: { x: 100, y: 160 } });
     await expect.poll(() => feedVideo.evaluate(el => el.paused)).toBe(true);
     await feedPlayer.getByRole("button", { name: /^Play video:/ }).click({ position: { x: 100, y: 160 } });

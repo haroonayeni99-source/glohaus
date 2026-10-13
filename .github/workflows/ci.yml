@@ -25,6 +25,8 @@ jobs:
       - run: pnpm test
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium
+      - name: Verify profile logos, large images, theme and actual plan prices
+        run: node scripts/check-media-theme-pricing.mjs
       - run: pnpm test:e2e
       - name: Verify public-pin and nearby-search journeys
         run: node scripts/check-location-journeys.mjs
@@ -34,8 +36,6 @@ jobs:
         run: node scripts/check-desktop-home.mjs
       - name: Verify Owner image upload, preview, save and independent devices
         run: node scripts/check-homepage-media.mjs
-      - name: Verify profile logos, large images, theme and actual plan prices
-        run: node scripts/check-media-theme-pricing.mjs
       - name: Save profile and pricing visual checks
         uses: actions/upload-artifact@v4
         if: always()

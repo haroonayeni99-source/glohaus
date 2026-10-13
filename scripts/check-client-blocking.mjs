@@ -42,7 +42,7 @@ try{
   await page.getByRole("button",{name:"Save photo",exact:true}).click();await expect(page.getByText("Your photo has been saved.")).toBeVisible();
   if ((theme==="light"&&width===320)||(theme==="night"&&width===1440)) { await page.evaluate(()=>scrollTo(0,0)); await page.screenshot({path:`reports/customer-profile-${theme}-${width}.png`,fullPage:true}); }
   await page.getByRole("button",{name:"Remove photo",exact:true}).click();await expect(page.getByText("Photo removed.")).toBeVisible();
-  await file.setInputFiles({name:"bad.txt",mimeType:"text/plain",buffer:Buffer.from("not an image")});await expect(page.getByText("Choose a JPEG, PNG or WebP image up to 3 MB.")).toBeVisible();await expect(page.getByRole("button",{name:"Save photo",exact:true})).toBeDisabled();
+  await file.setInputFiles({name:"bad.txt",mimeType:"text/plain",buffer:Buffer.from("not an image")});await expect(page.getByText("Choose a JPEG, PNG or WebP image up to 20 MB.")).toBeVisible();await expect(page.getByRole("button",{name:"Save photo",exact:true})).toBeDisabled();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await go("/sign-up");await expect(page.getByLabel("First name",{exact:true})).toBeVisible();await expect(page.getByLabel("Last name (optional)")).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);

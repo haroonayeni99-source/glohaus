@@ -105,6 +105,10 @@
 .professional-public .booking-widget {
   padding: clamp(20px, 3vw, 28px);
 }
+:root[data-theme="night"] .professional-public .booking-widget {
+  background: var(--surface);
+  color: var(--text-strong);
+}
 .professional-public .hours-card :is(dl, small) {
   font-size: 0.875rem;
   line-height: 1.6;

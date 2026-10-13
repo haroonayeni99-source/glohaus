@@ -23,6 +23,9 @@ try {
     const section = page.locator("#about");
     expect(await section.evaluate(el => parseFloat(getComputedStyle(el).paddingLeft))).toBeGreaterThanOrEqual(20);
     expect(await section.locator("h2").evaluate(el => getComputedStyle(el).fontFamily)).not.toMatch(/Georgia/);
+    if (theme === "night") {
+      expect(await page.locator(".booking-widget").evaluate(el => getComputedStyle(el).backgroundColor === getComputedStyle(el.parentElement).backgroundColor)).toBe(true);
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: `reports/profile-video-layout-${theme}-${width}.png`, fullPage: true });
     await page.locator(".viewport-video").first().scrollIntoViewIfNeeded();

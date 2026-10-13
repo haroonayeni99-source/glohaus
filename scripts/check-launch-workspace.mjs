@@ -58,6 +58,18 @@ try {
           ).toBeLessThanOrEqual(1);
         }
         if (width <= 880)
+          await page.getByLabel("Go to section", { exact: true }).selectOption("support");
+        else await page.locator('.admin-navigation nav a[href="#support"]').click();
+        await expect(page.getByText("Fixture Support Customer", { exact: false })).toBeVisible();
+        await page.getByRole("button", { name: "Mark resolved", exact: true }).click();
+        await expect(page.getByRole("button", { name: "Reopen", exact: true })).toBeVisible();
+        await page.getByRole("button", { name: "Reopen", exact: true }).click();
+        await expect(page.getByRole("button", { name: "Mark resolved", exact: true })).toBeVisible();
+        const supportChanges = await page.evaluate(() => JSON.parse(sessionStorage.getItem("audit-requests") || "[]").filter(request => request.url.includes("/admin/support/")));
+        expect(supportChanges.map(request => ({ method: request.method, status: JSON.parse(request.body).status }))).toEqual([{ method: "PATCH", status: "resolved" }, { method: "PATCH", status: "open" }]);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+        await page.screenshot({ path: `reports/launch-support-${role}-${theme}-${width}.png` });
+        if (width <= 880)
           await page
             .getByLabel("Go to section", { exact: true })
             .selectOption("users");

@@ -47,3 +47,13 @@ export const featureVotes: FeatureVoteItem[] = [
   { id: ids.pro, audience: "all", title: "Clearer booking", description: "Make booking easier for everyone.", status: "open", vote_count: 3, dislike_count: 1, total_count: 4, my_vote: false, my_choice: null, closes_at: new Date(Date.now()+7*86400000).toISOString(), voting_open: true },
   { id: ids.customer, audience: "all", title: "A previous idea", description: "This idea has finished collecting votes.", status: "open", vote_count: 2, dislike_count: 3, total_count: 5, my_vote: false, my_choice: "dislike", closes_at: "2026-10-01T12:00:00Z", voting_open: false },
 ];
+
+// Private support data for the local fixture only; no production requests are sent.
+export async function withAdmin<T>(work: (db: import("@/modules/accounts/repository").SqlClient) => Promise<T>) {
+  return work({ query: async <Row extends Record<string, unknown>>() => ({ rows: [{ requests: [{
+    id: "55555555-5555-4555-8555-555555555555", name: "Fixture Support Customer",
+    email: "support-fixture@example.test", topic: "Account & sign-in", reference: "FIXTURE-" + "X".repeat(100),
+    message: "A fictional customer needs help with their account. " + "x".repeat(300),
+    status: "open", created_at: date,
+  }] }] as unknown as Row[] }) });
+}

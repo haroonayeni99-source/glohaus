@@ -60,7 +60,7 @@ export function AdminSupportInbox({
       <div className="service-edit-list">
         {requests.map((item) => (
           <article className="service-edit-row" key={item.id}>
-            <div>
+            <div style={{ overflowWrap: "anywhere", minWidth: 0 }}>
               <h3>
                 {item.topic} · {item.name}
               </h3>

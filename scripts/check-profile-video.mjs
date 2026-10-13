@@ -35,7 +35,8 @@ try {
     await expect.poll(() => video.evaluate(el => el.paused)).toBe(false);
     await player.getByRole("button", { name: /^Unmute video:/ }).click();
     expect(await video.evaluate(el => el.muted)).toBe(false);
-    await page.locator("#reviews").scrollIntoViewIfNeeded();
+    // Provide scroll room even when this short fictional profile fits the screen.
+    await page.evaluate(() => { document.getElementById("root").style.paddingBottom = "1200px"; window.scrollTo(0, document.documentElement.scrollHeight); });
     await expect.poll(() => page.locator("video").evaluateAll(videos => videos.every(v => v.paused))).toBe(true);
     await page.goto(`http://127.0.0.1:3004/discover?theme=${theme}`);
     const feedPlayer = page.locator(".viewport-video").first();

@@ -12,6 +12,9 @@
   font-weight: 750;
   line-height: 1.15;
 }
+.professional-public.profile-style-minimal .professional-heading h1 {
+  font-weight: 600;
+}
 .professional-public .professional-section h2 {
   font-family: var(--font-sans);
   font-size: clamp(1.3rem, 2vw, 1.65rem);

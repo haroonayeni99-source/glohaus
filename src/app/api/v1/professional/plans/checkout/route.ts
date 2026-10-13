@@ -4,6 +4,7 @@ import { withAccount } from "@/lib/api-account";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
 import { paymentReady, stripe } from "@/modules/payments/stripe";
+import { paymentReturnOrigin } from "@/modules/payments/return-url";
 import {
   configuredPlanPrice,
   matchesMonthlyPlanPrice,
@@ -76,7 +77,7 @@ export async function POST(request: Request) {
     if (!matchesMonthlyPlanPrice(currentPrice, account.monthlyPricePence))
       throw new AccessError("UNAVAILABLE", 503);
 
-    const origin = new URL(process.env.NEXT_PUBLIC_APP_URL!).origin;
+    const origin = paymentReturnOrigin(request);
     const metadata = {
       glohaus_professional_id: account.professionalId,
       glohaus_plan_key: body.plan,

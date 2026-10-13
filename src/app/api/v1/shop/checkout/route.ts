@@ -8,6 +8,7 @@ import {
   shopCartPayoutsReady,
 } from "@/modules/shop/repository";
 import { paymentReady, stripe } from "@/modules/payments/stripe";
+import { paymentReturnOrigin } from "@/modules/payments/return-url";
 
 export async function POST(request: Request) {
   let checkoutId: string | null = null;
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
       throw new AccessError("INVALID_REQUEST", 409);
     }
 
-    const origin = new URL(process.env.NEXT_PUBLIC_APP_URL!).origin;
+    const origin = paymentReturnOrigin(request);
     const expiresAt = Math.floor(Date.now() / 1000) + 30 * 60;
 
     const session = await stripe().checkout.sessions.create(

@@ -36,6 +36,8 @@ let actor = "pro";
 let mfa: number | null = 0;
 let providerEvent: unknown;
 let checkout: {
+  cancel_url: string;
+  success_url: string;
   metadata: { booking_id: string };
   line_items: { price_data: { unit_amount: number }; quantity: number }[];
 };
@@ -292,19 +294,21 @@ describe.sequential(
       );
       const date = new Date(Date.now() + 2 * 86400000);
       date.setUTCHours(12, 0, 0, 0);
+      const bookingRequest = request("/api/v1/bookings", {
+        serviceId: selected!.services[0].id,
+        startsAt: date.toISOString(),
+        acceptPolicy: true,
+      });
+      bookingRequest.headers.set("referer", `${origin}/p/journey-studio`);
       const result = await expectSaved(
-        await reserve(
-          request("/api/v1/bookings", {
-            serviceId: selected!.services[0].id,
-            startsAt: date.toISOString(),
-            acceptPolicy: true,
-          }),
-        ),
+        await reserve(bookingRequest),
         201,
       );
       bookingId = result.bookingId;
       expect(result.url).toBe("https://checkout.example.test/isolated");
       expect(checkout.metadata.booking_id).toBe(bookingId);
+      expect(checkout.cancel_url).toBe(`${origin}/p/journey-studio#booking`);
+      expect(checkout.success_url).toBe(`${origin}/account/bookings/${bookingId}`);
       const amount = checkout.line_items.reduce(
         (sum, item) => sum + item.price_data.unit_amount * item.quantity,
         0,

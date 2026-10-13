@@ -45,6 +45,13 @@ afterEach(() => {
 });
 
 describe("Temporary maintenance indexing", () => {
+  it("forwards old checkout returns before reading a separate-host session", async () => {
+    const response = await proxy(new NextRequest("https://glohaus1.vercel.app/account/bookings/11111111-1111-4111-8111-111111111111?checkout=cancelled"));
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("https://www.glohaus.shop/account/bookings/11111111-1111-4111-8111-111111111111?checkout=cancelled");
+    expect(auth.session).not.toHaveBeenCalled();
+    expect(status).not.toHaveBeenCalled();
+  });
   it.each(["/", "/explore?category=Nails", "/about", "/p/real-studio"])(
     "signals temporary unavailability for %s without dropping refreshed sessions",
     async (path) => {

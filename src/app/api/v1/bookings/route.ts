@@ -5,6 +5,7 @@ import { AccessError } from "@/modules/accounts/domain";
 import { isRequiredDepositWithinLimit } from "@/modules/bookings/deposit-policy";
 import { assertBookingAllowed, professionalAccessState } from "@/modules/professionals/verification";
 import { stripe, paymentReady } from "@/modules/payments/stripe";
+import { paymentReturnOrigin, bookingCancelPath } from "@/modules/payments/return-url";
 const schema = z
   .object({
     serviceId: z.uuid(),
@@ -104,7 +105,7 @@ export async function POST(request: Request) {
       return result.rows[0].quote;
     });
 
-    const origin = new URL(process.env.NEXT_PUBLIC_APP_URL!).origin;
+    const origin = paymentReturnOrigin(request);
     let checkoutId: string | null = null;
     try {
       stage = "stripe_checkout";
@@ -150,7 +151,7 @@ export async function POST(request: Request) {
             .slice(0, 8)
             .replace(/[0-9]/g, (digit) => String.fromCharCode(97 + Number(digit)))}`,
           success_url: `${origin}/account/bookings/${booking.id}`,
-          cancel_url: `${origin}/account/bookings/${booking.id}`,
+          cancel_url: `${origin}${bookingCancelPath(request, booking.id)}`,
           expires_at: Math.floor(Date.parse(booking.holdExpiresAt) / 1000) - 120,
         },
         { idempotencyKey: `booking-checkout-${booking.id}` },

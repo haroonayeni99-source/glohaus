@@ -2,6 +2,7 @@ import { withAccount } from "@/lib/api-account";
 import { apiError, assertSameOrigin, json } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
 import { paymentReady, stripe } from "@/modules/payments/stripe";
+import { paymentReturnOrigin } from "@/modules/payments/return-url";
 
 export async function POST(request: Request) {
   try {
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
       },
     );
 
-    const origin = new URL(process.env.NEXT_PUBLIC_APP_URL!).origin;
+    const origin = paymentReturnOrigin(request);
     const session = await stripe().billingPortal.sessions.create({
       customer: customerId,
       return_url: `${origin}/professional/plans`,

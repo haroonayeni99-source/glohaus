@@ -74,12 +74,19 @@ it("opens checkout only for the quoted catalogue amount and matching current pro
   expect(mocks.create).toHaveBeenCalledWith(
     expect.objectContaining({
       line_items: [{ price: "price_pro_test", quantity: 1 }],
+      cancel_url: "https://glohaus.test/professional/plans?subscription=cancelled",
+      success_url: "https://glohaus.test/professional/plans?subscription=success",
       metadata: expect.objectContaining({
         glohaus_monthly_price_pence: "999",
         glohaus_pricing_ack_version: "professional-pricing-v2",
       }),
     }),
   );
+});
+it("returns to the initiating professional site even when the configured URL is stale", async () => {
+  vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://glohaus1.vercel.app");
+  expect((await POST(request())).status).toBe(200);
+  expect(mocks.create.mock.calls[0][0].cancel_url).toBe("https://glohaus.test/professional/plans?subscription=cancelled");
 });
 it.each([
   { quotedMonthlyPricePence: 1999 },

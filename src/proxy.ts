@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { authConfigured, publicSupabaseKey } from "@/lib/config";
 import { updateSession } from "@/lib/supabase/proxy";
+import { legacyCheckoutReturn } from "@/modules/payments/return-url";
 
 const maintenanceExempt = [
   "/maintenance",
@@ -124,6 +125,8 @@ function maintenanceResponse(request: NextRequest, session: NextResponse) {
 }
 
 export default async function proxy(request: NextRequest) {
+  const checkoutReturn = legacyCheckoutReturn(request);
+  if (checkoutReturn) return NextResponse.redirect(checkoutReturn, 307);
   // Keep production auth on one hostname. Splitting Supabase session cookies
   // between the apex and www hosts creates hard-to-reproduce SSR sessions.
   if (request.nextUrl.hostname === "glohaus.shop") {

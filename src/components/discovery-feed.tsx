@@ -400,6 +400,7 @@ export function DiscoveryFeed({
           </div>
         </header>
         <div className="discovery-tabs" aria-label="Filter inspiration">
+          {canPublish && <Link className="discovery-create-mobile" href="/professional/posts">Post / Story</Link>}
           {["Following", "For you", ...categories, "Tutorials"].map((item) => (
             <button
               key={item}

@@ -548,6 +548,11 @@
 .pro-management-page .content-media-preview { width: 100%; max-width: 480px; max-height: 360px; height: auto; object-fit: contain; border-radius: 12px; background: var(--white); }
 .pro-management-page .content-media-upload .button { justify-self: start; }
 
+.discover-app .discovery-create-mobile { display: none; }
+@media (max-width: 850px) {
+  .discover-app .discovery-create-mobile { display: inline-flex; align-items: center; flex-shrink: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 999px; font-size: .75rem; font-weight: 700; color: var(--ink); text-decoration: none; }
+}
+
 /* Desktop home only: keep the brand inside the sidebar and give sign-out the
    same polished control treatment as the account chip. Mobile stays intact. */
 @media (min-width: 1100px) {

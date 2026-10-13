@@ -27,6 +27,8 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - name: Install media test encoder
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Verify profile typography and visible video playback
+        run: node scripts/check-profile-video.mjs
       - name: Verify direct Discover and Story photo/video uploads
         run: node scripts/check-discover-story-media.mjs
       - name: Verify shared sign-out and approved verification badges
@@ -52,6 +54,12 @@ jobs:
           path: |
             reports/discover-story-*.png
             reports/discover-story-media-results.json
+      - name: Save profile video checks
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: profile-video-checks
+          path: reports/profile-video-*
       - name: Save sign-out and verification checks
         uses: actions/upload-artifact@v4
         if: always()

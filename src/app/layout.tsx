@@ -11,6 +11,8 @@ import "./customer-polish.css";
 import "./site-improvements.css";
 import "./design-system.css";
 import "./location.css";
+import "../components/professional-profile.css";
+import "../components/viewport-video.css";
 
 const themeBootstrap = `(() => {
   try {

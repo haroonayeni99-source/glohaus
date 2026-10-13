@@ -1,0 +1,118 @@
+/* Scoped to the public professional page; dashboard and other cards keep their styling. */
+.professional-public .professional-section {
+  padding: clamp(20px, 3vw, 28px);
+  min-width: 0;
+  scroll-margin-top: 140px;
+}
+.professional-public .professional-body > div {
+  min-width: 0;
+}
+.professional-public .professional-heading h1 {
+  font-family: var(--font-sans);
+  font-weight: 750;
+  line-height: 1.15;
+}
+.professional-public .professional-section h2 {
+  font-family: var(--font-sans);
+  font-size: clamp(1.3rem, 2vw, 1.65rem);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+}
+.professional-public .professional-section h3 {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+.professional-public .professional-heading .eyebrow {
+  line-height: 1.6;
+  letter-spacing: 0.08em;
+}
+.professional-public .professional-meta {
+  font-size: 0.875rem;
+  gap: 12px 18px;
+  color: var(--muted);
+}
+.professional-public .professional-verification-note {
+  display: block;
+  max-width: 640px;
+  margin-top: 12px;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.professional-public .professional-contact > div {
+  min-width: 0;
+}
+.professional-public .professional-contact h3 {
+  margin-bottom: 8px;
+}
+.professional-public .professional-contact :is(p, a) {
+  line-height: 1.65;
+}
+.professional-public .profile-long-description {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.professional-public .service-list article {
+  align-items: flex-start;
+  gap: 18px;
+}
+.professional-public .service-list article > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.professional-public .profile-service-price {
+  flex: 0 1 180px;
+  max-width: 100%;
+  text-align: right;
+  gap: 8px;
+}
+.professional-public .profile-service-price strong {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.professional-public .service-deposit-note {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+.professional-public .profile-service-book {
+  min-height: 44px;
+  padding: 10px 16px;
+  font-size: 0.875rem;
+}
+.professional-public .profile-empty {
+  color: var(--muted);
+  background: var(--paper);
+}
+.professional-public .booking-anchor {
+  padding: 0;
+  overflow: hidden;
+}
+.professional-public .booking-widget {
+  padding: clamp(20px, 3vw, 28px);
+}
+.professional-public .hours-card :is(dl, small) {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+@media (max-width: 700px) {
+  .professional-public .professional-section {
+    scroll-margin-top: 130px;
+  }
+  .professional-public .professional-heading h1 {
+    font-size: clamp(1.8rem, 8vw, 2.25rem);
+  }
+  .professional-public .service-list article {
+    flex-wrap: wrap;
+  }
+  .professional-public .service-list article > div:not(.profile-service-price) {
+    flex: 1 1 150px;
+  }
+  .professional-public .service-list .profile-service-price {
+    flex: 1 0 100%;
+    align-items: flex-start;
+    text-align: left;
+  }
+}

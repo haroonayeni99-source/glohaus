@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useLabels } from "./platform-labels";
 import { PostActions } from "./post-actions";
+import { ViewportVideo } from "./viewport-video";
 import { DiscoverFollowButton } from "./discover-follow-button";
 import {
   readDeviceEngagement,
@@ -468,12 +469,10 @@ export function DiscoveryFeed({
                     {post.asset_id && (
                       <>
                         {post.asset_media_type === "video" ? (
-                          <video
-                            className="feed-image feed-video"
+                          <ViewportVideo
                             src={`/api/media/${post.asset_id}`}
-                            controls
-                            playsInline
-                            preload="metadata"
+                            label={post.title}
+                            variant="feed"
                           />
                         ) : (
                           <Image

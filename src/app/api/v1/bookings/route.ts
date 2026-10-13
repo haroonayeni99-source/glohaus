@@ -215,6 +215,8 @@ export async function POST(request: Request) {
         return json({ error: { code: "PROFESSIONAL_RESTRICTED" } }, 403);
       if (error.message.includes("TOO_MANY_ATTEMPTS"))
         return json({ error: { code: "TOO_MANY_ATTEMPTS" } }, 429);
+      if (error.message.includes("COMMISSION_EXCEEDS_DEPOSIT"))
+        return json({ error: { code: "PAYMENTS_NOT_READY" } }, 409);
       if (error.message.includes("PAYMENTS_NOT_READY"))
         return json({ error: { code: "PAYMENTS_NOT_READY" } }, 409);
       if (error.message.includes("DEPOSIT_LIMIT"))

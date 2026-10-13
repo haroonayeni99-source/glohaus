@@ -63,6 +63,14 @@ export async function GET(request: Request) {
         ).rows,
     );
 
+    const commissionJobs = await withPaymentWorker(
+      async (db) =>
+        (
+          await db.query<{ id: string; email: string; body: string }>(
+            "SELECT * FROM beauty.claim_commission_notices()",
+          )
+        ).rows,
+    );
     const resend = new Resend(process.env.RESEND_API_KEY);
     let sent = 0;
     for (const job of jobs) {
@@ -72,7 +80,8 @@ export async function GET(request: Request) {
           { from, to: job.email, ...message },
           { idempotencyKey: `glohaus-notification-${job.id}` },
         );
-        if (result.error || !result.data?.id) throw new Error("DELIVERY_FAILED");
+        if (result.error || !result.data?.id)
+          throw new Error("DELIVERY_FAILED");
         await withPaymentWorker((db) =>
           db.query("SELECT beauty.finish_notification($1,true,$2)", [
             job.id,
@@ -96,7 +105,8 @@ export async function GET(request: Request) {
           { from, to: job.email, ...message },
           { idempotencyKey: `glohaus-product-notification-${job.id}` },
         );
-        if (result.error || !result.data?.id) throw new Error("DELIVERY_FAILED");
+        if (result.error || !result.data?.id)
+          throw new Error("DELIVERY_FAILED");
         await withPaymentWorker((db) =>
           db.query(
             "SELECT beauty.finish_product_order_notification($1,true,$2)",
@@ -130,26 +140,57 @@ export async function GET(request: Request) {
           },
           { idempotencyKey: `glohaus-marketing-${job.id}` },
         );
-        if (result.error || !result.data?.id) throw new Error("DELIVERY_FAILED");
+        if (result.error || !result.data?.id)
+          throw new Error("DELIVERY_FAILED");
         await withPaymentWorker((db) =>
-          db.query(
-            "SELECT beauty.finish_marketing_notification($1,true,$2)",
-            [job.id, result.data.id],
-          ),
+          db.query("SELECT beauty.finish_marketing_notification($1,true,$2)", [
+            job.id,
+            result.data.id,
+          ]),
         );
         sent++;
       } catch {
         await withPaymentWorker((db) =>
-          db.query(
-            "SELECT beauty.finish_marketing_notification($1,false,$2)",
-            [job.id, null],
-          ),
+          db.query("SELECT beauty.finish_marketing_notification($1,false,$2)", [
+            job.id,
+            null,
+          ]),
         );
       }
     }
 
+    for (const job of commissionJobs) {
+      try {
+        const result = await resend.emails.send(
+          {
+            from,
+            to: job.email,
+            subject: "Your GLOHAUS service commission notice",
+            text: `${job.body}\n\nReview your commission: ${new URL("/professional/commission", appUrl).href}`,
+          },
+          { idempotencyKey: `glohaus-commission-notice-${job.id}` },
+        );
+        if (result.error || !result.data?.id)
+          throw new Error("DELIVERY_FAILED");
+        await withPaymentWorker((db) =>
+          db.query("SELECT beauty.finish_commission_notice($1,$2)", [
+            job.id,
+            result.data!.id,
+          ]),
+        );
+        sent++;
+      } catch {
+        console.error("Commission notice delivery pending");
+      }
+    }
+
     const summary = {
-      processed: jobs.length + productJobs.length + marketingJobs.length,
+      processed:
+        jobs.length +
+        productJobs.length +
+        marketingJobs.length +
+        commissionJobs.length,
+      commissionJobs: commissionJobs.length,
       bookingJobs: jobs.length,
       productJobs: productJobs.length,
       marketingJobs: marketingJobs.length,
@@ -157,10 +198,11 @@ export async function GET(request: Request) {
     };
 
     await withPaymentWorker((db) =>
-      db.query(
-        "SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)",
-        ["notifications", true, JSON.stringify(summary)],
-      ),
+      db.query("SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)", [
+        "notifications",
+        true,
+        JSON.stringify(summary),
+      ]),
     ).catch((error) => {
       console.error("Failed to record notification worker health", error);
     });
@@ -169,12 +211,16 @@ export async function GET(request: Request) {
   } catch {
     console.error("Notification worker failed");
     await withPaymentWorker((db) =>
-      db.query(
-        "SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)",
-        ["notifications", false, JSON.stringify({ code: "WORKER_FAILED" })],
-      ),
+      db.query("SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)", [
+        "notifications",
+        false,
+        JSON.stringify({ code: "WORKER_FAILED" }),
+      ]),
     ).catch((error) => {
-      console.error("Failed to record notification worker failure health", error);
+      console.error(
+        "Failed to record notification worker failure health",
+        error,
+      );
     });
     return new Response("Retry later", { status: 503 });
   }

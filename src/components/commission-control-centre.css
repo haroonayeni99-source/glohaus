@@ -1,0 +1,116 @@
+.commission-centre {
+  position: relative;
+  min-width: 0;
+}
+.commission-centre .commission-box {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--line);
+}
+.commission-centre .commission-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.commission-centre .commission-rule {
+  padding: 20px;
+  margin: 16px 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+.commission-centre h3,
+.commission-centre h4 {
+  margin-bottom: 12px;
+}
+.commission-centre p {
+  line-height: 1.65;
+  margin-bottom: 12px;
+}
+.commission-centre label {
+  min-width: 0;
+}
+.commission-centre input,
+.commission-centre select,
+.commission-centre textarea {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+.commission-centre pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.commission-centre .commission-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.commission-centre .commission-metrics article {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.commission-centre .commission-metrics strong {
+  display: block;
+  font-size: 1.5rem;
+  margin-top: 8px;
+}
+.commission-centre .commission-table {
+  overflow-x: auto;
+}
+.commission-centre table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.commission-centre th,
+.commission-centre td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.commission-centre dl > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+}
+.commission-centre dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.commission-centre .commission-confirm {
+  position: fixed;
+  inset: 10% max(20px, calc((100vw - 650px) / 2));
+  z-index: 300;
+  background: var(--surface);
+  color: var(--text-strong);
+  border: 2px solid var(--pink);
+  padding: 24px;
+  border-radius: 20px;
+  max-height: 80vh;
+  max-width: 650px;
+  width: calc(100vw - 48px);
+  margin: auto;
+  overflow: auto;
+}
+.commission-centre .commission-confirm .button {
+  margin: 12px 12px 0 0;
+}
+.commission-centre .commission-confirm::backdrop {
+  background: #0009;
+}
+@media (max-width: 700px) {
+  .commission-centre .commission-grid,
+  .commission-centre .commission-metrics {
+    grid-template-columns: 1fr;
+  }
+  .commission-centre .commission-confirm {
+    inset: 5% 12px;
+  }
+  .commission-centre .commission-rule {
+    padding: 16px;
+  }
+}

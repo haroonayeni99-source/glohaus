@@ -66,7 +66,7 @@ const ownerSections = [
   ["Booking Fee", "booking-fee", CreditCard],
   ["Shop Fees", "shop-fees", CreditCard],
   ["Sign-ups & sign-ins", "auth-accounts", UsersRound],
-  ["Professional commission", "professional-commission", CreditCard],
+  ["Commission Control Centre", "professional-commission", CreditCard],
   ["Referrals", "referrals", UsersRound],
   ["Admins & Access", "staff", ShieldCheck],
   ["System health", "backend-health", BarChart3],

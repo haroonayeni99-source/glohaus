@@ -3,7 +3,8 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
-      "fix/profile-video-autoplay": false
+      "fix/profile-video-autoplay": false,
+      "feature/commission-control-centre": false
     }
   },
   "regions": [

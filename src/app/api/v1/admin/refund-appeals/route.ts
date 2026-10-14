@@ -2,7 +2,8 @@ import { z } from "zod";
 import { withAdmin } from "@/modules/admin/repository";
 import { stripe } from "@/modules/payments/stripe";
 import { withPaymentWorker } from "@/modules/payments/worker";
-import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
+import { assertSameOrigin, json, smallJson } from "@/lib/http";
+import { policyError } from "@/modules/policies/http";
 import { AccessError } from "@/modules/accounts/domain";
 
 const schema = z
@@ -60,6 +61,6 @@ export async function POST(request: Request) {
     }
     return json({ saved: true });
   } catch (error) {
-    return apiError(error);
+    return policyError(error);
   }
 }

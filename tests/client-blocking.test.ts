@@ -318,7 +318,7 @@ describe.sequential("private client identity and booking blocks", () => {
     });
     await expect(
       asUser("alice", (sql) =>
-        sql.query("SELECT beauty.reserve_booking($1,$2)", [
+        sql.query("SELECT beauty.reserve_booking($1,$2,beauty.public_service_policy($1)->>'token',true)", [
           services.pro,
           future.toISOString(),
         ]),
@@ -332,6 +332,8 @@ describe.sequential("private client identity and booking blocks", () => {
           serviceId: services.pro,
           startsAt: future.toISOString(),
           acceptPolicy: true,
+          earlyServiceRequested:true,
+          policyToken:await asUser("alice",async sql=>(await sql.query<{token:string}>("SELECT beauty.public_service_policy($1)->>'token' AS token",[services.pro])).rows[0].token),
         },
         "POST",
       ),
@@ -361,7 +363,7 @@ describe.sequential("private client identity and booking blocks", () => {
       (
         await asUser("alice", (sql) =>
           sql.query<{ data: { id: string } }>(
-            "SELECT beauty.reserve_booking($1,$2) AS data",
+            "SELECT beauty.reserve_booking($1,$2,beauty.public_service_policy($1)->>'token',true) AS data",
             [services.otherpro, future.toISOString()],
           ),
         )
@@ -371,7 +373,7 @@ describe.sequential("private client identity and booking blocks", () => {
       (
         await asUser("bob", (sql) =>
           sql.query<{ data: { id: string } }>(
-            "SELECT beauty.reserve_booking($1,$2) AS data",
+            "SELECT beauty.reserve_booking($1,$2,beauty.public_service_policy($1)->>'token',true) AS data",
             [services.pro, future.toISOString()],
           ),
         )
@@ -398,7 +400,7 @@ describe.sequential("private client identity and booking blocks", () => {
     ).toBe(200);
     await expect(
       asUser("alice", (sql) =>
-        sql.query("SELECT beauty.reserve_booking($1,$2)", [
+        sql.query("SELECT beauty.reserve_booking($1,$2,beauty.public_service_policy($1)->>'token',true)", [
           services.pro,
           new Date(future.getTime() + 86400000).toISOString(),
         ]),
@@ -420,7 +422,7 @@ describe.sequential("private client identity and booking blocks", () => {
       (
         await asUser("alice", (sql) =>
           sql.query<{ data: { id: string } }>(
-            "SELECT beauty.reserve_booking($1,$2) AS data",
+            "SELECT beauty.reserve_booking($1,$2,beauty.public_service_policy($1)->>'token',true) AS data",
             [services.pro, new Date(future.getTime() + 86400000).toISOString()],
           ),
         )

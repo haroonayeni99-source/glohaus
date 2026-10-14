@@ -7,6 +7,8 @@ export type InAppNotification = {
   product_order_id: string | null;
   kind:
     | "commission_changed"
+    | "booking_policy_update"
+    | "professional_policy_review"
     | "booking_created"
     | "booking_confirmed"
     | "booking_cancelled"

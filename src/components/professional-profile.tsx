@@ -1,4 +1,5 @@
 import { PlatformLabel } from "./platform-labels";
+import Link from "next/link";
 import { ProfessionalVerificationBadges } from "./professional-verification-badges";
 import { FollowProfessionalButton } from "./follow-professional-button";
 import { ViewportVideo } from "./viewport-video";
@@ -33,6 +34,7 @@ export type ProfilePresentation = {
   reviewCount: number;
   booking: ReactNode;
   live?: ReactNode;
+  policies?: ReactNode;
   follow: { following: boolean; followerCount: number; signedIn: boolean };
   messageHref: string | null;
   bookingFeePence: number;
@@ -53,6 +55,7 @@ export function ProfessionalProfile({
   reviewCount,
   booking,
   live,
+  policies,
   follow,
   messageHref,
   bookingFeePence,
@@ -293,6 +296,7 @@ export function ProfessionalProfile({
                     />
                   )}
                   <div>
+                    <Link href={`/p/${p.slug}/services/${service.id}`}>Service details & policies</Link>
                     <h3>{service.name}</h3>
                     <p>{service.description}</p>
                     <span>
@@ -326,6 +330,7 @@ export function ProfessionalProfile({
               </p>
             )}
           </section>
+          {policies}
           <section id="reviews" className="professional-section">
             <p className="eyebrow">REAL VISITS. REAL EXPERIENCES.</p>
             <h2>Kind words.</h2>

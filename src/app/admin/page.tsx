@@ -1,4 +1,6 @@
 import { AdminSupportInbox } from "@/components/admin-support-inbox";
+import { AdminProfessionalPolicies } from "@/components/admin-professional-policies";
+import { adminPolicies } from "@/modules/policies/repository";
 import { supportInbox } from "@/modules/support/repository";
 import { withAdmin } from "@/modules/admin/repository";
 import { HomepageCategoryMediaControl } from "@/components/homepage-category-media-control";
@@ -62,6 +64,7 @@ export default async function Page() {
   // starting a dozen transactions at once and timing out while they queue.
   const data = await adminOverview();
   const support = await withAdmin(supportInbox).catch(() => null);
+  const policies = await withAdmin(db=>adminPolicies(db)).catch(()=>null);
   const labels = await publicLabels();
   const categories = await adminCategories().catch(() => null);
   const owner = isOwner ? await ownerControls().catch(() => null) : null;
@@ -117,6 +120,7 @@ export default async function Page() {
           referrals={referrals}
           owner={owner}
         />
+        <section id="professional-policies" className="admin-workspace-section admin-detail-card"><p className="eyebrow">PROFESSIONAL BOOKING TERMS</p><h2>Professional Policies</h2>{policies?<AdminProfessionalPolicies initial={policies}/>:<AdminSectionUnavailable label="Professional Policies"/>}</section>
         {isOwner && (
           <section
             id="website-status"

@@ -28,6 +28,7 @@ export async function GET(request: Request) {
     });
 
     const providerCosts = await retryBookingProviderCosts();
+    const preparation = await withPaymentWorker(async (db) => (await db.query<{ data: Record<string,number> }>("SELECT beauty.purge_booking_preparation() AS data")).rows[0].data);
 
     await withPaymentWorker((db) =>
       db.query("SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)", [
@@ -40,7 +41,7 @@ export async function GET(request: Request) {
     });
 
     return Response.json(
-      { ...result, providerCosts },
+      { ...result, providerCosts, preparation },
       {
         headers: { "Cache-Control": "private, no-store" },
       },

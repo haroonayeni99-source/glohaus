@@ -42,6 +42,7 @@ export function ProfessionalNavigation({
         </div>
         <div className="pro-header-account">
           <nav className="pro-header-shortcuts" aria-label="Professional shortcuts">
+            <Link href="/professional/policies"><ShieldCheck size={14} aria-hidden />Rules & Policies</Link>
             <Link href="/professional/products">
               <ShoppingBag size={14} aria-hidden />
               Products

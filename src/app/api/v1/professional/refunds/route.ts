@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { policyError } from "@/modules/policies/http";
 import { withAccount } from "@/lib/api-account";
-import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
+import { assertSameOrigin, json, smallJson } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
 import { stripe } from "@/modules/payments/stripe";
 import { withPaymentWorker } from "@/modules/payments/worker";
@@ -60,6 +61,6 @@ export async function POST(request: Request) {
     }
     return json({ saved: true });
   } catch (error) {
-    return apiError(error);
+    return policyError(error);
   }
 }

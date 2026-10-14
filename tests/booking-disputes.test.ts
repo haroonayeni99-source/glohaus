@@ -30,7 +30,7 @@ async function createPaidBooking(start: Date, suffix: string) {
   const bookingId = (
     await asUser("dispute-customer", (sql) =>
       sql.query<{ data: { id: string } }>(
-        "SELECT beauty.reserve_booking($1,$2) AS data",
+        "SELECT beauty.reserve_booking($1,$2,beauty.public_service_policy($1)->>'token',true) AS data",
         [serviceId, start.toISOString()],
       ),
     )

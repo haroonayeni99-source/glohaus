@@ -104,7 +104,7 @@ beforeAll(async () => {
   bookingId = (
     await asUser("finance-customer", (sql) =>
       sql.query<{ data: { id: string } }>(
-        "SELECT beauty.reserve_booking($1,$2) AS data",
+        "SELECT beauty.reserve_booking($1,$2,beauty.public_service_policy($1)->>'token',true) AS data",
         [serviceId, start.toISOString()],
       ),
     )

@@ -7,6 +7,8 @@ import { ArrowLeft, CalendarDays, CircleHelp, LockKeyhole } from "lucide-react";
 import { money, type Service } from "@/modules/professionals/domain";
 import { AuthGate } from "./auth-gate";
 import { PaymentSummary } from "./payment-summary";
+import { ProfessionalPolicySummary } from "./professional-policy-summary";
+import type { PolicyPreview } from "@/modules/policies/domain";
 import {
   isRequiredDepositWithinLimit,
   depositLimitMessage,
@@ -86,22 +88,36 @@ export function BookingPicker({
   const [loadingSlots, setLoadingSlots] = useState(Boolean(initialDate));
   const [submitting, setSubmitting] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [earlyServiceRequested,setEarlyServiceRequested] = useState(false);
+  const [earlyServiceBefore,setEarlyServiceBefore] = useState(0);
+  const [policy,setPolicy] = useState<PolicyPreview|null>(null);
+  const [policyReload,setPolicyReload] = useState(0);
   const [needsAccount, setNeedsAccount] = useState(false);
   const [step, setStep] = useState<"appointment" | "summary">("appointment");
 
-  const service = services.find((item) => item.id === serviceId);
-  const starterFullPrepayment = verificationStatus !== "verified";
+  const listedService = services.find((item) => item.id === serviceId);
+  const service = listedService && policy ? {...listedService,price_pence:policy.pricePence,deposit_pence:policy.depositPence} : listedService;
+  const starterFullPrepayment = policy ? policy.fullPrepayment : verificationStatus !== "verified";
   const invalidVerifiedDeposit =
     !!service &&
     !starterFullPrepayment &&
     !isRequiredDepositWithinLimit(service.price_pence, service.deposit_pence);
+  const effectiveBookingFeePence = policy?.bookingFeePence ?? bookingFeePence;
   const amountDueNowPence = service
     ? starterFullPrepayment
-      ? service.price_pence + bookingFeePence
-      : service.deposit_pence + bookingFeePence
-    : bookingFeePence;
+      ? service.price_pence + effectiveBookingFeePence
+      : service.deposit_pence + effectiveBookingFeePence
+    : effectiveBookingFeePence;
   const [today] = useState(() => londonDateString());
+  const earlyServiceNeeded=Boolean(selected&&Date.parse(selected)<earlyServiceBefore);
+  const policyService=service&&policy?{...service,price_pence:policy.pricePence,deposit_pence:policy.depositPence}:service;
   const quickDates = useMemo(() => dateChoices(today), [today]);
+
+  useEffect(()=>{
+    const controller=new AbortController();
+    void fetch(`/api/v1/policies?serviceId=${encodeURIComponent(serviceId)}`,{signal:controller.signal}).then(async response=>{const result=await response.json();if(!response.ok)throw Error(result.error?.message||"Booking policies could not be loaded.");if(!controller.signal.aborted){setPolicy(result.policy);setEarlyServiceBefore(Date.parse(result.earlyServiceBefore));setAccepted(false);setEarlyServiceRequested(false);}}).catch(e=>{if(!controller.signal.aborted){setPolicy(null);setNotice(e instanceof Error?e.message:"Could not load booking policies.");}});
+    return ()=>controller.abort();
+  },[serviceId,policyReload]);
 
   useEffect(() => {
     if (!date || !serviceId) return;
@@ -158,7 +174,7 @@ export function BookingPicker({
     : "";
 
   async function submitBooking() {
-    if (!service || !selected || !accepted) return;
+    if (!service || !selected || !accepted || !policy || (earlyServiceNeeded&&!earlyServiceRequested)) return;
     setSubmitting(true);
     setNotice("");
     try {
@@ -169,10 +185,13 @@ export function BookingPicker({
           serviceId,
           startsAt: selected,
           acceptPolicy: true,
+          policyToken:policy.token,
+          earlyServiceRequested,
         }),
       });
       const result = await response.json();
       if (!response.ok) {
+        if(result.error?.code==="POLICY_CHANGED"){setAccepted(false);setEarlyServiceRequested(false);setPolicyReload(v=>v+1);}
         setClientBlocked(result.error?.code === "CLIENT_BLOCKED");
         if (
           response.status === 401 ||
@@ -205,7 +224,7 @@ export function BookingPicker({
                             ? "Secure booking services are temporarily unavailable. Please refresh and try again."
                             : result.error?.code === "INVALID_APPOINTMENT"
                               ? "That appointment is no longer available. Please choose another date or time."
-                              : "Booking is unavailable right now. Please try again.",
+              : result.error?.message || "Booking is unavailable right now. Please try again.",
         );
       }
       window.location.href = result.url;
@@ -241,6 +260,9 @@ export function BookingPicker({
               value={serviceId}
               onChange={(event) => {
                 setServiceId(event.target.value);
+                setPolicy(null);
+                setAccepted(false);
+                setEarlyServiceRequested(false);
                 setSlots([]);
                 setSelected("");
                 setNotice("");
@@ -250,7 +272,7 @@ export function BookingPicker({
             >
               {services.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.name} · {money(item.price_pence + bookingFeePence)}{" "}
+                  {item.name} · {money(item.price_pence + effectiveBookingFeePence)}{" "}
                   total
                 </option>
               ))}
@@ -273,7 +295,7 @@ export function BookingPicker({
               <strong>{service.name}</strong>
               <small>{professionalName}</small>
               <small>
-                {money(service.price_pence + bookingFeePence)} total ·{" "}
+                {money(service.price_pence + effectiveBookingFeePence)} total ·{" "}
                 {service.duration_minutes} min
               </small>
             </div>
@@ -386,6 +408,7 @@ export function BookingPicker({
             className="button full-width booking-continue"
             disabled={
               !selected ||
+              !policy ||
               loadingSlots ||
               invalidVerifiedDeposit ||
               verificationStatus === "restricted" ||
@@ -445,20 +468,14 @@ export function BookingPicker({
           </div>
 
           <PaymentSummary
-            servicePricePence={service.price_pence}
-            depositPence={service.deposit_pence}
-            bookingFeePence={bookingFeePence}
+            servicePricePence={policyService!.price_pence}
+            depositPence={policyService!.deposit_pence}
+            bookingFeePence={policy?.bookingFeePence??bookingFeePence}
           />
 
           <details className="booking-policy" open>
-            <summary>Cancellation & no-show policy</summary>
-            <p>
-              Cancel at least 24 hours before your appointment for a full
-              deposit refund. Within 24 hours, reasonable circumstances are
-              reviewed individually by the professional. Professional
-              cancellations receive a full deposit refund. Your statutory rights
-              still apply.
-            </p>
+            <summary>Professional rules & booking policies</summary>
+            {policy?<ProfessionalPolicySummary policy={policy}/>:<p role="status">Loading the applicable booking policies…</p>}
           </details>
 
           <label className="policy-check">
@@ -468,20 +485,22 @@ export function BookingPicker({
               onChange={(event) => setAccepted(event.target.checked)}
             />
             <span>
-              I agree to the cancellation and no-show policy and confirm the
+              I have read and acknowledge these professional rules and booking policies, and confirm the
               appointment details above.
             </span>
           </label>
 
+          {earlyServiceNeeded&&<label className="policy-check"><input type="checkbox" checked={earlyServiceRequested} onChange={e=>setEarlyServiceRequested(e.target.checked)}/><span>I expressly request this appointment to take place within the 14-day cooling-off period. My statutory rights remain; any lawful charge for work already provided must be assessed separately.</span></label>}
+
           <button
             className="button full-width booking-pay-button"
             type="button"
-            disabled={!ready || !accepted || submitting}
+            disabled={!ready || !accepted || !policy || submitting || (earlyServiceNeeded&&!earlyServiceRequested)}
             onClick={() => void submitBooking()}
           >
             {submitting
               ? "Confirming…"
-              : "Continue to pay " + money(amountDueNowPence)}
+              : "Continue to pay " + money(policy?policy.depositPence+policy.bookingFeePence:amountDueNowPence)}
           </button>
 
           <p className="booking-secure-note">

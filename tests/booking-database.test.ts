@@ -88,7 +88,7 @@ describe.sequential("booking transactions and verified deposits", () => {
   it("denies anonymous reservation", async () => {
     await expect(
       asUser("", (sql) =>
-        sql.query("SELECT beauty.reserve_booking($1,$2)", [service, date]),
+        sql.query("SELECT beauty.reserve_booking($1,$2,beauty.public_service_policy($1)->>'token',true)", [service, date]),
       ),
     ).rejects.toThrow("FORBIDDEN");
   });
@@ -98,7 +98,7 @@ describe.sequential("booking transactions and verified deposits", () => {
     ]);
     await expect(
       asUser("alice", (sql) =>
-        sql.query("SELECT beauty.reserve_booking($1,$2)", [service, date]),
+        sql.query("SELECT beauty.reserve_booking($1,$2,beauty.public_service_policy($1)->>'token',true)", [service, date]),
       ),
     ).rejects.toThrow("UNAVAILABLE_SERVICE");
     await db.query("UPDATE beauty.services SET active=true WHERE id=$1", [
@@ -108,7 +108,7 @@ describe.sequential("booking transactions and verified deposits", () => {
   it("reserves with immutable service prices and no caller-supplied identity", async () => {
     const result = await asUser("alice", (sql) =>
       sql.query<{ data: { id: string; depositPence: number } }>(
-        "SELECT beauty.reserve_booking($1,$2) AS data",
+        "SELECT beauty.reserve_booking($1,$2,beauty.public_service_policy($1)->>'token',true) AS data",
         [service, date],
       ),
     );
@@ -161,7 +161,7 @@ describe.sequential("booking transactions and verified deposits", () => {
   it("retries return the same unexpired reservation", async () => {
     const result = await asUser("alice", (sql) =>
       sql.query<{ data: { id: string } }>(
-        "SELECT beauty.reserve_booking($1,$2) AS data",
+        "SELECT beauty.reserve_booking($1,$2,beauty.public_service_policy($1)->>'token',true) AS data",
         [service, date],
       ),
     );
@@ -170,7 +170,7 @@ describe.sequential("booking transactions and verified deposits", () => {
   it("rejects an overlapping appointment for another customer", async () => {
     await expect(
       asUser("bob", (sql) =>
-        sql.query("SELECT beauty.reserve_booking($1,$2)", [service, date]),
+        sql.query("SELECT beauty.reserve_booking($1,$2,beauty.public_service_policy($1)->>'token',true)", [service, date]),
       ),
     ).rejects.toThrow("SLOT_TAKEN");
   });
@@ -365,7 +365,7 @@ describe.sequential("booking transactions and verified deposits", () => {
   it("releases the cancelled slot for another customer", async () => {
     const result = await asUser("bob", (sql) =>
       sql.query<{ data: { id: string } }>(
-        "SELECT beauty.reserve_booking($1,$2) AS data",
+        "SELECT beauty.reserve_booking($1,$2,beauty.public_service_policy($1)->>'token',true) AS data",
         [service, date],
       ),
     );
@@ -459,7 +459,7 @@ describe.sequential("starter full-prepayment checkout", () => {
             bookingFeePence: number;
             status: string;
           };
-        }>("SELECT beauty.reserve_booking($1,$2) AS data", [
+        }>("SELECT beauty.reserve_booking($1,$2,beauty.public_service_policy($1)->>'token',true) AS data", [
           starterService,
           start.toISOString(),
         ]),

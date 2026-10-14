@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-export function RefundForm({ bookingId }: { bookingId: string }) {
+export function RefundForm({ bookingId,noticeHours=24 }: { bookingId: string;noticeHours?:number }) {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const router = useRouter();
@@ -23,9 +23,10 @@ export function RefundForm({ bookingId }: { bookingId: string }) {
               reason: data.get("reason"),
             }),
           });
+          const result = await response.json();
           if (!response.ok)
             throw new Error(
-              "The decision or refund could not be completed. Retry to resume the same decision safely.",
+              result.error?.message || "The decision or refund could not be completed. Retry to resume the same decision safely.",
             );
           setNotice(
             "Decision recorded. Refund status is shown in the payment overview.",
@@ -44,10 +45,11 @@ export function RefundForm({ bookingId }: { bookingId: string }) {
     >
       <h2>Review the deposit.</h2>
       <p className="lead">
-        Professional cancellations and cancellations at least 24 hours ahead
+        Professional cancellations and cancellations at least {noticeHours} hours ahead
         receive a full refund. For late cancellations, consider the individual
         circumstances and the customer’s statutory rights. Escalate disputed
         decisions for admin review.
+        For bookings with accepted professional policies, retaining money requires an approved evidence-based review. Statutory refunds take priority.
       </p>
       <label>
         Reasonable circumstances accepted?

@@ -411,7 +411,9 @@ describe.sequential("booking without a payment-provider setup", () => {
     while (monday.getUTCDay() !== 1) monday.setUTCDate(monday.getUTCDate() + 1);
     monday.setUTCHours(12, 0, 0, 0);
     startsAt = monday.toISOString();
-    const input = { serviceId, startsAt, acceptPolicy: true };
+    const policyToken = (await asUser("client", async sql =>
+      (await sql.query<{token:string}>("SELECT beauty.public_service_policy($1)->>'token' AS token",[serviceId])).rows[0].token));
+    const input = { serviceId, startsAt, acceptPolicy: true, policyToken, earlyServiceRequested:true };
     const response = await createBooking(request(input, "POST"));
     expect(response.status).toBe(409);
     expect(await response.json()).toEqual({ error: { code: "PAYMENTS_NOT_READY" } });
@@ -438,7 +440,8 @@ describe.sequential("booking without a payment-provider setup", () => {
     );
     const later = new Date(Date.parse(startsAt) + 2 * 3600000).toISOString();
     const response = await createBooking(
-      request({ serviceId, startsAt: later, acceptPolicy: true }, "POST"),
+      request({ serviceId, startsAt: later, acceptPolicy: true, earlyServiceRequested:true,
+        policyToken:await asUser("client",async sql=>(await sql.query<{token:string}>("SELECT beauty.public_service_policy($1)->>'token' AS token",[serviceId])).rows[0].token) }, "POST"),
     );
     expect(response.status).toBe(409);
     expect(await response.json()).toEqual({ error: { code: "PAYMENTS_NOT_READY" } });

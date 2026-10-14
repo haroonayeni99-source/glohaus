@@ -14,6 +14,7 @@ import "./design-system.css";
 import "./location.css";
 import "../components/professional-profile.css";
 import "../components/viewport-video.css";
+import "../components/professional-policies.css";
 
 const themeBootstrap = `(() => {
   try {

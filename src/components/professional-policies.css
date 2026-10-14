@@ -1,0 +1,121 @@
+.professional-policies {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.65;
+  color: var(--text-strong);
+}
+.professional-policies .policy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.professional-policies label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin-block: 12px;
+}
+.professional-policies input,
+.professional-policies select,
+.professional-policies textarea {
+  max-width: 100%;
+  min-width: 0;
+}
+.professional-policies .policy-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.professional-policies .policy-check input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 7px;
+  padding: 0;
+}
+.professional-policies .policy-material,
+.professional-policies .policy-card,
+.professional-policies.policy-card {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  margin-block: 16px;
+}
+.professional-policies .policy-text {
+  white-space: pre-wrap;
+}
+.professional-policies dl > div {
+  padding-block: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.professional-policies dt {
+  font-weight: 700;
+}
+.professional-policies dd {
+  margin: 4px 0;
+}
+.professional-policies .policy-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.professional-policies .policy-photos img {
+  max-width: 160px;
+  height: 160px;
+  object-fit: contain;
+}
+.professional-policies .policy-event {
+  border-left: 3px solid var(--plum);
+  padding-left: 12px;
+  margin-block: 14px;
+}
+.professional-policies .editor-actions {
+  flex-wrap: wrap;
+}
+.professional-policies button {
+  min-height: 44px;
+  max-width: 100%;
+  white-space: normal;
+}
+.professional-policies input,
+.professional-policies select,
+.professional-policies textarea {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font: inherit;
+  padding: 10px;
+  width: 100%;
+}
+.professional-policies textarea {
+  resize: vertical;
+}
+.professional-policies .policy-photos figure {
+  margin: 0;
+}
+.policy-dialog {
+  max-width: 560px;
+  width: calc(100% - 32px);
+  max-height: 85vh;
+  overflow: auto;
+  background: var(--surface);
+  color: var(--text-strong);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 24px;
+}
+.policy-dialog::backdrop {
+  background: rgb(0 0 0 / 60%);
+}
+@media (max-width: 650px) {
+  .professional-policies .policy-grid {
+    grid-template-columns: 1fr;
+  }
+  .professional-policies .editor-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

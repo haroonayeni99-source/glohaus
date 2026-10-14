@@ -26,6 +26,7 @@ const accountLinks = [
   ["Account & security", "/security"],
 ] as const;
 const professionalLinks = [
+  ["Rules & Policies", "/professional/policies"],
   ["Dashboard", "/professional"],
   ["Bookings", "/professional/bookings"],
   ["Clients", "/professional/clients"],

@@ -1,9 +1,10 @@
 import { z } from "zod";
+import { policyError } from "@/modules/policies/http";
 import { getIdentity } from "@/lib/identity";
 import { withIdentity } from "@/lib/db";
 import { authorize, AccessError } from "@/modules/accounts/domain";
 import { findAccount } from "@/modules/accounts/repository";
-import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
+import { assertSameOrigin, json, smallJson } from "@/lib/http";
 const schema = z
   .object({
     status: z.enum(["cancelled", "completed", "no_show"]),
@@ -31,6 +32,6 @@ export async function PATCH(
     });
     return json({ saved: true });
   } catch (error) {
-    return apiError(error);
+    return policyError(error);
   }
 }

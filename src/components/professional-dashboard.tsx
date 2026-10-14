@@ -1,3 +1,5 @@
+import { ProfessionalActivityStatus } from "./professional-activity-status";
+import type { MyActivity } from "@/modules/professional-activity/domain";
 import { ProfessionalNextSteps } from "./professional-next-steps";
 import type { SetupProgress } from "@/modules/professionals/setup";
 import Link from "next/link";
@@ -44,10 +46,12 @@ export function ProfessionalDashboard({
   account,
   data,
   setup = null,
+  activity = null,
 }: {
   account: Account;
   data: DashboardData;
   setup?: SetupProgress | null;
+  activity?: MyActivity | null;
 }) {
   const businessName = data.profile?.businessName || account.displayName;
   const incomplete =
@@ -81,6 +85,7 @@ export function ProfessionalDashboard({
           </Link>
         </section>
 
+        {activity && <ProfessionalActivityStatus initial={activity} />}
         {setup && <ProfessionalNextSteps progress={setup} />}
         {data.access && (
           <section

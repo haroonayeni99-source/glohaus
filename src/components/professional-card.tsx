@@ -45,6 +45,7 @@ export function ProfessionalCard({
             {pro.available_today ? "Available today" : "Check availability"}
           </span>
         </div>
+        {pro.boosted && <span className="professional-featured-label">Featured · visibility boost</span>}
         <ProfessionalVerificationBadges professional={pro} />
         <p className="professional-card-bio">{pro.bio}</p>
         {!!pro.popular_services?.length && (

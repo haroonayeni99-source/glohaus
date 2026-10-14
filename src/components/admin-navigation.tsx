@@ -47,6 +47,7 @@ const coreSections = [
   ["Users", "users", UsersRound],
   ["Professionals", "professionals", BadgeCheck],
   ["Professional Policies", "professional-policies", BookOpenCheck],
+  ["Inactive Professionals", "professional-activity", UsersRound],
   ["Verification & LIVE", "live-access", Radio],
   ["Bookings", "bookings", CalendarDays],
   ["Orders", "orders", PackageCheck],
@@ -81,7 +82,7 @@ const adminGroups = [
   { label: "Workspace", ids: ["overview", "website-status", "settings"] },
   {
     label: "People & access",
-    ids: ["users", "auth-accounts", "professionals", "professional-policies", "live-access", "staff"],
+    ids: ["users", "auth-accounts", "professionals", "professional-policies", "professional-activity", "live-access", "staff"],
   },
   {
     label: "Marketplace & support",

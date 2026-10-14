@@ -1,3 +1,4 @@
+import { engagementEmail, type EngagementEmail } from "@/modules/professional-activity/repository";
 import { timingSafeEqual } from "node:crypto";
 import { Resend } from "resend";
 import { withPaymentWorker } from "@/modules/payments/worker";
@@ -71,6 +72,7 @@ export async function GET(request: Request) {
           )
         ).rows,
     );
+    const activityJobs = await withPaymentWorker(async db => (await db.query<EngagementEmail>("SELECT * FROM beauty.claim_professional_activity_emails()")).rows);
     const resend = new Resend(process.env.RESEND_API_KEY);
     let sent = 0;
     for (const job of jobs) {
@@ -184,12 +186,24 @@ export async function GET(request: Request) {
       }
     }
 
+    for (const job of activityJobs) {
+      try {
+        const result = await resend.emails.send({ from, to: job.email, ...engagementEmail(job, appUrl) }, { idempotencyKey: `glohaus-activity-${job.id}` });
+        if (result.error || !result.data?.id) throw new Error("DELIVERY_FAILED");
+        await withPaymentWorker(db => db.query("SELECT beauty.finish_professional_activity_email($1,$2)", [job.id, result.data!.id]));
+        sent++;
+      } catch {
+        await withPaymentWorker(db => db.query("SELECT beauty.finish_professional_activity_email($1,$2)", [job.id, null]));
+      }
+    }
+
     const summary = {
       processed:
         jobs.length +
         productJobs.length +
         marketingJobs.length +
-        commissionJobs.length,
+        commissionJobs.length + activityJobs.length,
+      activityJobs: activityJobs.length,
       commissionJobs: commissionJobs.length,
       bookingJobs: jobs.length,
       productJobs: productJobs.length,

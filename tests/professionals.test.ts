@@ -78,6 +78,7 @@ describe.sequential("professional publishing and private ownership", () => {
     expect(Object.keys(results[0]).sort()).toEqual([
       "available_today",
       "bio",
+      "boosted",
       "business_name",
       "business_verified",
       "category",

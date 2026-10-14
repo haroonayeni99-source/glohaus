@@ -1,3 +1,4 @@
+import { recordProfessionalVisit } from "@/modules/professional-activity/repository";
 import "server-only";
 import { getIdentity } from "./identity";
 import { withIdentity } from "./db";
@@ -14,6 +15,7 @@ export async function withAccount<T>(
       identity,
       role,
     );
+    await recordProfessionalVisit(db, account);
     return work(db, account);
   });
 }

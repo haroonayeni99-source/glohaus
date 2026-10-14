@@ -1,3 +1,5 @@
+import { AdminProfessionalActivity } from "@/components/admin-professional-activity";
+import { activityOverview } from "@/modules/professional-activity/repository";
 import { AdminSupportInbox } from "@/components/admin-support-inbox";
 import { AdminProfessionalPolicies } from "@/components/admin-professional-policies";
 import { adminPolicies } from "@/modules/policies/repository";
@@ -65,6 +67,7 @@ export default async function Page() {
   const data = await adminOverview();
   const support = await withAdmin(supportInbox).catch(() => null);
   const policies = await withAdmin(db=>adminPolicies(db)).catch(()=>null);
+  const activity = await withAdmin(db => activityOverview(db)).catch(() => null);
   const labels = await publicLabels();
   const categories = await adminCategories().catch(() => null);
   const owner = isOwner ? await ownerControls().catch(() => null) : null;
@@ -121,6 +124,10 @@ export default async function Page() {
           owner={owner}
         />
         <section id="professional-policies" className="admin-workspace-section admin-detail-card"><p className="eyebrow">PROFESSIONAL BOOKING TERMS</p><h2>Professional Policies</h2>{policies?<AdminProfessionalPolicies initial={policies}/>:<AdminSectionUnavailable label="Professional Policies"/>}</section>
+        <section id="professional-activity" className="admin-workspace-section admin-detail-card">
+          <p className="eyebrow">PROFESSIONAL PARTICIPATION</p><h2>Inactive Professionals</h2>
+          {activity ? <AdminProfessionalActivity initial={activity} owner={isOwner} /> : <AdminSectionUnavailable label="Professional activity" />}
+        </section>
         {isOwner && (
           <section
             id="website-status"

@@ -23,7 +23,7 @@ const account: Account = {
 beforeEach(() => {
   vi.clearAllMocks();
   getIdentity.mockResolvedValue({ authId: account.authId, email: account.email, displayName: account.displayName, secondFactorAge: null });
-  withIdentity.mockImplementation(async (_authId, callback) => callback({}));
+  withIdentity.mockImplementation(async (_authId, callback) => callback({ query: vi.fn().mockResolvedValue({ rows: [] }) }));
   findAccount.mockResolvedValue(account);
   rpc.mockResolvedValue({ data: account, error: null });
 });

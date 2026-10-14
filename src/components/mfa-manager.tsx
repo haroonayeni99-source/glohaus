@@ -126,9 +126,19 @@ export function MfaManager() {
       </p>
 
       {currentLevel === "aal2" && (
-        <p className="form-notice" role="status">
-          Your current session has passed two-step verification.
-        </p>
+        <div className="form-notice" role="status">
+          <p>Your current session has passed two-step verification.</p>
+          <button
+            className="button"
+            type="button"
+            onClick={() => {
+              router.replace("/admin");
+              router.refresh();
+            }}
+          >
+            Continue to Owner/Admin
+          </button>
+        </div>
       )}
 
       {!verifiedFactor && !qrCode && (

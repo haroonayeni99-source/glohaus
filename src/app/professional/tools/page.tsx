@@ -27,6 +27,7 @@ import { ProfessionalNavigation } from "@/components/professional-navigation";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Business tools · GLOHAUS PRO" };
 const tools = [
+  ["Rules & Policies", "Your appointment terms, preparation and service requirements", "/professional/policies", ListChecks],
   ["Go LIVE", "Broadcast tutorials and connect with your community", "/professional/live", Eye],
   [
     "Complete your setup",

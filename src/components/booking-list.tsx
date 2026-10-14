@@ -52,7 +52,7 @@ export function BookingList({
               {booking.status.replaceAll("_", " ")}
             </span>
             <span className="appointment-detail-label">
-              View details <ChevronRight size={14} aria-hidden />
+              Details & accepted policies <ChevronRight size={14} aria-hidden />
             </span>
           </div>
         </Link>

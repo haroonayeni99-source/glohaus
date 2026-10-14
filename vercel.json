@@ -3,6 +3,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
+      "feature/professional-booking-policies": false,
       "fix/profile-video-autoplay": false,
       "feature/commission-control-centre": false
     }

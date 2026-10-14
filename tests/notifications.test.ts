@@ -1,4 +1,5 @@
 import { it, expect } from "vitest";
+import {defaultPolicy} from '@/modules/policies/domain';
 import {
   notificationEmail,
   productOrderNotificationEmail,
@@ -35,6 +36,10 @@ it("keeps user content in plain text without evaluating markup", () => {
       "https://glohaus.example",
     ),
   ).not.toHaveProperty("html");
+});
+it('includes the immutable accepted terms in a confirmation without exposing commission or private preparation',()=>{
+ const email=notificationEmail({...notification,accepted_policy:{token:'accepted',generalVersionId:'v1',serviceVersionId:null,rules:{...defaultPolicy,cancellationHours:48,customRules:'Bring agreed extensions.'},generalCustomRules:'Bring agreed extensions.',serviceCustomRules:'',pricePence:5000,depositPence:1500,bookingFeePence:100,fullPrepayment:false,publishedAt:'2026-10-14T10:00:00Z',timezone:'Europe/London',acknowledgedAt:'2026-10-14T12:00:00Z'}},'https://glohaus.example');
+ expect(email.text).toContain('General version: v1');expect(email.text).toContain('Cancellation notice: 48 hours');expect(email.text).toContain('Deposit £15.00');expect(email.text).toContain('Bring agreed extensions.');expect(email.text).not.toContain('commission');expect(email).not.toHaveProperty('html');
 });
 
 

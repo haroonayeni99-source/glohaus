@@ -78,7 +78,7 @@ export function AdminWorkspaceView({
         const form = event.target as HTMLFormElement;
         // This scoped Centre owns its reviewed financial confirmation dialog;
         // its read-only simulator must never be treated as a live rate change.
-        if (form.closest(".commission-centre")) return;
+        if (form.closest(".commission-centre, .professional-policies")) return;
         const section = form.closest<HTMLElement>(".admin-workspace-section");
         const decision = form.hasAttribute("data-admin-decision");
         if (!decision && !consequential.has(section?.id || "")) return;

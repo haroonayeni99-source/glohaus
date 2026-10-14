@@ -14,6 +14,8 @@ import { followState } from "@/modules/follows/repository";
 import { getIdentity } from "@/lib/identity";
 import { findAccount } from "@/modules/accounts/repository";
 import type { Rule } from "@/modules/availability/domain";
+import type { PolicyPreview } from "@/modules/policies/domain";
+import { ProfessionalPolicySummary } from "@/components/professional-policy-summary";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -83,6 +85,7 @@ export default async function Profile({
         )
       ).rows[0]?.fee ?? 100;
     const id = profile.professional.id;
+    const policies=(await db.query<{id:string;policy:PolicyPreview}>("SELECT id,beauty.public_service_policy(id) AS policy FROM beauty.public_services WHERE professional_id=$1",[id])).rows;
     const access = (
       await db.query<{
         data: {
@@ -159,6 +162,7 @@ export default async function Profile({
     };
     return {
       ...profile,
+      policies,
       assets,
       reviews,
       hours,
@@ -218,6 +222,7 @@ export default async function Profile({
       <PublicHeader />
       <ProfessionalProfile
         professional={data.professional}
+        policies={<section id="professional-policies" className="professional-section"><h2>Rules & booking policies</h2><p>Choose a service to inspect its applicable general and service-specific terms before booking.</p>{data.policies.map(p=><details key={p.id}><summary>{data.services.find(s=>s.id===p.id)?.name}</summary><ProfessionalPolicySummary policy={p.policy}/></details>)}</section>}
         details={data.details}
         services={data.services}
         assets={data.assets}

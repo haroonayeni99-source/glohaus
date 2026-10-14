@@ -35,7 +35,7 @@ export async function GET(request: Request) {
       async (db) =>
         (
           await db.query<Notification>(
-            "SELECT * FROM beauty.claim_notifications()",
+            "SELECT n.*,beauty.notification_booking_policy(n.booking_id) AS accepted_policy FROM beauty.claim_notifications() n",
           )
         ).rows,
     );

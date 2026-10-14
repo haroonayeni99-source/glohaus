@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { RefundForm } from "@/components/refund-form";
+import { BookingPoliciesPanel } from "@/components/booking-policies-panel";
+import { bookingPolicy } from "@/modules/policies/repository";
 import { RefundAppealForm } from "@/components/refund-appeal-form";
 import { ReviewForm } from "@/components/review-form";
 import Link from "next/link";
@@ -34,8 +36,11 @@ export default async function Booking({
       </div>
     );
   const account = result.account;
-  const data = await withIdentity(account.authId, async (db) => ({
-    booking: await bookingById(db, id),
+  const data = await withIdentity(account.authId, async (db) => {
+    const booking=await bookingById(db,id);
+    return {
+    booking,
+    policies: booking ? await bookingPolicy(db,id) : null,
     hasReview:
       (
         await db.query("SELECT id FROM beauty.reviews WHERE booking_id=$1", [
@@ -63,7 +68,7 @@ export default async function Booking({
           [id],
         )
       ).rows[0] ?? null,
-  }));
+  };});
   if (!data.booking) {
     if (isCheckoutReturn((await searchParams)?.checkout)) redirect("/account/bookings");
     notFound();
@@ -148,14 +153,15 @@ export default async function Booking({
           professional={data.professional}
           enabled={b.location_window_open}
         />
+        <BookingPoliciesPanel id={id} data={data.policies!} professional={data.professional} status={b.status} professionalName={b.professional_name}/>
         {!data.professional &&
           b.status === "completed" &&
           !data.hasReview &&
           b.has_ended && <ReviewForm bookingId={id} />}
         {data.professional &&
-          ["cancelled", "expired", "payment_pending"].includes(b.status) &&
+          ["cancelled", "expired", "payment_pending", "no_show"].includes(b.status) &&
           b.payment_status === "refund_required" && (
-            <RefundForm bookingId={id} />
+            <RefundForm bookingId={id} noticeHours={data.policies!.assessment.noticeHours} />
           )}
         {!data.professional &&
           data.noRefundDecision &&

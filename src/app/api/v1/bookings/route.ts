@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { policyError } from "@/modules/policies/http";
 import { withAccount } from "@/lib/api-account";
-import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
+import { assertSameOrigin, json, smallJson } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
 import { isRequiredDepositWithinLimit } from "@/modules/bookings/deposit-policy";
 import { assertBookingAllowed, professionalAccessState } from "@/modules/professionals/verification";
@@ -11,6 +12,8 @@ const schema = z
     serviceId: z.uuid(),
     startsAt: z.iso.datetime({ offset: true }),
     acceptPolicy: z.literal(true),
+    policyToken: z.string().regex(/^[a-f0-9]{32}$/),
+    earlyServiceRequested: z.boolean(),
   })
   .strict();
 type Reservation = {
@@ -49,8 +52,8 @@ export async function POST(request: Request) {
 
       const reservation = (
         await db.query<{ booking: Reservation }>(
-          "SELECT beauty.reserve_booking($1,$2) AS booking",
-          [parsed.data.serviceId, parsed.data.startsAt],
+          "SELECT beauty.reserve_booking($1,$2,$3,$4) AS booking",
+          [parsed.data.serviceId, parsed.data.startsAt, parsed.data.policyToken, parsed.data.earlyServiceRequested],
         )
       ).rows[0].booking;
       // Throw before the transaction commits: unavailable paid checkout must not leave a slot held.
@@ -230,6 +233,6 @@ export async function POST(request: Request) {
       )
         return json({ error: { code: "INVALID_APPOINTMENT" } }, 409);
     }
-    return apiError(error);
+    return policyError(error);
   }
 }

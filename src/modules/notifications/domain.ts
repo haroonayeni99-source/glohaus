@@ -1,12 +1,34 @@
+import type { PolicyPreview } from "@/modules/policies/domain";
 export type Notification = {
   id: string;
   booking_id: string;
-  kind: "confirmation" | "cancellation" | "reminder" | "review_request";
+  kind: "confirmation" | "cancellation" | "reminder" | "review_request" | "rescheduled" | "late_notice" | "requirements_update";
   email: string;
   service_name: string;
   professional_name: string;
   starts_at: Date | string;
+  accepted_policy?: (PolicyPreview & {acknowledgedAt:string}) | null;
 };
+function acceptedPolicyCopy(policy:NonNullable<Notification["accepted_policy"]>){
+ const money=(pence:number)=>`£${(pence/100).toFixed(2)}`;
+ const r=policy.rules;
+ return [
+  "Your accepted booking policies (copy for your records)",
+  `General version: ${policy.generalVersionId||"GLOHAUS default"}. Service version: ${policy.serviceVersionId||"General/default"}. Acknowledged: ${policy.acknowledgedAt}.`,
+  `Service price ${money(policy.pricePence)}. ${policy.fullPrepayment?"Full service prepayment":"Deposit"} ${money(policy.depositPence)}. Booking fee ${money(policy.bookingFeePence)}. Pay now ${money(policy.depositPence+policy.bookingFeePence)}.`,
+  `Cancellation notice: ${r.cancellationHours} hours. Timely cancellations and professional cancellations receive a full refund. Later cancellations require an individual assessment; any retention must reflect evidenced actual losses, steps to reduce those losses and GLOHAUS review.`,
+  "For an online booking, you can cancel an unperformed service without giving a reason in the 14-day cooling-off period starting the day after booking. Use Cancel appointment in your booking or contact GLOHAUS. Requesting an earlier appointment does not automatically waive that right. Any lawful payment for work already provided needs a separate assessment. Service-quality rights still apply.",
+  `Late-arrival grace: ${r.graceMinutes} minutes. ${r.lateInstructions||"Contact the professional if delayed."} Being marked late does not automatically forfeit payment. Shortening requires your agreement.`,
+  `Rescheduling: ${r.rescheduleHours} hours' notice; up to ${r.maxReschedules} customer-initiated changes. ${r.freeReschedule?"One free available change; further permitted changes need approval.":"Professional approval and availability required."} No automatic rescheduling charge.`,
+  `Guests: ${r.guests}. Accompanying children: ${r.children}. Reasonable accessibility arrangements and lawful exceptions remain available.`,
+  `Preparation: ${Array.from(new Set(r.preparation)).join(", ").replaceAll("_"," ")||"No template requirements"}. ${r.preparationText}`,
+  `Required before treatment: ${[r.requireReferences&&"reference photographs",r.requireConsultation&&"consultation",r.requirePatchTest&&"patch test"].filter(Boolean).join(", ")||"No additional policy checks"}. These do not replace informed clinical consent or screening.`,
+  r.restrictions&&`Service restrictions: ${r.restrictions}`,
+  policy.generalCustomRules&&`General additional rules: ${policy.generalCustomRules}`,
+  policy.serviceCustomRules&&`Service additional rules: ${policy.serviceCustomRules}`,
+  "Statutory rights and GLOHAUS refund protections take priority over custom rules. No automatic penalties apply. Payments stay within GLOHAUS. Later policy updates do not change these accepted terms.",
+ ].filter(Boolean).join("\n\n");
+}
 export function notificationEmail(notification: Notification, origin: string) {
   const base = new URL(origin);
   if (!["https:", "http:"].includes(base.protocol))
@@ -16,6 +38,9 @@ export function notificationEmail(notification: Notification, origin: string) {
     cancellation: "Your appointment has been cancelled",
     reminder: "A little reminder about your appointment",
     review_request: "How was your appointment?",
+    rescheduled: "Your appointment has a rescheduling update",
+    late_notice: "Your appointment has an arrival update",
+    requirements_update: "Your appointment preparation has an update",
   };
   const when = new Intl.DateTimeFormat("en-GB", {
     dateStyle: "full",
@@ -24,7 +49,7 @@ export function notificationEmail(notification: Notification, origin: string) {
   }).format(new Date(notification.starts_at));
   return {
     subject: `GLOHAUS · ${headings[notification.kind]}`,
-    text: `${headings[notification.kind]}.\n\n${notification.service_name} with ${notification.professional_name}\n${when} (London time)\n\n${notification.kind === "cancellation" ? "Any deposit refund is handled separately under the booking policy. Check your appointment for the latest status.\n\n" : ""}View your appointment securely: ${base.origin}/account/bookings/${encodeURIComponent(notification.booking_id)}\n\nThe GLOHAUS team`,
+    text: `${headings[notification.kind]}.\n\n${notification.service_name} with ${notification.professional_name}\n${when} (London time)\n\n${notification.kind === "cancellation" ? "Any deposit refund is handled separately under the booking policy. Check your appointment for the latest status.\n\n" : ""}View your appointment securely: ${base.origin}/account/bookings/${encodeURIComponent(notification.booking_id)}\n\n${notification.kind==="confirmation"&&notification.accepted_policy?acceptedPolicyCopy(notification.accepted_policy)+"\n\n":""}The GLOHAUS team`,
   };
 }
 

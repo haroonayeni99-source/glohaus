@@ -298,6 +298,8 @@ describe.sequential(
         serviceId: selected!.services[0].id,
         startsAt: date.toISOString(),
         acceptPolicy: true,
+        earlyServiceRequested:true,
+        policyToken:await asUser(actor,async sql=>(await sql.query<{token:string}>("SELECT beauty.public_service_policy($1)->>'token' AS token",[selected!.services[0].id])).rows[0].token),
       });
       bookingRequest.headers.set("referer", `${origin}/p/journey-studio`);
       const result = await expectSaved(

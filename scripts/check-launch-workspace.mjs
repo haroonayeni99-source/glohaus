@@ -81,6 +81,9 @@ try {
           // A global result must reveal accounts hidden by an earlier section filter.
           await page.getByLabel("Search Owner controls").fill("Maya Studio");
           await page.locator(".owner-search-results button").first().click();
+          // Search reveals the selected record after two animation frames.
+          // Wait for navigation before filtering that record out again.
+          await expect(page).toHaveURL(/#user-11111111-1111-4111-8111-111111111111$/);
           await expect(
             page.getByLabel("Search users and professionals"),
           ).toHaveValue("");

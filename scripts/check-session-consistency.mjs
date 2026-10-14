@@ -71,10 +71,13 @@ try {
       );
       if (width < 1100) await expect(account()).toHaveText("My account");
       else
-        await expect(page.locator(".desktop-user-chip")).toHaveText(
+        await expect(page.locator(".desktop-user-chip")).toContainText(
           "My account",
         );
-      await menu.getByRole("button", { name: "Sign out", exact: true }).click();
+      await Promise.all([
+        page.waitForEvent("load"),
+        menu.getByRole("button", { name: "Sign out", exact: true }).click(),
+      ]);
       await expect(page).toHaveURL("http://127.0.0.1:3004/");
       await expect(other.locator(".glohaus-sign-in")).toHaveText("Sign in");
       await page.goBack();

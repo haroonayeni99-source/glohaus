@@ -1,5 +1,7 @@
 "use client";
 
+import { useSignedIn } from "./auth-session";
+
 import Link from "next/link";
 import { Menu } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -43,7 +45,7 @@ const professionalLinks = [
 ] as const;
 
 export function MobileSiteMenu({
-  signedIn = false,
+  signedIn: initialSignedIn = false,
   professionalWorkspace = false,
   canAccessAdmin = false,
 }: {
@@ -51,6 +53,7 @@ export function MobileSiteMenu({
   professionalWorkspace?: boolean;
   canAccessAdmin?: boolean;
 }) {
+  const signedIn = useSignedIn(initialSignedIn);
   const ref = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
     function closeOutside(event: PointerEvent) {
@@ -88,7 +91,7 @@ export function MobileSiteMenu({
       <div
         className="mobile-site-menu-panel"
         onClick={(event) => {
-          if ((event.target as HTMLElement).closest("a,button") && ref.current)
+          if ((event.target as HTMLElement).closest("a") && ref.current)
             ref.current.open = false;
         }}
       >
@@ -125,7 +128,7 @@ export function MobileSiteMenu({
             )}
           </nav>
         )}
-        {canAccessAdmin && (
+        {signedIn && canAccessAdmin && (
           <Link className="mobile-menu-owner" href="/admin">
             Owner/Admin
           </Link>

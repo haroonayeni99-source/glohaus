@@ -1,3 +1,7 @@
+"use client";
+
+import { useSignedIn } from "./auth-session";
+
 import { homepageCategories, categoryImage, categoryName, type HomepageMedia } from "@/modules/platform/homepage-images";
 import { HomeMarketplaceGuide } from "./home-marketplace-guide";
 import Image from "next/image";
@@ -15,7 +19,7 @@ import { BottomNavigation } from "./bottom-navigation";
 const mobileCategories = homepageCategories.mobile;
 
 export function MobileCustomerHome({
-  signedIn = false,
+  signedIn: initialSignedIn = false,
   professionals = [],
   summary = null,
   canAccessAdmin = false,
@@ -27,6 +31,7 @@ export function MobileCustomerHome({
   canAccessAdmin?: boolean;
   homepageMedia?: HomepageMedia;
 }) {
+  const signedIn = useSignedIn(initialSignedIn);
   const notificationHref = signedIn
     ? "/notifications"
     : "/sign-in?returnTo=%2Fnotifications";
@@ -40,7 +45,7 @@ export function MobileCustomerHome({
             <span>Look good. Feel good. Stand out.</span>
           </div>
           <div className="mobile-home-header-actions">
-            {canAccessAdmin && (
+            {signedIn && canAccessAdmin && (
               <Link
                 className="mobile-home-bell"
                 href="/admin"

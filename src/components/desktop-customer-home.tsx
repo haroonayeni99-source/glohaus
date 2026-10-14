@@ -1,3 +1,7 @@
+"use client";
+
+import { useSignedIn } from "./auth-session";
+
 import { homepageCategories, categoryImage, categoryName, type HomepageMedia } from "@/modules/platform/homepage-images";
 import { HomeMarketplaceGuide } from "./home-marketplace-guide";
 import Image from "next/image";
@@ -61,7 +65,7 @@ function messagePreview(value: string | null | undefined) {
 
 export function DesktopCustomerHome({
   professionals = [],
-  signedIn = false,
+  signedIn: initialSignedIn = false,
   displayName = "",
   canAccessAdmin = false,
   summary = null,
@@ -74,6 +78,7 @@ export function DesktopCustomerHome({
   summary?: CustomerHomeSummary | null;
   homepageMedia?: HomepageMedia;
 }) {
+  const signedIn = useSignedIn(initialSignedIn);
   const protectedHref = (path: string) =>
     signedIn ? path : `/sign-in?returnTo=${encodeURIComponent(path)}`;
   const nextBooking = summary?.nextBooking ?? null;
@@ -148,7 +153,7 @@ export function DesktopCustomerHome({
               <Link href="/sign-up?intent=professional">For professionals</Link>
             </>
           )}
-          {canAccessAdmin && (
+          {signedIn && canAccessAdmin && (
             <Link href="/admin">
               <ShieldCheck size={20} />
               Owner/Admin
@@ -186,7 +191,7 @@ export function DesktopCustomerHome({
                 </Link>
               </>
             )}
-            {canAccessAdmin && (
+            {signedIn && canAccessAdmin && (
               <Link href="/admin" aria-label="Owner/Admin">
                 <ShieldCheck size={20} />
               </Link>

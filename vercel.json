@@ -3,6 +3,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
+      "fix/session-consistency": false,
       "fix/marketing-preferences": false,
       "feature/homepage-category-names": false,
       "feature/professional-inactivity": false,

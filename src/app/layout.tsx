@@ -1,5 +1,7 @@
 import "@/components/professional-activity.css";
 import "@/components/commission-control-centre.css";
+import { AuthSessionProvider } from "@/components/auth-session";
+import { publicViewerSignedIn } from "@/lib/public-viewer";
 import { jsonLd, publicOrigin } from "@/lib/public-seo";
 import { PlatformLabelsProvider } from "@/components/platform-labels";
 import { publicLabels } from "@/modules/platform/repository";
@@ -16,6 +18,8 @@ import "./location.css";
 import "../components/professional-profile.css";
 import "../components/viewport-video.css";
 import "../components/professional-policies.css";
+
+export const dynamic = "force-dynamic";
 
 const themeBootstrap = `(() => {
   try {
@@ -46,15 +50,17 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const labels = await publicLabels();
+  const [labels, signedIn] = await Promise.all([publicLabels(), publicViewerSignedIn()]);
   const content = (
     <>
       <a className="skip-link" href="#main">
         Skip to content
       </a>
+      <AuthSessionProvider initialSignedIn={signedIn}>
       <PlatformLabelsProvider labels={labels}>
         {children}
       </PlatformLabelsProvider>
+      </AuthSessionProvider>
     </>
   );
   return (

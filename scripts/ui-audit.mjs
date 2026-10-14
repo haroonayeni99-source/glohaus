@@ -58,6 +58,7 @@ const css = (
       "../components/commission-control-centre",
       "../components/professional-policies",
       "../components/professional-activity",
+      "../components/marketing-preferences",
     ].map((name) => readFile(`src/app/${name}.css`, "utf8")),
   )
 ).join("\n");

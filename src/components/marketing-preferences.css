@@ -1,0 +1,6 @@
+.marketing-preference-row { cursor: pointer; }
+.marketing-preference-row > div { min-width: 0; }
+.marketing-preference-row input:focus-visible {
+  outline: 2px solid var(--plum);
+  outline-offset: 4px;
+}

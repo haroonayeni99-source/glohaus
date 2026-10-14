@@ -59,14 +59,21 @@ try {
       await expect(other.locator(".glohaus-sign-in")).toHaveText("My account");
       await page.goto("http://127.0.0.1:3004/terms");
       await page.goto("http://127.0.0.1:3004/faq");
-      const menu = page.locator(".mobile-site-menu");
-      await menu.locator("summary").click();
+      if (width >= 1100) await page.goto("http://127.0.0.1:3004/");
+      const menu = page.locator(
+        width >= 1100 ? ".customer-desktop-topbar" : ".mobile-site-menu",
+      );
+      if (width < 1100) await menu.locator("summary").click();
       await page.evaluate(() => sessionStorage.setItem("fail-signout", "yes"));
       await menu.getByRole("button", { name: "Sign out", exact: true }).click();
       await expect(menu.getByRole("alert")).toContainText(
         "could not sign you out",
       );
-      await expect(account()).toHaveText("My account");
+      if (width < 1100) await expect(account()).toHaveText("My account");
+      else
+        await expect(page.locator(".desktop-user-chip")).toHaveText(
+          "My account",
+        );
       await menu.getByRole("button", { name: "Sign out", exact: true }).click();
       await expect(page).toHaveURL("http://127.0.0.1:3004/");
       await expect(other.locator(".glohaus-sign-in")).toHaveText("Sign in");

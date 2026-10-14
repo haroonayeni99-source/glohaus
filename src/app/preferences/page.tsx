@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { marketingPreferences } from "@/lib/marketing-preferences";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
 import { AccessMessage } from "@/components/access-message";
@@ -29,7 +30,7 @@ export default async function MarketingPreferencesPage() {
       <p className="lead">
         Marketing is optional. Booking, order, security, verification and payout emails stay separate and may still be sent when needed.
       </p>
-      <MarketingPreferencesForm initial={preferences} professional={professional} />
+      <MarketingPreferencesForm initial={marketingPreferences(preferences)} professional={professional} />
     </main>
   );
 

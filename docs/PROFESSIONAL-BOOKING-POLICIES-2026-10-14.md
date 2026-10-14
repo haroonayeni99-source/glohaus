@@ -24,7 +24,11 @@ policy-related findings. Existing unrelated advisor notices remain unchanged.
 
 The live email suppression rule was preserved after comparison with the production
 function. Its new regression test passes: the updated policy database suite has
-32 passing tests. The earlier full suite had 885 passing tests.
+32 passing tests. GitHub CI subsequently passed all 886 tests in 98 files,
+lint, typecheck and the production build. Its browser harness required an
+explicit policy-repository fixture and policy stylesheet inclusion, so the
+Owner/Admin navigation checks can render the new section without importing
+server-only database code into the browser.
 
 Authenticated customer/professional/Admin browser journeys, mobile/night rendering,
 real provider tests and multi-session concurrency verification remain outstanding.

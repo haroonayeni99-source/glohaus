@@ -28,7 +28,7 @@ try {
       });
       await page.goto(`http://127.0.0.1:3004/?theme=${theme}`);
       const editor = page.locator(".owner-category-media");
-      const device = editor.getByLabel("Category images for");
+      const device = editor.getByLabel("Category settings for");
       const nails = editor.getByAltText("Desktop Nails category preview");
       await expect(nails).toHaveAttribute(
         "src",
@@ -58,12 +58,16 @@ try {
       ).toHaveAttribute("src", /photo-1604654894610/);
       await device.selectOption("desktop");
       await expect(nails).toHaveAttribute("src", uploaded);
+      await editor
+        .getByLabel("desktop Nails category name", { exact: true })
+        .fill("Nail art & care");
+      await expect(editor.locator("h4").nth(1)).toHaveText("Nail art & care");
       // Failed saves keep the draft, and the same draft can be retried.
       await page.evaluate(() =>
         sessionStorage.setItem("fail-next-save", "MFA_REQUIRED"),
       );
       await editor
-        .getByRole("button", { name: "Save category images", exact: true })
+        .getByRole("button", { name: "Save category changes", exact: true })
         .click();
       await expect(editor.getByRole("status")).toContainText(
         "security verification has expired",
@@ -72,14 +76,23 @@ try {
         await page.evaluate(() => localStorage.getItem("category-images")),
       ).toBeNull();
       await expect(nails).toHaveAttribute("src", uploaded);
+      await expect(
+        editor.getByLabel("desktop Nails category name", { exact: true }),
+      ).toHaveValue("Nail art & care");
+      expect(
+        await page.evaluate(() => localStorage.getItem("category-names")),
+      ).toBeNull();
       await editor
-        .getByRole("button", { name: "Save category images", exact: true })
+        .getByRole("button", { name: "Save category changes", exact: true })
         .click();
       await expect(editor.getByRole("status")).toContainText("now published");
       await page.reload();
       await expect(
         editor.getByAltText("Desktop Nails category preview"),
       ).toHaveAttribute("src", uploaded);
+      await expect(
+        editor.getByLabel("desktop Nails category name", { exact: true }),
+      ).toHaveValue("Nail art & care");
       // A hero save does not erase category settings.
       const hero = page.locator("#homepage-media form").first();
       await hero.locator("details").first().locator("summary").click();
@@ -101,7 +114,7 @@ try {
       ).toBe(uploaded);
       await page.goto(`http://127.0.0.1:3004/home?theme=${theme}`);
       const desktopNails = page.locator(
-        '.desktop-service-row a[href="/explore?q=Nails"] img',
+        '.desktop-service-row a[href="/explore?q=Nail%20art%20%26%20care"] img',
       );
       const mobileNails = page.locator(
         '.mobile-home-categories a[href="/explore?q=Nails"] img',
@@ -115,15 +128,21 @@ try {
       // Explicit mobile changes are independent from desktop changes.
       await page.goto(`http://127.0.0.1:3004/?theme=${theme}`);
       await device.selectOption("mobile");
+      await expect(
+        editor.getByLabel("mobile Nails category name", { exact: true }),
+      ).toHaveValue("Nails");
+      await editor
+        .getByLabel("mobile Nails category name", { exact: true })
+        .fill("Gel nails");
       await editor.locator("details").nth(1).locator("summary").click();
       await editor
         .getByLabel("mobile Nails category image URL", { exact: true })
         .fill("https://images.example.test/mobile-nails.webp");
       await editor
-        .getByLabel("Reason for category image change")
+        .getByLabel("Reason for category change")
         .fill("Refresh mobile nails only");
       await editor
-        .getByRole("button", { name: "Save category images", exact: true })
+        .getByRole("button", { name: "Save category changes", exact: true })
         .click();
       await expect(editor.getByRole("status")).toContainText("now published");
       await device.selectOption("desktop");
@@ -134,18 +153,18 @@ try {
         editor.getByAltText("Desktop Nails category preview"),
       ).toHaveAttribute("src", "/images/categories/nails-v2.webp");
       await editor
-        .getByRole("button", { name: "Save category images", exact: true })
+        .getByRole("button", { name: "Save category changes", exact: true })
         .click();
       await expect(editor.getByRole("status")).toContainText("now published");
       await page.goto(`http://127.0.0.1:3004/home?theme=${theme}`);
-      await expect(desktopNails).toHaveAttribute(
-        "src",
-        "/images/categories/nails-v2.webp",
-      );
-      await expect(mobileNails).toHaveAttribute(
-        "src",
-        "https://images.example.test/mobile-nails.webp",
-      );
+      await expect(
+        page.locator('.desktop-service-row a[href="/explore?q=Nails"] img'),
+      ).toHaveAttribute("src", "/images/categories/nails-v2.webp");
+      await expect(
+        page.locator(
+          '.mobile-home-categories a[href="/explore?q=Gel%20nails"] img',
+        ),
+      ).toHaveAttribute("src", "https://images.example.test/mobile-nails.webp");
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,
@@ -159,6 +178,8 @@ try {
         failedSaveRetry: true,
         deviceIndependence: true,
         singleDefaultRestore: true,
+        categoryNamesSaveReloadAndSearch: true,
+        categoryNamesFailureRetryAndReset: true,
       });
       await page.close();
     }

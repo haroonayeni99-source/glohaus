@@ -10,19 +10,27 @@ import { readImageFile } from "@/lib/image-file";
 import {
   homepageCategories,
   categoryImage,
+  categoryName,
+  type HomepageCategoryNames,
   type HomepageCategoryImages,
   type HomepageImageDevice,
 } from "@/modules/platform/homepage-images";
 
 export function HomepageCategoryMediaControl({
   initial = {},
+  initialNames = {},
 }: {
   initial?: HomepageCategoryImages;
+  initialNames?: HomepageCategoryNames;
 }) {
   const router = useRouter();
   const [images, setImages] = useState<HomepageCategoryImages>({
     desktop: { ...initial.desktop },
     mobile: { ...initial.mobile },
+  });
+  const [names, setNames] = useState<HomepageCategoryNames>({
+    desktop: { ...initialNames.desktop },
+    mobile: { ...initialNames.mobile },
   });
   const [device, setDevice] = useState<HomepageImageDevice>("desktop");
   const [reason, setReason] = useState("");
@@ -34,7 +42,9 @@ export function HomepageCategoryMediaControl({
       ...current,
       [device]: { ...current[device], [key]: value },
     }));
-    setNotice("Preview updated. Save category images to publish your changes.");
+    setNotice(
+      "Preview updated. Save category changes to publish your changes.",
+    );
   }
 
   async function choose(file: File | undefined, key: string, label: string) {
@@ -73,14 +83,14 @@ export function HomepageCategoryMediaControl({
       const response = await fetch("/api/v1/admin/homepage-media/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ images, reason }),
+        body: JSON.stringify({ images, names, reason }),
       });
       await requireAdminResponse(
         response,
-        "Category images could not be saved. Your preview is kept so you can retry.",
+        "Category changes could not be saved. Your preview is kept so you can retry.",
       );
       setNotice(
-        "Category images saved. They are now published on the homepage.",
+        "Category names and images saved. They are now published on the homepage.",
       );
       setReason("");
       router.refresh();
@@ -88,7 +98,7 @@ export function HomepageCategoryMediaControl({
       setNotice(
         error instanceof Error
           ? error.message
-          : "Category images could not be saved.",
+          : "Category changes could not be saved.",
       );
     } finally {
       setBusy(false);
@@ -97,14 +107,14 @@ export function HomepageCategoryMediaControl({
 
   return (
     <form className="editor-form owner-category-media" onSubmit={save}>
-      <h3>Change category images</h3>
+      <h3>Change category names and images</h3>
       <p className="lead">
         Choose a photo, check its circular preview, then save. Close-ups of
         finished nails, hair or the relevant body area work well. Desktop and
-        mobile have separate images.
+        mobile have separate names and images.
       </p>
       <label>
-        Category images for
+        Category settings for
         <select
           value={device}
           disabled={busy}
@@ -118,8 +128,8 @@ export function HomepageCategoryMediaControl({
         </select>
       </label>
       <p className="muted">
-        Mobile keeps its current photos unless you change them here. Changing a
-        category image does not change its name or search link.
+        Edit a name beside its photo. Each homepage shortcut searches for its
+        saved name. Manage the marketplace category list in Categories.
       </p>
       <div className="owner-category-media-grid">
         {homepageCategories[device].map((slot) => {
@@ -139,8 +149,37 @@ export function HomepageCategoryMediaControl({
                   height={100}
                   unoptimized
                 />
-                <h4>{slot.label}</h4>
+                <h4>{categoryName(names, device, slot)}</h4>
               </div>
+              <label>
+                Category name
+                <input
+                  aria-label={`${device} ${slot.label} category name`}
+                  disabled={busy}
+                  required
+                  minLength={2}
+                  maxLength={60}
+                  value={
+                    (names[device] as Record<string, string | null>)[
+                      slot.key
+                    ] ?? slot.label
+                  }
+                  onChange={(event) => {
+                    setNames((current) => ({
+                      ...current,
+                      [device]: {
+                        ...current[device],
+                        [slot.key]: event.target.value,
+                      },
+                    }));
+                    setNotice(
+                      "Preview updated. Save category changes to publish your changes.",
+                    );
+                    if (!reason.trim())
+                      setReason("Update homepage category names");
+                  }}
+                />
+              </label>
               <label>
                 {slot.label} image
                 <input
@@ -181,6 +220,10 @@ export function HomepageCategoryMediaControl({
                 disabled={busy}
                 onClick={() => {
                   change(slot.key, null);
+                  setNames((current) => ({
+                    ...current,
+                    [device]: { ...current[device], [slot.key]: null },
+                  }));
                   if (!reason.trim())
                     setReason(
                       `Restore ${device} ${slot.label} category default`,
@@ -198,20 +241,20 @@ export function HomepageCategoryMediaControl({
         save.
       </small>
       <label>
-        Reason for category image change
+        Reason for category change
         <input
           disabled={busy}
           required
           minLength={5}
           maxLength={500}
           value={reason}
-          placeholder="e.g. Refresh category photos"
+          placeholder="e.g. Refresh category names and photos"
           onChange={(event) => setReason(event.target.value)}
         />
       </label>
       <div className="editor-actions">
         <button className="button" disabled={busy || reason.trim().length < 5}>
-          {busy ? "Saving…" : "Save category images"}
+          {busy ? "Saving…" : "Save category changes"}
         </button>
       </div>
       {notice && (

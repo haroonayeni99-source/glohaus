@@ -1,4 +1,4 @@
-import { homepageCategories, categoryImage, type HomepageMedia } from "@/modules/platform/homepage-images";
+import { homepageCategories, categoryImage, categoryName, type HomepageMedia } from "@/modules/platform/homepage-images";
 import { HomeMarketplaceGuide } from "./home-marketplace-guide";
 import Image from "next/image";
 import Link from "next/link";
@@ -87,12 +87,12 @@ export function MobileCustomerHome({
 
         <nav className="mobile-home-categories" aria-label="Beauty categories">
           {mobileCategories.map((slot) => (
-            <Link href={`/explore?q=${encodeURIComponent(slot.label)}`} key={slot.key}>
+            <Link href={`/explore?q=${encodeURIComponent(categoryName(homepageMedia.categoryNames, "mobile", slot))}`} key={slot.key}>
               <span>
                 <Image fill sizes="64px" src={categoryImage(homepageMedia.categoryImages, "mobile", slot)}
                   unoptimized={Boolean(homepageMedia.categoryImages?.mobile?.[slot.key])} alt="" />
               </span>
-              <strong>{slot.label}</strong>
+              <strong>{categoryName(homepageMedia.categoryNames, "mobile", slot)}</strong>
             </Link>
           ))}
         </nav>

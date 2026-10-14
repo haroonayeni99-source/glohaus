@@ -139,3 +139,128 @@ it("does not grant privileged writes to Supabase browser roles", async () => {
     ).toBe(false);
   }
 });
+const saveNames = (
+  names: unknown,
+  who = "owner",
+  verified = true,
+  photos: unknown = images,
+) =>
+  asUser(
+    who,
+    (sql) =>
+      sql.query(
+        "SELECT beauty.owner_set_homepage_categories($1::jsonb,$2::jsonb,'Rename homepage shortcuts')",
+        [JSON.stringify(photos), JSON.stringify(names)],
+      ),
+    verified,
+  );
+it("publishes independent device names, preserves them on image-only and hero saves, and restores defaults", async () => {
+  await saveNames({
+    desktop: { nails: "  Nail art & care  " },
+    mobile: { nails: "Gel nails" },
+  });
+  await save(images);
+  await asUser("owner", (sql) =>
+    sql.query(
+      "SELECT beauty.owner_set_homepage_media(NULL,NULL,'Refresh hero only')",
+    ),
+  );
+  const read = () =>
+    db.transaction(async (sql) => {
+      await sql.exec("SET LOCAL ROLE beauty_catalog");
+      return (
+        await sql.query<{
+          data: { categoryNames: unknown; categoryImages: unknown };
+        }>("SELECT beauty.public_homepage_media() AS data")
+      ).rows[0].data;
+    });
+  expect((await read()).categoryNames).toEqual({
+    desktop: { nails: "Nail art & care" },
+    mobile: { nails: "Gel nails" },
+  });
+  expect((await read()).categoryImages).toEqual(images);
+  expect(
+    (
+      await db.query(
+        "SELECT id FROM beauty.admin_audit_logs WHERE action='homepage_category_names_updated'",
+      )
+    ).rows,
+  ).toHaveLength(1);
+  await saveNames({ desktop: { nails: null }, mobile: { nails: "Gel nails" } });
+  expect((await read()).categoryNames).toEqual({
+    desktop: { nails: null },
+    mobile: { nails: "Gel nails" },
+  });
+});
+it.each([
+  ["admin", true],
+  ["customer", true],
+  ["owner", false],
+] as const)(
+  "requires a verified Owner for names (%s, %s)",
+  async (who, verified) => {
+    await expect(
+      saveNames({ desktop: {}, mobile: {} }, who, verified),
+    ).rejects.toThrow("FORBIDDEN");
+  },
+);
+it.each([
+  null,
+  [],
+  { desktop: {} },
+  { desktop: {}, mobile: [], tablet: {} },
+  { desktop: { nails: " " }, mobile: {} },
+  { desktop: { nails: "x".repeat(61) }, mobile: {} },
+  { desktop: { bad: "Beauty" }, mobile: {} },
+  { desktop: {}, mobile: { barber: "Beauty" } },
+  { desktop: { nails: false }, mobile: {} },
+])(
+  "rejects invalid names without changing names or photos: %j",
+  async (names) => {
+    const before = (
+      await db.query(
+        "SELECT key,value FROM beauty.platform_settings WHERE key IN ('homepage_category_names','homepage_category_media') ORDER BY key",
+      )
+    ).rows;
+    await expect(
+      saveNames(names, "owner", true, { desktop: {}, mobile: {} }),
+    ).rejects.toThrow("INVALID_REQUEST");
+    expect(
+      (
+        await db.query(
+          "SELECT key,value FROM beauty.platform_settings WHERE key IN ('homepage_category_names','homepage_category_media') ORDER BY key",
+        )
+      ).rows,
+    ).toEqual(before);
+  },
+);
+it("rejects invalid photos without changing names, and keeps the new writer private", async () => {
+  const before = (
+    await db.query(
+      "SELECT value FROM beauty.platform_settings WHERE key='homepage_category_names'",
+    )
+  ).rows;
+  await expect(
+    saveNames({ desktop: { nails: "New nails" }, mobile: {} }, "owner", true, {
+      desktop: { nails: "http://bad.test/x" },
+      mobile: {},
+    }),
+  ).rejects.toThrow("INVALID_REQUEST");
+  expect(
+    (
+      await db.query(
+        "SELECT value FROM beauty.platform_settings WHERE key='homepage_category_names'",
+      )
+    ).rows,
+  ).toEqual(before);
+  for (const role of ["anon", "authenticated", "beauty_catalog"]) {
+    expect(
+      (
+        await db.query<{ allowed: boolean }>(
+          "SELECT has_function_privilege($1,'beauty.owner_set_homepage_categories(jsonb,jsonb,text)','EXECUTE') AS allowed",
+          [role],
+        )
+      ).rows[0].allowed,
+    ).toBe(false);
+  }
+});

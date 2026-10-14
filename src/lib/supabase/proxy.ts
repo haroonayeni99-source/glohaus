@@ -14,8 +14,9 @@ function clearProjectAuthCookies(request: NextRequest) {
   let projectRef = "";
   try {
     projectRef =
-      new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || "").hostname.split(".")[0] ||
-      "";
+      new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || "").hostname.split(
+        ".",
+      )[0] || "";
   } catch {}
   const prefix = projectRef ? `sb-${projectRef}-auth-token` : "";
   if (prefix) {
@@ -44,7 +45,9 @@ export async function updateSession(request: NextRequest) {
         cookies: {
           getAll: () => request.cookies.getAll(),
           setAll: (items, headers) => {
-            items.forEach(({ name, value }) => request.cookies.set(name, value));
+            items.forEach(({ name, value }) =>
+              request.cookies.set(name, value),
+            );
             response = noStore(NextResponse.next({ request }));
             items.forEach(({ name, value, options }) =>
               response.cookies.set(name, value, options),
@@ -58,13 +61,23 @@ export async function updateSession(request: NextRequest) {
     );
 
     const { error } = await supabase.auth.getClaims();
-    if (error) return clearProjectAuthCookies(request);
-  } catch {
-    // If @supabase/ssr cannot decode a chunked auth cookie, returning the same
-    // broken chunks causes every later server request to fail the same way.
-    // Expire only this project's auth cookies so the next password/OTP sign-in
-    // starts from a clean browser/server session.
-    return clearProjectAuthCookies(request);
+    // Supabase persists refreshed/revoked sessions through setAll. Only discard
+    // cookies for a definitive invalid session; network/5xx failures are retryable.
+    if (
+      error &&
+      ["refresh_token_not_found", "session_not_found", "bad_jwt"].includes(
+        error.code ?? "",
+      )
+    )
+      return clearProjectAuthCookies(request);
+  } catch (error) {
+    // Malformed cookie data can be discarded. A connection failure must leave
+    // valid refresh cookies intact so the next request can recover.
+    if (
+      error instanceof SyntaxError ||
+      (error instanceof Error && error.message === "Invalid UTF-8 sequence")
+    )
+      return clearProjectAuthCookies(request);
   }
 
   return response;

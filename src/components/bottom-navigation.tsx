@@ -1,5 +1,7 @@
 "use client";
 
+import { useSignedIn } from "./auth-session";
+
 import Link from "next/link";
 import {
   CalendarDays,
@@ -26,11 +28,12 @@ const privateItems = new Set(["bookings", "messages", "profile"]);
 
 export function BottomNavigation({
   active,
-  signedIn = false,
+  signedIn: initialSignedIn = false,
 }: {
   active?: ActiveItem;
   signedIn?: boolean;
 }) {
+  const signedIn = useSignedIn(initialSignedIn);
   return (
     <nav className="glohaus-bottom-nav" aria-label="Mobile navigation">
       {items.map((item) => {

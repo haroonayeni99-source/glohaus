@@ -1,3 +1,4 @@
+import { policyBookingTime } from "./fixtures/policy-booking-time";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import sharp from "sharp";
 import { createTestDatabase, applyTestMigrations } from "./test-database";
@@ -133,9 +134,7 @@ beforeAll(async () => {
       [pro, weekday],
     );
   const p = await published();
-  const starts = new Date(
-    Math.ceil((Date.now() + 72 * 3600000) / 900000) * 900000,
-  ).toISOString();
+  const starts = policyBookingTime(72);
   booking = await asUser(
     "api-policy-customer",
     async (tx) =>
@@ -256,9 +255,7 @@ describe("professional policy API boundaries with actual migrations and RLS", ()
   });
   it("rejects checkout without explicit acknowledgement before touching any payment provider", async () => {
     actor = "api-policy-customer";
-    const startsAt = new Date(
-      Math.ceil((Date.now() + 96 * 3600000) / 900000) * 900000,
-    ).toISOString();
+    const startsAt = policyBookingTime(96);
     expect(
       (
         await checkout(

@@ -1,3 +1,4 @@
+import { policyBookingTime } from "./fixtures/policy-booking-time";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestDatabase, applyTestMigrations } from "./test-database";
 import { enrolAccount, type SqlClient } from "@/modules/accounts/repository";
@@ -47,10 +48,7 @@ async function isolated(work: (tx: SqlClient) => Promise<void>) {
     if (!(e instanceof Error && e.message === "ROLLBACK_TEST")) throw e;
   }
 }
-const time = (hours = 72) =>
-  new Date(
-    Math.ceil((Date.now() + hours * 3600000) / 900000) * 900000,
-  ).toISOString();
+const time = policyBookingTime;
 async function save(
   tx: SqlClient,
   fields: Partial<PolicyFields> = {},

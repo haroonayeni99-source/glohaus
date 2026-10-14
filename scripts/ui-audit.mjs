@@ -34,7 +34,7 @@ await build({
     "@/lib/db": resolve("tests/fixtures/customer-profile-data.ts"),
     "@/modules/accounts/customer-profile": resolve("tests/fixtures/customer-profile-data.ts"),
     "@/lib/page-access": resolve("tests/fixtures/ui-audit/data.ts"),
-    "@/lib/supabase/client": resolve("tests/fixtures/ui-audit/data.ts"),
+    "@/lib/supabase/client": resolve(process.env.GLOHAUS_UI_AUDIT_AUTH || "tests/fixtures/ui-audit/data.ts"),
     "next/navigation": resolve("tests/fixtures/next-navigation.ts"),
     "next/link": resolve("tests/fixtures/next-link.tsx"),
     "next/image": resolve("tests/fixtures/next-image.tsx"),

@@ -1,3 +1,7 @@
+"use client";
+
+import { useSignedIn } from "./auth-session";
+
 import Link from "next/link";
 import { Bell, Search } from "lucide-react";
 import { MobileSiteMenu } from "./mobile-site-menu";
@@ -6,11 +10,12 @@ import { Brand } from "./brand";
 /** Shared public header for customer, profile and professional pages. */
 export function GlohausHeader({
   professional = false,
-  signedIn = false,
+  signedIn: initialSignedIn = false,
 }: {
   professional?: boolean;
   signedIn?: boolean;
 }) {
+  const signedIn = useSignedIn(initialSignedIn);
   const notificationHref = signedIn
     ? "/notifications"
     : "/sign-in?returnTo=%2Fnotifications";

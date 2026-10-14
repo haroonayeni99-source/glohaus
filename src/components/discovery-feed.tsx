@@ -1,4 +1,6 @@
 "use client";
+
+import { useSignedIn } from "./auth-session";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useLabels } from "./platform-labels";
@@ -61,7 +63,7 @@ export function DiscoveryFeed({
   initialEngagement = emptyEngagement,
   initialFollows = emptyFollows,
   accountMode = false,
-  viewerSignedIn = false,
+  viewerSignedIn: initialViewerSignedIn = false,
   canFollow = false,
   canPublish = false,
   savedView = false,
@@ -90,6 +92,7 @@ export function DiscoveryFeed({
   stories?: PublicStory[];
   lastMinute?: LastMinuteSlot[];
 }) {
+  const viewerSignedIn = useSignedIn(initialViewerSignedIn);
   const labels = useLabels();
   const [feedPosts, setFeedPosts] = useState(publishedPosts);
   const [next, setNext] = useState(initialNext);

@@ -63,3 +63,5 @@ export async function adminPolicies(): Promise<import("@/modules/policies/domain
   return { versions: [], bookings: [], retentions: [], audit: [], disputes: [] };
 }
 export async function commissionOverview(){fail("commission");return {asOf:date,settings:{enabled:false,new_promotions_enabled:true,version:1},professionals:[{id:ids.pro,name:"Maya Studio",effective:{basisPoints:800,standardBasisPoints:800,ruleId:null,ruleReference:"standard:starter",pricingVersion:"commission-v2-baseline",expiresAt:null}}],rules:[],founding:[],metrics:{commissionEarnedPence:0,waivedPence:0,capturedPence:0,paymentCostsPence:0,costsPending:0,legacyWithoutTerms:0},performance:[],audit:[]};}
+
+export async function activityOverview(): Promise<import("@/modules/professional-activity/domain").ActivityOverview> { return { asOf: date, total: 0, page: 0, rows: [], email: { pending: 0, accepted: 0, cancelled: 0, exhausted: 0 } }; }

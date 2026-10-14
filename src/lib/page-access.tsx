@@ -1,3 +1,4 @@
+import { recordProfessionalVisit } from "@/modules/professional-activity/repository";
 import "server-only";
 import { redirect } from "next/navigation";
 import { getIdentity } from "./identity";
@@ -23,9 +24,11 @@ export async function pageAccount(
   try {
     const identity = await getIdentity();
     try {
-      const account = await withIdentity(identity.authId, async (db) =>
-        authorize(await findAccount(db, identity.authId), identity, role),
-      );
+      const account = await withIdentity(identity.authId, async (db) => {
+        const account = authorize(await findAccount(db, identity.authId), identity, role);
+        await recordProfessionalVisit(db, account);
+        return account;
+      });
 
       return { account, error: null };
     } catch (error) {

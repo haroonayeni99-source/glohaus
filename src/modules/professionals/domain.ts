@@ -142,6 +142,7 @@ export type PublicProfessional = {
   review_count?: number;
   // Discovery confidence score; never displayed as the professional's star rating.
   ranking_score?: number;
+  boosted?: boolean;
   from_price_pence?: number | null;
   travels_to_you?: boolean;
   available_today?: boolean;

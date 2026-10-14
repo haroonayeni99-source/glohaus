@@ -1,3 +1,4 @@
+import { myActivity } from "@/modules/professional-activity/repository";
 import { professionalSetupProgress } from "@/modules/professionals/setup";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
@@ -21,7 +22,8 @@ export default async function Page() {
   const setup = await withIdentity(result.account.authId, (db) =>
     professionalSetupProgress(db, result.account!.professionalId!),
   );
+  const activity = await withIdentity(result.account.authId, myActivity).catch(() => null);
   return (
-    <ProfessionalDashboard account={result.account} data={data} setup={setup} />
+    <ProfessionalDashboard account={result.account} data={data} setup={setup} activity={activity} />
   );
 }

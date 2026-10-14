@@ -1,0 +1,96 @@
+.professional-activity-panel {
+  min-width: 0;
+  color: var(--text-strong);
+}
+.professional-activity-panel p {
+  overflow-wrap: anywhere;
+}
+.professional-activity-panel .activity-search,
+.professional-activity-panel .activity-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem;
+}
+.professional-activity-panel .activity-search label {
+  flex: 1 1 16rem;
+}
+.professional-activity-panel label,
+.professional-activity-panel input:not([type="checkbox"]),
+.professional-activity-panel textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+.professional-activity-panel textarea {
+  min-height: 5rem;
+}
+.professional-activity-panel .activity-reason {
+  margin-block: 1rem;
+}
+.professional-activity-panel .activity-rows {
+  display: grid;
+  gap: 1rem;
+  margin-block: 1rem;
+}
+.professional-activity-panel .activity-card {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--surface);
+  min-width: 0;
+}
+.professional-activity-panel .activity-card h3 {
+  overflow-wrap: anywhere;
+}
+.professional-activity-panel dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 1rem;
+}
+.professional-activity-panel dd {
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+}
+.professional-activity-panel dt {
+  font-weight: 600;
+}
+.professional-activity-panel button {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.professional-activity-panel dialog {
+  background: var(--surface);
+  color: var(--text-strong);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  width: min(34rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
+  padding: 1.25rem;
+}
+.professional-activity-panel dialog::backdrop {
+  background: rgb(0 0 0 / 0.55);
+}
+.professional-activity-panel .activity-check {
+  display: flex;
+  align-items: start;
+  gap: 0.75rem;
+  margin-block: 1rem;
+}
+.professional-activity-panel .activity-check input {
+  flex: 0 0 auto;
+  margin-top: 0.25rem;
+}
+.professional-featured-label {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.pro-setup-card.professional-activity-panel {
+  display: block;
+}

@@ -40,7 +40,7 @@ const cursorSchema = z
   .object({
     name: z.string().min(2).max(100),
     id: z.uuid(),
-    score: z.number().min(1).max(5),
+    score: z.number().min(1).max(6),
     query: z.string().max(100),
     filters: filtersSchema,
   })

@@ -99,7 +99,7 @@ export async function publicProfessionals(
          p.id,p.slug,p.business_name,p.bio,p.city,p.category,p.verification_status,
          p.identity_verified,p.business_verified,p.professional_verified,
          d.photo_id,d.photo_alt,d.travels_to_you,
-         r.rating,r.review_count,r.ranking_score,
+         r.rating,r.review_count,r.ranking_score,coalesce(exposure.boosted,false) AS boosted,
          s.from_price_pence,
          beauty.public_professional_available_today(p.id) AS available_today,
          s.popular_services,
@@ -107,6 +107,7 @@ export async function publicProfessionals(
          loc.confirmed_at AS public_location_confirmed_at,
          geo.distance_miles
        FROM beauty.public_professionals p
+       LEFT JOIN beauty.public_professional_exposure exposure ON exposure.professional_id=p.id
        LEFT JOIN beauty.public_profile_details d ON d.id=p.id
        LEFT JOIN beauty.public_professional_locations loc ON loc.professional_id=p.id
        CROSS JOIN LATERAL (
@@ -121,7 +122,7 @@ export async function publicProfessionals(
          -- glowing review cannot outweigh a well-supported high rating.
          SELECT round(avg(rating),1)::float AS rating,
                 count(*)::integer AS review_count,
-                (coalesce(sum(rating),0)::float + 40) / (count(*) + 10)::float AS ranking_score
+                (coalesce(sum(rating),0)::float + 40) / (count(*) + 10)::float + CASE WHEN exposure.boosted THEN 1 ELSE 0 END AS ranking_score
          FROM beauty.public_reviews
          WHERE professional_id=p.id
        ) r ON true
@@ -138,7 +139,7 @@ export async function publicProfessionals(
          FROM beauty.public_services
          WHERE professional_id=p.id
        ) s ON true
-       WHERE (
+       WHERE NOT coalesce(exposure.hidden,false) AND (
          p.business_name ILIKE $1
          OR p.city ILIKE $1
          OR p.category ILIKE $1

@@ -66,6 +66,7 @@ export type HomepageMedia = {
   desktopHero: string | null;
   mobileHero: string | null;
   categoryImages?: HomepageCategoryImages;
+  categoryNames?: HomepageCategoryNames;
 };
 
 export function categoryImage(
@@ -77,4 +78,18 @@ export function categoryImage(
     images?.[device] as Record<string, string | null> | undefined
   )?.[slot.key];
   return value || slot.image;
+}
+
+// Names and images share stable slot keys; renaming keeps the selected image.
+export type HomepageCategoryNames = HomepageCategoryImages;
+export function categoryName(
+  names: HomepageCategoryNames | undefined,
+  device: HomepageImageDevice,
+  slot: { key: string; label: string },
+) {
+  return (
+    (names?.[device] as Record<string, string | null> | undefined)?.[
+      slot.key
+    ] || slot.label
+  );
 }

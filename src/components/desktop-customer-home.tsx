@@ -1,4 +1,4 @@
-import { homepageCategories, categoryImage, type HomepageMedia } from "@/modules/platform/homepage-images";
+import { homepageCategories, categoryImage, categoryName, type HomepageMedia } from "@/modules/platform/homepage-images";
 import { HomeMarketplaceGuide } from "./home-marketplace-guide";
 import Image from "next/image";
 import Link from "next/link";
@@ -245,12 +245,12 @@ export function DesktopCustomerHome({
 
         <nav className="desktop-service-row" aria-label="Beauty services">
           {serviceTiles.map((slot) => (
-            <Link href={"/explore?q=" + encodeURIComponent(slot.label)} key={slot.key}>
+            <Link href={"/explore?q=" + encodeURIComponent(categoryName(homepageMedia.categoryNames, "desktop", slot))} key={slot.key}>
               <span>
                 <Image fill sizes="100px" src={categoryImage(homepageMedia.categoryImages, "desktop", slot)}
                   unoptimized={Boolean(homepageMedia.categoryImages?.desktop?.[slot.key])} alt="" />
               </span>
-              <strong>{slot.label}</strong>
+              <strong>{categoryName(homepageMedia.categoryNames, "desktop", slot)}</strong>
             </Link>
           ))}
           <Link href="/explore">

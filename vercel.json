@@ -3,6 +3,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
+      "feature/homepage-category-names": false,
       "feature/professional-inactivity": false,
       "feature/professional-booking-policies": false,
       "fix/profile-video-autoplay": false,

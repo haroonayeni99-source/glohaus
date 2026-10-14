@@ -10,6 +10,7 @@ document.documentElement.dataset.theme = params.get("theme") || "light";
 const images: HomepageCategoryImages = JSON.parse(
   localStorage.getItem("category-images") || "{}",
 );
+const names = JSON.parse(localStorage.getItem("category-names") || "{}");
 const heroes = JSON.parse(
   localStorage.getItem("hero-images") ||
     '{"desktopHero":null,"mobileHero":null}',
@@ -32,9 +33,10 @@ window.fetch = async (url, init) => {
       { status: 201 },
     );
   const body = JSON.parse(String(init?.body));
-  if (String(url).endsWith("/categories"))
+  if (String(url).endsWith("/categories")) {
     localStorage.setItem("category-images", JSON.stringify(body.images));
-  else
+    localStorage.setItem("category-names", JSON.stringify(body.names));
+  } else
     localStorage.setItem(
       "hero-images",
       JSON.stringify({
@@ -48,10 +50,18 @@ createRoot(document.getElementById("root")!).render(
   location.pathname === "/home" ? (
     <>
       <DesktopCustomerHome
-        homepageMedia={{ ...heroes, categoryImages: images }}
+        homepageMedia={{
+          ...heroes,
+          categoryImages: images,
+          categoryNames: names,
+        }}
       />
       <MobileCustomerHome
-        homepageMedia={{ ...heroes, categoryImages: images }}
+        homepageMedia={{
+          ...heroes,
+          categoryImages: images,
+          categoryNames: names,
+        }}
       />
     </>
   ) : (
@@ -59,7 +69,7 @@ createRoot(document.getElementById("root")!).render(
       <section id="homepage-media" className="admin-detail-card">
         <h2>Homepage and category images</h2>
         <HomepageMediaControl initial={heroes} />
-        <HomepageCategoryMediaControl initial={images} />
+        <HomepageCategoryMediaControl initial={images} initialNames={names} />
       </section>
     </main>
   ),

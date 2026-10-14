@@ -33,6 +33,8 @@
 }
 .owner-category-media-title h4 {
   margin: 0;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 .owner-category-media-card input {
   min-width: 0;

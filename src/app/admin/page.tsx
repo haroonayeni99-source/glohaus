@@ -160,15 +160,16 @@ export default async function Page() {
             id="homepage-media"
             className="admin-workspace-section admin-detail-card"
           >
-            <p className="eyebrow">HOMEPAGE IMAGERY</p>
-            <h2>Homepage and category images</h2>
+            <p className="eyebrow">HOMEPAGE CONTENT</p>
+            <h2>Homepage images and categories</h2>
             <p className="lead">
-              Change the main homepage and category photos without changing
-              code. Desktop and mobile can use different images.
+              Change the homepage photos and category names without changing
+              code. Desktop and mobile can use different names and images.
             </p>
             <HomepageMediaControl initial={homepageMedia} />
             <HomepageCategoryMediaControl
               initial={homepageMedia.categoryImages}
+              initialNames={homepageMedia.categoryNames}
             />
           </section>
         )}

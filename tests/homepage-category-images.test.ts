@@ -82,3 +82,48 @@ it("supports clearing an individual image and rejects a missing audit reason", a
   expect((await POST(request({ images, reason: "" }))).status).toBe(400);
   expect(mocks.owner).not.toHaveBeenCalled();
 });
+it("saves names and photos atomically through the verified Owner routine", async () => {
+  const names = {
+    desktop: { nails: "  Nail art & care  " },
+    mobile: { nails: "Gel nails" },
+  };
+  expect(
+    (
+      await POST(
+        request({ images, names, reason: "Rename homepage shortcuts" }),
+      )
+    ).status,
+  ).toBe(200);
+  expect(mocks.query).toHaveBeenCalledWith(
+    "SELECT beauty.owner_set_homepage_categories($1::jsonb,$2::jsonb,$3) AS data",
+    [
+      JSON.stringify(images),
+      JSON.stringify({
+        desktop: { nails: "Nail art & care" },
+        mobile: names.mobile,
+      }),
+      "Rename homepage shortcuts",
+    ],
+  );
+});
+it.each([
+  { desktop: { nails: " " }, mobile: {} },
+  { desktop: { nails: "x" }, mobile: {} },
+  { desktop: { nails: "x".repeat(61) }, mobile: {} },
+  { desktop: { unknown: "Beauty" }, mobile: {} },
+  { desktop: {}, mobile: { barber: "Beauty" } },
+  { desktop: {}, mobile: {}, tablet: {} },
+  { desktop: { nails: false }, mobile: {} },
+])(
+  "rejects invalid names before entering the Owner transaction: %j",
+  async (names) => {
+    expect(
+      (
+        await POST(
+          request({ images, names, reason: "Rename homepage shortcuts" }),
+        )
+      ).status,
+    ).toBe(400);
+    expect(mocks.owner).not.toHaveBeenCalled();
+  },
+);

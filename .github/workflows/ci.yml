@@ -27,6 +27,8 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - name: Install media test encoder
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Verify Owner account visibility and deletion controls
+        run: node scripts/check-owner-account-controls.mjs
       - name: Verify direct Discover and Story photo/video uploads
         run: node scripts/check-discover-story-media.mjs
       - name: Verify shared sign-out and approved verification badges

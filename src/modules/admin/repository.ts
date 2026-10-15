@@ -17,6 +17,10 @@ export type AdminOverview = {
     restricted_until: string | null;
     restriction_reason: string | null;
     deleted_at: string | null;
+    public_hidden_at?: string | null;
+    public_hidden_reason?: string | null;
+    auth_cleanup_pending?: boolean;
+    business_name?: string | null;
   }[];
   bookings?: {
     id: string;

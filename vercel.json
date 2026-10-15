@@ -10,7 +10,8 @@
       "feature/professional-inactivity": false,
       "feature/professional-booking-policies": false,
       "fix/profile-video-autoplay": false,
-      "feature/commission-control-centre": false
+      "feature/commission-control-centre": false,
+      "feature/owner-account-visibility": false
     }
   },
   "regions": [

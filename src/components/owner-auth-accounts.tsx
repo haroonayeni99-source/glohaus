@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import type { OwnerAuthAccount } from "@/modules/admin/repository";
 
 function when(value: string | null) {
@@ -62,6 +63,7 @@ export function OwnerAuthAccounts({ accounts }: { accounts: OwnerAuthAccount[] }
                 <span className={`admin-status ${account.appUserId ? "admin-status-active" : "admin-status-suspended"}`}>
                   {account.appUserId ? account.appStatus || "linked" : "SETUP NOT FINISHED"}
                 </span>
+                {account.appUserId && <Link className="text-link" href="/admin#users">Manage account & content</Link>}
               </td>
               <td>{account.roles.length ? account.roles.join(", ") : "None yet"}</td>
               <td>{when(account.lastSignInAt)}</td>

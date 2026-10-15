@@ -11,7 +11,8 @@
       "feature/professional-booking-policies": false,
       "fix/profile-video-autoplay": false,
       "feature/commission-control-centre": false,
-      "feature/owner-account-visibility": false
+      "feature/owner-account-visibility": false,
+      "fix/lip-filler-taxonomy": false
     }
   },
   "regions": [

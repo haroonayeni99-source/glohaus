@@ -1,3 +1,5 @@
+import { taxonomyCatalog } from "@/modules/taxonomy/repository";
+import { emptyTaxonomy } from "@/modules/taxonomy/domain";
 import { publicMetadata, publicPages } from "@/lib/public-seo";
 import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
@@ -20,7 +22,7 @@ export default async function Explore({
   searchParams: Promise<{
     q?: string;
     location?: string;
-    category?: string;
+    category?: string;categoryId?:string;specialityId?:string;templateId?:string;date?:string;
     price?: string;
     rating?: string;
     after?: string;
@@ -34,6 +36,7 @@ export default async function Explore({
   const { query: q, filters, after } = discoveryOptions(await searchParams);
   const viewerSignedIn = await publicViewerSignedIn();
 
+  let taxonomy=emptyTaxonomy;
   let next: string | null = null;
   let professionals: PublicProfessional[] = [];
 
@@ -44,6 +47,7 @@ export default async function Explore({
       );
       professionals = result.professionals;
       next = result.next;
+      taxonomy=await withIdentity("",db=>taxonomyCatalog(db));
     } catch (error) {
       const code =
         typeof error === "object" && error !== null && "code" in error
@@ -76,6 +80,7 @@ export default async function Explore({
         <ExploreMapExperience
           key={JSON.stringify({ q, filters })}
           professionals={professionals}
+          taxonomy={taxonomy}
           query={q}
           filters={filters}
         />

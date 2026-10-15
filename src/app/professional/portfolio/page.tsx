@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { taxonomyCatalog,mySelection } from "@/modules/taxonomy/repository";
 import Link from "next/link";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
@@ -23,11 +24,12 @@ export default async function Portfolio() {
     async (db) =>
       (
         await db.query<PortfolioAsset>(
-          "SELECT id,alt_text,publication_status,media_type,mime_type FROM beauty.portfolio_assets WHERE professional_id=$1 ORDER BY created_at DESC",
+          "SELECT a.id,alt_text,publication_status,media_type,mime_type,ARRAY(SELECT speciality_id FROM beauty.portfolio_specialities WHERE asset_id=a.id) AS speciality_ids FROM beauty.portfolio_assets a WHERE professional_id=$1 ORDER BY created_at DESC",
           [account.professionalId],
         )
       ).rows,
   );
+  const specialities=await withIdentity(account.authId,async db=>{const c=await taxonomyCatalog(db);const s=await mySelection(db);return c.specialities.filter(x=>s.specialityIds.includes(x.id));});
   return (
     <div className="pro-app">
       <ProfessionalNavigation active="more" displayName={account.displayName} />
@@ -40,7 +42,7 @@ export default async function Portfolio() {
           profile must also be published.
         </p>
         <section className="pro-editor-surface">
-          <PortfolioEditor assets={assets} />
+          <PortfolioEditor assets={assets} specialities={specialities}/>
         </section>
       </main>
     </div>

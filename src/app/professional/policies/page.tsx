@@ -6,7 +6,8 @@ import { ProfessionalPolicyEditor } from "@/components/professional-policy-edito
 import { policyWorkspace } from "@/modules/policies/repository";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Rules & Policies · GLOHAUS PRO" };
-export default async function Page() {
+export default async function Page({searchParams}:{searchParams:Promise<{serviceId?:string}>}) {
+ const query=await searchParams;
   const result = await pageAccount("professional");
   if (!result.account)
     return (
@@ -25,7 +26,7 @@ export default async function Page() {
         <p className="pro-kicker">YOUR BUSINESS TERMS</p>
         <h1>Rules & Policies</h1>
         <section className="pro-editor-surface">
-          <ProfessionalPolicyEditor data={data} />
+          <ProfessionalPolicyEditor data={data} initialServiceId={data.services.some(s=>s.id===query.serviceId)?query.serviceId:""} />
         </section>
       </main>
     </div>

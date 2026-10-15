@@ -87,6 +87,7 @@ describe.sequential("professional publishing and private ownership", () => {
       "from_price_pence",
       "id",
       "identity_verified",
+      "matching_services",
       "photo_alt",
       "photo_id",
       "popular_services",
@@ -200,8 +201,7 @@ describe.sequential("professional publishing and private ownership", () => {
       await asUser("", (sql) => publicProfessionals(sql, "Gel manicure")),
     ).toEqual([]);
     const rows = await asUser("", (sql) => publicProfessionals(sql, "Nails"));
-    expect(rows).toHaveLength(1);
-    expect(rows[0].from_price_pence).toBeNull();
+    expect(rows).toHaveLength(0);
   });
   it("suspension immediately hides public profiles", async () => {
     await db.query(

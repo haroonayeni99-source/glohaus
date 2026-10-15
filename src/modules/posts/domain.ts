@@ -6,11 +6,13 @@ export const postSchema = z
     kind: z.enum(["design", "tutorial"]),
     publicationStatus: z.enum(["draft", "published", "hidden"]),
     serviceId: z.uuid().nullable(),
+    specialityId:z.uuid().nullable().optional(),
     assetId: z.uuid().nullable().optional(),
   })
   .strict();
 export type PostInput = z.infer<typeof postSchema>;
 export type PublicPost = {
+  speciality_id?:string|null;speciality_name?:string|null;category_id?:string|null;
   asset_id?: string | null;
   asset_media_type?: "image" | "video" | null;
   asset_mime_type?: string | null;
@@ -28,6 +30,7 @@ export type PublicPost = {
   professional_id: string;
 };
 export type OwnPost = {
+  speciality_id?:string|null;
   asset_id?: string | null;
   id: string;
   title: string;

@@ -189,3 +189,24 @@ jobs:
         with:
           name: auth-session-checks
           path: reports/session-*
+
+  multi-speciality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: node scripts/check-multi-speciality.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: multi-speciality-checks
+          path: reports/taxonomy-*

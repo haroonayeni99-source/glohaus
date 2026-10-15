@@ -1,4 +1,6 @@
 "use client";
+import { TaxonomyFilters } from "./taxonomy-filters";
+import { serviceDeepLink,type TaxonomyCatalog } from "@/modules/taxonomy/domain";
 import { ProfessionalVerificationBadges } from "./professional-verification-badges";
 
 import Image from "next/image";
@@ -21,7 +23,7 @@ import {
   distanceLabel,
   type Coordinates,
 } from "@/modules/professionals/location";
-import type { PublicProfessional } from "@/modules/professionals/domain";
+import { money,type PublicProfessional } from "@/modules/professionals/domain";
 import {
   discoveryHref,
   type DiscoveryFilters,
@@ -83,11 +85,11 @@ function ratingText(pro: PublicProfessional) {
 export function ExploreMapExperience({
   professionals,
   query,
-  filters,
+  filters,taxonomy,
 }: {
   professionals: PublicProfessional[];
   query: string;
-  filters: DiscoveryFilters;
+  filters: DiscoveryFilters;taxonomy?:TaxonomyCatalog;
 }) {
   const [zoom, setZoom] = useState(1);
   const [locationNotice, setLocationNotice] = useState("");
@@ -247,6 +249,7 @@ export function ExploreMapExperience({
             </p>
           </div>
           <form className="map-explore-search" role="search">
+            {["categoryId","specialityId","templateId","date"].map(key=>{const value=filters[key as keyof DiscoveryFilters];return value?<input key={key} type="hidden" name={key} value={String(value)}/>:null;})}
             {filters.verified && (
               <input type="hidden" name="verified" value="1" />
             )}
@@ -325,7 +328,7 @@ export function ExploreMapExperience({
               key={filter}
               href={discoveryHref(query, {
                 ...filters,
-                category: filter === "All Services" ? "" : filter,
+                category: filter === "All Services" ? "" : filter,categoryId:undefined,specialityId:undefined,templateId:undefined,
               })}
               className={
                 (index === 0 && !filters.category) ||
@@ -401,6 +404,8 @@ export function ExploreMapExperience({
             .map(([key]) => (
               <input key={key} type="hidden" name={key} value="1" />
             ))}
+          {taxonomy&&<TaxonomyFilters catalog={taxonomy} categoryId={filters.categoryId} specialityId={filters.specialityId} templateId={filters.templateId}/>}
+          <label>Available on<input type="date" name="date" defaultValue={filters.date??""}/></label>
           <label>
             Area or city
             <input
@@ -712,7 +717,7 @@ export function ExploreMapExperience({
               {nearby.map((pro) => (
                 <article className="map-pro-row" key={pro.id}>
                   <Link
-                    href={`/p/${pro.slug}`}
+                    href={pro.matching_services?.[0]?serviceDeepLink(pro.slug,pro.matching_services[0].id,pro.matching_services[0].speciality_id):`/p/${pro.slug}`}
                     className="map-pro-avatar"
                     aria-label={pro.business_name}
                   >
@@ -729,7 +734,7 @@ export function ExploreMapExperience({
                     )}
                   </Link>
                   <div className="map-pro-copy">
-                    <Link href={`/p/${pro.slug}`} className="map-pro-name">
+                    <Link href={pro.matching_services?.[0]?serviceDeepLink(pro.slug,pro.matching_services[0].id,pro.matching_services[0].speciality_id):`/p/${pro.slug}`} className="map-pro-name">
                       {pro.business_name}
                     </Link>
                     <Link
@@ -762,13 +767,14 @@ export function ExploreMapExperience({
                     </div>
                   </div>
                   <Link
-                    href={`/p/${pro.slug}`}
+                    href={pro.matching_services?.[0]?serviceDeepLink(pro.slug,pro.matching_services[0].id,pro.matching_services[0].speciality_id):`/p/${pro.slug}`}
                     className="map-heart"
                     aria-label={`View profile of ${pro.business_name}`}
                   >
                     <ArrowUpRight size={18} aria-hidden />
                   </Link>
-                  <Link className="map-book-button" href={`/p/${pro.slug}`}>
+                  {!!pro.matching_services?.length&&<div className="matching-services">{pro.matching_services.slice(0,4).map(s=><Link key={s.id} href={serviceDeepLink(pro.slug,s.id,s.speciality_id)}>{s.name} · {s.speciality_name} · {money(s.price_pence)} · {s.duration_minutes} min</Link>)}</div>}
+                  <Link className="map-book-button" href={pro.matching_services?.[0]?serviceDeepLink(pro.slug,pro.matching_services[0].id,pro.matching_services[0].speciality_id):`/p/${pro.slug}`}>
                     Book
                   </Link>
                 </article>

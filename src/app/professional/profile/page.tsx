@@ -10,6 +10,7 @@ import { ProfessionalEditor } from "@/components/professional-editor";
 import { ProfessionalProfileCustomization } from "@/components/professional-profile-customization";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
 import type { ProfileInput, Service } from "@/modules/professionals/domain";
+import { taxonomyCatalog,mySelection } from "@/modules/taxonomy/repository";
 import { publicCategories } from "@/modules/platform/repository";
 import { paymentReady } from "@/modules/payments/stripe";
 export default async function EditProfile() {
@@ -23,6 +24,7 @@ export default async function EditProfile() {
   const account = result.account!;
   const [data, marketplaceCategories] = await Promise.all([
     withIdentity(account.authId, async (db) => {
+    const taxonomy=await taxonomyCatalog(db);const selection=await mySelection(db);
     const profile = (
       await db.query<{
         business_description: string;
@@ -94,7 +96,7 @@ export default async function EditProfile() {
         [account.professionalId],
       )
     ).rows[0];
-    return { profile, services, photo, assets, pricing, presentation, access };
+    return { taxonomy,selection,profile, services, photo, assets, pricing, presentation, access };
     }),
     publicCategories(),
   ]);
@@ -156,6 +158,7 @@ export default async function EditProfile() {
           </div>
           <ProfessionalEditor
             section="profile"
+            taxonomy={data.taxonomy} selection={data.selection}
             initial={{
               businessDescription: data.profile.business_description,
               locationDetails: data.profile.location_details,

@@ -1,4 +1,6 @@
 "use client";
+import { TaxonomyFilters } from "./taxonomy-filters";
+import type { TaxonomyCatalog } from "@/modules/taxonomy/domain";
 
 import { useSignedIn } from "./auth-session";
 import Image from "next/image";
@@ -73,8 +75,9 @@ export function DiscoveryFeed({
   hideEditorial = false,
   routeBase = "/",
   stories = [],
-  lastMinute = [],
+  lastMinute = [],taxonomy,taxonomySelection={},
 }: {
+  taxonomy?:TaxonomyCatalog;taxonomySelection?:{categoryId?:string;specialityId?:string;templateId?:string};
   publishedPosts?: PublicPost[];
   initialNext?: string | null;
   initialEngagement?: EngagementMap;
@@ -111,6 +114,7 @@ export function DiscoveryFeed({
     setNotice("");
     try {
       const params = new URLSearchParams({ after: next });
+      for(const key of ["categoryId","specialityId","templateId"] as const)if(taxonomySelection[key])params.set(key,taxonomySelection[key]);
       if (category === "Following") params.set("scope", "following");
       const response = await fetch(`/api/v1/posts?${params.toString()}`);
       if (!response.ok) throw new Error();
@@ -406,6 +410,7 @@ export function DiscoveryFeed({
         </header>
         <div className="discovery-tabs" aria-label="Filter inspiration">
           {canPublish && <Link className="discovery-create-mobile" href="/professional/posts">Post / Story</Link>}
+          {taxonomy&&<form action={routeBase} className="taxonomy-discover-filter"><TaxonomyFilters catalog={taxonomy} {...taxonomySelection}/><button className="button small">Filter Discover</button></form>}
           {["Following", "For you", ...categories, "Tutorials"].map((item) => (
             <button
               key={item}
@@ -508,7 +513,7 @@ export function DiscoveryFeed({
                     <div className="feed-caption">
                       <Link
                         className="editorial-author"
-                        href={`/p/${post.slug}`}
+                        href={post.service_id?`/p/${post.slug}?service=${post.service_id}${post.speciality_id?`&speciality=${post.speciality_id}`:""}#services`:`/p/${post.slug}`}
                       >
                         <span>{post.business_name.slice(0, 1)}</span>
                         {post.business_name}

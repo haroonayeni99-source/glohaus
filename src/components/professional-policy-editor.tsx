@@ -12,12 +12,12 @@ import {
   type PolicyWorkspace,
 } from "@/modules/policies/domain";
 import { ProfessionalPolicySummary } from "./professional-policy-summary";
-export function ProfessionalPolicyEditor({ data }: { data: PolicyWorkspace }) {
+export function ProfessionalPolicyEditor({ data,initialServiceId="" }: { data: PolicyWorkspace;initialServiceId?:string }) {
   const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
-  const [serviceId, setServiceId] = useState("");
+  const [serviceId, setServiceId] = useState(initialServiceId);
   const [policy, setPolicy] = useState<PolicyFields>(
-    data.scopes.find((s) => s.service_id === null)?.draft || defaultPolicy,
+    data.scopes.find((s) => s.service_id === (initialServiceId||null))?.draft || (initialServiceId?inheritedPolicy:defaultPolicy),
   );
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");

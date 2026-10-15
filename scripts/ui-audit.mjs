@@ -46,6 +46,7 @@ const css = (
   await Promise.all(
     [
       "globals",
+      "../components/taxonomy",
       "homepage-category-media",
       "ui-upgrades",
       "theme-compat",

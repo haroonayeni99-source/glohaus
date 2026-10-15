@@ -3,6 +3,7 @@ import { z } from "zod";
 export type DiscoveryFilters = {
   location?: string;
   category?: string;
+  categoryId?:string;specialityId?:string;templateId?:string;date?:string;
   maxPricePence?: number;
   minRating?: number;
   verified: boolean;
@@ -24,6 +25,7 @@ export const discoveryFiltersSchema = z
   .object({
     location: z.string().max(100).optional(),
     category: z.string().max(60).optional(),
+    categoryId:z.uuid().optional(),specialityId:z.uuid().optional(),templateId:z.uuid().optional(),date:z.iso.date().optional(),
     maxPricePence: z.number().int().min(100).max(1000000).optional(),
     minRating: z.number().min(0).max(5).optional(),
     verified: z.boolean(),
@@ -53,6 +55,7 @@ export function discoveryOptions(params: {
   category?: string | string[];
   price?: string | string[];
   rating?: string | string[];
+  categoryId?:string|string[];specialityId?:string|string[];templateId?:string|string[];date?:string|string[];
   q?: string | string[];
   after?: string | string[];
   verified?: string | string[];
@@ -72,6 +75,8 @@ export function discoveryOptions(params: {
     availableToday: params.today === "1",
   };
 
+  for(const key of ["categoryId","specialityId","templateId"] as const){if(z.uuid().safeParse(params[key]).success)filters[key]=params[key] as string;}
+  if(typeof params.date==="string"&&z.iso.date().safeParse(params.date).success)filters.date=params.date;
   if (typeof params.location === "string" && params.location.trim())
     filters.location = params.location.trim().slice(0, 100);
   if (typeof params.category === "string" && params.category.trim())
@@ -129,6 +134,7 @@ export function discoveryHref(
   if (query) params.set("q", query);
   if (filters.location) params.set("location", filters.location);
   if (filters.category) params.set("category", filters.category);
+  for(const key of ["categoryId","specialityId","templateId","date"] as const)if(filters[key])params.set(key,filters[key]);
   if (filters.maxPricePence)
     params.set("price", String(filters.maxPricePence / 100));
   if (filters.minRating) params.set("rating", String(filters.minRating));

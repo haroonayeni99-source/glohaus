@@ -2,7 +2,7 @@
 
 import { useSignedIn } from "./auth-session";
 
-import { homepageCategories, categoryImage, categoryName, type HomepageMedia } from "@/modules/platform/homepage-images";
+import { homepageCategorySlots, homepageCategoryHref, categoryImage, categoryName, type HomepageMedia } from "@/modules/platform/homepage-images";
 import { HomeMarketplaceGuide } from "./home-marketplace-guide";
 import Image from "next/image";
 import Link from "next/link";
@@ -26,7 +26,7 @@ import { HomeStory } from "./home-story";
 import { money, type PublicProfessional } from "@/modules/professionals/domain";
 import type { CustomerHomeSummary } from "@/modules/home/repository";
 
-const serviceTiles = homepageCategories.desktop;
+
 const trends = [
   [
     "The Hair Edit",
@@ -249,13 +249,13 @@ export function DesktopCustomerHome({
         </section>
 
         <nav className="desktop-service-row" aria-label="Beauty services">
-          {serviceTiles.map((slot) => (
-            <Link href={"/explore?q=" + encodeURIComponent(categoryName(homepageMedia.categoryNames, "desktop", slot))} key={slot.key}>
+          {homepageCategorySlots(homepageMedia,"desktop").map((slot) => (
+            <Link href={homepageCategoryHref(homepageMedia,"desktop",slot.key,categoryName(homepageMedia.categoryNames,"desktop",slot))} key={slot.key}>
               <span>
                 <Image fill sizes="100px" src={categoryImage(homepageMedia.categoryImages, "desktop", slot)}
                   unoptimized={Boolean(homepageMedia.categoryImages?.desktop?.[slot.key])} alt="" />
               </span>
-              <strong>{categoryName(homepageMedia.categoryNames, "desktop", slot)}</strong>
+              <strong>{categoryName(homepageMedia.categoryNames, "desktop", slot)}</strong>{slot.description&&<small>{slot.description}</small>}
             </Link>
           ))}
           <Link href="/explore">

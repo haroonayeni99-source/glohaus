@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { taxonomyCatalog,mySelection } from "@/modules/taxonomy/repository";
 import Link from "next/link";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
@@ -19,6 +20,7 @@ export default async function Posts() {
     );
   const account = result.account!;
   const data = await withIdentity(account.authId, async (db) => ({
+    specialities:await (async()=>{const c=await taxonomyCatalog(db);const s=await mySelection(db);return c.specialities.filter(x=>s.specialityIds.includes(x.id));})(),
     assets: (
       await db.query<{
         id: string;
@@ -32,7 +34,7 @@ export default async function Posts() {
     ).rows,
     posts: (
       await db.query<OwnPost>(
-        "SELECT id,title,body,kind,publication_status,service_id,asset_id FROM beauty.posts WHERE professional_id=$1 ORDER BY created_at DESC",
+        "SELECT id,title,body,kind,publication_status,service_id,asset_id,speciality_id FROM beauty.posts WHERE professional_id=$1 ORDER BY created_at DESC",
         [account.professionalId],
       )
     ).rows,

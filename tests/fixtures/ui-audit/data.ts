@@ -1,3 +1,4 @@
+import {taxonomy} from "../multi-speciality-data";
 import type { FeatureVoteItem } from "@/lib/feature-voting";
 // Fictional, isolated accounts. This module is used only by the audit harness.
 import { defaultLabels } from "@/modules/platform/domain";
@@ -50,7 +51,7 @@ export const featureVotes: FeatureVoteItem[] = [
 
 // Private support data for the local fixture only; no production requests are sent.
 export async function withAdmin<T>(work: (db: import("@/modules/accounts/repository").SqlClient) => Promise<T>) {
-  return work({ query: async <Row extends Record<string, unknown>>() => ({ rows: [{ requests: [{
+  return work({ query: async <Row extends Record<string, unknown>>(sql:string) => sql.includes("admin_taxonomy_overview")?{rows:[{data:{...taxonomy,coverage:[],services:[]}}] as unknown as Row[]}:({ rows: [{ requests: [{
     id: "55555555-5555-4555-8555-555555555555", name: "Fixture Support Customer",
     email: "support-fixture@example.test", topic: "Account & sign-in", reference: "FIXTURE-" + "X".repeat(100),
     message: "A fictional customer needs help with their account. " + "x".repeat(300),

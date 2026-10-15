@@ -1,3 +1,5 @@
+import { bookingOptionsSchema } from "@/modules/taxonomy/domain";
+import { serviceQuote } from "@/modules/taxonomy/repository";
 import { z } from "zod";
 import { policyError } from "@/modules/policies/http";
 import { withAccount } from "@/lib/api-account";
@@ -14,6 +16,7 @@ const schema = z
     acceptPolicy: z.literal(true),
     policyToken: z.string().regex(/^[a-f0-9]{32}$/),
     earlyServiceRequested: z.boolean(),
+    variationId:bookingOptionsSchema.shape.variationId,extraIds:bookingOptionsSchema.shape.extraIds,
   })
   .strict();
 type Reservation = {
@@ -44,6 +47,7 @@ export async function POST(request: Request) {
         )
       ).rows[0];
       if (!service) throw new AccessError("INVALID_REQUEST", 400);
+      if(parsed.data.variationId||parsed.data.extraIds?.length){const quote=await serviceQuote(db,parsed.data.serviceId,parsed.data.variationId,parsed.data.extraIds);service.price_pence=quote.pricePence;service.deposit_pence=quote.depositPence;}
       const access = await professionalAccessState(db, service.professional_id);
       assertBookingAllowed(access, {
         pricePence: service.price_pence,
@@ -52,8 +56,8 @@ export async function POST(request: Request) {
 
       const reservation = (
         await db.query<{ booking: Reservation }>(
-          "SELECT beauty.reserve_booking($1,$2,$3,$4) AS booking",
-          [parsed.data.serviceId, parsed.data.startsAt, parsed.data.policyToken, parsed.data.earlyServiceRequested],
+          parsed.data.variationId||parsed.data.extraIds?.length?"SELECT beauty.reserve_booking($1,$2,$3,$4,$5,$6) AS booking":"SELECT beauty.reserve_booking($1,$2,$3,$4) AS booking",
+          [parsed.data.serviceId, parsed.data.startsAt, parsed.data.policyToken, parsed.data.earlyServiceRequested,...(parsed.data.variationId||parsed.data.extraIds?.length?[parsed.data.variationId??null,parsed.data.extraIds??[]]:[])],
         )
       ).rows[0].booking;
       // Throw before the transaction commits: unavailable paid checkout must not leave a slot held.

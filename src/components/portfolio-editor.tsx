@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export type PortfolioAsset = {
+  speciality_ids?:string[];
   id: string;
   alt_text: string;
   publication_status: string;
@@ -18,7 +19,7 @@ export type PortfolioAsset = {
   mime_type: string;
 };
 
-export function PortfolioEditor({ assets }: { assets: PortfolioAsset[] }) {
+export function PortfolioEditor({ assets,specialities=[] }: { assets: PortfolioAsset[];specialities?:{id:string;name:string}[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -248,6 +249,7 @@ export function PortfolioEditor({ assets }: { assets: PortfolioAsset[] }) {
               <small>
                 {asset.media_type} · {asset.publication_status}
               </small>
+              {!!specialities.length&&<form onSubmit={async e=>{e.preventDefault();const specialityIds=new FormData(e.currentTarget).getAll("specialityId");setBusy(true);try{const r=await fetch(`/api/v1/professional/portfolio/${asset.id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({specialityIds})});if(!r.ok)throw Error();setNotice("Portfolio specialities saved.");router.refresh();}catch{setNotice("Could not save portfolio specialities.");}finally{setBusy(false);}}}><fieldset><legend>Shown under</legend>{specialities.map(s=><label className="policy-check" key={s.id}><input type="checkbox" name="specialityId" value={s.id} defaultChecked={asset.speciality_ids?.includes(s.id)}/>{s.name}</label>)}</fieldset><button disabled={busy}>Save specialities</button></form>}
               <button
                 disabled={busy}
                 className="button small"

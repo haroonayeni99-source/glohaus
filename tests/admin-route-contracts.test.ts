@@ -38,6 +38,8 @@ const cases = [
   { name: "marketing preset", handler: marketing, payload: { type: "launch", preset: "discover_weekly" }, sql: "owner_launch_marketing_preset", owner: true },
   { name: "feature vote", handler: marketing, payload: { type: "feature", audience: "all", title: "Improve booking", description: "Make booking clearer for everyone." }, sql: "owner_create_feature_request", owner: true },
   { name: "account restriction", handler: account, payload: { action: "restrict", userId: id, restrictedUntil: "2026-11-10T12:00:00Z", reason }, sql: "owner_set_user_restriction", owner: true },
+  { name: "hide account and content", handler: account, payload: { action: "hide", userId: id, reason }, sql: "owner_set_account_visibility", owner: true },
+  { name: "restore account and content", handler: account, payload: { action: "show", userId: id, reason }, sql: "owner_set_account_visibility", owner: true },
   { name: "lift restriction", handler: account, payload: { action: "liftRestriction", userId: id, reason }, sql: "owner_set_user_restriction", owner: true },
   { name: "booking fee", handler: bookingFee, payload: { amountPence: 100, reason }, sql: "set_financial_fee_rule", owner: true },
   { name: "Shop fee", handler: shopFee, payload: { percentage: 10, fixedFeePence: 0, minimumFeePence: 0, maximumFeePence: null, reason }, sql: "set_financial_fee_rule", owner: true },
@@ -53,10 +55,19 @@ beforeEach(() => {
   mocks.deleteUser.mockResolvedValue({ error: null });
   mocks.query.mockResolvedValue({ rows: [{ id, data: {}, resolution: { amountPence: 0, status: "rejected" } }] });
 });
-it("never attempts account deletion when its existing server configuration is missing", async () => {
+it("removes platform access even when provider cleanup is unavailable", async () => {
+  mocks.query.mockResolvedValue({ rows: [{ data: { authId: "fictional-auth-id", authCleanupPending: true } }] });
   const item = cases.find(item => item.name === "account restriction")!;
-  expect((await account(request(item, { action: "delete", userId: id, reason }))).status).toBe(503);
+  const response = await account(request(item, { action: "delete", userId: id, reason, confirmation: "DELETE" }));
+  expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({ deleted: true, authCleanupPending: true });
+  expect(mocks.query).toHaveBeenCalledWith("SELECT beauty.owner_remove_account($1,$2) AS data", [id, reason]);
   expect(mocks.deleteUser).not.toHaveBeenCalled();
+});
+it("requires explicit deletion confirmation on the server", async () => {
+  const item = cases.find(item => item.name === "account restriction")!;
+  expect((await account(request(item, { action: "delete", userId: id, reason }))).status).toBe(400);
+  expect(mocks.query).not.toHaveBeenCalled();
 });
 it("saves only explicit verification badges through the protected audited routine", async () => {
   const item = cases.find(item => item.name === "verification and LIVE")!;
@@ -72,16 +83,33 @@ it.each(["admin", "MFA_REQUIRED"])("protects configured deletion from %s before 
   mocks.configured = true;
   if (mode === "admin") mocks.roles = ["admin"]; else mocks.denial = "MFA_REQUIRED";
   const item = cases.find(item => item.name === "account restriction")!;
-  expect((await account(request(item, { action: "delete", userId: id, reason }))).status).toBe(403);
+  expect((await account(request(item, { action: "delete", userId: id, reason, confirmation: "DELETE" }))).status).toBe(403);
   expect(mocks.deleteUser).not.toHaveBeenCalled();
 });
-it("connects the authorised delete action using a fictional provider only", async () => {
+it.each([null, { status: 404 }])("finishes provider cleanup after platform removal (%j)", async error => {
   mocks.configured = true;
-  mocks.query.mockResolvedValue({ rows: [{ auth_id: "fictional-auth-id" }] });
+  mocks.query.mockResolvedValue({ rows: [{ data: { authId: "fictional-auth-id", authCleanupPending: true } }] });
+  mocks.deleteUser.mockImplementation(async () => {
+    expect(mocks.query).toHaveBeenCalledWith("SELECT beauty.owner_remove_account($1,$2) AS data", [id, reason]);
+    return { error };
+  });
   const item = cases.find(item => item.name === "account restriction")!;
-  expect((await account(request(item, { action: "delete", userId: id, reason }))).status).toBe(200);
+  const response = await account(request(item, { action: "delete", userId: id, reason, confirmation: "DELETE" }));
+  expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({ deleted: true, authCleanupPending: false });
   expect(mocks.deleteUser).toHaveBeenCalledWith("fictional-auth-id");
-  expect(mocks.query).toHaveBeenLastCalledWith("SELECT beauty.owner_mark_user_deleted($1,$2)", [id, reason]);
+  expect(mocks.query).toHaveBeenLastCalledWith("SELECT beauty.owner_finish_auth_cleanup($1)", [id]);
+});
+it.each(["response", "exception"])("retains durable cleanup status on provider %s failure", async mode => {
+  mocks.configured = true;
+  mocks.query.mockResolvedValue({ rows: [{ data: { authId: "fictional-auth-id", authCleanupPending: true } }] });
+  if (mode === "exception") mocks.deleteUser.mockRejectedValue(Error("provider outage"));
+  else mocks.deleteUser.mockResolvedValue({ error: { status: 500 } });
+  const item = cases.find(item => item.name === "account restriction")!;
+  const response = await account(request(item, { action: "delete", userId: id, reason, confirmation: "DELETE" }));
+  expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({ deleted: true, authCleanupPending: true });
+  expect(mocks.query.mock.calls.some(([sql]) => sql.includes("owner_finish_auth_cleanup"))).toBe(false);
 });
 it.each(cases)("accepts the $name UI payload through its existing protected routine", async item => {
   if (item.name === "professional commission") {

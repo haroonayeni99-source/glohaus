@@ -12,7 +12,7 @@ beforeAll(async () => {
   const latest = migrations.find(
     (m) => m.name === "20261015023135_multi_speciality_catalogue.sql",
   )!;
-  for (const m of migrations.filter((m) => m !== latest))
+  for (const m of migrations.slice(0, migrations.indexOf(latest)))
     await db.exec(await readFile(m.url, "utf8"));
   await db.transaction(async (tx) => {
     await tx.exec("SET LOCAL ROLE beauty_app");

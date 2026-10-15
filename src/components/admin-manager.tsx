@@ -21,21 +21,40 @@ export function AdminManager({
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [accountSearch, setAccountSearch] = useState("");
+  const [accountView, setAccountView] = useState("current");
   useEffect(() => {
-    const clear = () => setAccountSearch("");
+    const clear = () => {
+      setAccountSearch("");
+      setAccountView("all");
+    };
     window.addEventListener("glohaus:admin-search-reveal", clear);
     return () =>
       window.removeEventListener("glohaus:admin-search-reveal", clear);
   }, []);
   const accountQuery = accountSearch.trim().toLowerCase();
   const visibleUsers = useMemo(() => {
-    if (!accountQuery) return data.users;
-    return data.users.filter((user) =>
-      [user.display_name, user.email, user.status, ...user.roles]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(accountQuery)),
+    return data.users.filter(
+      (user) =>
+        (accountView === "all" ||
+          (accountView === "deleted"
+            ? Boolean(user.deleted_at)
+            : accountView === "hidden"
+              ? !user.deleted_at && Boolean(user.public_hidden_at)
+              : !user.deleted_at)) &&
+        (!accountQuery ||
+          [
+            user.display_name,
+            user.business_name,
+            user.email,
+            user.status,
+            ...user.roles,
+          ]
+            .filter(Boolean)
+            .some((value) =>
+              String(value).toLowerCase().includes(accountQuery),
+            )),
     );
-  }, [accountQuery, data.users]);
+  }, [accountQuery, accountView, data.users]);
   const visibleProfessionals = useMemo(
     () => data.users.filter((user) => user.roles.includes("professional")),
     [data.users],
@@ -181,13 +200,29 @@ export function AdminManager({
         </form>
       )}
       <AdminSection id="users" title="Users" search={false}>
+        <p>
+          Hide an account and its public content, show it again, or delete its
+          GLOHAUS access. Booking, payment and audit history is retained.
+        </p>
+        <label className="admin-account-search">
+          <span>Show accounts</span>
+          <select
+            value={accountView}
+            onChange={(event) => setAccountView(event.target.value)}
+          >
+            <option value="current">Current accounts</option>
+            <option value="hidden">Hidden content</option>
+            <option value="deleted">Deleted accounts</option>
+            <option value="all">All accounts</option>
+          </select>
+        </label>
         <label className="admin-account-search">
           <span>Search users and professionals</span>
           <input
             type="search"
             value={accountSearch}
             onChange={(event) => setAccountSearch(event.target.value)}
-            placeholder="Name, email, role or status"
+            placeholder="Name, business, email, role or status"
             autoComplete="off"
           />
           <small>
@@ -208,7 +243,12 @@ export function AdminManager({
             <tbody>
               {visibleUsers.map((user) => (
                 <tr key={user.id} id={`user-${user.id}`}>
-                  <td>{user.display_name}</td>
+                  <td>
+                    {user.display_name}
+                    {user.business_name && (
+                      <small style={{ display: "block" }}>{user.business_name}</small>
+                    )}
+                  </td>
                   <td>{user.email}</td>
                   <td>{user.roles.join(", ")}</td>
                   <td>
@@ -218,11 +258,16 @@ export function AdminManager({
                           Date.parse(user.restricted_until) > now
                         ? `restricted until ${new Date(user.restricted_until).toLocaleString("en-GB", { timeZone: "Europe/London" })}`
                         : user.status}
+                    {!user.deleted_at && user.public_hidden_at && (
+                      <small style={{ display: "block" }}>Public content hidden</small>
+                    )}
                   </td>
                   <td>
                     <div className="admin-user-action-stack">
-                      {user.roles.includes("admin") ||
-                      user.roles.includes("owner") ? (
+                      {user.deleted_at ? (
+                        <span>Access removed</span>
+                      ) : user.roles.includes("admin") ||
+                        user.roles.includes("owner") ? (
                         <span>
                           {user.roles.includes("owner")
                             ? "Owner protected"
@@ -368,7 +413,8 @@ export function AdminManager({
                         badges: {
                           identity: form.get("identityVerified") === "on",
                           business: form.get("businessVerified") === "on",
-                          professional: form.get("professionalVerified") === "on",
+                          professional:
+                            form.get("professionalVerified") === "on",
                         },
                         standing: form.get("standing"),
                         restrictedUntil: form.get("restrictedUntil")
@@ -411,10 +457,37 @@ export function AdminManager({
                 </select>
                 <fieldset className="admin-verification-checks">
                   <legend>Approved verification checks</legend>
-                  <label><input type="checkbox" name="identityVerified" defaultChecked={pro.identity_verified || pro.verification_status === "verified"} />Identity verified</label>
-                  <label><input type="checkbox" name="businessVerified" defaultChecked={pro.business_verified === true} />Business verified</label>
-                  <label><input type="checkbox" name="professionalVerified" defaultChecked={pro.professional_verified === true} />Professional verified</label>
-                  <small>Approve each check after reviewing evidence. Business and professional checks require identity verification.</small>
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="identityVerified"
+                      defaultChecked={
+                        pro.identity_verified ||
+                        pro.verification_status === "verified"
+                      }
+                    />
+                    Identity verified
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="businessVerified"
+                      defaultChecked={pro.business_verified === true}
+                    />
+                    Business verified
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="professionalVerified"
+                      defaultChecked={pro.professional_verified === true}
+                    />
+                    Professional verified
+                  </label>
+                  <small>
+                    Approve each check after reviewing evidence. Business and
+                    professional checks require identity verification.
+                  </small>
                 </fieldset>
                 <select
                   name="standing"
@@ -459,7 +532,8 @@ export function AdminManager({
           ) : (
             !data.professionalTrust?.length && (
               <p className="lead">
-                No professionals yet. Verification and LIVE controls will appear here when a professional sets up their profile.
+                No professionals yet. Verification and LIVE controls will appear
+                here when a professional sets up their profile.
               </p>
             )
           )}
@@ -488,7 +562,10 @@ export function AdminManager({
             </article>
           ))}
           {data.bookings?.length === 0 && (
-            <p className="lead">No bookings yet. Customer bookings and their status will appear here.</p>
+            <p className="lead">
+              No bookings yet. Customer bookings and their status will appear
+              here.
+            </p>
           )}
         </div>
       </AdminSection>
@@ -721,7 +798,10 @@ export function AdminManager({
             </article>
           ))}
           {data.reviews?.length === 0 && (
-            <p className="lead">No reviews yet. Reviews from completed bookings will appear here for moderation.</p>
+            <p className="lead">
+              No reviews yet. Reviews from completed bookings will appear here
+              for moderation.
+            </p>
           )}
         </div>
       </AdminSection>
@@ -802,7 +882,9 @@ export function AdminManager({
             </article>
           ))}
           {!data.posts.length && (
-            <p className="lead">No posts yet. Professional posts will appear here for moderation.</p>
+            <p className="lead">
+              No posts yet. Professional posts will appear here for moderation.
+            </p>
           )}
         </div>
       </AdminSection>

@@ -1,0 +1,60 @@
+// Local fictional records only. Never sends a production mutation.
+import { chromium, expect } from "@playwright/test";
+process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/owner-account-controls.tsx";
+const { server } = await import("./ui-audit.mjs");
+const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_CHROMIUM_PATH || undefined, headless: true, args: ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"] });
+const results = [];
+try {
+  for (const [name, width, height, theme] of [["desktop light",1440,1000,"light"],["mobile light",390,844,"light"],["desktop night",1440,1000,"night"],["mobile night",390,844,"night"]]) {
+    const context = await browser.newContext({ viewport: { width, height } });
+    const page = await context.newPage(); const errors=[]; page.on("pageerror", error => errors.push(error.message));
+    await page.goto(`http://127.0.0.1:3004/?theme=${theme}`);
+    const users = page.locator("#users");
+    await expect(users.getByText("3 of 4 accounts shown")).toBeVisible();
+    await users.getByRole("searchbox").fill("Fixture Test Studio");
+    await expect(users.getByText("1 of 4 accounts shown")).toBeVisible();
+    let row = users.locator("tbody tr").first();
+    await row.getByRole("button", { name: "Hide account & content", exact: true }).click();
+    await row.getByLabel("Reason", { exact:true }).fill("Hide a fictional test account");
+    await row.locator("form").getByRole("button", { name: "Hide account & content", exact:true }).click();
+    await expect(row.getByText("Fixture action saved; history retained.")).toBeVisible();
+    await row.getByRole("button", { name:"Delete",exact:true }).click();
+    await row.getByLabel("Reason", { exact:true }).fill("Delete a fictional test account");
+    await row.getByLabel("Type DELETE to confirm").fill("wrong");
+    await row.getByRole("button", {name:"Delete account",exact:true}).click();
+    await expect(row.getByText("Type DELETE exactly to confirm.")).toBeVisible();
+    await row.getByLabel("Type DELETE to confirm").fill("DELETE");
+    await row.getByRole("button", {name:"Delete account",exact:true}).click();
+    await expect(row.locator("form")).toHaveCount(0);
+    await users.getByRole("searchbox").fill("");
+    await users.getByRole("combobox",{name:/Show accounts/}).selectOption("hidden");
+    await expect(users.getByText("1 of 4 accounts shown")).toBeVisible();
+    row = users.locator("tbody tr").first();
+    await row.getByRole("button", { name:"Show account & content",exact:true }).click();
+    await row.getByLabel("Reason", { exact:true }).fill("Restore a fictional test account");
+    await row.locator("form").getByRole("button", { name:"Show account & content",exact:true }).click();
+    await expect(row.locator("form")).toHaveCount(0);
+    await users.getByRole("combobox",{name:/Show accounts/}).selectOption("deleted");
+    await expect(users.getByText("Deleted Fixture",{exact:true})).toBeVisible();
+    await expect(users.getByRole("button",{name:"Delete",exact:true})).toHaveCount(0);
+    await expect(users.getByText(/Sign-in record cleanup is pending/)).toBeVisible();
+    await users.getByRole("combobox",{name:/Show accounts/}).selectOption("all");
+    await expect(users.locator("tbody tr").filter({hasText:"Owner Fixture"}).getByRole("button")).toHaveCount(0);
+    const calls = await page.evaluate(()=>JSON.parse(sessionStorage.getItem("account-requests")));
+    expect(calls.map(call=>call.body.action)).toEqual(["hide","delete","show"]);
+    expect(calls[1].body.confirmation).toBe("DELETE");
+    expect(errors).toEqual([]);
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth+1)).toBe(true);
+    results.push({name,passed:true,mutations:calls.length}); await context.close();
+  }
+  const page = await browser.newPage();
+  await page.goto("http://127.0.0.1:3004/?fail=1");
+  const row = page.locator("#users tbody tr").first();
+  await row.getByRole("button",{name:"Hide account & content",exact:true}).click();
+  await row.getByLabel("Reason",{exact:true}).fill("Fictional expired MFA check");
+  await row.locator("form").getByRole("button",{name:"Hide account & content",exact:true}).click();
+  await expect(row.getByText(/Open Security/)).toBeVisible();
+  await expect(row.getByLabel("Reason",{exact:true})).toHaveValue("Fictional expired MFA check");
+  results.push({name:"MFA error preserves draft",passed:true});
+  console.log(JSON.stringify(results,null,2));
+} finally { await browser.close(); await new Promise(resolve => server.close(resolve)); }

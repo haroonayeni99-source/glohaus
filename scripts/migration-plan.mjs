@@ -11,6 +11,7 @@ export async function migrationPlan() {
     "20261005205027_professional_booking_dispute_responses.sql",
   ].map(name => ({ name: `recovered/${name}`, url: new URL(`../db/recovered/${name}`, import.meta.url) }));
   return files.flatMap(name => [
+    ...(name === "20261015155346_owner_account_visibility.sql" ? [{ name: "recovered/20261005210551_livekit_live_session_backend.sql", url: new URL("../db/recovered/20261005210551_livekit_live_session_backend.sql", import.meta.url) }] : []),
     ...(name === "0093_public_fee_access_and_auth_rpc_boundary.sql" ? prerequisites : []),
     ...(name === "0098_harden_privileged_function_execute_grants.sql" ? [{
       name: "recovered/20261010_professional_referrals.sql",

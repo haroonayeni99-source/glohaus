@@ -13,6 +13,8 @@ type UserRow = {
   restricted_until: string | null;
   restriction_reason: string | null;
   deleted_at: string | null;
+  public_hidden_at?: string | null;
+  auth_cleanup_pending?: boolean;
 };
 
 const durations = [
@@ -24,10 +26,18 @@ const durations = [
   ["30 days", 720],
 ] as const;
 
-export function OwnerUserActions({ user, hardDeleteConfigured }: { user: UserRow; hardDeleteConfigured: boolean }) {
+export function OwnerUserActions({
+  user,
+  hardDeleteConfigured,
+}: {
+  user: UserRow;
+  hardDeleteConfigured: boolean;
+}) {
   const router = useRouter();
   const now = useCurrentTime();
-  const [mode, setMode] = useState<"restrict" | "delete" | null>(null);
+  const [mode, setMode] = useState<
+    "restrict" | "delete" | "hide" | "show" | null
+  >(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const restricted =
@@ -44,15 +54,19 @@ export function OwnerUserActions({ user, hardDeleteConfigured }: { user: UserRow
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const result = await response.clone().json().catch(() => ({}));
+      const result = await response
+        .clone()
+        .json()
+        .catch(() => ({}));
       if (!response.ok) {
-        await requireAdminResponse(response,
+        await requireAdminResponse(
+          response,
           typeof result?.message === "string"
             ? result.message
             : "Owner account action was not saved.",
         );
       }
-      setNotice("Saved and added to the Owner audit log.");
+      setNotice(result.message || "Saved and added to the Owner audit log.");
       setMode(null);
       router.refresh();
     } catch (error) {
@@ -63,51 +77,104 @@ export function OwnerUserActions({ user, hardDeleteConfigured }: { user: UserRow
   }
 
   if (user.roles.includes("owner")) return <span>Owner protected</span>;
-  if (user.deleted_at) return <span>Deleted</span>;
 
   return (
     <div className="owner-user-actions">
       <div className="owner-user-action-buttons">
-        {restricted ? (
+        {user.deleted_at ? (
+          <span>Deleted from GLOHAUS</span>
+        ) : (
+          <>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setMode(user.public_hidden_at ? "show" : "hide")}
+            >
+              {user.public_hidden_at
+                ? "Show account & content"
+                : "Hide account & content"}
+            </button>
+            {restricted ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() =>
+                  void submit({
+                    action: "liftRestriction",
+                    userId: user.id,
+                    reason: "Owner manually lifted timed account restriction",
+                  })
+                }
+              >
+                Lift restriction
+              </button>
+            ) : (
+              <button type="button" onClick={() => setMode("restrict")}>
+                Restrict
+              </button>
+            )}
+          </>
+        )}
+        {(!user.deleted_at ||
+          (user.auth_cleanup_pending && hardDeleteConfigured)) && (
           <button
+            className="owner-danger-button"
             type="button"
             disabled={busy}
-            onClick={() =>
-              void submit({
-                action: "liftRestriction",
-                userId: user.id,
-                reason: "Owner manually lifted timed account restriction",
-              })
-            }
+            title="Delete this GLOHAUS account and hide its public content"
+            onClick={() => setMode("delete")}
           >
-            Lift restriction
-          </button>
-        ) : (
-          <button type="button" onClick={() => setMode("restrict")}>
-            Restrict
+            {user.deleted_at ? "Finish sign-in cleanup" : "Delete"}
           </button>
         )}
-        <button
-          className="owner-danger-button"
-          type="button"
-          disabled={!hardDeleteConfigured || busy}
-          title={
-            hardDeleteConfigured
-              ? "Delete this account"
-              : "Secure Supabase admin deletion is not configured yet."
-          }
-          onClick={() => setMode("delete")}
-        >
-          {hardDeleteConfigured ? "Delete" : "Delete unavailable"}
-        </button>
       </div>
 
-      {!hardDeleteConfigured && (
+      {user.deleted_at && user.auth_cleanup_pending && (
         <small className="form-notice">
-          Hard delete needs a server-only Supabase admin key. Restrict and status controls still work normally.
+          Access is blocked and public content is hidden. Sign-in record cleanup
+          is pending.
         </small>
       )}
       {notice && <small className="form-notice">{notice}</small>}
+
+      {(mode === "hide" || mode === "show") && (
+        <form
+          className="owner-account-action-popover"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const form = new FormData(event.currentTarget);
+            void submit({
+              action: mode,
+              userId: user.id,
+              reason: form.get("reason"),
+            });
+          }}
+        >
+          <strong>
+            {mode === "hide" ? "Hide" : "Show"} {user.display_name} and public
+            content?
+          </strong>
+          <p>
+            {mode === "hide"
+              ? "Hide the profile, services, products, posts, stories, images, videos and public reviews. Sign-in and existing bookings remain available. New incoming bookings and purchases are blocked while hidden."
+              : "Restore account visibility. Existing draft, inactive and moderated content stays unpublished; ended LIVE sessions are not restarted."}
+          </p>
+          <label>
+            Reason
+            <textarea name="reason" required minLength={5} maxLength={500} />
+          </label>
+          <div className="editor-actions">
+            <button className="button" disabled={busy}>
+              {mode === "hide"
+                ? "Hide account & content"
+                : "Show account & content"}
+            </button>
+            <button type="button" onClick={() => setMode(null)}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
 
       {mode === "restrict" && (
         <form
@@ -150,8 +217,12 @@ export function OwnerUserActions({ user, hardDeleteConfigured }: { user: UserRow
             Access lifts automatically when the selected time expires.
           </small>
           <div className="editor-actions">
-            <button className="button" disabled={busy}>Apply restriction</button>
-            <button type="button" onClick={() => setMode(null)}>Cancel</button>
+            <button className="button" disabled={busy}>
+              Apply restriction
+            </button>
+            <button type="button" onClick={() => setMode(null)}>
+              Cancel
+            </button>
           </div>
         </form>
       )}
@@ -170,14 +241,16 @@ export function OwnerUserActions({ user, hardDeleteConfigured }: { user: UserRow
               action: "delete",
               userId: user.id,
               reason: form.get("reason"),
+              confirmation: "DELETE",
             });
           }}
         >
           <strong>Delete {user.display_name}?</strong>
           <p>
-            This removes Supabase sign-in access and anonymises the GLOHAUS
-            account. Booking, payment and audit records are retained for
-            operational and financial integrity.
+            This permanently removes GLOHAUS access and hides all public
+            content. Booking, payment and audit records are retained. Sign-in
+            credentials are also removed when provider cleanup is available;
+            access is blocked immediately.
           </p>
           <label>
             Reason
@@ -191,7 +264,9 @@ export function OwnerUserActions({ user, hardDeleteConfigured }: { user: UserRow
             <button className="owner-danger-button" disabled={busy}>
               Delete account
             </button>
-            <button type="button" onClick={() => setMode(null)}>Cancel</button>
+            <button type="button" onClick={() => setMode(null)}>
+              Cancel
+            </button>
           </div>
         </form>
       )}

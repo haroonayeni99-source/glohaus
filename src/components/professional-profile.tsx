@@ -66,7 +66,7 @@ export function ProfessionalProfile({
   const services=allServices.filter(s=>!selectedSpeciality||s.speciality_id===selectedSpeciality).sort((a,b)=>(a.speciality_name??"Other services").localeCompare(b.speciality_name??"Other services")||a.price_pence-b.price_pence);
   const assets=allAssets.filter(a=>!selectedSpeciality||a.speciality_ids?.includes(selectedSpeciality));
   const reviews=allReviews.filter(r=>(!selectedSpeciality||r.speciality_id===selectedSpeciality)&&(!reviewService||r.service_id===reviewService));
-  const specialityTabs=(anchor:string)=><nav className="management-tabs taxonomy-tabs" aria-label={`${anchor} specialities`}><Link aria-current={!selectedSpeciality?"page":undefined} href={`/p/${p.slug}#${anchor}`}>All {anchor==="services"?"Services":anchor}</Link>{specialities.map(s=><Link key={s.speciality_id} aria-current={selectedSpeciality===s.speciality_id?"page":undefined} href={`?speciality=${s.speciality_id}#${anchor}`}>{s.name}</Link>)}</nav>;
+  const specialityTabs=(anchor:string)=><nav className="taxonomy-tabs" aria-label={`${anchor} specialities`}><Link aria-current={!selectedSpeciality?"page":undefined} href={`/p/${p.slug}#${anchor}`}>All {anchor==="services"?"Services":anchor}</Link>{specialities.map(s=><Link key={s.speciality_id} aria-current={selectedSpeciality===s.speciality_id?"page":undefined} href={`?speciality=${s.speciality_id}#${anchor}`}>{s.name}</Link>)}</nav>;
   const safeHref = (value: string) => {
     try {
       const url = new URL(value);

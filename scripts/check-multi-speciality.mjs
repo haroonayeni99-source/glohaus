@@ -152,6 +152,7 @@ try {
       expect(request.variationId).toBe(id(13));
       expect(request.extraIds).toEqual([id(14)]);
       await page.goto(`http://127.0.0.1:3004/discover?theme=${theme}`);
+      await page.getByText("Filter by speciality", { exact: true }).click();
       const discoverFilter = page.locator(".taxonomy-discover-filter");
       await discoverFilter
         .getByLabel("Category", { exact: true })
@@ -159,6 +160,10 @@ try {
       await discoverFilter
         .getByLabel("Speciality", { exact: true })
         .selectOption(id(4));
+      await page.screenshot({
+        path: `reports/taxonomy-discover-filter-${theme}-${width}.png`,
+        fullPage: true,
+      });
       await discoverFilter
         .getByRole("button", { name: "Filter Discover", exact: true })
         .click();

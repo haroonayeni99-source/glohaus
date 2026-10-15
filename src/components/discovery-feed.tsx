@@ -408,9 +408,17 @@ export function DiscoveryFeed({
             </Link>
           </div>
         </header>
+        {taxonomy && (
+          <details className="taxonomy-discover-controls">
+            <summary>Filter by speciality</summary>
+            <form action={routeBase} className="taxonomy-discover-filter">
+              <TaxonomyFilters catalog={taxonomy} {...taxonomySelection} />
+              <button className="button small">Filter Discover</button>
+            </form>
+          </details>
+        )}
         <div className="discovery-tabs" aria-label="Filter inspiration">
           {canPublish && <Link className="discovery-create-mobile" href="/professional/posts">Post / Story</Link>}
-          {taxonomy&&<form action={routeBase} className="taxonomy-discover-filter"><TaxonomyFilters catalog={taxonomy} {...taxonomySelection}/><button className="button small">Filter Discover</button></form>}
           {["Following", "For you", ...categories, "Tutorials"].map((item) => (
             <button
               key={item}

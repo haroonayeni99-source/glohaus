@@ -89,7 +89,10 @@ const specialities = taxonomy.specialities
     category_name: "Hair",
     is_primary: s.id === selection.primarySpecialityId,
   }));
-const selected = params.get("speciality");
+const selected =
+  location.pathname === "/discover"
+    ? params.get("specialityId")
+    : params.get("speciality");
 let content: React.ReactNode;
 if (location.pathname === "/professional/services")
   content = (

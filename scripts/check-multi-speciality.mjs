@@ -151,9 +151,18 @@ try {
       );
       expect(request.variationId).toBe(id(13));
       expect(request.extraIds).toEqual([id(14)]);
-      await page.goto(
-        `http://127.0.0.1:3004/discover?speciality=${id(4)}&theme=${theme}`,
-      );
+      await page.goto(`http://127.0.0.1:3004/discover?theme=${theme}`);
+      const discoverFilter = page.locator(".taxonomy-discover-filter");
+      await discoverFilter
+        .getByLabel("Category", { exact: true })
+        .selectOption(id(1));
+      await discoverFilter
+        .getByLabel("Speciality", { exact: true })
+        .selectOption(id(4));
+      await discoverFilter
+        .getByRole("button", { name: "Filter Discover", exact: true })
+        .click();
+      await expect(page).toHaveURL(new RegExp(`specialityId=${id(4)}`));
       await expect(page.getByText("Retwist finishing").first()).toBeVisible();
       await expect(page.getByText("Knotless Braids finishing")).toHaveCount(0);
       await page.goto(`http://127.0.0.1:3004/admin?theme=${theme}`);

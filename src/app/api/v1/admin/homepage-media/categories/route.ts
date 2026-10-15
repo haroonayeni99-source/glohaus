@@ -63,10 +63,17 @@ const schema = z
   })
   .strict();
 
+const slot=z.object({categoryId:z.uuid().nullable(),specialityId:z.uuid().nullable(),templateId:z.uuid().nullable(),description:z.string().trim().max(200),sortOrder:z.number().int().min(0).max(10000),visible:z.boolean()}).strict();
+const key=z.union([z.enum(["hair","nails","barber","waxing","injectables","lashes","skin","makeup"]),z.uuid()]);
+const record=<T extends z.ZodType>(value:T)=>z.record(key,value).refine(v=>Object.keys(v).length<=30);
+const extendedSchema=z.object({images:z.object({desktop:record(image),mobile:record(image)}).strict(),names:z.object({desktop:record(name),mobile:record(name)}).strict(),metadata:z.object({desktop:record(slot),mobile:record(slot)}).strict(),reason:z.string().trim().min(5).max(500)}).strict();
 export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
-    const parsed = schema.safeParse(await smallJson(request, 24576));
+    const body=await smallJson(request,80000);
+    const extended=extendedSchema.safeParse(body);
+    if(extended.success){const data=await withOwner(async db=>(await db.query<{data:unknown}>("SELECT beauty.owner_set_homepage_categories($1::jsonb,$2::jsonb,$3::jsonb,$4) AS data",[JSON.stringify(extended.data.images),JSON.stringify(extended.data.names),JSON.stringify(extended.data.metadata),extended.data.reason])).rows[0].data);return json({images:data});}
+    const parsed = schema.safeParse(body);
     if (!parsed.success) throw new AccessError("INVALID_REQUEST", 400);
     const data = await withOwner(
       async (db) =>

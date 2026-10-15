@@ -74,3 +74,14 @@ it("cancels without writing and starts a clean new form", async () => {
   expect(container.querySelector<HTMLInputElement>('[name="name"]')!.value).toBe("");
   expect(container.querySelector<HTMLInputElement>('[name="active"]')!.checked).toBe(true);
 });
+
+it("preserves category descriptions, imagery and synonyms when hiding through the extended catalogue controls",async()=>{
+  await act(async()=>root.render(React.createElement(AdminCategoryManager,{initial:[{...initial[0],description:"Nail services",image_url:"https://images.example.test/nails.webp"}],extended:true,aliases:[{id:"44444444-4444-4444-8444-444444444444",term:"nail care",target_kind:"category",target_id:initial[0].id}]})));
+  await button("Hide Nails");
+  expect(vi.mocked(fetch).mock.calls[0][0]).toBe("/api/v1/admin/taxonomy");
+  expect(payload()).toMatchObject({operation:"category",active:false,description:"Nail services",imageUrl:"https://images.example.test/nails.webp",aliases:["nail care"]});
+  await button("Edit Nails");
+  expect(container.querySelector<HTMLTextAreaElement>('[name="description"]')?.value).toBe("Nail services");
+  expect(container.querySelector<HTMLTextAreaElement>('[name="aliases"]')?.value).toBe("nail care");
+  expect(container.querySelector<HTMLInputElement>('[aria-label="Search categories"]')).toBeTruthy();
+});

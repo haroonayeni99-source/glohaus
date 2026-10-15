@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, CalendarDays, CircleHelp, LockKeyhole } from "lucide-react";
+import { ViewportVideo } from "./viewport-video";
+import { optionSearch } from "@/modules/taxonomy/domain";
 import { money, type Service } from "@/modules/professionals/domain";
 import { AuthGate } from "./auth-gate";
 import { PaymentSummary } from "./payment-summary";
@@ -61,7 +63,7 @@ export function BookingPicker({
   returnPath: string;
   professionalName: string;
   bookingFeePence: number;
-  initialSelection?: { serviceId?: string; date?: string; startsAt?: string };
+  initialSelection?: { serviceId?: string; date?: string; startsAt?: string;variationId?:string;extraIds?:string[] };
   verificationStatus?: "unverified" | "pending" | "verified" | "restricted";
   starterBookingsRemaining?: number | null;
 }) {
@@ -78,6 +80,9 @@ export function BookingPicker({
   const [serviceId, setServiceId] = useState(
     validInitialService || services[0]?.id || "",
   );
+  const initialOptions=services.find(s=>s.id===validInitialService)?.options??[];
+  const [variationId,setVariationId]=useState<string|null>(initialOptions.find(o=>o.kind==="variation"&&o.id===initialSelection?.variationId)?.id??null);const [extraIds,setExtraIds]=useState<string[]>([...new Set((initialSelection?.extraIds??[]).filter(id=>initialOptions.some(o=>o.kind==="extra"&&o.id===id)))]);
+  const optionsQuery=optionSearch(variationId,extraIds);
   const [date, setDate] = useState(initialDate);
   const [slots, setSlots] = useState<string[]>([]);
   const [selected, setSelected] = useState(
@@ -96,7 +101,7 @@ export function BookingPicker({
   const [step, setStep] = useState<"appointment" | "summary">("appointment");
 
   const listedService = services.find((item) => item.id === serviceId);
-  const service = listedService && policy ? {...listedService,price_pence:policy.pricePence,deposit_pence:policy.depositPence} : listedService;
+  const service = listedService && policy ? {...listedService,price_pence:policy.pricePence,deposit_pence:policy.depositPence,duration_minutes:policy.serviceOptions?.durationMinutes??listedService?.duration_minutes??0} : listedService;
   const starterFullPrepayment = policy ? policy.fullPrepayment : verificationStatus !== "verified";
   const invalidVerifiedDeposit =
     !!service &&
@@ -110,14 +115,14 @@ export function BookingPicker({
     : effectiveBookingFeePence;
   const [today] = useState(() => londonDateString());
   const earlyServiceNeeded=Boolean(selected&&Date.parse(selected)<earlyServiceBefore);
-  const policyService=service&&policy?{...service,price_pence:policy.pricePence,deposit_pence:policy.depositPence}:service;
+  const policyService=service&&policy?{...service,price_pence:policy.pricePence,deposit_pence:policy.depositPence,duration_minutes:policy.serviceOptions?.durationMinutes??listedService?.duration_minutes??0}:service;
   const quickDates = useMemo(() => dateChoices(today), [today]);
 
   useEffect(()=>{
     const controller=new AbortController();
-    void fetch(`/api/v1/policies?serviceId=${encodeURIComponent(serviceId)}`,{signal:controller.signal}).then(async response=>{const result=await response.json();if(!response.ok)throw Error(result.error?.message||"Booking policies could not be loaded.");if(!controller.signal.aborted){setPolicy(result.policy);setEarlyServiceBefore(Date.parse(result.earlyServiceBefore));setAccepted(false);setEarlyServiceRequested(false);}}).catch(e=>{if(!controller.signal.aborted){setPolicy(null);setNotice(e instanceof Error?e.message:"Could not load booking policies.");}});
+    void fetch(`/api/v1/policies?serviceId=${encodeURIComponent(serviceId)}${optionsQuery?`&${optionsQuery}`:""}`,{signal:controller.signal}).then(async response=>{const result=await response.json();if(!response.ok)throw Error(result.error?.message||"Booking policies could not be loaded.");if(!controller.signal.aborted){setPolicy(result.policy);setEarlyServiceBefore(Date.parse(result.earlyServiceBefore));setAccepted(false);setEarlyServiceRequested(false);}}).catch(e=>{if(!controller.signal.aborted){setPolicy(null);setNotice(e instanceof Error?e.message:"Could not load booking policies.");}});
     return ()=>controller.abort();
-  },[serviceId,policyReload]);
+  },[serviceId,policyReload,optionsQuery]);
 
   useEffect(() => {
     if (!date || !serviceId) return;
@@ -130,7 +135,7 @@ export function BookingPicker({
           "/api/v1/availability?serviceId=" +
             encodeURIComponent(serviceId) +
             "&date=" +
-            encodeURIComponent(date),
+            encodeURIComponent(date)+(optionsQuery?`&${optionsQuery}`:""),
           { signal: controller.signal },
         );
         const data = await response.json();
@@ -156,7 +161,7 @@ export function BookingPicker({
 
     void load();
     return () => controller.abort();
-  }, [date, serviceId]);
+  }, [date, serviceId,optionsQuery]);
 
   const selectedDateLabel = date
     ? new Intl.DateTimeFormat("en-GB", {
@@ -182,7 +187,7 @@ export function BookingPicker({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          serviceId,
+          serviceId,variationId,extraIds,
           startsAt: selected,
           acceptPolicy: true,
           policyToken:policy.token,
@@ -259,7 +264,7 @@ export function BookingPicker({
             <select
               value={serviceId}
               onChange={(event) => {
-                setServiceId(event.target.value);
+                setServiceId(event.target.value);setVariationId(null);setExtraIds([]);
                 setPolicy(null);
                 setAccepted(false);
                 setEarlyServiceRequested(false);
@@ -279,9 +284,12 @@ export function BookingPicker({
             </select>
           </label>
 
+          {!!listedService?.options?.length&&<fieldset><legend>Personalise your service</legend>
+          {listedService.options.some(o=>o.kind==="variation")&&<label>Size, length or style<select value={variationId??""} onChange={e=>{setVariationId(e.target.value||null);setPolicy(null);setAccepted(false);setSelected("");setSlots([]);setLoadingSlots(Boolean(date));}}><option value="">Standard · {money(listedService.price_pence)} · {listedService.duration_minutes} min</option>{listedService.options.filter(o=>o.kind==="variation").map(o=><option key={o.id} value={o.id}>{o.name} · {Object.values(o.attributes).filter(Boolean).join(" / ")} · {money(o.pricePence)} · {o.durationMinutes} min</option>)}</select></label>}
+          {listedService.options.filter(o=>o.kind==="extra").map(o=><label key={o.id} className="policy-check"><input type="checkbox" checked={extraIds.includes(o.id)} onChange={e=>{setExtraIds(e.target.checked?[...extraIds,o.id]:extraIds.filter(id=>id!==o.id));setPolicy(null);setAccepted(false);setSelected("");setSlots([]);setLoadingSlots(Boolean(date));}}/>{o.name} · +{money(o.pricePence)} · +{o.durationMinutes} min</label>)}
+          </fieldset>}
           <div className="booking-service-preview booking-service-reference">
-            {service.asset_id ? (
-              <Image
+            {service.asset_id ? (service.asset_media_type==="video"?<ViewportVideo src={`/api/media/${service.asset_id}`} label={service.image_alt||service.name}/>:<Image
                 src={"/api/media/" + service.asset_id}
                 alt={service.image_alt || service.name}
                 width={96}
@@ -447,8 +455,7 @@ export function BookingPicker({
           </div>
 
           <div className="booking-service-preview booking-service-reference">
-            {service.asset_id ? (
-              <Image
+            {service.asset_id ? (service.asset_media_type==="video"?<ViewportVideo src={`/api/media/${service.asset_id}`} label={service.image_alt||service.name}/>:<Image
                 src={"/api/media/" + service.asset_id}
                 alt={service.image_alt || service.name}
                 width={96}
@@ -467,6 +474,7 @@ export function BookingPicker({
             </div>
           </div>
 
+          {policy?.serviceOptions&&<p>{[policy.serviceOptions.variationName,...policy.serviceOptions.extraNames].filter(Boolean).join(" · ")} · {policy.serviceOptions.durationMinutes} minutes</p>}
           <PaymentSummary
             servicePricePence={policyService!.price_pence}
             depositPence={policyService!.deposit_pence}
@@ -532,7 +540,7 @@ export function BookingPicker({
             new URLSearchParams({
               bookService: serviceId,
               bookDate: date,
-              bookTime: selected,
+              bookTime: selected,bookVariation:variationId??"",bookExtras:extraIds.join(","),
             }).toString()
           }
           onClose={() => setNeedsAccount(false)}

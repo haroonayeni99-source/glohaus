@@ -75,7 +75,7 @@ const identities = Object.fromEntries(
 let owner: string;
 let other: string;
 let imageBase64: string;
-let photoId: string;
+let photoId: string;let taxonomyFields:{categoryId:string;specialityId:string;templateId:string};
 async function asUser<T>(authId: string, work: (sql: SqlClient) => Promise<T>) {
   return db.transaction(async (tx) => {
     await tx.exec("SET LOCAL ROLE beauty_app");
@@ -138,6 +138,8 @@ beforeAll(async () => {
     if (identity.authId === "maya") owner = account.professionalId!;
     if (identity.authId === "other") other = account.professionalId!;
   }
+  const t=(await db.query<{categoryId:string;specialityId:string;templateId:string}>(`SELECT s.category_id AS "categoryId",s.id AS "specialityId",t.id AS "templateId" FROM beauty.service_templates t JOIN beauty.specialities s ON s.id=t.speciality_id WHERE t.slug='gel-polish'`)).rows[0];taxonomyFields=t;
+  await asUser("maya",sql=>sql.query("SELECT beauty.save_my_specialities($1,$2,$3)",[[t.categoryId],[t.specialityId],t.specialityId]));
   imageBase64 = (
     await sharp({
       create: { width: 800, height: 600, channels: 3, background: "#dcc5bd" },
@@ -202,6 +204,7 @@ describe.sequential(
           await addService(
             request(
               {
+                ...taxonomyFields,
                 name: "Gel manicure",
                 description: "Precision shaping and colour",
                 durationMinutes: 60,
@@ -593,6 +596,7 @@ it("ignores malformed pagination tokens and unsupported views", () => {
 it("manages a service through authenticated routes and rejects another owner", async () => {
   current = identities.maya;
   const input = {
+    ...taxonomyFields,
     name: "Nail Set",
     description: "Sculpted nails",
     durationMinutes: 90,
@@ -639,6 +643,7 @@ it("manages a service through authenticated routes and rejects another owner", a
       await asUser("", (sql) => publicProfile(sql, profile.slug))
     )?.services.find((s) => s.id === id),
   ).toMatchObject({
+    category_id:taxonomyFields.categoryId,speciality_id:taxonomyFields.specialityId,template_id:taxonomyFields.templateId,
     name: "Nail Set",
     price_pence: 4500,
     duration_minutes: 90,

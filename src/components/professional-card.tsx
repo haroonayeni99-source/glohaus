@@ -1,6 +1,7 @@
 import { PlatformLabel } from "./platform-labels";
 import { ProfessionalVerificationBadges } from "./professional-verification-badges";
 import Image from "next/image";
+import { serviceDeepLink } from "@/modules/taxonomy/domain";
 import Link from "next/link";
 import { MapPin, Star, ArrowUpRight, CalendarCheck2, Sparkles } from "lucide-react";
 import { money, type PublicProfessional } from "@/modules/professionals/domain";
@@ -10,7 +11,7 @@ export function ProfessionalCard({
   professional: PublicProfessional;
 }) {
   return (
-    <Link className="professional-card" href={`/p/${pro.slug}`}>
+    <Link className="professional-card" href={pro.matching_services?.[0]?serviceDeepLink(pro.slug,pro.matching_services[0].id,pro.matching_services[0].speciality_id):`/p/${pro.slug}`}>
       <div className="professional-card-visual">
         {pro.photo_id ? (
           <Image
@@ -45,7 +46,7 @@ export function ProfessionalCard({
             {pro.available_today ? "Available today" : "Check availability"}
           </span>
         </div>
-        {pro.boosted && <span className="professional-featured-label">Featured · visibility boost</span>}
+        {pro.boosted && <span className="professional-featured-label">Promoted · visibility boost</span>}
         <ProfessionalVerificationBadges professional={pro} />
         <p className="professional-card-bio">{pro.bio}</p>
         {!!pro.popular_services?.length && (

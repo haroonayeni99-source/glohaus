@@ -1,3 +1,5 @@
+import { serviceQuote } from "@/modules/taxonomy/repository";
+import { optionsFromSearch } from "@/modules/taxonomy/domain";
 import { z } from "zod";
 import { withIdentity } from "@/lib/db";
 import { apiError, json } from "@/lib/http";
@@ -6,6 +8,7 @@ import { appointmentSlots, type Rule } from "@/modules/availability/domain";
 export async function GET(request: Request) {
   try {
     const params = new URL(request.url).searchParams;
+    const options=optionsFromSearch(params);
     const serviceId = params.get("serviceId");
     const date = params.get("date") || "";
     if (
@@ -22,6 +25,7 @@ export async function GET(request: Request) {
         )
       ).rows[0];
       if (!service) return [];
+      if(options.variationId||options.extraIds?.length){const quote=await serviceQuote(db,serviceId!,options.variationId,options.extraIds);service.duration_minutes=quote.durationMinutes;}
       const rules = (
         await db.query<Rule>(
           'SELECT weekday,start_minute AS "startMinute",end_minute AS "endMinute" FROM beauty.public_hours WHERE professional_id=$1',

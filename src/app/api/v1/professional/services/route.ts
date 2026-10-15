@@ -8,8 +8,8 @@ import { assertStarterServiceAllowed, professionalAccessState } from "@/modules/
 export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
-    const parsed = serviceSchema.safeParse(await smallJson(request, 4096));
-    if (!parsed.success) throw new AccessError("INVALID_REQUEST", 400);
+    const parsed = serviceSchema.safeParse(await smallJson(request, 40000));
+    if (!parsed.success || !parsed.data.categoryId || !parsed.data.specialityId) throw new AccessError("INVALID_REQUEST", 400);
     const service = await withAccount("professional", async (db, account) => {
       if (parsed.data.category && !(await categoryIsActive(db, parsed.data.category)))
         throw new AccessError("INVALID_REQUEST", 400);

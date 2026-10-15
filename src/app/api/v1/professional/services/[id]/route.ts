@@ -16,7 +16,7 @@ export async function PUT(
   try {
     assertSameOrigin(request);
     const { id } = await context.params;
-    const parsed = serviceSchema.safeParse(await smallJson(request, 4096));
+    const parsed = serviceSchema.safeParse(await smallJson(request, 40000));
     if (!z.uuid().safeParse(id).success || !parsed.success)
       throw new AccessError("INVALID_REQUEST", 400);
     await withAccount("professional", async (db, account) => {

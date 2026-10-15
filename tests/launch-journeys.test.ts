@@ -212,9 +212,12 @@ describe.sequential(
         deadline: null,
       });
       expect(JSON.stringify(remaining)).not.toContain("private@example.test");
+      const taxonomyFields=(await db.query<{categoryId:string;specialityId:string;templateId:string}>(`SELECT s.category_id AS "categoryId",s.id AS "specialityId",t.id AS "templateId" FROM beauty.service_templates t JOIN beauty.specialities s ON s.id=t.speciality_id WHERE t.slug='gel-polish'`)).rows[0];
+      await asUser("pro",sql=>sql.query("SELECT beauty.save_my_specialities($1,$2,$3)",[[taxonomyFields.categoryId],[taxonomyFields.specialityId],taxonomyFields.specialityId]));
       await expectSaved(
         await service(
           request("/api/v1/professional/services", {
+            ...taxonomyFields,
             name: "Gel manicure",
             description: "A fresh gel manicure",
             durationMinutes: 60,

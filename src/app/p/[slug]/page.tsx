@@ -51,7 +51,9 @@ export default async function Profile({
 }: {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{
+    service?:string;speciality?:string;reviewService?:string;
     bookService?: string;
+    bookVariation?:string;bookExtras?:string;
     bookDate?: string;
     bookTime?: string;
   }>;
@@ -101,9 +103,9 @@ export default async function Profile({
       await db.query<{
         id: string;
         alt_text: string;
-        media_type: "image" | "video";
+        media_type: "image" | "video";speciality_ids:string[];speciality_names:string[];
       }>(
-        "SELECT id,alt_text,media_type FROM beauty.public_media_assets WHERE professional_id=$1 ORDER BY created_at DESC LIMIT 100",
+        `SELECT a.id,a.alt_text,a.media_type,ARRAY(SELECT speciality_id FROM beauty.public_portfolio_specialities WHERE asset_id=a.id) AS speciality_ids,ARRAY(SELECT speciality_name FROM beauty.public_portfolio_specialities WHERE asset_id=a.id) AS speciality_names FROM beauty.public_media_assets a WHERE professional_id=$1 ORDER BY created_at DESC LIMIT 100`,
         [id],
       )
     ).rows;
@@ -112,9 +114,9 @@ export default async function Profile({
         id: string;
         rating: number;
         body: string;
-        public_name: string;
+        public_name: string;service_id:string|null;service_name:string|null;speciality_id:string|null;speciality_name:string|null;
       }>(
-        "SELECT id,rating,body,public_name FROM beauty.public_reviews WHERE professional_id=$1 ORDER BY created_at DESC LIMIT 50",
+        "SELECT id,rating,body,public_name,service_id,service_name,speciality_id,speciality_name FROM beauty.public_reviews WHERE professional_id=$1 ORDER BY created_at DESC LIMIT 50",
         [id],
       )
     ).rows;
@@ -182,6 +184,8 @@ export default async function Profile({
     };
   });
   if (!data) notFound();
+  const focusService=data.services.find(s=>s.id===(booking.service||booking.bookService));
+  const selectedSpeciality=focusService?.speciality_id??(data.specialities.some(s=>s.speciality_id===booking.speciality)?booking.speciality:null);
   return (
     <>
       <script
@@ -225,6 +229,7 @@ export default async function Profile({
         policies={<section id="professional-policies" className="professional-section"><h2>Rules & booking policies</h2><p>Choose a service to inspect its applicable general and service-specific terms before booking.</p>{data.policies.map(p=><details key={p.id}><summary>{data.services.find(s=>s.id===p.id)?.name}</summary><ProfessionalPolicySummary policy={p.policy}/></details>)}</section>}
         details={data.details}
         services={data.services}
+        specialities={data.specialities} selectedSpeciality={selectedSpeciality} selectedService={booking.service} reviewService={booking.reviewService}
         assets={data.assets}
         reviews={data.reviews}
         hours={data.hours}
@@ -250,7 +255,8 @@ export default async function Profile({
             verificationStatus={data.access.status}
             starterBookingsRemaining={data.access.starterBookingsRemaining}
             initialSelection={{
-              serviceId: booking.bookService,
+              serviceId: booking.bookService||booking.service,
+              variationId:booking.bookVariation,extraIds:booking.bookExtras?.split(",").slice(0,10),
               date: booking.bookDate,
               startsAt: booking.bookTime,
             }}

@@ -1,3 +1,4 @@
+import "@/components/taxonomy.css";
 import "@/components/professional-activity.css";
 import "@/components/commission-control-centre.css";
 import { AuthSessionProvider } from "@/components/auth-session";

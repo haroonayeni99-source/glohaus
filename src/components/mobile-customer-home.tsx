@@ -2,7 +2,7 @@
 
 import { useSignedIn } from "./auth-session";
 
-import { homepageCategories, categoryImage, categoryName, type HomepageMedia } from "@/modules/platform/homepage-images";
+import { homepageCategorySlots, homepageCategoryHref, categoryImage, categoryName, type HomepageMedia } from "@/modules/platform/homepage-images";
 import { HomeMarketplaceGuide } from "./home-marketplace-guide";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,7 +16,7 @@ import { money, type PublicProfessional } from "@/modules/professionals/domain";
 import type { CustomerHomeSummary } from "@/modules/home/repository";
 import { BottomNavigation } from "./bottom-navigation";
 
-const mobileCategories = homepageCategories.mobile;
+
 
 export function MobileCustomerHome({
   signedIn: initialSignedIn = false,
@@ -91,13 +91,13 @@ export function MobileCustomerHome({
         </form>
 
         <nav className="mobile-home-categories" aria-label="Beauty categories">
-          {mobileCategories.map((slot) => (
-            <Link href={`/explore?q=${encodeURIComponent(categoryName(homepageMedia.categoryNames, "mobile", slot))}`} key={slot.key}>
+          {homepageCategorySlots(homepageMedia,"mobile").map((slot) => (
+            <Link href={homepageCategoryHref(homepageMedia,"mobile",slot.key,categoryName(homepageMedia.categoryNames,"mobile",slot))} key={slot.key}>
               <span>
                 <Image fill sizes="64px" src={categoryImage(homepageMedia.categoryImages, "mobile", slot)}
                   unoptimized={Boolean(homepageMedia.categoryImages?.mobile?.[slot.key])} alt="" />
               </span>
-              <strong>{categoryName(homepageMedia.categoryNames, "mobile", slot)}</strong>
+              <strong>{categoryName(homepageMedia.categoryNames, "mobile", slot)}</strong>{slot.description&&<small>{slot.description}</small>}
             </Link>
           ))}
         </nav>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { serviceOptionSchema, type ServiceOption } from "@/modules/taxonomy/domain";
 import {
   depositLimitMessage,
   isDepositWithinMaximum,
@@ -106,6 +107,10 @@ export const serviceSchema = z
     active: z.boolean(),
     assetId: z.uuid().nullable().optional(),
     category: z.string().trim().min(2).max(60).optional(),
+    categoryId:z.uuid().nullable().optional(),specialityId:z.uuid().nullable().optional(),templateId:z.uuid().nullable().optional(),
+    publicationStatus:z.enum(["draft","published","inactive"]).optional(),
+    variations:z.array(serviceOptionSchema.refine(v=>v.pricePence>=100&&v.durationMinutes>=15,"Variations need a price of at least £1 and a duration of at least 15 minutes.")).max(20).optional(),
+    extras:z.array(serviceOptionSchema).max(10).optional(),
   })
   .strict()
   .superRefine((value, context) => {
@@ -147,6 +152,7 @@ export type PublicProfessional = {
   travels_to_you?: boolean;
   available_today?: boolean;
   popular_services?: string[];
+  matching_services?:{id:string;name:string;speciality_id:string|null;speciality_name:string|null;price_pence:number;duration_minutes:number}[];
   id: string;
   slug: string;
   business_name: string;
@@ -156,6 +162,11 @@ export type PublicProfessional = {
   verification_status?: "unverified" | "pending" | "verified" | "restricted";
 };
 export type Service = {
+  category_id?:string|null;speciality_id?:string|null;template_id?:string|null;
+  speciality_name?:string|null;category_name?:string|null;publication_status?:"published"|"draft"|"inactive";
+  categorisation_status?:"approved"|"needs_review"|"blocked";categorisation_reason?:string;
+  options?:ServiceOption[];asset_media_type?:"image"|"video"|null;
+  from_price_pence?:number;has_variations?:boolean;
   asset_id?: string | null;
   image_alt?: string | null;
   id: string;

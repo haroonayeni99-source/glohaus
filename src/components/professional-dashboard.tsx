@@ -86,6 +86,7 @@ export function ProfessionalDashboard({
         </section>
 
         {activity && <ProfessionalActivityStatus initial={activity} />}
+        {setup?.specialities===false&&<p className="form-notice">Please confirm your actual categories and specialities. Your existing services are preserved. <Link href="/professional/services#specialities">Choose specialities →</Link></p>}
         {setup && <ProfessionalNextSteps progress={setup} />}
         {data.access && (
           <section

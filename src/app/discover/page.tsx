@@ -1,3 +1,5 @@
+import { taxonomyCatalog } from "@/modules/taxonomy/repository";
+import { emptyTaxonomy,type TaxonomyCatalog } from "@/modules/taxonomy/domain";
 import { publicMetadata, publicPages } from "@/lib/public-seo";
 import { DiscoveryFeed } from "@/components/discovery-feed";
 import { withIdentity } from "@/lib/db";
@@ -22,6 +24,7 @@ import { z } from "zod";
 export const dynamic = "force-dynamic";
 
 type FeedData = {
+  catalog:TaxonomyCatalog;
   posts: PublicPost[];
   initialEngagement: EngagementMap;
   initialFollows: FollowStateMap;
@@ -37,6 +40,7 @@ type FeedData = {
 };
 
 const emptyFeedData: FeedData = {
+  catalog:emptyTaxonomy,
   posts: [],
   initialEngagement: {},
   initialFollows: {},
@@ -57,6 +61,7 @@ export async function FeedPage({
 }: {
   mode?: "discover" | "share";
   searchParams: Promise<{
+    categoryId?:string;specialityId?:string;templateId?:string;
     view?: string;
     feed?: string;
     page?: string;
@@ -64,6 +69,9 @@ export async function FeedPage({
   }>;
 }) {
   const query = await searchParams;
+  const taxonomy:{categoryId?:string;specialityId?:string;templateId?:string}={};
+  for(const key of ["categoryId","specialityId","templateId"] as const)if(z.uuid().safeParse(query[key]).success)taxonomy[key]=query[key];
+  const filtered=Object.keys(taxonomy).length>0;
   const savedView = query.view === "saved";
   const followingView = query.feed === "following";
   const page = Math.floor(Math.min(250, Math.max(1, Number(query.page) || 1)));
@@ -88,9 +96,9 @@ export async function FeedPage({
 
         const pageData =
           !postId.success && !savedView && !followingView
-            ? await publicPostPage(db)
+            ? await publicPostPage(db,undefined,taxonomy)
             : followingView && customerId
-              ? await followedPostPage(db, customerId)
+              ? await followedPostPage(db, customerId,undefined,taxonomy)
               : null;
 
         const rows = postId.success
@@ -100,7 +108,7 @@ export async function FeedPage({
           : savedView && accountMode
             ? await savedPosts(db, page)
             : pageData?.posts || [];
-        const posts = rows.slice(0, 40);
+        const posts = rows.filter(p=>(!taxonomy.categoryId||p.category_id===taxonomy.categoryId)&&(!taxonomy.specialityId||p.speciality_id===taxonomy.specialityId)).slice(0, 40);
         const stories = (
           await db.query<PublicStory>(
             "SELECT * FROM beauty.public_stories ORDER BY created_at DESC LIMIT 30",
@@ -116,6 +124,7 @@ export async function FeedPage({
             : [];
 
         return {
+          catalog:await taxonomyCatalog(db),
           posts,
           initialEngagement: accountMode
             ? await viewerEngagement(
@@ -155,7 +164,8 @@ export async function FeedPage({
 
   return (
     <DiscoveryFeed
-      key={`${data.posts[0]?.id || ""}:${data.next || ""}:${data.viewer}:${savedView}:${followingView}:${page}:${postId.success ? postId.data : ""}:${mode}`}
+      taxonomy={data.catalog} taxonomySelection={taxonomy}
+      key={`${JSON.stringify(taxonomy)}:${data.posts[0]?.id || ""}:${data.next || ""}:${data.viewer}:${savedView}:${followingView}:${page}:${postId.success ? postId.data : ""}:${mode}`}
       publishedPosts={data.posts}
       initialNext={data.next}
       initialEngagement={data.initialEngagement}
@@ -168,16 +178,17 @@ export async function FeedPage({
       followingView={followingView}
       savedPage={page}
       hasMoreSaved={savedView && data.hasMore}
-      hideEditorial={mode === "share" || postId.success}
+      hideEditorial={filtered || mode === "share" || postId.success}
       routeBase={mode === "share" ? "/share" : "/discover"}
-      stories={data.stories}
-      lastMinute={data.lastMinute}
+      stories={filtered?[]:data.stories}
+      lastMinute={filtered?[]:data.lastMinute}
     />
   );
 }
 
 export default async function DiscoverPage(props: {
   searchParams: Promise<{
+    categoryId?:string;specialityId?:string;templateId?:string;
     view?: string;
     feed?: string;
     page?: string;

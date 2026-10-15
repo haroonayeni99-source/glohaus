@@ -27,8 +27,9 @@ export type ProfilePresentation = {
   professional: PublicProfessional;
   details: ProfileDetails;
   services: Service[];
-  assets: { id: string; alt_text: string; media_type?: "image" | "video" }[];
-  reviews: { id: string; rating: number; body: string; public_name: string }[];
+  specialities?:{speciality_id:string;name:string;category_name:string;is_primary:boolean}[];selectedSpeciality?:string|null;selectedService?:string;reviewService?:string;
+  assets: { id: string; alt_text: string; media_type?: "image" | "video";speciality_ids?:string[];speciality_names?:string[] }[];
+  reviews: { id: string; rating: number; body: string; public_name: string;service_id?:string|null;service_name?:string|null;speciality_id?:string|null;speciality_name?:string|null }[];
   hours: Rule[];
   rating: number | null;
   reviewCount: number;
@@ -47,9 +48,10 @@ export type ProfilePresentation = {
 export function ProfessionalProfile({
   professional: p,
   details: d,
-  services,
-  assets,
-  reviews,
+  services:allServices,
+  assets:allAssets,
+  reviews:allReviews,
+  specialities=[],selectedSpeciality=null,selectedService,reviewService,
   hours,
   rating,
   reviewCount,
@@ -61,6 +63,10 @@ export function ProfessionalProfile({
   bookingFeePence,
   presentation,
 }: ProfilePresentation) {
+  const services=allServices.filter(s=>!selectedSpeciality||s.speciality_id===selectedSpeciality).sort((a,b)=>(a.speciality_name??"Other services").localeCompare(b.speciality_name??"Other services")||a.price_pence-b.price_pence);
+  const assets=allAssets.filter(a=>!selectedSpeciality||a.speciality_ids?.includes(selectedSpeciality));
+  const reviews=allReviews.filter(r=>(!selectedSpeciality||r.speciality_id===selectedSpeciality)&&(!reviewService||r.service_id===reviewService));
+  const specialityTabs=(anchor:string)=><nav className="taxonomy-tabs" aria-label={`${anchor} specialities`}><Link aria-current={!selectedSpeciality?"page":undefined} href={`/p/${p.slug}#${anchor}`}>All {anchor==="services"?"Services":anchor}</Link>{specialities.map(s=><Link key={s.speciality_id} aria-current={selectedSpeciality===s.speciality_id?"page":undefined} href={`?speciality=${s.speciality_id}#${anchor}`}>{s.name}</Link>)}</nav>;
   const safeHref = (value: string) => {
     try {
       const url = new URL(value);
@@ -120,6 +126,7 @@ export function ProfessionalProfile({
             <PlatformLabel name="Professional" />
           </p>
           <h1>{p.business_name}</h1>
+          {!!specialities.length&&<p>{specialities.map(s=>s.name).join(" · ")}<small className="professional-verification-note">Specialities declared by the professional.</small></p>}
           <div className="professional-meta">
             <ProfessionalVerificationBadges professional={p} />
             <span>
@@ -242,6 +249,7 @@ export function ProfessionalProfile({
           <section id="portfolio" className="professional-section">
             <p className="eyebrow">THE WORK SPEAKS</p>
             <h2>A closer look.</h2>
+            {specialityTabs("portfolio")}
             {assets.length ? (
               <div className={`professional-gallery portfolio-layout-${presentation.portfolio_layout}`}>
                 {assets.map((asset) =>
@@ -273,16 +281,17 @@ export function ProfessionalProfile({
           <section id="services" className="professional-section">
             <p className="eyebrow">MAKE A LITTLE TIME FOR YOU</p>
             <h2>Services & prices.</h2>
+            {specialityTabs("services")}
             <div className="service-list">
-              {services.map((service) => (
+              {services.map((service,index) => (
+                <div key={service.id}>{(index===0||service.speciality_id!==services[index-1].speciality_id)&&<h3>{service.speciality_name??"Other services"}</h3>}
                 <article
-                  key={service.id}
+                  id={`service-${service.id}`} data-selected={selectedService===service.id||undefined}
                   className={
                     service.asset_id ? "service-with-image" : undefined
                   }
                 >
-                  {service.asset_id && (
-                    <Image
+                  {service.asset_id && (service.asset_media_type==="video"?<ViewportVideo src={`/api/media/${service.asset_id}`} label={service.image_alt||service.name}/>:<Image
                       src={`/api/media/${service.asset_id}`}
                       alt={service.image_alt || service.name}
                       width={96}
@@ -318,10 +327,10 @@ export function ProfessionalProfile({
                       className="profile-service-book"
                       href={`?bookService=${encodeURIComponent(service.id)}#booking`}
                     >
-                      Book <ArrowUpRight size={14} />
+                      {service.has_variations?"Choose options":"Book"} <ArrowUpRight size={14} />
                     </a>
                   </div>
-                </article>
+                </article></div>
               ))}
             </div>
             {!services.length && (
@@ -334,6 +343,8 @@ export function ProfessionalProfile({
           <section id="reviews" className="professional-section">
             <p className="eyebrow">REAL VISITS. REAL EXPERIENCES.</p>
             <h2>Kind words.</h2>
+            {specialityTabs("reviews")}
+            <form action={` /p/${p.slug}`.trim()}><input type="hidden" name="speciality" value={selectedSpeciality??""}/><label>Reviews for service<select name="reviewService" defaultValue={reviewService??""}><option value="">All services</option>{allServices.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label><button type="submit">Filter reviews</button></form>
             {rating !== null && (
               <p className="profile-rating-summary">
                 <Star size={20} aria-hidden />
@@ -348,7 +359,7 @@ export function ProfessionalProfile({
                     {review.public_name} · {review.rating}/5
                   </strong>
                   <p>{review.body}</p>
-                  <small>Verified completed appointment</small>
+                  <small>Verified completed appointment{review.service_name?` · ${review.service_name}`:""}{review.speciality_name?` · ${review.speciality_name}`:""}</small>
                 </article>
               ))
             ) : (
@@ -364,7 +375,7 @@ export function ProfessionalProfile({
             className="professional-section booking-anchor"
             aria-label="Book an appointment"
           >
-            {services.length ? (
+            {allServices.length ? (
               booking
             ) : (
               <div className="booking-widget">

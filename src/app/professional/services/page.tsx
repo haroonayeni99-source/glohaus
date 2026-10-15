@@ -1,3 +1,4 @@
+import { taxonomyCatalog,mySelection,serviceOptions } from "@/modules/taxonomy/repository";
 import Link from "next/link";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
@@ -19,6 +20,7 @@ export default async function ServicesPage() {
   const account = result.account;
   const [data, marketplaceCategories] = await Promise.all([
     withIdentity(account.authId, async (db) => ({
+    taxonomy:await taxonomyCatalog(db),selection:await mySelection(db),options:await serviceOptions(db,account.professionalId!),
     access: (
       await db.query<{
         data: {
@@ -31,13 +33,13 @@ export default async function ServicesPage() {
     ).rows[0].data,
     services: (
       await db.query<Service>(
-        "SELECT * FROM beauty.services WHERE professional_id=$1 ORDER BY created_at,id",
+        "SELECT s.*,a.media_type AS asset_media_type,sp.name AS speciality_name FROM beauty.services s LEFT JOIN beauty.portfolio_assets a ON a.id=s.asset_id LEFT JOIN beauty.specialities sp ON sp.id=s.speciality_id WHERE s.professional_id=$1 ORDER BY s.created_at,s.id",
         [account.professionalId],
       )
     ).rows,
     assets: (
       await db.query<{ id: string; alt_text: string }>(
-        "SELECT id,alt_text FROM beauty.portfolio_assets WHERE professional_id=$1 AND media_type='image' ORDER BY created_at DESC",
+        "SELECT id,alt_text FROM beauty.portfolio_assets WHERE professional_id=$1 ORDER BY created_at DESC",
         [account.professionalId],
       )
     ).rows,
@@ -59,7 +61,8 @@ export default async function ServicesPage() {
         <section className="pro-editor-surface">
           <ProfessionalEditor
             section="services"
-            services={data.services}
+            services={data.services.map(s=>({...s,options:data.options.filter(o=>o.service_id===s.id)}))}
+            taxonomy={data.taxonomy} selection={data.selection}
             assets={data.assets}
             verificationStatus={data.access.status}
             starterBookingsRemaining={data.access.starterBookingsRemaining}

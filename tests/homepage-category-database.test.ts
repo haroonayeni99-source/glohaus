@@ -264,3 +264,116 @@ it("rejects invalid photos without changing names, and keeps the new writer priv
     ).toBe(false);
   }
 });
+
+it("saves ordered homepage shortcuts with real category, speciality and service links", async () => {
+  const ids = (
+    await db.query<{
+      category_id: string;
+      speciality_id: string;
+      template_id: string;
+    }>(
+      "SELECT sp.category_id,sp.id AS speciality_id,t.id AS template_id FROM beauty.specialities sp JOIN beauty.service_templates t ON t.speciality_id=sp.id WHERE t.slug='retwist'",
+    )
+  ).rows[0];
+  const slot = {
+    categoryId: ids.category_id,
+    specialityId: ids.speciality_id,
+    templateId: ids.template_id,
+    description: "Discover loc maintenance",
+    sortOrder: 0,
+    visible: true,
+  };
+  const metadata = {
+    desktop: { hair: slot },
+    mobile: { hair: { ...slot, sortOrder: 20 } },
+  };
+  await asUser("owner", (sql) =>
+    sql.query(
+      "SELECT beauty.owner_set_homepage_categories($1,$2,$3,'Link homepage loc maintenance shortcuts')",
+      [
+        JSON.stringify(images),
+        JSON.stringify({
+          desktop: { hair: "Loc maintenance" },
+          mobile: { hair: "Locs" },
+        }),
+        JSON.stringify(metadata),
+      ],
+    ),
+  );
+  const media = (
+    await asUser("", (sql) =>
+      sql.query<{
+        data: { categoryMetadata: unknown; categoryImages: unknown };
+      }>("SELECT beauty.public_homepage_media() AS data"),
+    )
+  ).rows[0].data;
+  expect(media.categoryMetadata).toEqual(metadata);
+  expect(media.categoryImages).toEqual(images);
+  const bad = {
+    desktop: {
+      hair: {
+        ...slot,
+        categoryId: (
+          await db.query<{ id: string }>(
+            "SELECT id FROM beauty.platform_categories WHERE taxonomy_key='nails'",
+          )
+        ).rows[0].id,
+      },
+    },
+    mobile: {},
+  };
+  await expect(
+    asUser("owner", (sql) =>
+      sql.query(
+        "SELECT beauty.owner_set_homepage_categories($1,$2,$3,'Reject invalid speciality parent')",
+        [
+          JSON.stringify(images),
+          JSON.stringify({ desktop: { hair: "Locs" }, mobile: {} }),
+          JSON.stringify(bad),
+        ],
+      ),
+    ),
+  ).rejects.toThrow("INVALID_TAXONOMY");
+  expect(
+    (
+      await asUser("", (sql) =>
+        sql.query<{ data: { categoryMetadata: unknown } }>(
+          "SELECT beauty.public_homepage_media() AS data",
+        ),
+      )
+    ).rows[0].data.categoryMetadata,
+  ).toEqual(metadata);
+  for (const who of ["admin", "customer"])
+    await expect(
+      asUser(who, (sql) =>
+        sql.query(
+          "SELECT beauty.owner_set_homepage_categories($1,$2,$3,'Unauthorised homepage link change')",
+          [
+            JSON.stringify(images),
+            JSON.stringify({ desktop: {}, mobile: {} }),
+            JSON.stringify(metadata),
+          ],
+        ),
+      ),
+    ).rejects.toThrow("FORBIDDEN");
+});
+it("allows the verified Owner to inspect category demand without a duplicate administrator account", async () => {
+  const data = (
+    await asUser("owner", (sql) =>
+      sql.query<{
+        data: { categoryCoverage: { category_id: string; searches: number }[] };
+      }>("SELECT beauty.admin_taxonomy_overview() AS data"),
+    )
+  ).rows[0].data;
+  expect(data.categoryCoverage.length).toBeGreaterThan(0);
+  expect(
+    data.categoryCoverage.every((c) => typeof c.searches === "number"),
+  ).toBe(true);
+  await expect(
+    asUser(
+      "owner",
+      (sql) => sql.query("SELECT beauty.admin_taxonomy_overview()"),
+      false,
+    ),
+  ).rejects.toThrow("FORBIDDEN");
+});

@@ -197,6 +197,7 @@ export const policyBookingSchema = z.discriminatedUnion("action", [
     .strict(),
 ]);
 export type PolicyPreview = {
+  serviceOptions?:import("@/modules/taxonomy/domain").TaxonomyQuote;
   token: string;
   generalVersionId: string | null;
   serviceVersionId: string | null;

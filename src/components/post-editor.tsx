@@ -10,8 +10,9 @@ import type { Service } from "@/modules/professionals/domain";
 export function PostEditor({
   posts,
   services,
-  assets,
+  assets,specialities=[],
 }: {
+  specialities?:{id:string;name:string}[];
   posts: OwnPost[];
   services: Service[];
   assets: {
@@ -82,7 +83,7 @@ export function PostEditor({
           const data = new FormData(form);
           const parsed = postSchema.safeParse({
             ...Object.fromEntries(data),
-            serviceId: data.get("serviceId") || null,
+            serviceId: data.get("serviceId") || null,specialityId:data.get("specialityId")||null,
             assetId: data.get("assetId") || null,
           });
           if (!parsed.success) {
@@ -118,6 +119,7 @@ export function PostEditor({
         }}
       >
         <h2>{editing ? "Edit your post" : "Post your work to Discover."}</h2>
+        <label>Speciality<select name="specialityId" defaultValue={editing?.speciality_id??""}><option value="">Use linked service speciality / general post</option>{specialities.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
         <label>
           Title
           <input

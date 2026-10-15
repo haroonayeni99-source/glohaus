@@ -12,7 +12,7 @@ import {
 } from "@/components/admin-workspace-view";
 import { AdminSectionUnavailable } from "@/components/admin-section-unavailable";
 import { AdminLabelEditor } from "@/components/admin-label-editor";
-import { AdminCategoryManager } from "@/components/admin-category-manager";
+import { AdminTaxonomyManager,type TaxonomyOverview } from "@/components/admin-taxonomy-manager";
 import { publicLabels } from "@/modules/platform/repository";
 import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
@@ -34,7 +34,6 @@ import { HomepageMediaControl } from "@/components/homepage-media-control";
 import { OwnerMarketingPanel } from "@/components/owner-marketing-panel";
 import { OwnerBackendHealthPanel } from "@/components/owner-backend-health-panel";
 import {
-  adminCategories,
   adminFinanceOverview,
   adminOverview,
   emailLaunchReadiness,
@@ -69,7 +68,7 @@ export default async function Page() {
   const policies = await withAdmin(db=>adminPolicies(db)).catch(()=>null);
   const activity = await withAdmin(db => activityOverview(db)).catch(() => null);
   const labels = await publicLabels();
-  const categories = await adminCategories().catch(() => null);
+  const categories = await withAdmin(async db=>(await db.query<{data:TaxonomyOverview}>("SELECT beauty.admin_taxonomy_overview() AS data")).rows[0].data).catch(() => null);
   const owner = isOwner ? await ownerControls().catch(() => null) : null;
   const productFee = isOwner
     ? await ownerProductFeeRule().catch(() => undefined)
@@ -170,6 +169,7 @@ export default async function Page() {
             <HomepageCategoryMediaControl
               initial={homepageMedia.categoryImages}
               initialNames={homepageMedia.categoryNames}
+              initialMetadata={homepageMedia.categoryMetadata} taxonomy={categories??undefined}
             />
           </section>
         )}
@@ -197,7 +197,7 @@ export default async function Page() {
             them without deleting existing data.
           </p>
           {categories ? (
-            <AdminCategoryManager initial={categories} />
+            <AdminTaxonomyManager data={categories} />
           ) : (
             <AdminSectionUnavailable label="Categories" />
           )}

@@ -36,6 +36,8 @@ export function BookingList({
           </span>
           <div className="appointment-card-copy">
             <h3>{booking.service_name}</h3>
+            {booking.taxonomy_snapshot?.specialityName&&<small>{booking.taxonomy_snapshot.specialityName}</small>}
+            {booking.service_options_snapshot&&<small>{[booking.service_options_snapshot.variationName,...(booking.service_options_snapshot.extraNames??[])].filter(Boolean).join(" · ")}</small>}
             <p>
               {professional ? booking.customer_name : booking.professional_name}
             </p>

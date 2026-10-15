@@ -22,6 +22,8 @@ export function apiError(
   ) {
     if (error.code === "42501" && error.message === "FORBIDDEN")
       return json({ error: { code: "FORBIDDEN" } }, 403);
+    if (["22023","23514","23503","23505"].includes(String(error.code)) && /INVALID_TAXONOMY|INACTIVE_TAXONOMY|INVALID_TEMPLATE|INVALID_OPTIONS|UNAVAILABLE_SERVICE|ALIAS_ALREADY_USED|INVALID_REQUEST|NOT_FOUND|taxonomy|specialit|template|service_options/.test(String(error.message)))return json({error:{code:"INVALID_REQUEST"}},400);
+    if(error.code === "42501" && error.message === "VERIFICATION_REQUIRED")return json({error:{code:"VERIFICATION_REQUIRED"}},403);
     if (error.code === "22023" && error.message === "INVALID_TRANSITION")
       return json({ error: { code: "INVALID_REQUEST" } }, 409);
   }

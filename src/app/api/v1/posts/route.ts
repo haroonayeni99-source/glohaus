@@ -16,6 +16,8 @@ import type { PublicPost } from "@/modules/posts/domain";
 export async function GET(request: Request) {
   try {
     const params = new URL(request.url).searchParams;
+    const taxonomy:{categoryId?:string;specialityId?:string;templateId?:string}={};
+    for(const key of ["categoryId","specialityId","templateId"] as const){const value=params.get(key);if(value){if(!z.uuid().safeParse(value).success)throw new AccessError("INVALID_REQUEST",400);taxonomy[key]=value;}}
     if (!params.has("ids")) {
       let after;
       try {
@@ -49,8 +51,8 @@ export async function GET(request: Request) {
 
         const page =
           scope === "following"
-            ? await followedPostPage(db, customerId!, after)
-            : await publicPostPage(db, after);
+            ? await followedPostPage(db, customerId!, after,taxonomy)
+            : await publicPostPage(db, after,taxonomy);
 
         return {
           ...page,

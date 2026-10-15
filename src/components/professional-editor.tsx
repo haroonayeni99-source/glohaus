@@ -1,4 +1,8 @@
 "use client";
+import { SpecialityEditor } from "./speciality-editor";
+import { ServiceClassificationFields,ServiceOptionsEditor } from "./service-classification-fields";
+import type { TaxonomyCatalog,ProfessionalSelection } from "@/modules/taxonomy/domain";
+import { ViewportVideo } from "./viewport-video";
 import { ProfessionalLocationEditor } from "./professional-location-editor";
 import { useLabels } from "./platform-labels";
 import { useEffect, useRef, useState } from "react";
@@ -22,7 +26,9 @@ export function ProfessionalEditor({
   verificationStatus,
   starterBookingsRemaining,
   marketplaceCategories = [],
+  taxonomy,selection,
 }: {
+  taxonomy?:TaxonomyCatalog;selection?:ProfessionalSelection;
   initial?: ProfileInput;
   section?: "all" | "profile" | "services";
   services: Service[];
@@ -39,6 +45,7 @@ export function ProfessionalEditor({
   const [busy, setBusy] = useState(false);
   const [filter, setFilter] = useState<"active" | "inactive" | "all">("active");
   const [editing, setEditing] = useState<Service | null>(null);
+  const [serviceFormRevision,setServiceFormRevision]=useState(0);
   const serviceForm = useRef<HTMLFormElement>(null);
   const [serviceSearch, setServiceSearch] = useState("");
   const visibleServices = services.filter(
@@ -205,7 +212,7 @@ export function ProfessionalEditor({
                 <small>Your public city, not your private home address.</small>
               </label>
               <label>
-                Speciality
+                Main profile category
                 <select name="category" defaultValue={initial.category}>
                   {marketplaceCategories.map((category) => (
                     <option key={category.slug} value={category.name}>
@@ -368,6 +375,7 @@ export function ProfessionalEditor({
           <ProfessionalLocationEditor />
         </>
       )}
+      {taxonomy&&selection&&<SpecialityEditor catalog={taxonomy} selection={selection}/>}
       {section !== "profile" && (
         <>
           <nav className="management-tabs" aria-label="Service status">
@@ -424,8 +432,7 @@ export function ProfessionalEditor({
           <section className="service-edit-list" aria-label="Your services">
             {visibleServices.map((service) => (
               <article key={service.id} className="service-edit-row">
-                {service.asset_id && (
-                  <Image
+                {service.asset_id && (service.asset_media_type==="video"?<ViewportVideo src={`/api/media/${service.asset_id}`} label={service.name}/>:<Image
                     className="service-editor-image"
                     src={`/api/media/${service.asset_id}`}
                     alt={service.name}
@@ -436,13 +443,16 @@ export function ProfessionalEditor({
                 <div>
                   <h3>
                     {service.name}
-                    {service.active === false ? " · Inactive" : ""}
+                    {service.publication_status === "draft"?" · Draft":service.active === false ? " · Inactive" : ""}
                   </h3>
                   <p>
                     {service.duration_minutes} minutes ·{" "}
                     {money(service.price_pence)} ·{" "}
                     {money(service.deposit_pence)} deposit
                   </p>
+                  <p>{service.speciality_name || (taxonomy?"Speciality to confirm":"")}</p>
+                  <Link href={`/professional/policies?serviceId=${service.id}`}>Service preparation & policies</Link>
+                  {service.categorisation_status&&service.categorisation_status!=="approved"&&<p role="status">Categorisation {service.categorisation_status.replace("_"," ")}: {service.categorisation_reason}</p>}
                   {service.deposit_pence >
                     maximumRequiredDepositPence(service.price_pence) && (
                     <p className="deposit-limit-error">
@@ -515,7 +525,7 @@ export function ProfessionalEditor({
           <form
             id="service-editor-form"
             ref={serviceForm}
-            key={editing?.id || "new"}
+            key={`${editing?.id || "new"}-${serviceFormRevision}`}
             className="editor-form"
             onSubmit={async (event) => {
               event.preventDefault();
@@ -527,9 +537,10 @@ export function ProfessionalEditor({
                 durationMinutes: Number(data.get("durationMinutes")),
                 pricePence: Math.round(Number(data.get("price")) * 100),
                 depositPence,
-                active: data.get("active") === "true",
+                active: taxonomy?data.get("publicationStatus")==="published":data.get("active") === "true",
                 assetId: data.get("assetId") || null,
-                category: data.get("category"),
+                category: data.get("category")||undefined,
+                ...(taxonomy?{categoryId:data.get("categoryId")||null,specialityId:data.get("specialityId")||null,templateId:data.get("templateId")||null,publicationStatus:data.get("publicationStatus"),variations:JSON.parse(String(data.get("variations")||"[]")),extras:JSON.parse(String(data.get("extras")||"[]"))}:{}),
               });
               if (!parsed.success) {
                 setNotice(parsed.error.issues[0].message);
@@ -544,6 +555,7 @@ export function ProfessionalEditor({
               ) {
                 setEditing(null);
                 form.reset();
+                setServiceFormRevision(v=>v+1);
                 setServicePricePence(0);
                 setDepositPence(0);
               }
@@ -551,7 +563,7 @@ export function ProfessionalEditor({
           >
             <h2>{editing ? "Edit service" : "Add a service"}</h2>
             <label>
-              Optional service image
+              Optional service image or video
               <select name="assetId" defaultValue={editing?.asset_id || ""}>
                 <option value="">No image</option>
                 {assets.map((asset) => (
@@ -562,13 +574,13 @@ export function ProfessionalEditor({
               </select>
             </label>
             <p>
-              Choose a portfolio image. Publish it in your portfolio to show it
+              Choose existing portfolio media. Publish it in your portfolio to show it
               on your public service menu.{" "}
               <Link href="/professional/portfolio">
-                Upload or manage images →
+                Upload or manage media →
               </Link>
             </p>
-            <label>
+            {taxonomy&&selection?<ServiceClassificationFields catalog={taxonomy} selection={selection} service={editing}/>:<label>
               Category
               <select
                 name="category"
@@ -583,7 +595,7 @@ export function ProfessionalEditor({
                   </option>
                 ))}
               </select>
-            </label>
+            </label>}
             <label>
               Service name
               <input
@@ -632,7 +644,7 @@ export function ProfessionalEditor({
                   }
                 />
               </label>
-              <label>
+              {!taxonomy&&<label>
                 Availability in your menu
                 <select
                   name="active"
@@ -641,8 +653,9 @@ export function ProfessionalEditor({
                   <option value="true">Active</option>
                   <option value="false">Inactive</option>
                 </select>
-              </label>
+              </label>}
             </div>
+            <ServiceOptionsEditor key={`${editing?.id||"new"}-options`} service={editing}/>
             <DepositSelector
               key={editing?.id || "new"}
               pricePence={servicePricePence}

@@ -2,13 +2,16 @@
 
 import "@/app/homepage-category-media.css";
 
+import { TaxonomyFilters } from "./taxonomy-filters";
+import type { TaxonomyCatalog } from "@/modules/taxonomy/domain";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { requireAdminResponse } from "@/lib/admin-response";
 import { readImageFile } from "@/lib/image-file";
 import {
-  homepageCategories,
+  homepageCategorySlots,
+  type HomepageCategoryMetadata,type HomepageCategorySlot,
   categoryImage,
   categoryName,
   type HomepageCategoryNames,
@@ -18,8 +21,9 @@ import {
 
 export function HomepageCategoryMediaControl({
   initial = {},
-  initialNames = {},
+  initialNames = {},initialMetadata={},taxonomy,
 }: {
+  taxonomy?:TaxonomyCatalog;initialMetadata?:HomepageCategoryMetadata;
   initial?: HomepageCategoryImages;
   initialNames?: HomepageCategoryNames;
 }) {
@@ -32,6 +36,8 @@ export function HomepageCategoryMediaControl({
     desktop: { ...initialNames.desktop },
     mobile: { ...initialNames.mobile },
   });
+  const [metadata,setMetadata]=useState<HomepageCategoryMetadata>({desktop:{...initialMetadata.desktop},mobile:{...initialMetadata.mobile}});
+  function changeMetadata(key:string,patch:Partial<HomepageCategorySlot>){setMetadata(current=>({...current,[device]:{...current[device],[key]:{categoryId:null,specialityId:null,templateId:null,description:"",sortOrder:homepageCategorySlots({categoryMetadata:current,categoryNames:names,categoryImages:images},device,true).findIndex(s=>s.key===key)*10,visible:true,...current[device]?.[key],...patch}}}));}
   const [device, setDevice] = useState<HomepageImageDevice>("desktop");
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
@@ -83,7 +89,7 @@ export function HomepageCategoryMediaControl({
       const response = await fetch("/api/v1/admin/homepage-media/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ images, names, reason }),
+        body: JSON.stringify({ images, names, reason,...(taxonomy?{metadata}: {}) }),
       });
       await requireAdminResponse(
         response,
@@ -128,11 +134,10 @@ export function HomepageCategoryMediaControl({
         </select>
       </label>
       <p className="muted">
-        Edit a name beside its photo. Each homepage shortcut searches for its
-        saved name. Manage the marketplace category list in Categories.
+        Edit a name beside its photo. Link each shortcut to its category, speciality or service. A shortcut with no link searches for its saved name. Manage the marketplace category list in Categories.
       </p>
       <div className="owner-category-media-grid">
-        {homepageCategories[device].map((slot) => {
+        {homepageCategorySlots({categoryMetadata:metadata,categoryNames:names,categoryImages:images},device,true).map((slot) => {
           const value =
             (images[device] as Record<string, string | null>)[slot.key] ?? "";
           const valid = !value || /^https:\/\//.test(value);
@@ -180,6 +185,7 @@ export function HomepageCategoryMediaControl({
                   }}
                 />
               </label>
+              {taxonomy&&<><TaxonomyFilters catalog={taxonomy} categoryId={metadata[device]?.[slot.key]?.categoryId??""} specialityId={metadata[device]?.[slot.key]?.specialityId??""} templateId={metadata[device]?.[slot.key]?.templateId??""} onChange={v=>changeMetadata(slot.key,{categoryId:v.categoryId||null,specialityId:v.specialityId||null,templateId:v.templateId||null})}/><label>Description<input maxLength={200} value={metadata[device]?.[slot.key]?.description??""} onChange={e=>changeMetadata(slot.key,{description:e.target.value})}/></label><label>Display order<input type="number" min={0} max={10000} value={slot.sortOrder} onChange={e=>changeMetadata(slot.key,{sortOrder:Number(e.target.value)})}/></label><label className="policy-check"><input type="checkbox" checked={metadata[device]?.[slot.key]?.visible!==false} onChange={e=>changeMetadata(slot.key,{visible:e.target.checked})}/>Show on homepage</label></>}
               <label>
                 {slot.label} image
                 <input
@@ -236,6 +242,7 @@ export function HomepageCategoryMediaControl({
           );
         })}
       </div>
+      {taxonomy&&<button type="button" disabled={busy||homepageCategorySlots({categoryMetadata:metadata},device,true).length>=30} onClick={()=>{const key=crypto.randomUUID();changeMetadata(key,{sortOrder:100,categoryId:taxonomy.categories[0]?.id??null});setNames(current=>({...current,[device]:{...current[device],[key]:"New category"}}));}}>Add homepage category shortcut</button>}
       <small>
         Choose images you have permission to use. Uploads stay private until you
         save.

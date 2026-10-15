@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { setupSteps, type SetupProgress } from "@/modules/professionals/setup";
 const stepGuidance = {
+  specialities:"Confirm the categories and specialities you offer under your existing account.",
   profile:
     "Add your business name, a short introduction and the area you serve.",
   services:

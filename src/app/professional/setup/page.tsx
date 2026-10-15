@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { mySelection } from "@/modules/taxonomy/repository";
 import Link from "next/link";
 import { ArrowUpRight, Check, Circle } from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
@@ -52,6 +53,7 @@ export default async function ProfessionalSetup() {
       ),
     ]);
     return {
+      taxonomy:await mySelection(db),
       profile,
       services: services.rows[0].count,
       availability: availability.rows[0].count,
@@ -60,6 +62,7 @@ export default async function ProfessionalSetup() {
     };
   });
   const steps = [
+    ["Categories & specialities","Confirm every speciality you offer under your existing account.","/professional/services#specialities",Boolean(progress.taxonomy.confirmedAt)],
     [
       "Your professional page",
       "Business name, profile image, location and client contact preferences.",
@@ -216,7 +219,7 @@ export default async function ProfessionalSetup() {
                   )}
                 </span>
                 <Link className="button small" href={href}>
-                  {done ? "Edit" : ["Add profile details", "Add services", "Set working hours", "Add your work", "Publish your page"][index]}
+                  {done ? "Edit" : ["Choose specialities", "Add profile details", "Add services", "Set working hours", "Add your work", "Publish your page"][index]}
                 </Link>
               </div>
             </article>

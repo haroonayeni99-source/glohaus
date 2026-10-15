@@ -328,13 +328,14 @@ DECLARE linked uuid; BEGIN
 END $$;
 CREATE TRIGGER validate_content_speciality BEFORE INSERT OR UPDATE OF service_id,speciality_id ON beauty.posts FOR EACH ROW EXECUTE FUNCTION beauty.validate_content_speciality();
 CREATE OR REPLACE VIEW beauty.public_posts WITH(security_barrier=true) AS
- SELECT post.id,post.title,post.body,post.kind,post.created_at,p.slug,p.business_name,p.category,p.city,
+ SELECT post.id,post.title,post.body,post.kind,post.created_at,p.slug,p.business_name,coalesce(category.name,p.category) AS category,p.city,
  s.id AS service_id,s.name AS service_name,s.price_pence,asset.id AS asset_id,p.id AS professional_id,
  coalesce(post.speciality_id,s.speciality_id) AS speciality_id,sp.name AS speciality_name,sp.category_id
  FROM beauty.posts post JOIN beauty.professional_profiles p ON p.id=post.professional_id
  LEFT JOIN beauty.public_services s ON s.id=post.service_id AND s.professional_id=post.professional_id
  LEFT JOIN beauty.portfolio_assets asset ON asset.id=post.asset_id AND asset.professional_id=post.professional_id
  LEFT JOIN beauty.specialities sp ON sp.id=coalesce(post.speciality_id,s.speciality_id)
+ LEFT JOIN beauty.platform_categories category ON category.id=sp.category_id
  WHERE post.speciality_id IS NULL OR sp.active;
 CREATE FUNCTION beauty.save_my_portfolio_specialities(target_asset uuid,specialities uuid[]) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$
 DECLARE pro uuid:=beauty.policy_actor_professional(); BEGIN
@@ -525,14 +526,20 @@ DECLARE svc beauty.services;start_at timestamptz;finish_at timestamptz;minute in
  END LOOP;RETURN false;
 END $$;
 
+CREATE FUNCTION beauty.require_taxonomy_admin() RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$ BEGIN
+ IF EXISTS(SELECT 1 FROM beauty.users u JOIN beauty.user_roles r ON r.user_id=u.id WHERE u.auth_id=beauty.auth_id() AND r.role='owner') THEN RETURN beauty.require_owner(); END IF;
+ RETURN beauty.require_admin();
+END $$;
+REVOKE ALL ON FUNCTION beauty.require_taxonomy_admin() FROM PUBLIC,anon,authenticated,beauty_app;
 CREATE FUNCTION beauty.admin_taxonomy_overview() RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$ BEGIN
- PERFORM beauty.require_admin();
+ PERFORM beauty.require_taxonomy_admin();
  RETURN beauty.taxonomy_catalog(true)||jsonb_build_object(
- 'coverage',coalesce((SELECT jsonb_agg(to_jsonb(x)) FROM(SELECT sp.id AS speciality_id,count(DISTINCT s.id) FILTER(WHERE s.active AND s.publication_status='published' AND s.categorisation_status='approved')::integer AS published_services,count(DISTINCT s.professional_id) FILTER(WHERE s.active AND s.publication_status='published' AND s.categorisation_status='approved')::integer AS professionals,coalesce((SELECT sum(hits) FROM beauty.taxonomy_demand_daily d WHERE d.day>=current_date-30 AND (d.target_kind='speciality' AND d.target_id=sp.id OR d.target_kind='template' AND d.target_id IN(SELECT id FROM beauty.service_templates WHERE speciality_id=sp.id))),0)::integer AS searches FROM beauty.specialities sp LEFT JOIN beauty.services s ON s.speciality_id=sp.id GROUP BY sp.id) x),'[]'),
+ 'categoryCoverage',coalesce((SELECT jsonb_agg(to_jsonb(x)) FROM(SELECT c.id AS category_id,count(DISTINCT svc.id)::integer AS published_services,count(DISTINCT svc.professional_id)::integer AS professionals,coalesce((SELECT sum(d.hits) FROM beauty.taxonomy_demand_daily d WHERE d.day>=current_date-30 AND ((d.target_kind='category' AND d.target_id=c.id) OR (d.target_kind='speciality' AND d.target_id IN(SELECT id FROM beauty.specialities WHERE category_id=c.id)) OR (d.target_kind='template' AND d.target_id IN(SELECT t.id FROM beauty.service_templates t JOIN beauty.specialities sp ON sp.id=t.speciality_id WHERE sp.category_id=c.id)))),0)::integer AS searches FROM beauty.platform_categories c LEFT JOIN beauty.public_services svc ON svc.category_id=c.id WHERE NOT c.legacy_only GROUP BY c.id) x),'[]'),
+ 'coverage',coalesce((SELECT jsonb_agg(to_jsonb(x)) FROM(SELECT sp.id AS speciality_id,count(DISTINCT s.id) FILTER(WHERE s.active AND s.publication_status='published' AND s.categorisation_status='approved' AND EXISTS(SELECT 1 FROM beauty.public_professionals p WHERE p.id=s.professional_id))::integer AS published_services,count(DISTINCT s.professional_id) FILTER(WHERE s.active AND s.publication_status='published' AND s.categorisation_status='approved' AND EXISTS(SELECT 1 FROM beauty.public_professionals p WHERE p.id=s.professional_id))::integer AS professionals,coalesce((SELECT sum(hits) FROM beauty.taxonomy_demand_daily d WHERE d.day>=current_date-30 AND (d.target_kind='speciality' AND d.target_id=sp.id OR d.target_kind='template' AND d.target_id IN(SELECT id FROM beauty.service_templates WHERE speciality_id=sp.id))),0)::integer AS searches FROM beauty.specialities sp LEFT JOIN beauty.services s ON s.speciality_id=sp.id GROUP BY sp.id) x),'[]'),
  'services',coalesce((SELECT jsonb_agg(to_jsonb(x)) FROM(SELECT s.id,s.name,s.category_id,s.speciality_id,s.categorisation_status,s.categorisation_reason,p.business_name FROM beauty.services s JOIN beauty.professional_profiles p ON p.id=s.professional_id ORDER BY (s.categorisation_status='needs_review') DESC,s.created_at DESC LIMIT 200) x),'[]'));
 END $$;
 CREATE FUNCTION beauty.admin_update_taxonomy(input jsonb) RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$
-DECLARE actor uuid:=beauty.require_admin();op text:=input->>'operation';target uuid;source uuid;destination_category uuid;spec uuid;pro uuid;alias text;old_spec beauty.specialities;primary_pros uuid[]; BEGIN
+DECLARE actor uuid:=beauty.require_taxonomy_admin();op text:=input->>'operation';target uuid;source uuid;destination_category uuid;spec uuid;pro uuid;alias text;old_spec beauty.specialities;primary_pros uuid[]; BEGIN
  IF jsonb_typeof(input)<>'object' OR length(trim(coalesce(input->>'reason',''))) NOT BETWEEN 5 AND 500 THEN RAISE EXCEPTION 'INVALID_REQUEST' USING ERRCODE='22023'; END IF;
  -- Serialise definition edits; lock affected professional calendars in the same
  -- order as policy changes and reservations before moving any service.
@@ -565,7 +572,10 @@ DECLARE actor uuid:=beauty.require_admin();op text:=input->>'operation';target u
   END IF;
   DELETE FROM beauty.treatment_aliases WHERE target_kind=op AND target_id=target;
   FOR alias IN SELECT value FROM jsonb_array_elements_text(input->'aliases') LOOP
-   IF beauty.normalise_treatment(alias)='' OR EXISTS(SELECT 1 FROM beauty.treatment_aliases WHERE normalised=beauty.normalise_treatment(alias) AND (target_kind<>op OR target_id<>target)) THEN RAISE EXCEPTION 'ALIAS_ALREADY_USED' USING ERRCODE='22023'; END IF;
+   IF beauty.normalise_treatment(alias)='' OR EXISTS(SELECT 1 FROM beauty.treatment_aliases WHERE normalised=beauty.normalise_treatment(alias) AND (target_kind<>op OR target_id<>target))
+   OR EXISTS(SELECT 1 FROM beauty.service_templates t WHERE t.active AND beauty.normalise_treatment(t.name)=beauty.normalise_treatment(alias) AND (op<>'template' OR t.id<>target))
+   OR EXISTS(SELECT 1 FROM beauty.specialities sp WHERE sp.active AND beauty.normalise_treatment(sp.name)=beauty.normalise_treatment(alias) AND (op<>'speciality' OR sp.id<>target))
+   OR EXISTS(SELECT 1 FROM beauty.platform_categories c WHERE c.active AND NOT c.legacy_only AND beauty.normalise_treatment(c.name)=beauty.normalise_treatment(alias) AND (op<>'category' OR c.id<>target)) THEN RAISE EXCEPTION 'ALIAS_ALREADY_USED' USING ERRCODE='22023'; END IF;
    INSERT INTO beauty.treatment_aliases(term,target_kind,target_id) VALUES(trim(alias),op,target) ON CONFLICT(normalised) DO NOTHING;
   END LOOP;
  ELSIF op='merge' THEN
@@ -592,7 +602,7 @@ DECLARE actor uuid:=beauty.require_admin();op text:=input->>'operation';target u
   UPDATE beauty.services SET categorisation_status=input->>'status',categorisation_reason=trim(input->>'reason') WHERE id=target;
   IF NOT FOUND THEN RAISE EXCEPTION 'NOT_FOUND' USING ERRCODE='22023'; END IF;
  ELSE RAISE EXCEPTION 'INVALID_REQUEST' USING ERRCODE='22023'; END IF;
- PERFORM beauty.write_admin_audit(actor,'admin','taxonomy.'||op,actor,'taxonomy',target,input->>'reason',input);
+ PERFORM beauty.write_admin_audit(actor,CASE WHEN EXISTS(SELECT 1 FROM beauty.user_roles WHERE user_id=actor AND role='owner') THEN 'owner' ELSE 'admin' END,'taxonomy.'||op,actor,'taxonomy',target,input->>'reason',input);
  RETURN target;
 END $$;
 
@@ -628,7 +638,7 @@ DECLARE actor uuid;device text;item record;config jsonb;cat uuid;spec uuid;tpl u
   END LOOP;
   FOR item IN SELECT key,value FROM jsonb_each(metadata->device) LOOP
    config:=item.value;cat:=(config->>'categoryId')::uuid;spec:=(config->>'specialityId')::uuid;tpl:=(config->>'templateId')::uuid;
-   IF jsonb_typeof(config) IS DISTINCT FROM 'object' OR jsonb_typeof(config->'visible') IS DISTINCT FROM 'boolean' OR (config->>'sortOrder')::integer NOT BETWEEN 0 AND 10000 OR length(coalesce(config->>'description',''))>200
+   IF jsonb_typeof(config) IS DISTINCT FROM 'object' OR jsonb_typeof(config->'visible') IS DISTINCT FROM 'boolean' OR jsonb_typeof(config->'sortOrder') IS DISTINCT FROM 'number' OR (config->>'sortOrder')::integer NOT BETWEEN 0 AND 10000 OR length(coalesce(config->>'description',''))>200
    OR (cat IS NOT NULL AND NOT EXISTS(SELECT 1 FROM beauty.platform_categories WHERE id=cat AND active AND NOT legacy_only))
    OR (spec IS NOT NULL AND NOT EXISTS(SELECT 1 FROM beauty.specialities WHERE id=spec AND category_id=cat AND active AND merged_into_id IS NULL))
    OR (tpl IS NOT NULL AND NOT EXISTS(SELECT 1 FROM beauty.service_templates WHERE id=tpl AND speciality_id=spec AND active))
@@ -654,3 +664,17 @@ GRANT SELECT ON beauty.public_media_assets TO beauty_catalog;
 GRANT EXECUTE ON FUNCTION beauty.canonical_speciality(uuid),beauty.catalog_review_service(uuid) TO beauty_app;
 -- Direct table writes obey the same speciality ownership as the tagging RPC.
 ALTER POLICY portfolio_specialities_owner ON beauty.portfolio_specialities WITH CHECK(EXISTS(SELECT 1 FROM beauty.portfolio_assets a JOIN beauty.professional_specialities ps ON ps.professional_id=a.professional_id JOIN beauty.specialities sp ON sp.id=ps.speciality_id WHERE a.id=asset_id AND ps.speciality_id=portfolio_specialities.speciality_id AND sp.active AND sp.merged_into_id IS NULL));
+
+CREATE OR REPLACE VIEW beauty.public_portfolio_specialities WITH(security_barrier=true) AS
+ SELECT link.asset_id,link.speciality_id,sp.name AS speciality_name FROM beauty.portfolio_specialities link JOIN beauty.specialities sp ON sp.id=link.speciality_id WHERE sp.active
+ UNION SELECT svc.asset_id,svc.speciality_id,svc.speciality_name FROM beauty.public_services svc WHERE svc.asset_id IS NOT NULL AND svc.speciality_id IS NOT NULL;
+
+CREATE INDEX services_speciality_history_idx ON beauty.services(speciality_id,id) WHERE speciality_id IS NOT NULL;
+CREATE INDEX services_template_history_idx ON beauty.services(template_id) WHERE template_id IS NOT NULL;
+CREATE INDEX posts_speciality_history_idx ON beauty.posts(speciality_id) WHERE speciality_id IS NOT NULL;
+CREATE FUNCTION beauty.valid_service_option_attributes(attributes jsonb) RETURNS boolean LANGUAGE sql IMMUTABLE SET search_path=pg_catalog AS $$
+ SELECT CASE WHEN jsonb_typeof(attributes)='object' THEN (SELECT count(*)<=6 AND coalesce(bool_and(length(key) BETWEEN 1 AND 40 AND jsonb_typeof(value)='string' AND length(value#>>'{}')<=100),true) FROM jsonb_each(attributes)) ELSE false END;
+$$;
+ALTER TABLE beauty.service_options ADD CONSTRAINT service_options_attributes_valid CHECK(beauty.valid_service_option_attributes(attributes));
+REVOKE ALL ON FUNCTION beauty.valid_service_option_attributes(jsonb) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION beauty.valid_service_option_attributes(jsonb) TO beauty_app;

@@ -13,8 +13,16 @@ export function SpecialityEditor({
   selection: ProfessionalSelection;
 }) {
   const router = useRouter();
-  const [selected, setSelected] = useState(selection.specialityIds);
-  const [primary, setPrimary] = useState(selection.primarySpecialityId ?? "");
+  const [selected, setSelected] = useState(
+    selection.specialityIds.filter((id) =>
+      catalog.specialities.some((s) => s.id === id),
+    ),
+  );
+  const [primary, setPrimary] = useState(
+    catalog.specialities.some((s) => s.id === selection.primarySpecialityId)
+      ? selection.primarySpecialityId!
+      : "",
+  );
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const removed = selection.specialityIds.filter(
@@ -75,8 +83,15 @@ export function SpecialityEditor({
           Please confirm your actual specialities. We have not inferred them
           from your previous broad category.{" "}
           {selection.unclassifiedServices > 0
-            ? `${selection.unclassifiedServices} existing services remain available; edit each to confirm its speciality.`
+            ? `${selection.unclassifiedServices} existing services need a speciality; their current statuses are preserved. Edit each to confirm where it belongs.`
             : ""}
+        </p>
+      )}
+      {selection.confirmedAt && selection.unclassifiedServices > 0 && (
+        <p className="form-notice">
+          {selection.unclassifiedServices} existing services still need a
+          speciality. Edit each service to confirm it. Their prices and current
+          statuses are preserved.
         </p>
       )}
       {catalog.categories.map((c) => (

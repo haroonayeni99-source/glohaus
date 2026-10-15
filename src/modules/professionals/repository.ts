@@ -81,7 +81,7 @@ export async function publicProfessionals(
   return (
     await db.query<PublicProfessional>(
       `SELECT
-         p.id,p.slug,p.business_name,p.bio,p.city,p.category,p.verification_status,
+         p.id,p.slug,p.business_name,p.bio,p.city,coalesce((SELECT category_name FROM beauty.public_professional_specialities ps WHERE ps.professional_id=p.id AND ps.is_primary LIMIT 1),p.category) AS category,p.verification_status,
          p.identity_verified,p.business_verified,p.professional_verified,
          d.photo_id,d.photo_alt,d.travels_to_you,
          r.rating,r.review_count,r.ranking_score,coalesce(exposure.boosted,false) AS boosted,
@@ -179,7 +179,7 @@ export async function publicProfessionals(
 export async function publicProfile(db: SqlClient, slug: string) {
   const professional = (
     await db.query<PublicProfessional>(
-      `SELECT p.id,p.slug,p.business_name,p.bio,p.city,p.category,p.verification_status,
+      `SELECT p.id,p.slug,p.business_name,p.bio,p.city,coalesce((SELECT category_name FROM beauty.public_professional_specialities ps WHERE ps.professional_id=p.id AND ps.is_primary LIMIT 1),p.category) AS category,p.verification_status,
          p.identity_verified,p.business_verified,p.professional_verified,
          loc.latitude AS public_latitude,loc.longitude AS public_longitude,loc.confirmed_at AS public_location_confirmed_at
        FROM beauty.public_professionals p LEFT JOIN beauty.public_professional_locations loc ON loc.professional_id=p.id WHERE p.slug=$1`,

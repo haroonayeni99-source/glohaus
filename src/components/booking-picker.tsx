@@ -63,7 +63,7 @@ export function BookingPicker({
   returnPath: string;
   professionalName: string;
   bookingFeePence: number;
-  initialSelection?: { serviceId?: string; date?: string; startsAt?: string };
+  initialSelection?: { serviceId?: string; date?: string; startsAt?: string;variationId?:string;extraIds?:string[] };
   verificationStatus?: "unverified" | "pending" | "verified" | "restricted";
   starterBookingsRemaining?: number | null;
 }) {
@@ -80,7 +80,8 @@ export function BookingPicker({
   const [serviceId, setServiceId] = useState(
     validInitialService || services[0]?.id || "",
   );
-  const [variationId,setVariationId]=useState<string|null>(null);const [extraIds,setExtraIds]=useState<string[]>([]);
+  const initialOptions=services.find(s=>s.id===validInitialService)?.options??[];
+  const [variationId,setVariationId]=useState<string|null>(initialOptions.find(o=>o.kind==="variation"&&o.id===initialSelection?.variationId)?.id??null);const [extraIds,setExtraIds]=useState<string[]>([...new Set((initialSelection?.extraIds??[]).filter(id=>initialOptions.some(o=>o.kind==="extra"&&o.id===id)))]);
   const optionsQuery=optionSearch(variationId,extraIds);
   const [date, setDate] = useState(initialDate);
   const [slots, setSlots] = useState<string[]>([]);
@@ -539,7 +540,7 @@ export function BookingPicker({
             new URLSearchParams({
               bookService: serviceId,
               bookDate: date,
-              bookTime: selected,
+              bookTime: selected,bookVariation:variationId??"",bookExtras:extraIds.join(","),
             }).toString()
           }
           onClose={() => setNeedsAccount(false)}

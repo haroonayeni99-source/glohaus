@@ -53,6 +53,7 @@ export default async function Profile({
   searchParams: Promise<{
     service?:string;speciality?:string;reviewService?:string;
     bookService?: string;
+    bookVariation?:string;bookExtras?:string;
     bookDate?: string;
     bookTime?: string;
   }>;
@@ -184,7 +185,7 @@ export default async function Profile({
   });
   if (!data) notFound();
   const focusService=data.services.find(s=>s.id===(booking.service||booking.bookService));
-  const selectedSpeciality=data.specialities.some(s=>s.speciality_id===booking.speciality)?booking.speciality:focusService?.speciality_id??null;
+  const selectedSpeciality=focusService?.speciality_id??(data.specialities.some(s=>s.speciality_id===booking.speciality)?booking.speciality:null);
   return (
     <>
       <script
@@ -255,6 +256,7 @@ export default async function Profile({
             starterBookingsRemaining={data.access.starterBookingsRemaining}
             initialSelection={{
               serviceId: booking.bookService||booking.service,
+              variationId:booking.bookVariation,extraIds:booking.bookExtras?.split(",").slice(0,10),
               date: booking.bookDate,
               startsAt: booking.bookTime,
             }}

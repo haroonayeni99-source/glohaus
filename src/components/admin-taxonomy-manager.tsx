@@ -6,6 +6,12 @@ import {
   type TaxonomyCatalog,
 } from "@/modules/taxonomy/domain";
 export type TaxonomyOverview = TaxonomyCatalog & {
+  categoryCoverage?: {
+    category_id: string;
+    published_services: number;
+    professionals: number;
+    searches: number;
+  }[];
   coverage: {
     speciality_id: string;
     published_services: number;
@@ -384,6 +390,32 @@ export function AdminTaxonomyManager({ data }: { data: TaxonomyOverview }) {
         </form>
       </details>
       <h3>Demand & professional coverage</h3>
+      {data.categoryCoverage && (
+        <div className="taxonomy-table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Published services</th>
+                <th>Professionals</th>
+                <th>Searches · last 30 days</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.categoryCoverage.map((c) => (
+                <tr key={c.category_id}>
+                  <td>
+                    {data.categories.find((x) => x.id === c.category_id)?.name}
+                  </td>
+                  <td>{c.published_services}</td>
+                  <td>{c.professionals}</td>
+                  <td>{c.searches}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       <div className="taxonomy-table-scroll">
         <table>
           <thead>

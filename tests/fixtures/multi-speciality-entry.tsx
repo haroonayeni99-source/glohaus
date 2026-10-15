@@ -20,7 +20,9 @@ import {
 import { defaultPolicy } from "@/modules/policies/domain";
 import { discoveryOptions } from "@/modules/professionals/discovery";
 const params = new URLSearchParams(location.search);
-document.documentElement.dataset.theme = params.get("theme") ?? "light";
+document.documentElement.dataset.theme =
+  params.get("theme") ?? localStorage.getItem("glohaus-theme") ?? "light";
+localStorage.setItem("glohaus-theme", document.documentElement.dataset.theme);
 window.fetch = async (url, init) => {
   const path = String(url);
   const requests = JSON.parse(

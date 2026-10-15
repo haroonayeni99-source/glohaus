@@ -74,6 +74,10 @@ try {
       await expect(
         page.getByRole("status").filter({ hasText: "Saved successfully" }),
       ).toBeVisible();
+      await page.screenshot({
+        path: `reports/taxonomy-services-${theme}-${width}.png`,
+        fullPage: true,
+      });
       const body = await page.evaluate(
         () =>
           JSON.parse(sessionStorage.getItem("taxonomy-requests")).findLast(
@@ -119,6 +123,10 @@ try {
       await expect(booking.locator(".booking-service-preview")).toContainText(
         "105 min",
       );
+      await page.screenshot({
+        path: `reports/taxonomy-profile-${theme}-${width}.png`,
+        fullPage: true,
+      });
       await booking
         .locator('input[type="date"]')
         .fill(new Date(Date.now() + 5 * 86400000).toISOString().slice(0, 10));

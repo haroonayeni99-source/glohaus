@@ -513,13 +513,13 @@ END $$;
 
 -- Availability is shared by professional, across every category and service.
 CREATE FUNCTION beauty.public_service_available_on(target_service uuid,target_day date) RETURNS boolean LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=pg_catalog AS $$
-DECLARE svc beauty.services;start_at timestamptz;finish_at timestamptz;minute integer;weekday integer; BEGIN
+DECLARE svc beauty.services;start_at timestamptz;finish_at timestamptz;minute integer;target_weekday integer; BEGIN
  IF target_day<(now() AT TIME ZONE 'Europe/London')::date OR target_day>(now() AT TIME ZONE 'Europe/London')::date+90 THEN RETURN false; END IF;
  SELECT s.* INTO svc FROM beauty.services s JOIN beauty.public_services pub ON pub.id=s.id WHERE s.id=target_service;
  IF svc.id IS NULL THEN RETURN false; END IF;
  svc.duration_minutes:=least(svc.duration_minutes,coalesce((SELECT min(duration_minutes) FROM beauty.service_options WHERE service_id=target_service AND active AND kind='variation'),svc.duration_minutes));
- weekday:=extract(dow FROM target_day)::integer;
- FOR minute IN SELECT generate_series(h.start_minute,h.end_minute-svc.duration_minutes,15) FROM beauty.public_hours h WHERE h.professional_id=svc.professional_id AND h.weekday=weekday LOOP
+ target_weekday:=extract(dow FROM target_day)::integer;
+ FOR minute IN SELECT generate_series(h.start_minute,h.end_minute-svc.duration_minutes,15) FROM beauty.public_hours h WHERE h.professional_id=svc.professional_id AND h.weekday=target_weekday LOOP
   start_at:=(target_day::timestamp+make_interval(mins=>minute)) AT TIME ZONE 'Europe/London';finish_at:=start_at+make_interval(mins=>svc.duration_minutes);
   IF start_at>=now()+interval '1 hour' AND NOT EXISTS(SELECT 1 FROM beauty.booking_busy(svc.professional_id,start_at,finish_at) b WHERE b.starts_at<finish_at AND b.ends_at>start_at) THEN RETURN true; END IF;
  END LOOP;RETURN false;

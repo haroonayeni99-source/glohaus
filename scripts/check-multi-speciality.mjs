@@ -54,8 +54,14 @@ try {
         .getByRole("button", { name: "Add variation", exact: true })
         .click();
       const variation = form
+        .locator("section")
+        .filter({
+          has: page.getByRole("heading", {
+            name: "Sizes, lengths and styles",
+            exact: true,
+          }),
+        })
         .locator("fieldset")
-        .filter({ has: page.locator('legend:text-is("New variation")') })
         .last();
       await variation.getByLabel("Name", { exact: true }).fill("Long locs");
       await variation.getByLabel("Price (£)", { exact: true }).fill("90");
@@ -186,6 +192,19 @@ try {
     JSON.stringify(results, null, 2),
   );
   console.log(JSON.stringify(results));
+} catch (error) {
+  const pages = browser.contexts().flatMap((c) => c.pages());
+  await Promise.all(
+    pages.map((page, i) =>
+      page
+        .screenshot({
+          path: `reports/taxonomy-failure-${i}.png`,
+          fullPage: true,
+        })
+        .catch(() => {}),
+    ),
+  );
+  throw error;
 } finally {
   await browser.close();
   await new Promise((resolve) => server.close(resolve));

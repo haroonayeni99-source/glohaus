@@ -748,6 +748,7 @@ export function ExploreMapExperience({
                       {ratingText(pro)}
                     </span>
                     <div className="map-pro-tags">
+                      {pro.boosted&&<span>Promoted · visibility boost</span>}
                       <span>{pro.category}</span>
                       <span>{pro.city}</span>
                       {pro.distance_miles != null && (

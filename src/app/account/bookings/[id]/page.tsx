@@ -95,6 +95,8 @@ export default async function Booking({
             ? `${b.service_name} for ${b.customer_name}`
             : `${b.service_name} with ${b.professional_name}`}
         </p>
+        {b.taxonomy_snapshot?.specialityName&&<p>{b.taxonomy_snapshot.specialityName}</p>}
+        {b.service_options_snapshot&&<p>{[b.service_options_snapshot.variationName,...(b.service_options_snapshot.extraNames??[])].filter(Boolean).join(" · ")}{b.service_options_snapshot.durationMinutes?` · ${b.service_options_snapshot.durationMinutes} minutes`:""}</p>}
         {b.status === "confirmed" && !data.professional ? (
           <BookingConfirmation
             bookingId={b.id}

@@ -2,6 +2,8 @@ import "server-only";
 import { bookingCursor } from "./listing";
 import type { SqlClient } from "@/modules/accounts/repository";
 export type BookingRecord = {
+  taxonomy_snapshot?:{categoryName?:string;specialityName?:string};
+  service_options_snapshot?:{variationName?:string|null;extraNames?:string[];durationMinutes?:number};
   id: string;
   service_name: string;
   customer_name: string;
@@ -45,7 +47,7 @@ export async function bookingPage(
   }
   const rows = (
     await db.query<BookingRecord>(
-      `SELECT b.id,b.service_name,b.customer_name,b.professional_name,b.starts_at,b.ends_at,b.price_pence,b.deposit_pence,CASE WHEN b.status='payment_pending' AND b.hold_expires_at<=now() THEN 'expired' ELSE b.status END AS status,b.cancellation_reason,b.completed_at,(b.ends_at<=now()) AS has_ended,(b.starts_at>now()) AS cancellable,(b.status='confirmed' AND now() BETWEEN b.starts_at-interval '3 hours' AND b.ends_at) AS location_window_open,p.captured_pence,p.refunded_pence,p.status AS payment_status FROM beauty.bookings b JOIN beauty.payments p ON p.booking_id=b.id WHERE ${where.join(" AND ")} ORDER BY b.starts_at ${direction},b.id ${direction} LIMIT 26`,
+      `SELECT b.id,b.service_name,b.taxonomy_snapshot,b.service_options_snapshot,b.customer_name,b.professional_name,b.starts_at,b.ends_at,b.price_pence,b.deposit_pence,CASE WHEN b.status='payment_pending' AND b.hold_expires_at<=now() THEN 'expired' ELSE b.status END AS status,b.cancellation_reason,b.completed_at,(b.ends_at<=now()) AS has_ended,(b.starts_at>now()) AS cancellable,(b.status='confirmed' AND now() BETWEEN b.starts_at-interval '3 hours' AND b.ends_at) AS location_window_open,p.captured_pence,p.refunded_pence,p.status AS payment_status FROM beauty.bookings b JOIN beauty.payments p ON p.booking_id=b.id WHERE ${where.join(" AND ")} ORDER BY b.starts_at ${direction},b.id ${direction} LIMIT 26`,
       values,
     )
   ).rows;
@@ -59,7 +61,7 @@ export async function bookingPage(
 export async function bookingById(db: SqlClient, id: string) {
   return (
     await db.query<BookingRecord>(
-      "SELECT b.id,b.service_name,b.customer_name,b.professional_name,b.starts_at,b.ends_at,b.price_pence,b.deposit_pence,CASE WHEN b.status='payment_pending' AND b.hold_expires_at<=now() THEN 'expired' ELSE b.status END AS status,b.cancellation_reason,b.completed_at,(b.ends_at<=now()) AS has_ended,(b.starts_at>now()) AS cancellable,(b.status='confirmed' AND now() BETWEEN b.starts_at-interval '3 hours' AND b.ends_at) AS location_window_open,p.captured_pence,p.refunded_pence,p.status AS payment_status FROM beauty.bookings b JOIN beauty.payments p ON p.booking_id=b.id WHERE b.id=$1",
+      "SELECT b.id,b.service_name,b.taxonomy_snapshot,b.service_options_snapshot,b.customer_name,b.professional_name,b.starts_at,b.ends_at,b.price_pence,b.deposit_pence,CASE WHEN b.status='payment_pending' AND b.hold_expires_at<=now() THEN 'expired' ELSE b.status END AS status,b.cancellation_reason,b.completed_at,(b.ends_at<=now()) AS has_ended,(b.starts_at>now()) AS cancellable,(b.status='confirmed' AND now() BETWEEN b.starts_at-interval '3 hours' AND b.ends_at) AS location_window_open,p.captured_pence,p.refunded_pence,p.status AS payment_status FROM beauty.bookings b JOIN beauty.payments p ON p.booking_id=b.id WHERE b.id=$1",
       [id],
     )
   ).rows[0];

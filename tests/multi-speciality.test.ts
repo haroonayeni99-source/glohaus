@@ -15,7 +15,7 @@ import {
 import { defaultDiscoveryFilters } from "@/modules/professionals/discovery";
 import type { TaxonomyCatalog } from "@/modules/taxonomy/domain";
 const db = await createTestDatabase();
-let pro: string, other: string, admin: string;
+let pro: string, admin: string;
 let braids: string, retwist: string, variation: string, extra: string;
 let catalog: TaxonomyCatalog;
 let hair: string,
@@ -680,5 +680,244 @@ describe("multi-speciality booking and discovery acceptance", () => {
       await expect(reserve(tx, braids, start(6))).rejects.toThrow(
         "VERIFICATION_REQUIRED",
       );
+    }));
+  it("uses the same wallet ledger for payments from both specialities", () =>
+    isolated(async (tx) => {
+      const bookings = [
+        await reserve(tx, retwist, start()),
+        await reserve(tx, braids, start(1)),
+      ];
+      let proceeds = 0;
+      for (const b of bookings) {
+        const quote = await as(
+          tx,
+          "multi-customer",
+          async () =>
+            (
+              await tx.query<{
+                q: {
+                  customerTotalPence: number;
+                  professionalProceedsPence: number;
+                };
+              }>("SELECT beauty.prepare_booking_financial_quote($1) AS q", [
+                b.id,
+              ])
+            ).rows[0].q,
+        );
+        proceeds += quote.professionalProceedsPence;
+        await as(tx, "multi-customer", () =>
+          tx.query("SELECT beauty.attach_checkout($1,$2)", [
+            b.id,
+            "cs_" + b.id,
+          ]),
+        );
+        await as(
+          tx,
+          "",
+          async () => {
+            await tx.query(
+              "SELECT beauty.apply_checkout_payment($1,$2,$3,$4,$5,'gbp')",
+              [
+                "evt_" + b.id,
+                b.id,
+                "cs_" + b.id,
+                "pi_" + b.id,
+                quote.customerTotalPence,
+              ],
+            );
+            await tx.query(
+              "SELECT beauty.record_booking_payment_finance($1,$2)",
+              [b.id, "pi_" + b.id],
+            );
+          },
+          "beauty_payment_worker",
+        );
+      }
+      const wallet = await as(
+        tx,
+        "multi-pro",
+        async () =>
+          (
+            await tx.query<{ data: { pendingPence: number } }>(
+              "SELECT beauty.my_wallet_overview() AS data",
+            )
+          ).rows[0].data,
+      );
+      expect(wallet.pendingPence).toBe(proceeds);
+      const accounts = (
+        await tx.query<{ professional_id: string }>(
+          "SELECT DISTINCT professional_id FROM beauty.financial_ledger_accounts WHERE professional_id=$1",
+          [pro],
+        )
+      ).rows;
+      expect(accounts).toEqual([{ professional_id: pro }]);
+      expect(
+        (
+          await tx.query(
+            "SELECT * FROM beauty.professional_payment_accounts WHERE professional_id=$1",
+            [pro],
+          )
+        ).rows,
+      ).toHaveLength(1);
+    }));
+  it("publishes services across unrelated categories without another account", () =>
+    isolated(async (tx) => {
+      const nail = catalog.specialities.find((s) => s.slug === "gel-nails")!;
+      const gel = catalog.templates.find((t) => t.slug === "gel-polish")!;
+      await as(tx, "multi-pro", () =>
+        tx.query("SELECT beauty.save_my_specialities($1,$2,$3)", [
+          [hair, nail.category_id],
+          [braiding, locs, nail.id],
+          braiding,
+        ]),
+      );
+      await as(tx, "multi-pro", () =>
+        saveService(tx, pro, {
+          name: "Gel Polish",
+          description: "A polished nail service",
+          durationMinutes: 45,
+          pricePence: 4000,
+          depositPence: 1200,
+          active: true,
+          categoryId: nail.category_id,
+          specialityId: nail.id,
+          templateId: gel.id,
+        }),
+      );
+      for (const query of ["Retwist", "Knotless Braids", "Gel manicure"]) {
+        const matches = await as(tx, "", () => publicProfessionals(tx, query));
+        expect(matches.map((p) => p.id)).toEqual([pro]);
+      }
+      expect(
+        (
+          await tx.query(
+            "SELECT * FROM beauty.professional_profiles WHERE id=$1",
+            [pro],
+          )
+        ).rows,
+      ).toHaveLength(1);
+    }));
+  it("filters only verified completed-booking reviews by service and speciality", () =>
+    isolated(async (tx) => {
+      const customer = (
+        await tx.query<{ id: string }>(
+          "SELECT id FROM beauty.users WHERE auth_id='multi-customer'",
+        )
+      ).rows[0].id;
+      const b = (
+        await tx.query<{ id: string }>(
+          `INSERT INTO beauty.bookings(professional_id,customer_id,service_id,service_name,customer_name,professional_name,starts_at,ends_at,duration_minutes,price_pence,deposit_pence,status,hold_expires_at,taxonomy_snapshot) VALUES($1,$2,$3,'Retwist','Test Client','Multi Studio',now()-interval '2 days',now()-interval '2 days'+interval '1 hour',60,6000,1800,'completed',now()-interval '2 days',$4::jsonb) RETURNING id`,
+          [
+            pro,
+            customer,
+            retwist,
+            JSON.stringify({ specialityId: locs, specialityName: "Locs" }),
+          ],
+        )
+      ).rows[0].id;
+      await as(tx, "multi-customer", () =>
+        tx.query(
+          "INSERT INTO beauty.reviews(booking_id,rating,body,public_name) VALUES($1,5,'A lovely completed appointment','Test Client')",
+          [b],
+        ),
+      );
+      const reviews = await as(tx, "", () =>
+        tx.query(
+          "SELECT service_id,speciality_id FROM beauty.public_reviews WHERE service_id=$1 AND speciality_id=$2",
+          [retwist, locs],
+        ),
+      );
+      expect(reviews.rows).toEqual([
+        { service_id: retwist, speciality_id: locs },
+      ]);
+      await tx.query(
+        "UPDATE beauty.reviews SET moderation_status='hidden' WHERE booking_id=$1",
+        [b],
+      );
+      expect(
+        (
+          await as(tx, "", () =>
+            tx.query(
+              "SELECT * FROM beauty.public_reviews WHERE service_id=$1",
+              [retwist],
+            ),
+          )
+        ).rows,
+      ).toHaveLength(0);
+    }));
+  it("rechecks service availability against time off in the common professional calendar", () =>
+    isolated(async (tx) => {
+      const day = start().slice(0, 10);
+      expect(
+        (
+          await as(tx, "", () =>
+            tx.query(
+              "SELECT beauty.public_service_available_on($1,$2) AS available",
+              [retwist, day],
+            ),
+          )
+        ).rows[0].available,
+      ).toBe(true);
+      await tx.query(
+        "INSERT INTO beauty.availability_blocks(professional_id,starts_at,ends_at) VALUES($1,$2::date-interval '1 day',$2::date+interval '2 days')",
+        [pro, day],
+      );
+      expect(
+        (
+          await as(tx, "", () =>
+            tx.query(
+              "SELECT beauty.public_service_available_on($1,$2) AS available",
+              [retwist, day],
+            ),
+          )
+        ).rows[0].available,
+      ).toBe(false);
+      await expect(reserve(tx)).rejects.toThrow(/SLOT_TAKEN|OUTSIDE_HOURS/);
+    }));
+  it("protects new tables with forced RLS and denies anonymous mutation entry points", () =>
+    isolated(async (tx) => {
+      const flags = (
+        await tx.query<{
+          relname: string;
+          relrowsecurity: boolean;
+          relforcerowsecurity: boolean;
+        }>(
+          "SELECT relname,relrowsecurity,relforcerowsecurity FROM pg_class WHERE relnamespace='beauty'::regnamespace AND relname=ANY($1)",
+          [
+            [
+              "specialities",
+              "professional_specialities",
+              "service_templates",
+              "service_options",
+              "portfolio_specialities",
+              "taxonomy_demand_daily",
+            ],
+          ],
+        )
+      ).rows;
+      expect(flags).toHaveLength(6);
+      expect(
+        flags.every((f) => f.relrowsecurity && f.relforcerowsecurity),
+      ).toBe(true);
+      await expect(
+        as(
+          tx,
+          "",
+          () =>
+            tx.query("SELECT beauty.save_my_specialities($1,$2,$3)", [
+              [hair],
+              [locs],
+              locs,
+            ]),
+          "anon",
+        ),
+      ).rejects.toThrow(/permission denied/);
+      expect(
+        (
+          await as(tx, "", () =>
+            tx.query("SELECT * FROM beauty.professional_specialities"),
+          )
+        ).rows,
+      ).toHaveLength(0);
     }));
 });

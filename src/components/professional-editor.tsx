@@ -45,6 +45,7 @@ export function ProfessionalEditor({
   const [busy, setBusy] = useState(false);
   const [filter, setFilter] = useState<"active" | "inactive" | "all">("active");
   const [editing, setEditing] = useState<Service | null>(null);
+  const [serviceFormRevision,setServiceFormRevision]=useState(0);
   const serviceForm = useRef<HTMLFormElement>(null);
   const [serviceSearch, setServiceSearch] = useState("");
   const visibleServices = services.filter(
@@ -524,7 +525,7 @@ export function ProfessionalEditor({
           <form
             id="service-editor-form"
             ref={serviceForm}
-            key={editing?.id || "new"}
+            key={`${editing?.id || "new"}-${serviceFormRevision}`}
             className="editor-form"
             onSubmit={async (event) => {
               event.preventDefault();
@@ -554,6 +555,7 @@ export function ProfessionalEditor({
               ) {
                 setEditing(null);
                 form.reset();
+                setServiceFormRevision(v=>v+1);
                 setServicePricePence(0);
                 setDepositPence(0);
               }

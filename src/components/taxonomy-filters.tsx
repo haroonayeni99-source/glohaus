@@ -34,6 +34,7 @@ export function TaxonomyFilters({
       <label>
         Category
         <select
+          aria-label="Category"
           name="categoryId"
           value={category}
           onChange={(e) => {
@@ -58,6 +59,7 @@ export function TaxonomyFilters({
       <label>
         Speciality
         <select
+          aria-label="Speciality"
           name="specialityId"
           value={speciality}
           onChange={(e) => {
@@ -87,6 +89,7 @@ export function TaxonomyFilters({
       <label>
         Service
         <select
+          aria-label="Service"
           name="templateId"
           value={template}
           onChange={(e) => {

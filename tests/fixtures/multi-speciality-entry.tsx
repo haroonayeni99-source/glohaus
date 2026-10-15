@@ -79,7 +79,12 @@ window.fetch = async (url, init) => {
   }
   if (path === "/api/v1/bookings")
     return Response.json({ url: "/booking-confirmed" });
-  return Response.json({ saved: true, service: { id: tid(19) }, selection });
+  return Response.json({
+    saved: true,
+    id: tid(19),
+    service: { id: tid(19) },
+    selection,
+  });
 };
 const specialities = taxonomy.specialities
   .filter((s) => selection.specialityIds.includes(s.id))

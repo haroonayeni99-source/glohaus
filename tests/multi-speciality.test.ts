@@ -784,6 +784,9 @@ describe("multi-speciality booking and discovery acceptance", () => {
           templateId: gel.id,
         }),
       );
+      const general = await as(tx, "", () => publicProfessionals(tx));
+      expect(general[0].matching_services).toHaveLength(3);
+      expect(general[0].popular_services).toHaveLength(2);
       for (const query of ["Retwist", "Knotless Braids", "Gel manicure"]) {
         const matches = await as(tx, "", () => publicProfessionals(tx, query));
         expect(matches.map((p) => p.id)).toEqual([pro]);

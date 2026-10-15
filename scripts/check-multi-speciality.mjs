@@ -166,6 +166,33 @@ try {
       await expect(page.getByText("Retwist finishing").first()).toBeVisible();
       await expect(page.getByText("Knotless Braids finishing")).toHaveCount(0);
       await page.goto(`http://127.0.0.1:3004/admin?theme=${theme}`);
+      const categories = page.locator(".category-manager");
+      await categories
+        .getByRole("button", { name: "Add category", exact: true })
+        .click();
+      await categories
+        .getByLabel("Category name", { exact: true })
+        .fill("Wellness");
+      await categories
+        .getByLabel("Description", { exact: true })
+        .fill("Independent wellness services");
+      await categories
+        .getByRole("button", { name: "Create category", exact: true })
+        .click();
+      await expect(
+        categories.getByRole("status").filter({ hasText: "added" }),
+      ).toBeVisible();
+      const categoryRequest = await page.evaluate(
+        () =>
+          JSON.parse(sessionStorage.getItem("taxonomy-requests")).findLast(
+            (r) => r.url === "/api/v1/admin/taxonomy",
+          ).body,
+      );
+      expect(categoryRequest).toMatchObject({
+        operation: "category",
+        name: "Wellness",
+        description: "Independent wellness services",
+      });
       await page.getByLabel("Definition type").selectOption("speciality");
       await page.getByLabel("Edit definition").selectOption(id(4));
       await expect(page.locator('input[name="name"]').first()).toHaveValue(

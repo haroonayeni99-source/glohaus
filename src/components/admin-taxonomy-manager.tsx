@@ -1,4 +1,5 @@
 "use client";
+import { AdminCategoryManager } from "./admin-category-manager";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -92,44 +93,54 @@ export function AdminTaxonomyManager({ data }: { data: TaxonomyOverview }) {
             <option value="template">Service templates</option>
           </select>
         </label>
-        <label>
-          Edit definition
-          <select value={editing} onChange={(e) => setEditing(e.target.value)}>
-            <option value="">Add new {kind}</option>
-            {records.map((x) => (
-              <option key={x.id} value={x.id}>
-                {x.name}
-                {x.active ? "" : " · Disabled"}
-              </option>
-            ))}
-          </select>
-        </label>
+        {kind !== "category" && (
+          <label>
+            Edit definition
+            <select
+              value={editing}
+              onChange={(e) => setEditing(e.target.value)}
+            >
+              <option value="">Add new {kind}</option>
+              {records.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.name}
+                  {x.active ? "" : " · Disabled"}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
-      <form
-        className="editor-form"
-        key={`${kind}:${editing}`}
-        onSubmit={(e) => {
-          e.preventDefault();
-          const f = new FormData(e.currentTarget);
-          const common = {
-            operation: kind,
-            id: editing || null,
-            name: f.get("name"),
-            slug: f.get("slug"),
-            description: f.get("description"),
-            active: f.get("active") === "true",
-            sortOrder: Number(f.get("sortOrder")),
-            aliases: String(f.get("aliases") || "")
-              .split("\n")
-              .map((t) => t.trim())
-              .filter(Boolean),
-            reason: f.get("reason"),
-          };
-          void save({
-            ...common,
-            ...(kind === "category"
-              ? { imageUrl: f.get("imageUrl") || null }
-              : kind === "speciality"
+      {kind === "category" ? (
+        <AdminCategoryManager
+          initial={data.categories}
+          aliases={data.aliases}
+          extended
+        />
+      ) : (
+        <form
+          className="editor-form"
+          key={`${kind}:${editing}`}
+          onSubmit={(e) => {
+            e.preventDefault();
+            const f = new FormData(e.currentTarget);
+            const common = {
+              operation: kind,
+              id: editing || null,
+              name: f.get("name"),
+              slug: f.get("slug"),
+              description: f.get("description"),
+              active: f.get("active") === "true",
+              sortOrder: Number(f.get("sortOrder")),
+              aliases: String(f.get("aliases") || "")
+                .split("\n")
+                .map((t) => t.trim())
+                .filter(Boolean),
+              reason: f.get("reason"),
+            };
+            void save({
+              ...common,
+              ...(kind === "speciality"
                 ? { categoryId: f.get("categoryId") }
                 : {
                     specialityId: f.get("specialityId"),
@@ -137,167 +148,152 @@ export function AdminTaxonomyManager({ data }: { data: TaxonomyOverview }) {
                       ? Number(f.get("suggestedDurationMinutes"))
                       : null,
                   }),
-          });
-        }}
-      >
-        <h3>
-          {editing ? "Edit" : "Add"} {kind}
-        </h3>
-        {kind === "speciality" && (
+            });
+          }}
+        >
+          <h3>
+            {editing ? "Edit" : "Add"} {kind}
+          </h3>
+          {kind === "speciality" && (
+            <label>
+              Category
+              <select
+                name="categoryId"
+                required
+                defaultValue={
+                  selected && "category_id" in selected
+                    ? selected.category_id
+                    : ""
+                }
+              >
+                <option value="">Choose category</option>
+                {data.categories
+                  .filter((c) => !c.legacy_only)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+              </select>
+              <small>
+                Moving a speciality updates its services and professional
+                category links together.
+              </small>
+            </label>
+          )}
+          {kind === "template" && (
+            <label>
+              Speciality
+              <select
+                name="specialityId"
+                required
+                defaultValue={
+                  selected && "speciality_id" in selected
+                    ? selected.speciality_id
+                    : ""
+                }
+              >
+                <option value="">Choose speciality</option>
+                {data.specialities
+                  .filter((s) => !s.merged_into_id)
+                  .map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+              </select>
+            </label>
+          )}
+          <div className="field-grid">
+            <label>
+              Name
+              <input
+                name="name"
+                required
+                minLength={2}
+                maxLength={kind === "speciality" ? 80 : 100}
+                defaultValue={selected?.name ?? ""}
+              />
+            </label>
+            <label>
+              Stable URL slug
+              <input
+                name="slug"
+                required
+                pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                maxLength={100}
+                defaultValue={selected?.slug ?? ""}
+              />
+            </label>
+            <label>
+              Display order
+              <input
+                type="number"
+                name="sortOrder"
+                required
+                min={0}
+                max={10000}
+                defaultValue={selected?.sort_order ?? 100}
+              />
+            </label>
+            <label>
+              Status
+              <select
+                name="active"
+                defaultValue={selected?.active === false ? "false" : "true"}
+              >
+                <option value="true">Active</option>
+                <option value="false">Disabled</option>
+              </select>
+            </label>
+          </div>
           <label>
-            Category
-            <select
-              name="categoryId"
-              required
-              defaultValue={
-                selected && "category_id" in selected
-                  ? selected.category_id
-                  : ""
-              }
-            >
-              <option value="">Choose category</option>
-              {data.categories
-                .filter((c) => !c.legacy_only)
-                .map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-            </select>
-            <small>
-              Moving a speciality updates its services and professional category
-              links together.
-            </small>
+            Description
+            <textarea
+              name="description"
+              maxLength={kind === "template" ? 500 : 1000}
+              defaultValue={selected?.description ?? ""}
+            />
           </label>
-        )}
-        {kind === "template" && (
+          {kind === "template" && (
+            <label>
+              Suggested duration (minutes)
+              <input
+                type="number"
+                name="suggestedDurationMinutes"
+                min={15}
+                max={480}
+                step={5}
+                defaultValue={
+                  selected && "suggested_duration_minutes" in selected
+                    ? (selected.suggested_duration_minutes ?? "")
+                    : ""
+                }
+              />
+            </label>
+          )}
           <label>
-            Speciality
-            <select
-              name="specialityId"
-              required
-              defaultValue={
-                selected && "speciality_id" in selected
-                  ? selected.speciality_id
-                  : ""
-              }
-            >
-              <option value="">Choose speciality</option>
-              {data.specialities
-                .filter((s) => !s.merged_into_id)
-                .map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-            </select>
-          </label>
-        )}
-        <div className="field-grid">
-          <label>
-            Name
-            <input
-              name="name"
-              required
-              minLength={2}
-              maxLength={
-                kind === "category" ? 60 : kind === "speciality" ? 80 : 100
-              }
-              defaultValue={selected?.name ?? ""}
+            Alternative spellings & search synonyms (one per line)
+            <textarea
+              name="aliases"
+              rows={4}
+              defaultValue={data.aliases
+                .filter(
+                  (a) => a.target_kind === kind && a.target_id === editing,
+                )
+                .map((a) => a.term)
+                .join("\n")}
             />
           </label>
           <label>
-            Stable URL slug
-            <input
-              name="slug"
-              required
-              pattern="[a-z0-9]+(-[a-z0-9]+)*"
-              maxLength={100}
-              defaultValue={selected?.slug ?? ""}
-            />
+            Reason for audit log
+            <input name="reason" required minLength={5} maxLength={500} />
           </label>
-          <label>
-            Display order
-            <input
-              type="number"
-              name="sortOrder"
-              required
-              min={0}
-              max={10000}
-              defaultValue={selected?.sort_order ?? 100}
-            />
-          </label>
-          <label>
-            Status
-            <select
-              name="active"
-              defaultValue={selected?.active === false ? "false" : "true"}
-            >
-              <option value="true">Active</option>
-              <option value="false">Disabled</option>
-            </select>
-          </label>
-        </div>
-        <label>
-          Description
-          <textarea
-            name="description"
-            maxLength={kind === "template" ? 500 : 1000}
-            defaultValue={selected?.description ?? ""}
-          />
-        </label>
-        {kind === "category" && (
-          <label>
-            Category image URL
-            <input
-              name="imageUrl"
-              type="url"
-              pattern="https://.*"
-              maxLength={2048}
-              defaultValue={
-                selected && "image_url" in selected
-                  ? (selected.image_url ?? "")
-                  : ""
-              }
-            />
-          </label>
-        )}
-        {kind === "template" && (
-          <label>
-            Suggested duration (minutes)
-            <input
-              type="number"
-              name="suggestedDurationMinutes"
-              min={15}
-              max={480}
-              step={5}
-              defaultValue={
-                selected && "suggested_duration_minutes" in selected
-                  ? (selected.suggested_duration_minutes ?? "")
-                  : ""
-              }
-            />
-          </label>
-        )}
-        <label>
-          Alternative spellings & search synonyms (one per line)
-          <textarea
-            name="aliases"
-            rows={4}
-            defaultValue={data.aliases
-              .filter((a) => a.target_kind === kind && a.target_id === editing)
-              .map((a) => a.term)
-              .join("\n")}
-          />
-        </label>
-        <label>
-          Reason for audit log
-          <input name="reason" required minLength={5} maxLength={500} />
-        </label>
-        <button className="button" disabled={busy}>
-          Save {kind}
-        </button>
-      </form>
+          <button className="button" disabled={busy}>
+            Save {kind}
+          </button>
+        </form>
+      )}
       <details>
         <summary>Merge specialities safely</summary>
         <form

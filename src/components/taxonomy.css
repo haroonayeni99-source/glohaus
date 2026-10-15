@@ -120,3 +120,15 @@
     width: 100%;
   }
 }
+
+.taxonomy-admin .category-field textarea {
+  width: 100%;
+  min-height: 96px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-strong);
+  padding: 11px 13px;
+  font: inherit;
+  resize: vertical;
+}

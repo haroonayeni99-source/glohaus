@@ -2,6 +2,8 @@
 
 This release extends the existing GLOHAUS account, catalogue, policy, reservation and financial systems. It has not been applied to the production database or deployed. The source branch disables Vercel deployments. Production rollout requires the owner's explicit approval.
 
+The existing category manager retains its search, visibility filters, add/edit controls and immediate saved feedback; its editor now includes descriptions, imagery and search synonyms.
+
 ## Result
 
 One professional can declare multiple categories and specialities, choose a primary speciality and publish separately classified services. The initial reference catalogue includes Hair → Braiding → Knotless Braids and Hair → Locs → Retwist, alongside Nails, Makeup, Skin, Lashes, Brows, Hair Removal and Aesthetics.
@@ -33,7 +35,7 @@ The PostgreSQL tests apply the complete migration history to isolated PGlite dat
 
 Run `pnpm lint`, `pnpm typecheck`, `pnpm exec vitest run --maxWorkers=2` and `pnpm build` locally. GitHub Actions also runs the existing browser regressions and the new speciality journey. Check the PR's final commit checks for the release gate and browser screenshot artifacts.
 
-The local suite contains 983 passing tests across 107 files. The existing speciality browser run passed all six viewport/theme combinations. The final source changes are submitted to the same checks before review.
+The local suite contains 984 passing tests across 107 files. The existing speciality browser run passed all six viewport/theme combinations. The final source changes are submitted to the same checks before review.
 
 ## Database and rollout notes
 

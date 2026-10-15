@@ -114,7 +114,7 @@ export async function publicProfessionals(
        ) r ON true
        LEFT JOIN LATERAL (
          SELECT min(svc.from_price_pence) AS from_price_pence,
-         array_agg(svc.name ORDER BY svc.price_pence,svc.id) AS popular_services,
+         (array_agg(svc.name ORDER BY svc.price_pence,svc.id))[1:2] AS popular_services,
          jsonb_agg(jsonb_build_object('id',svc.id,'name',svc.name,'speciality_id',svc.speciality_id,'speciality_name',svc.speciality_name,'price_pence',svc.from_price_pence,'duration_minutes',svc.duration_minutes) ORDER BY svc.price_pence,svc.id) AS matching_services,
          bool_or(CASE WHEN $6::boolean OR $22::date IS NOT NULL THEN beauty.public_service_available_on(svc.id,coalesce($22::date,(now() AT TIME ZONE 'Europe/London')::date)) ELSE false END) AS available
          FROM beauty.public_services svc WHERE svc.professional_id=p.id

@@ -6,7 +6,7 @@ type AuthAudience = "customer" | "professional";
 
 const stories = {
   customer: {
-    strapline: "LOOK GOOD • FEEL GOOD • BELONG",
+    strapline: "LOOK GOOD • FEEL GOOD • STAND OUT",
     eyebrow: "BEAUTY, COMMUNITY, BOOKINGS",
     title: "Discover.\nBook.\nGet Inspired.",
     description: "Find and book beauty professionals near you.",
@@ -84,7 +84,7 @@ export function AuthFrame({
         <p className="auth-footer">
           {audience === "professional"
             ? "GLOHAUS PRO · WORK • GROW • BELONG"
-            : "GLOHAUS · LOOK GOOD • FEEL GOOD • BELONG"}
+            : "GLOHAUS · LOOK GOOD • FEEL GOOD • STAND OUT"}
         </p>
       </main>
     </div>

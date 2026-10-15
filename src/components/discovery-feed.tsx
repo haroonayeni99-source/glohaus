@@ -326,7 +326,7 @@ export function DiscoveryFeed({
     <div className="discover-app">
       <aside className="discovery-sidebar">
         <Brand />
-        <p className="discovery-tagline">Look good. Feel good. Belong.</p>
+        <p className="discovery-tagline">Look good. Feel good. Stand out.</p>
         <nav aria-label="Main navigation">
           <button
             className={

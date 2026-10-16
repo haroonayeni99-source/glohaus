@@ -1,3 +1,4 @@
+import "@/components/professional-notifications.css";
 import "@/components/taxonomy.css";
 import "@/components/professional-activity.css";
 import "@/components/commission-control-centre.css";
@@ -45,6 +46,8 @@ export const metadata: Metadata = {
   description:
     "Discover, book and get inspired by independent beauty professionals near you.",
   robots: { index: false, follow: false },
+  appleWebApp: { capable: true, title: "GLOHAUS", statusBarStyle: "default" },
+  icons: { apple: "/icons/glohaus-192.png" },
 };
 export default async function RootLayout({
   children,

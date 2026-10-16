@@ -10,7 +10,7 @@ import {
   RotateCcw,
   Star,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { InAppNotification } from "@/modules/notifications/repository";
 
 function date(value: Date) {
@@ -22,10 +22,13 @@ function date(value: Date) {
 }
 
 function NotificationIcon({ kind }: { kind: InAppNotification["kind"] }) {
-  if (kind === "booking_reminder") return <CalendarClock size={16} aria-hidden />;
+  if (kind === "booking_reminder")
+    return <CalendarClock size={16} aria-hidden />;
   if (kind === "appointment_completed") return <Star size={16} aria-hidden />;
-  if (kind === "order_shipping_reminder") return <PackageOpen size={16} aria-hidden />;
-  if (kind.startsWith("order_refund")) return <RotateCcw size={16} aria-hidden />;
+  if (kind === "order_shipping_reminder")
+    return <PackageOpen size={16} aria-hidden />;
+  if (kind.startsWith("order_refund"))
+    return <RotateCcw size={16} aria-hidden />;
   if (kind.startsWith("order_")) return <PackageCheck size={16} aria-hidden />;
   return <Bell size={16} aria-hidden />;
 }
@@ -41,6 +44,34 @@ export function NotificationInbox({
   const [updating, setUpdating] = useState<string | null>(null);
   const [updateError, setUpdateError] = useState("");
   const unreadCount = notifications.filter((item) => !item.read_at).length;
+  useEffect(() => {
+    const receive = (event: Event) =>
+      setNotifications((event as CustomEvent).detail.notifications);
+    window.addEventListener("glohaus:notifications", receive);
+    let source: EventSource | undefined;
+    if (!professional) {
+      source = new EventSource("/api/v1/notifications/stream");
+      source.addEventListener("notifications", (event) => {
+        try {
+          setNotifications(
+            JSON.parse((event as MessageEvent).data).notifications,
+          );
+        } catch {}
+      });
+    }
+    const identityChange = (event: Event) => {
+      if (!(event as CustomEvent).detail.signedIn) {
+        source?.close();
+        setNotifications([]);
+      }
+    };
+    window.addEventListener("glohaus:identity-change", identityChange);
+    return () => {
+      window.removeEventListener("glohaus:identity-change", identityChange);
+      window.removeEventListener("glohaus:notifications", receive);
+      source?.close();
+    };
+  }, [professional]);
   async function markRead(id: string) {
     setUpdating(id);
     setUpdateError("");
@@ -51,13 +82,21 @@ export function NotificationInbox({
         body: JSON.stringify({ id }),
       });
       if (!response.ok) {
-        setUpdateError("GLOHAUS could not update this notification. Please try again.");
+        setUpdateError(
+          "GLOHAUS could not update this notification. Please try again.",
+        );
         return;
       }
       setNotifications((items) =>
         items.map((item) =>
-          item.id === id && !item.read_at ? { ...item, read_at: new Date() } : item,
+          item.id === id && !item.read_at
+            ? { ...item, read_at: new Date() }
+            : item,
         ),
+      );
+    } catch {
+      setUpdateError(
+        "GLOHAUS could not update your notifications. Please try again.",
       );
     } finally {
       setUpdating(null);
@@ -74,12 +113,18 @@ export function NotificationInbox({
         body: JSON.stringify({ all: true }),
       });
       if (!response.ok) {
-        setUpdateError("GLOHAUS could not update your notifications. Please try again.");
+        setUpdateError(
+          "GLOHAUS could not update your notifications. Please try again.",
+        );
         return;
       }
       const now = new Date();
       setNotifications((items) =>
         items.map((item) => (item.read_at ? item : { ...item, read_at: now })),
+      );
+    } catch {
+      setUpdateError(
+        "GLOHAUS could not update your notifications. Please try again.",
       );
     } finally {
       setUpdating(null);
@@ -88,18 +133,32 @@ export function NotificationInbox({
 
   if (!notifications.length)
     return (
-      <section className={professional ? "pro-empty-state pro-large-empty" : "catalog-empty"}>
+      <section
+        className={
+          professional ? "pro-empty-state pro-large-empty" : "catalog-empty"
+        }
+      >
         <Bell size={32} aria-hidden />
         <h2>No notifications yet.</h2>
-        <p>Booking reminders, Shop orders and other account activity will appear here when they happen.</p>
+        <p>
+          Booking reminders, Shop orders and other account activity will appear
+          here when they happen.
+        </p>
         <Link href={professional ? "/professional/bookings" : "/explore"}>
           {professional ? "View appointments" : "Discover professionals"}
         </Link>
       </section>
     );
   return (
-    <section className={professional ? "pro-notification-list" : "notification-list"} aria-label="Notifications">
-      {updateError && <p className="form-error" role="alert">{updateError}</p>}
+    <section
+      className={professional ? "pro-notification-list" : "notification-list"}
+      aria-label="Notifications"
+    >
+      {updateError && (
+        <p className="form-error" role="alert">
+          {updateError}
+        </p>
+      )}
       {unreadCount > 0 && (
         <div className="notification-toolbar">
           <span>{unreadCount} unread</span>
@@ -114,9 +173,17 @@ export function NotificationInbox({
         </div>
       )}
       {notifications.map((notification) => (
-        <article key={notification.id} data-read={Boolean(notification.read_at)}>
-          <Link href={notification.href} onClick={() => void markRead(notification.id)}>
-            <span className="notification-icon"><NotificationIcon kind={notification.kind} /></span>
+        <article
+          key={notification.id}
+          data-read={Boolean(notification.read_at)}
+        >
+          <Link
+            href={notification.href}
+            onClick={() => void markRead(notification.id)}
+          >
+            <span className="notification-icon">
+              <NotificationIcon kind={notification.kind} />
+            </span>
             <span>
               <strong>{notification.title}</strong>
               <small>{notification.body}</small>

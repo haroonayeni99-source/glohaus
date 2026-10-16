@@ -1,3 +1,4 @@
+import { ProfessionalNotificationBell } from "./professional-notification-bell";
 import Link from "next/link";
 import {
   CalendarDays,
@@ -10,7 +11,6 @@ import {
   ShoppingBag,
   PackageCheck,
   ShieldCheck,
-  Bell,
 } from "lucide-react";
 import { Brand } from "./brand";
 import { MobileSiteMenu } from "./mobile-site-menu";
@@ -55,11 +55,8 @@ export function ProfessionalNavigation({
               <ShieldCheck size={14} aria-hidden />
               Verification
             </Link>
-            <Link href="/notifications?view=professional">
-              <Bell size={14} aria-hidden />
-              Notifications
-            </Link>
           </nav>
+          <ProfessionalNotificationBell />
           <Link className="pro-create-post" href="/account">
             <ArrowLeftRight size={15} aria-hidden />
             Customer view

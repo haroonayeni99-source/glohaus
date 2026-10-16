@@ -102,6 +102,7 @@ const tools = [
     "/professional/profile#verification",
     BadgeCheck,
   ],
+  ["Notification settings", "Choose email and push alerts and manage your devices", "/professional/settings/notifications", Bell],
   ["Notifications", "Booking reminders, Shop updates and account activity", "/notifications?view=professional", Bell],
   ["Marketing preferences", "Choose optional customer-growth and business emails", "/preferences", Megaphone],
   ["Feature votes", "Privately vote on what GLOHAUS should build next", "/feature-votes", ThumbsUp],

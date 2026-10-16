@@ -1,3 +1,4 @@
+import { scheduleNotificationDelivery } from "@/modules/notifications/schedule";
 import { z } from "zod";
 import { getIdentity } from "@/lib/identity";
 import { withIdentity } from "@/lib/db";
@@ -114,6 +115,7 @@ export async function POST(
       ).rows[0].result;
     });
 
+    scheduleNotificationDelivery();
     return json(result, 201);
   } catch (error) {
     if (

@@ -1,3 +1,4 @@
+import { scheduleNotificationDelivery } from "@/modules/notifications/schedule";
 import { z } from "zod";
 import { withAccount } from "@/lib/api-account";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
@@ -29,6 +30,7 @@ export async function POST(request: Request) {
     });
     if (!saved.rows.length)
       return json({ error: { code: "REVIEW_ALREADY_EXISTS" } }, 409);
+    scheduleNotificationDelivery();
     return json({ saved: true }, 201);
   } catch (error) {
     // A booking may stop being eligible between the check and INSERT. RLS

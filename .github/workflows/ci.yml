@@ -212,3 +212,25 @@ jobs:
         with:
           name: multi-speciality-checks
           path: reports/taxonomy-*
+
+  professional-notifications:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Verify professional notification settings on desktop and mobile
+        run: node scripts/check-professional-notifications.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: professional-notifications-checks
+          path: reports/professional-notifications-*

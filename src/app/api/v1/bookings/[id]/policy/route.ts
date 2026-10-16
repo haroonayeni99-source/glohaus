@@ -1,3 +1,4 @@
+import { scheduleNotificationDelivery } from "@/modules/notifications/schedule";
 import { z } from "zod";
 import { withAccount } from "@/lib/api-account";
 import { assertSameOrigin, json, smallJson } from "@/lib/http";
@@ -23,8 +24,7 @@ export async function POST(request: Request, context: Context) {
     const p = policyBookingSchema.safeParse(await smallJson(request, 8192));
     if (!p.success || !z.uuid().safeParse(id).success)
       throw new AccessError("INVALID_REQUEST", 400);
-    return json(
-      await withAccount(
+    const result = await withAccount(
         undefined,
         async (db) =>
           (
@@ -33,8 +33,9 @@ export async function POST(request: Request, context: Context) {
               [id, JSON.stringify(p.data)],
             )
           ).rows[0].data,
-      ),
-    );
+      );
+    scheduleNotificationDelivery();
+    return json(result);
   } catch (e) {
     return policyError(e);
   }

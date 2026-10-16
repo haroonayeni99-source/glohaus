@@ -104,7 +104,7 @@ async function runWithIdentity<T>(
       WHERE privileged.rolname IN (
         'beauty_catalog','beauty_booking_ops','beauty_admin_ops',
         'beauty_payment_worker','beauty_financial_worker',
-        'beauty_support_intake','beauty_shop_stats'
+        'beauty_support_intake','beauty_shop_stats','beauty_notification_ops'
       )
       AND pg_has_role(current_user,privileged.oid,'MEMBER')
     ) OR EXISTS (

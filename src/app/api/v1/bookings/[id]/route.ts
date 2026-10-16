@@ -1,3 +1,4 @@
+import { scheduleNotificationDelivery } from "@/modules/notifications/schedule";
 import { z } from "zod";
 import { policyError } from "@/modules/policies/http";
 import { getIdentity } from "@/lib/identity";
@@ -30,6 +31,7 @@ export async function PATCH(
         parsed.data.reason,
       ]);
     });
+    scheduleNotificationDelivery();
     return json({ saved: true });
   } catch (error) {
     return policyError(error);

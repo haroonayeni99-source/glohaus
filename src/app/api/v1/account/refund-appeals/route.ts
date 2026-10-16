@@ -1,3 +1,4 @@
+import { scheduleNotificationDelivery } from "@/modules/notifications/schedule";
 import { z } from "zod";
 import { withAccount } from "@/lib/api-account";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
@@ -17,6 +18,7 @@ export async function POST(request: Request) {
         parsed.data.reason,
       ]),
     );
+    scheduleNotificationDelivery();
     return json({ saved: true });
   } catch (error) {
     return apiError(error);

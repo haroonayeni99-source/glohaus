@@ -1,0 +1,123 @@
+.pro-notification-settings {
+  max-width: 850px;
+  display: grid;
+  gap: 20px;
+}
+.pro-settings-card {
+  padding: 24px;
+  border: 1px solid var(--line, #444);
+  border-radius: 16px;
+  min-width: 0;
+}
+.pro-settings-card h2 {
+  margin-top: 0;
+}
+.pro-notification-preference,
+.pro-notification-preference-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px 64px;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line, #888);
+}
+.pro-notification-preference-heading {
+  font-weight: 700;
+}
+.pro-notification-preference label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+}
+.pro-notification-preference input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--pro-accent, #a37b3c);
+}
+.pro-notification-preference small,
+.pro-notification-device small {
+  display: block;
+  opacity: 0.7;
+}
+.pro-notification-device {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  flex-wrap: wrap;
+}
+.pro-notification-device button,
+.pro-settings-card > button {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.pro-settings-card button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.pro-notification-device button + button {
+  margin-left: 8px;
+}
+.pro-notification-badge {
+  display: inline-flex;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 50%;
+  background: var(--pro-accent, #b98e58);
+  color: #111;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 760px) {
+  .pro-settings-card {
+    padding: 16px;
+  }
+  .pro-notification-preference,
+  .pro-notification-preference-heading {
+    grid-template-columns: minmax(0, 1fr) 48px 48px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 760px) {
+  .pro-header-account > a[aria-label^="Notifications"] {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0;
+  }
+  .pro-header-account > a[aria-label^="Notifications"] .pro-notification-badge {
+    font-size: 11px;
+  }
+}
+
+.pro-header-account > a[aria-label^="Notifications"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 12px;
+}
+@media (max-width: 760px) {
+  .pro-header-account > a[aria-label^="Notifications"] {
+    font-size: 0;
+  }
+}
+
+/* Keep professional inbox text readable on the light dashboard surface. */
+:root:not([data-theme="night"]) .pro-notification-list article strong {
+  color: #211b20;
+}
+:root:not([data-theme="night"]) .pro-notification-list article small,
+:root:not([data-theme="night"]) .pro-notification-list article time {
+  color: #655a62;
+}

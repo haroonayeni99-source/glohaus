@@ -196,6 +196,26 @@ try {
           .locator(".discovery-pin-card")
           .getByRole("link", { name: /Directions to Brixton Braids/ }),
       ).toHaveAttribute("href", /destination=51.462%2C-0.115/);
+      if (width <= 900)
+        await page.getByRole("button", { name: "List", exact: true }).click();
+      await page
+        .getByRole("button", { name: "Show Nails & Glow on map", exact: true })
+        .click();
+      await expect(page.locator(".geo-map-surface")).toHaveAttribute(
+        "data-center-latitude",
+        "51.474",
+      );
+      await expect(page.locator(".geo-map-surface")).toHaveAttribute(
+        "data-center-longitude",
+        "-0.069",
+      );
+      await expect(page.locator(".geo-map-surface")).toHaveAttribute(
+        "data-zoom",
+        "16",
+      );
+      await expect(page.locator(".discovery-pin-card")).toContainText(
+        "Nails & Glow",
+      );
       if (width > 900) {
         const list = await page.locator(".map-pro-results").boundingBox(),
           map = await page.locator(".discovery-map-panel").boundingBox();

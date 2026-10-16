@@ -804,3 +804,5 @@
   .discovery-original .map-explore-search { grid-template-columns: 20px minmax(0, 1fr) auto; }
   .discovery-original .map-explore-search button { font-size: 12px; }
 }
+
+.discovery-original .discovery-categories a.active { color: #fff; background: #ad3869; border-color: #ad3869; }

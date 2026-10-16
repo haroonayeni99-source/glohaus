@@ -198,6 +198,7 @@ export function ExploreMapExperience({
       const result = await r.json();
       if (current !== sequence.current) return;
       setNearbyResults(result.professionals);
+      setStreetView(true);
       setPosition(point);
       setSelected(null);
       setLocationNotice(

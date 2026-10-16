@@ -4,6 +4,7 @@ export const productInputSchema = z
   .object({
     name: z.string().trim().min(2).max(120),
     description: z.string().trim().max(1200),
+    categoryId: z.uuid().nullable().optional(),
     sku: z.string().trim().min(1).max(80).nullable(),
     pricePence: z.number().int().min(50).max(100_000_000),
     compareAtPricePence: z
@@ -30,7 +31,16 @@ export const productInputSchema = z
 
 export type ProductInput = z.infer<typeof productInputSchema>;
 
+export type ProductCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  active: boolean;
+  sort_order: number;
+};
+
 export type ProfessionalProduct = {
+  category_id?: string | null;
   id: string;
   professional_id: string;
   image_asset_id: string | null;
@@ -46,6 +56,7 @@ export type ProfessionalProduct = {
 };
 
 export type PublicProduct = {
+  category_id?: string | null;
   created_at?: Date;
   sold_units?: number | string;
   recent_sold_units?: number | string;

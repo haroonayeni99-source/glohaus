@@ -5,7 +5,10 @@ import { withIdentity } from "@/lib/db";
 import { AccessMessage } from "@/components/access-message";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { ProfessionalProductsManager } from "@/components/professional-products-manager";
-import { professionalProducts } from "@/modules/shop/repository";
+import {
+  productCategories,
+  professionalProducts,
+} from "@/modules/shop/repository";
 import { professionalAccessState } from "@/modules/professionals/verification";
 
 export const metadata = { title: "Products · GLOHAUS PRO" };
@@ -21,6 +24,7 @@ export default async function ProfessionalProductsPage() {
 
   const account = result.account;
   const data = await withIdentity(account.authId, async (db) => ({
+    categories: await productCategories(db, true),
     products: await professionalProducts(db, account.professionalId!),
     access: await professionalAccessState(db, account.professionalId!),
     assets: (
@@ -44,6 +48,7 @@ export default async function ProfessionalProductsPage() {
         <ProfessionalProductsManager
           initialProducts={data.products}
           assets={data.assets}
+          categories={data.categories}
           accessStatus={data.access.status}
         />
       </main>

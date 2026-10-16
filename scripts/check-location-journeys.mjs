@@ -92,31 +92,31 @@ try {
       await expect(page.getByRole("status")).toContainText("No public pin yet");
       await go("/explore");
       await expect(
-        page.getByText("Area only · distance unavailable", { exact: true }),
+        page.getByText("London · Area only", { exact: true }),
       ).toBeVisible();
       await noOverflow(page);
       await page
         .getByRole("button", { name: "Use my location", exact: true })
         .click();
-      await expect(page.getByRole("status")).toContainText("2 professionals");
+      await expect(page.getByRole("status")).toContainText("2 matching professionals");
       await expect(
-        page.getByText("Less than 0.1 miles away · straight line"),
+        page.getByText("London · Less than 0.1 miles away"),
       ).toBeVisible();
       await expect(
         page.getByText("Area Only Studio", { exact: true }),
       ).toHaveCount(0);
       await page.getByLabel("Distance radius").selectOption("1");
-      await expect(page.getByRole("status")).toContainText("1 professionals");
+      await expect(page.getByRole("status")).toContainText("1 matching professional");
       await expect(
         page.getByText("Further Studio", { exact: true }),
       ).toHaveCount(0);
       expect(page.url()).not.toContain("51.5074");
-      if (width <= 600)
+      if (width <= 900)
         await page.getByRole("button", { name: "Map", exact: true }).click();
       await page.getByRole("button", { name: "Load street map" }).click();
       await expect(
-        page.getByRole("link", { name: "View Nearby Studio", exact: true }),
-      ).toHaveAttribute("href", "/p/near-studio");
+        page.getByRole("button", { name: "Nearby Studio", exact: true }),
+      ).toBeVisible();
       await page.getByRole("button", { name: "Zoom in street map" }).click();
       await page.getByRole("button", { name: "Move street map right" }).click();
       await page.getByRole("button", { name: "Reset map" }).click();
@@ -124,7 +124,7 @@ try {
       await noOverflow(page);
       await page.getByRole("button", { name: "Clear my location" }).click();
       await expect(page.getByRole("status")).toContainText("Location cleared");
-      if (width <= 600)
+      if (width <= 900)
         await page.getByRole("button", { name: "List", exact: true }).click();
       await expect(
         page.getByText("Area Only Studio", { exact: true }),

@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { ProfessionalProduct } from "@/modules/shop/domain";
+import type {
+  ProfessionalProduct,
+  ProductCategory,
+} from "@/modules/shop/domain";
 import { money } from "@/modules/professionals/domain";
 
 type Asset = { id: string; alt_text: string };
@@ -12,6 +15,7 @@ type Draft = {
   name: string;
   description: string;
   sku: string;
+  categoryId: string;
   price: string;
   previousPrice: string;
   stock: string;
@@ -23,6 +27,7 @@ const emptyDraft: Draft = {
   name: "",
   description: "",
   sku: "",
+  categoryId: "",
   price: "",
   previousPrice: "",
   stock: "0",
@@ -34,9 +39,11 @@ export function ProfessionalProductsManager({
   initialProducts,
   assets,
   accessStatus,
+  categories = [],
 }: {
   initialProducts: ProfessionalProduct[];
   assets: Asset[];
+  categories?: ProductCategory[];
   accessStatus: "unverified" | "pending" | "verified" | "restricted";
 }) {
   const [products, setProducts] = useState(initialProducts);
@@ -56,8 +63,11 @@ export function ProfessionalProductsManager({
       name: product.name,
       description: product.description,
       sku: product.sku || "",
+      categoryId: product.category_id || "",
       price: (product.price_pence / 100).toFixed(2),
-      previousPrice: product.compare_at_price_pence ? (product.compare_at_price_pence / 100).toFixed(2) : "",
+      previousPrice: product.compare_at_price_pence
+        ? (product.compare_at_price_pence / 100).toFixed(2)
+        : "",
       stock: String(product.stock_quantity),
       imageAssetId: product.image_asset_id || "",
       publicationStatus: product.publication_status,
@@ -70,9 +80,17 @@ export function ProfessionalProductsManager({
     event.preventDefault();
     const pricePence = Math.round(Number(draft.price) * 100);
     const stockQuantity = Number(draft.stock);
-    const compareAtPricePence = draft.previousPrice.trim() ? Math.round(Number(draft.previousPrice) * 100) : null;
-    if (compareAtPricePence !== null && (!Number.isFinite(compareAtPricePence) || compareAtPricePence <= pricePence)) {
-      setNotice("Previous price must be higher than the current price, or leave it blank.");
+    const compareAtPricePence = draft.previousPrice.trim()
+      ? Math.round(Number(draft.previousPrice) * 100)
+      : null;
+    if (
+      compareAtPricePence !== null &&
+      (!Number.isFinite(compareAtPricePence) ||
+        compareAtPricePence <= pricePence)
+    ) {
+      setNotice(
+        "Previous price must be higher than the current price, or leave it blank.",
+      );
       return;
     }
     if (!Number.isFinite(pricePence) || pricePence < 50) {
@@ -96,6 +114,7 @@ export function ProfessionalProductsManager({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: draft.name,
+            categoryId: draft.categoryId || null,
             description: draft.description,
             sku: draft.sku.trim() || null,
             pricePence,
@@ -131,7 +150,9 @@ export function ProfessionalProductsManager({
       setNotice("Product saved.");
     } catch (error) {
       setNotice(
-        error instanceof Error ? error.message : "This product could not be saved.",
+        error instanceof Error
+          ? error.message
+          : "This product could not be saved.",
       );
     } finally {
       setBusy(false);
@@ -141,9 +162,16 @@ export function ProfessionalProductsManager({
   return (
     <div className="pro-products-layout">
       <section className="pro-panel pro-product-editor">
-        <div className="pro-feature-notice" data-state={canPublish ? "ready" : "locked"}>
+        <div
+          className="pro-feature-notice"
+          data-state={canPublish ? "ready" : "locked"}
+        >
           <div>
-            <strong>{canPublish ? "Product publishing unlocked" : "Draft products now. Publish after verification."}</strong>
+            <strong>
+              {canPublish
+                ? "Product publishing unlocked"
+                : "Draft products now. Publish after verification."}
+            </strong>
             <p>
               {canPublish
                 ? "Your identity is verified, so eligible products can be published to the GLOHAUS Shop."
@@ -156,13 +184,17 @@ export function ProfessionalProductsManager({
           </div>
           {!canPublish && accessStatus !== "restricted" && (
             <Link href="/professional/profile#verification">
-              {accessStatus === "pending" ? "View verification" : "Verify identity"}
+              {accessStatus === "pending"
+                ? "View verification"
+                : "Verify identity"}
             </Link>
           )}
         </div>
         <div className="pro-panel-title">
           <div>
-            <p className="pro-kicker">{editing ? "EDIT PRODUCT" : "NEW PRODUCT"}</p>
+            <p className="pro-kicker">
+              {editing ? "EDIT PRODUCT" : "NEW PRODUCT"}
+            </p>
             <h2>{editing ? editing.name : "Add something to your shop"}</h2>
           </div>
           {editing && (
@@ -180,9 +212,35 @@ export function ProfessionalProductsManager({
               maxLength={120}
               required
               onChange={(event) =>
-                setDraft((current) => ({ ...current, name: event.target.value }))
+                setDraft((current) => ({
+                  ...current,
+                  name: event.target.value,
+                }))
               }
             />
+          </label>
+          <label>
+            Product category
+            <select
+              aria-label="Product category"
+              value={draft.categoryId}
+              onChange={(e) =>
+                setDraft((current) => ({
+                  ...current,
+                  categoryId: e.target.value,
+                }))
+              }
+            >
+              <option value="">Uncategorised</option>
+              {categories
+                .filter((c) => c.active || c.id === draft.categoryId)
+                .map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                    {!c.active ? " (hidden)" : ""}
+                  </option>
+                ))}
+            </select>
           </label>
           <label>
             Description
@@ -206,7 +264,10 @@ export function ProfessionalProductsManager({
                 placeholder="25.00"
                 required
                 onChange={(event) =>
-                  setDraft((current) => ({ ...current, price: event.target.value }))
+                  setDraft((current) => ({
+                    ...current,
+                    price: event.target.value,
+                  }))
                 }
               />
             </label>
@@ -217,7 +278,10 @@ export function ProfessionalProductsManager({
                 inputMode="numeric"
                 required
                 onChange={(event) =>
-                  setDraft((current) => ({ ...current, stock: event.target.value }))
+                  setDraft((current) => ({
+                    ...current,
+                    stock: event.target.value,
+                  }))
                 }
               />
             </label>
@@ -228,7 +292,12 @@ export function ProfessionalProductsManager({
               value={draft.previousPrice}
               inputMode="decimal"
               aria-describedby="product-offer-help"
-              onChange={event => setDraft(current => ({ ...current, previousPrice: event.target.value }))}
+              onChange={(event) =>
+                setDraft((current) => ({
+                  ...current,
+                  previousPrice: event.target.value,
+                }))
+              }
             />
             <small id="product-offer-help">
               For Deals & offers, enter your genuine previous selling price.
@@ -271,7 +340,8 @@ export function ProfessionalProductsManager({
               onChange={(event) =>
                 setDraft((current) => ({
                   ...current,
-                  publicationStatus: event.target.value as Draft["publicationStatus"],
+                  publicationStatus: event.target
+                    .value as Draft["publicationStatus"],
                 }))
               }
             >
@@ -285,7 +355,11 @@ export function ProfessionalProductsManager({
           <button className="pro-pink-button" disabled={busy}>
             {busy ? "Saving…" : editing ? "Save changes" : "Create product"}
           </button>
-          {notice && <p className="form-notice" role="status">{notice}</p>}
+          {notice && (
+            <p className="form-notice" role="status">
+              {notice}
+            </p>
+          )}
         </form>
       </section>
 
@@ -297,14 +371,21 @@ export function ProfessionalProductsManager({
         {products.length ? (
           <div className="pro-product-list">
             {products.map((product) => (
-              <button type="button" key={product.id} onClick={() => edit(product)}>
+              <button
+                type="button"
+                key={product.id}
+                onClick={() => edit(product)}
+              >
                 <span>
                   <strong>{product.name}</strong>
                   <small>
-                    {money(product.price_pence)} · {product.stock_quantity} in stock
+                    {money(product.price_pence)} · {product.stock_quantity} in
+                    stock
                   </small>
                 </span>
-                <span className={`pro-status pro-product-${product.publication_status}`}>
+                <span
+                  className={`pro-status pro-product-${product.publication_status}`}
+                >
                   {product.publication_status}
                 </span>
               </button>

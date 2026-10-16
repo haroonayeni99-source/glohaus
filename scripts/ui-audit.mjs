@@ -54,6 +54,7 @@ const css = (
       "site-improvements",
       "design-system",
       "location",
+      "explore/discovery-map",
       "../components/professional-profile",
       "../components/viewport-video",
       "../components/commission-control-centre",

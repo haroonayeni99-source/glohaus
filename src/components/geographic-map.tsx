@@ -5,20 +5,37 @@ import Image from "next/image";
 import {
   project,
   unproject,
+  distanceMiles,
   type Coordinates,
 } from "@/modules/professionals/location";
 
-type Pin = Coordinates & { id: string; label: string; href?: string };
+type Pin = Coordinates & {
+  id: string;
+  label: string;
+  href?: string;
+  priceLabel?: string;
+};
+export type MapViewport = Coordinates & { radiusMiles: number };
 export function GeographicMap({
   pins = [],
   focus,
   initialZoom = 12,
   onChoose,
+  selectedId,
+  highlightedId,
+  onSelect,
+  onHighlight,
+  onViewportChange,
 }: {
   pins?: Pin[];
   focus?: Coordinates;
   initialZoom?: number;
   onChoose?: (point: Coordinates) => void;
+  selectedId?: string | null;
+  highlightedId?: string | null;
+  onSelect?: (id: string) => void;
+  onHighlight?: (id: string | null) => void;
+  onViewportChange?: (viewport: MapViewport) => void;
 }) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -52,6 +69,22 @@ export function GeographicMap({
     return () => observer.disconnect();
   }, [loaded]);
   const c = project(center, zoom);
+  useEffect(() => {
+    const p = project(center, zoom);
+    onViewportChange?.({
+      ...center,
+      radiusMiles: Math.max(
+        0.5,
+        Math.min(
+          100,
+          distanceMiles(
+            center,
+            unproject(p.x + size.width / 2, p.y + size.height / 2, zoom),
+          ),
+        ),
+      ),
+    });
+  }, [center, zoom, size, onViewportChange]);
   const left = c.x - size.width / 2,
     top = c.y - size.height / 2;
   const tiles = [];
@@ -159,6 +192,7 @@ export function GeographicMap({
         onPointerCancel={() => {
           drag.current = null;
         }}
+        onDoubleClick={() => setZoom((z) => Math.min(19, z + 1))}
       >
         {tiles.map((tile) => (
           <Image
@@ -182,6 +216,25 @@ export function GeographicMap({
           const x = size.width / 2 + dx,
             y = p.y - top;
           if (x < 0 || x > size.width || y < 0 || y > size.height) return null;
+          if (onSelect)
+            return (
+              <button
+                type="button"
+                key={pin.id}
+                className={`geo-pin geo-price-pin${selectedId === pin.id || highlightedId === pin.id ? " is-selected" : ""}`}
+                style={{ left: x, top: y }}
+                aria-label={`${pin.label}${pin.priceLabel ? `, from ${pin.priceLabel}` : ""}`}
+                aria-pressed={selectedId === pin.id}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={() => onSelect(pin.id)}
+                onMouseEnter={() => onHighlight?.(pin.id)}
+                onMouseLeave={() => onHighlight?.(null)}
+                onFocus={() => onHighlight?.(pin.id)}
+                onBlur={() => onHighlight?.(null)}
+              >
+                {pin.priceLabel ?? "View"}
+              </button>
+            );
           return pin.href ? (
             <Link
               key={pin.id}

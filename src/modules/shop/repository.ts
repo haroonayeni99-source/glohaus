@@ -3,6 +3,7 @@ import "server-only";
 
 import type { SqlClient } from "@/modules/accounts/repository";
 import type {
+  ProductCategory,
   ProductInput,
   ProfessionalProduct,
   PublicProduct,
@@ -18,7 +19,7 @@ export async function professionalProducts(
   return (
     await db.query<ProfessionalProduct>(
       `SELECT id,professional_id,image_asset_id,name,description,sku,
-        price_pence,stock_quantity,publication_status,created_at,updated_at,compare_at_price_pence
+        price_pence,stock_quantity,publication_status,created_at,updated_at,compare_at_price_pence,category_id
        FROM beauty.products
        WHERE professional_id=$1
        ORDER BY updated_at DESC,id DESC`,
@@ -40,10 +41,11 @@ export async function saveProduct(
           `UPDATE beauty.products
          SET image_asset_id=$3,name=$4,description=$5,sku=$6,price_pence=$7,
              stock_quantity=$8,publication_status=$9,updated_at=now(),
+             category_id=CASE WHEN $12::boolean THEN $13::uuid ELSE category_id END,
              compare_at_price_pence=CASE WHEN $10::boolean THEN $11::integer ELSE CASE WHEN compare_at_price_pence>$7 THEN compare_at_price_pence ELSE NULL END END
          WHERE id=$1 AND professional_id=$2
          RETURNING id,professional_id,image_asset_id,name,description,sku,
-           price_pence,stock_quantity,publication_status,created_at,updated_at,compare_at_price_pence`,
+           price_pence,stock_quantity,publication_status,created_at,updated_at,compare_at_price_pence,category_id`,
           [
             id,
             professionalId,
@@ -56,6 +58,8 @@ export async function saveProduct(
             input.publicationStatus,
             input.compareAtPricePence !== undefined,
             input.compareAtPricePence ?? null,
+            input.categoryId !== undefined,
+            input.categoryId ?? null,
           ],
         )
       ).rows[0] ?? null
@@ -66,10 +70,10 @@ export async function saveProduct(
     await db.query<ProfessionalProduct>(
       `INSERT INTO beauty.products(
          professional_id,image_asset_id,name,description,sku,price_pence,
-         stock_quantity,publication_status,compare_at_price_pence
-       ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)
+         stock_quantity,publication_status,compare_at_price_pence,category_id
+       ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        RETURNING id,professional_id,image_asset_id,name,description,sku,
-         price_pence,stock_quantity,publication_status,created_at,updated_at,compare_at_price_pence`,
+         price_pence,stock_quantity,publication_status,created_at,updated_at,compare_at_price_pence,category_id`,
       [
         professionalId,
         input.imageAssetId,
@@ -80,6 +84,7 @@ export async function saveProduct(
         input.stockQuantity,
         input.publicationStatus,
         input.compareAtPricePence ?? null,
+        input.categoryId ?? null,
       ],
     )
   ).rows[0];
@@ -87,16 +92,21 @@ export async function saveProduct(
 
 export async function publicProducts(
   db: SqlClient,
-  options: { query?: string; collection?: ShopCollection } = {},
+  options: {
+    query?: string;
+    collection?: ShopCollection;
+    categoryId?: string;
+  } = {},
 ) {
   return (
     await db.query<PublicProduct>(
       `SELECT p.id,p.professional_id,p.image_asset_id,p.name,p.description,p.price_pence,
-        p.in_stock,p.professional_slug,p.professional_name,p.updated_at,p.created_at,p.compare_at_price_pence,
+        p.in_stock,p.professional_slug,p.professional_name,p.updated_at,p.created_at,p.compare_at_price_pence,p.category_id,
         coalesce(s.sold_units,0) AS sold_units,coalesce(s.recent_sold_units,0) AS recent_sold_units
        FROM beauty.public_products p
        LEFT JOIN beauty.public_product_sales s ON s.product_id=p.id
        WHERE ($1='' OR strpos(lower(p.name||' '||p.description||' '||p.professional_name),$1)>0)
+         AND ($3::uuid IS NULL OR (p.category_id=$3 AND EXISTS(SELECT 1 FROM beauty.platform_categories c WHERE c.id=$3 AND c.product_enabled AND NOT c.legacy_only)))
          AND ($2<>'bestsellers' OR coalesce(s.sold_units,0)>0)
          AND ($2<>'trending' OR coalesce(s.recent_sold_units,0)>0)
          AND ($2<>'deals' OR p.compare_at_price_pence>p.price_pence)
@@ -104,7 +114,11 @@ export async function publicProducts(
                      WHEN $2='trending' THEN coalesce(s.recent_sold_units,0) ELSE 0 END DESC,
                 CASE WHEN $2='new' THEN p.created_at ELSE p.updated_at END DESC,p.id DESC
        LIMIT 100`,
-      [(options.query ?? "").trim().toLowerCase(), options.collection ?? ""],
+      [
+        (options.query ?? "").trim().toLowerCase(),
+        options.collection ?? "",
+        options.categoryId ?? null,
+      ],
     )
   ).rows;
 }
@@ -289,4 +303,13 @@ export async function shopCartPayoutsReady(db: SqlClient): Promise<boolean> {
     "SELECT beauty.shop_cart_payouts_ready() AS ready",
   );
   return result.rows[0]?.ready ?? false;
+}
+
+export async function productCategories(db: SqlClient, includeHidden = false) {
+  return (
+    await db.query<ProductCategory>(
+      `SELECT id,name,slug,product_enabled AS active,product_sort_order AS sort_order FROM beauty.platform_categories WHERE NOT legacy_only AND ($1::boolean OR product_enabled) ORDER BY product_sort_order,name`,
+      [includeHidden],
+    )
+  ).rows;
 }

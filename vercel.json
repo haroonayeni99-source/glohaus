@@ -13,7 +13,8 @@
       "feature/commission-control-centre": false,
       "feature/owner-account-visibility": false,
       "fix/lip-filler-taxonomy": false,
-      "feature/professional-notifications": false
+      "feature/professional-notifications": false,
+      "feature/discovery-map-categories": false
     }
   },
   "regions": [

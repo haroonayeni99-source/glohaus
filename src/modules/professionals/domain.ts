@@ -142,6 +142,7 @@ export type PublicProfessional = {
   public_location_confirmed_at?: string | null;
   distance_miles?: number | null;
   photo_id?: string | null;
+  portfolio_photo_id?: string | null;
   photo_alt?: string | null;
   rating?: number | null;
   review_count?: number;
@@ -151,6 +152,7 @@ export type PublicProfessional = {
   from_price_pence?: number | null;
   travels_to_you?: boolean;
   available_today?: boolean;
+  next_available_at?: string | Date | null;
   popular_services?: string[];
   matching_services?:{id:string;name:string;speciality_id:string|null;speciality_name:string|null;price_pence:number;duration_minutes:number}[];
   id: string;

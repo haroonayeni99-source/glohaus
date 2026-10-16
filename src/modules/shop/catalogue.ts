@@ -29,10 +29,11 @@ export function shopCollection(value: unknown): ShopCollection | undefined {
     : undefined;
 }
 
-export function shopHref(collection?: ShopCollection, query = "") {
+export function shopHref(collection?: ShopCollection, query = "", categoryId?: string) {
   const params = new URLSearchParams();
   if (query.trim()) params.set("q", query.trim());
   if (collection) params.set("collection", collection);
+  if (categoryId) params.set("categoryId",categoryId);
   return `/shop${params.size ? `?${params}` : ""}#products`;
 }
 

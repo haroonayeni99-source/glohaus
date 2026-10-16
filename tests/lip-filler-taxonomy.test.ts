@@ -30,6 +30,10 @@ beforeAll(async () => {
   await db.query("WITH owner_account AS (INSERT INTO beauty.users(auth_id,email,display_name) VALUES('catalogue-owner','catalogue-owner@example.test','Fixture Owner') RETURNING id) INSERT INTO beauty.user_roles(user_id,role) SELECT id,'owner' FROM owner_account");
   sql = await readFile(correction.url, "utf8");
   await db.exec(sql);
+  // Reproduce the historical correction first, then finish upgrading the
+  // fixture before exercising today's discovery repository and its helpers.
+  for (const m of plan.slice(plan.indexOf(correction) + 1))
+    await db.exec(await readFile(m.url, "utf8"));
   const catalog = await taxonomyCatalog(db);
   category = catalog.categories.find((c) => c.slug === "aesthetics")!.id;
   speciality = catalog.specialities.find((s) => s.slug === "injectables")!.id;

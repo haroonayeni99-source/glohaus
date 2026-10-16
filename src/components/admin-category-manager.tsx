@@ -49,10 +49,12 @@ export function AdminCategoryManager({
   initial,
   extended = false,
   aliases = [],
+  productMode = false,
 }: {
   initial: CategoryRecord[];
   extended?: boolean;
   aliases?: TaxonomyAlias[];
+  productMode?: boolean;
 }) {
   const router = useRouter();
   const helpId = useId();
@@ -184,7 +186,11 @@ export function AdminCategoryManager({
     setBusy(true);
     try {
       const response = await fetch(
-        extended ? "/api/v1/admin/taxonomy" : "/api/v1/admin/categories",
+        productMode
+          ? "/api/v1/admin/product-categories"
+          : extended
+            ? "/api/v1/admin/taxonomy"
+            : "/api/v1/admin/categories",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

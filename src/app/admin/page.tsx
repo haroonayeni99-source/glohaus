@@ -1,3 +1,5 @@
+import { AdminCategoryManager } from "@/components/admin-category-manager";
+import { productCategories } from "@/modules/shop/repository";
 import { adminPushDeliveryOverview } from "@/modules/admin/repository";
 import { AdminProfessionalActivity } from "@/components/admin-professional-activity";
 import { activityOverview } from "@/modules/professional-activity/repository";
@@ -13,7 +15,10 @@ import {
 } from "@/components/admin-workspace-view";
 import { AdminSectionUnavailable } from "@/components/admin-section-unavailable";
 import { AdminLabelEditor } from "@/components/admin-label-editor";
-import { AdminTaxonomyManager,type TaxonomyOverview } from "@/components/admin-taxonomy-manager";
+import {
+  AdminTaxonomyManager,
+  type TaxonomyOverview,
+} from "@/components/admin-taxonomy-manager";
 import { publicLabels } from "@/modules/platform/repository";
 import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
@@ -66,10 +71,22 @@ export default async function Page() {
   // starting a dozen transactions at once and timing out while they queue.
   const data = await adminOverview();
   const support = await withAdmin(supportInbox).catch(() => null);
-  const policies = await withAdmin(db=>adminPolicies(db)).catch(()=>null);
-  const activity = await withAdmin(db => activityOverview(db)).catch(() => null);
+  const policies = await withAdmin((db) => adminPolicies(db)).catch(() => null);
+  const activity = await withAdmin((db) => activityOverview(db)).catch(
+    () => null,
+  );
   const labels = await publicLabels();
-  const categories = await withAdmin(async db=>(await db.query<{data:TaxonomyOverview}>("SELECT beauty.admin_taxonomy_overview() AS data")).rows[0].data).catch(() => null);
+  const shopCategories = await withAdmin((db) =>
+    productCategories(db, true),
+  ).catch(() => null);
+  const categories = await withAdmin(
+    async (db) =>
+      (
+        await db.query<{ data: TaxonomyOverview }>(
+          "SELECT beauty.admin_taxonomy_overview() AS data",
+        )
+      ).rows[0].data,
+  ).catch(() => null);
   const owner = isOwner ? await ownerControls().catch(() => null) : null;
   const productFee = isOwner
     ? await ownerProductFeeRule().catch(() => undefined)
@@ -84,7 +101,7 @@ export default async function Page() {
   const emailDelivery = isOwner
     ? await ownerEmailDeliveryOverview().catch(() => null)
     : null;
-  const pushDelivery = await adminPushDeliveryOverview().catch(()=>null);
+  const pushDelivery = await adminPushDeliveryOverview().catch(() => null);
   const authAccounts = isOwner
     ? await ownerAuthAccountOverview().catch(() => null)
     : [];
@@ -124,10 +141,29 @@ export default async function Page() {
           referrals={referrals}
           owner={owner}
         />
-        <section id="professional-policies" className="admin-workspace-section admin-detail-card"><p className="eyebrow">PROFESSIONAL BOOKING TERMS</p><h2>Professional Policies</h2>{policies?<AdminProfessionalPolicies initial={policies}/>:<AdminSectionUnavailable label="Professional Policies"/>}</section>
-        <section id="professional-activity" className="admin-workspace-section admin-detail-card">
-          <p className="eyebrow">PROFESSIONAL PARTICIPATION</p><h2>Inactive Professionals</h2>
-          {activity ? <AdminProfessionalActivity initial={activity} owner={isOwner} /> : <AdminSectionUnavailable label="Professional activity" />}
+        <section
+          id="professional-policies"
+          className="admin-workspace-section admin-detail-card"
+        >
+          <p className="eyebrow">PROFESSIONAL BOOKING TERMS</p>
+          <h2>Professional Policies</h2>
+          {policies ? (
+            <AdminProfessionalPolicies initial={policies} />
+          ) : (
+            <AdminSectionUnavailable label="Professional Policies" />
+          )}
+        </section>
+        <section
+          id="professional-activity"
+          className="admin-workspace-section admin-detail-card"
+        >
+          <p className="eyebrow">PROFESSIONAL PARTICIPATION</p>
+          <h2>Inactive Professionals</h2>
+          {activity ? (
+            <AdminProfessionalActivity initial={activity} owner={isOwner} />
+          ) : (
+            <AdminSectionUnavailable label="Professional activity" />
+          )}
         </section>
         {isOwner && (
           <section
@@ -171,7 +207,8 @@ export default async function Page() {
             <HomepageCategoryMediaControl
               initial={homepageMedia.categoryImages}
               initialNames={homepageMedia.categoryNames}
-              initialMetadata={homepageMedia.categoryMetadata} taxonomy={categories??undefined}
+              initialMetadata={homepageMedia.categoryMetadata}
+              taxonomy={categories ?? undefined}
             />
           </section>
         )}
@@ -202,6 +239,24 @@ export default async function Page() {
             <AdminTaxonomyManager data={categories} />
           ) : (
             <AdminSectionUnavailable label="Categories" />
+          )}
+        </section>
+        <section
+          id="product-categories"
+          className="admin-workspace-section admin-detail-card"
+        >
+          <p className="eyebrow">MARKETPLACE CATALOGUE</p>
+          <h2>Product categories</h2>
+          <p>
+            Add, edit or remove categories from Shop browsing. Hide removes a
+            category from browsing and new product choices, while retaining
+            products and order history. Names are shared with the service
+            catalogue; visibility and order are independent.
+          </p>
+          {shopCategories ? (
+            <AdminCategoryManager initial={shopCategories} productMode />
+          ) : (
+            <AdminSectionUnavailable label="Product categories" />
           )}
         </section>
         {isOwner && bookingFee && (
@@ -430,13 +485,47 @@ export default async function Page() {
             </div>
           </section>
         )}
-        {pushDelivery && <section id="push-delivery-health" className="admin-workspace-section admin-detail-card">
-          <p className="eyebrow">PROFESSIONAL NOTIFICATION HEALTH</p><h2>Push delivery</h2>
-          <p className="lead">Push provider acceptance confirms receipt by the push service. Device display depends on permission, connectivity and browser support. These totals contain no private message content.</p>
-          <p>{process.env.VAPID_PUBLIC_KEY&&process.env.VAPID_PRIVATE_KEY&&process.env.VAPID_SUBJECT?"VAPID configuration present.":"Push awaits VAPID configuration."}</p>
-          <div className="service-edit-list">{[["Active devices",pushDelivery.activeDevices],["Queued",pushDelivery.queued],["Accepted",pushDelivery.accepted],["Failed",pushDelivery.failed],["Expired devices",pushDelivery.expired],["Skipped / opted out",pushDelivery.skipped]].map(([label,value])=><article className="service-edit-row" key={String(label)}><h3>{label}</h3><strong>{value}</strong></article>)}</div>
-          <p>{pushDelivery.lastAcceptedAt?`Last accepted: ${new Date(pushDelivery.lastAcceptedAt).toLocaleString("en-GB",{timeZone:"Europe/London"})}`:"No push deliveries accepted yet."}</p>
-        </section>}
+        {pushDelivery && (
+          <section
+            id="push-delivery-health"
+            className="admin-workspace-section admin-detail-card"
+          >
+            <p className="eyebrow">PROFESSIONAL NOTIFICATION HEALTH</p>
+            <h2>Push delivery</h2>
+            <p className="lead">
+              Push provider acceptance confirms receipt by the push service.
+              Device display depends on permission, connectivity and browser
+              support. These totals contain no private message content.
+            </p>
+            <p>
+              {process.env.VAPID_PUBLIC_KEY &&
+              process.env.VAPID_PRIVATE_KEY &&
+              process.env.VAPID_SUBJECT
+                ? "VAPID configuration present."
+                : "Push awaits VAPID configuration."}
+            </p>
+            <div className="service-edit-list">
+              {[
+                ["Active devices", pushDelivery.activeDevices],
+                ["Queued", pushDelivery.queued],
+                ["Accepted", pushDelivery.accepted],
+                ["Failed", pushDelivery.failed],
+                ["Expired devices", pushDelivery.expired],
+                ["Skipped / opted out", pushDelivery.skipped],
+              ].map(([label, value]) => (
+                <article className="service-edit-row" key={String(label)}>
+                  <h3>{label}</h3>
+                  <strong>{value}</strong>
+                </article>
+              ))}
+            </div>
+            <p>
+              {pushDelivery.lastAcceptedAt
+                ? `Last accepted: ${new Date(pushDelivery.lastAcceptedAt).toLocaleString("en-GB", { timeZone: "Europe/London" })}`
+                : "No push deliveries accepted yet."}
+            </p>
+          </section>
+        )}
         {isOwner && emailDelivery && (
           <section
             id="email-delivery-health"

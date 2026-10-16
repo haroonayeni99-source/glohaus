@@ -3,6 +3,7 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { expect, it, vi } from "vitest";
 import { ExploreMapExperience } from "@/components/explore-map-experience";
+vi.mock("next/navigation",()=>({useRouter:()=>({push:vi.fn()})}));
 import { defaultDiscoveryFilters } from "@/modules/professionals/discovery";
 it("does not send a delayed device location after leaving Explore", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);

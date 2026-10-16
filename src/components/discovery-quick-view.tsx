@@ -7,6 +7,7 @@ import type { PublicProfessional } from "@/modules/professionals/domain";
 import { money } from "@/modules/professionals/domain";
 import { serviceDeepLink } from "@/modules/taxonomy/domain";
 import { ProfessionalVerificationBadges } from "./professional-verification-badges";
+import { ProfessionalDirections } from "./professional-directions";
 type Preview = {
   services: {
     id: string;
@@ -71,6 +72,7 @@ export function DiscoveryQuickView({
         {pro.travels_to_you ? "Travels to you" : "Visit professional"}
       </p>
       <p>{pro.bio}</p>
+      <ProfessionalDirections professional={pro} />
       {error && <p role="alert">{error}</p>}
       {!preview && !error && (
         <p role="status">Loading portfolio and services…</p>

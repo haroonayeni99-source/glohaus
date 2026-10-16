@@ -15,7 +15,9 @@ import {
 } from "lucide-react";
 import { TaxonomyFilters } from "./taxonomy-filters";
 import { ProfessionalVerificationBadges } from "./professional-verification-badges";
-import { GeographicMap, type MapViewport } from "./geographic-map";
+import type { MapViewport } from "./geographic-map";
+import { DiscoveryStreetMap } from "./discovery-street-map";
+import { ProfessionalDirections } from "./professional-directions";
 import {
   coordinatesSchema,
   distanceLabel,
@@ -298,6 +300,14 @@ export function ExploreMapExperience({
           <button type="submit">Search</button>
         </form>
       </section>
+      <nav className="map-area-strip discovery-area-strip" aria-label="Explore London areas">
+        {["All London", ...areas].map((area) => (
+          <Link key={area} className={`map-area-card ${area.toLowerCase().replaceAll(" ", "-")}${(area === "All London" ? !filters.location : filters.location === area) ? " active" : ""}`}
+            href={discoveryHref(query, { ...filters, location: area === "All London" ? undefined : area })}>
+            <span>{area}</span><small>{area === "All London" ? "Across the city" : "Explore the neighbourhood"}</small>
+          </Link>
+        ))}
+      </nav>
       <nav className="discovery-categories" aria-label="Beauty categories">
         <Link
           className={!filters.categoryId && !filters.category ? "active" : ""}
@@ -604,6 +614,7 @@ export function ExploreMapExperience({
                       Book Now
                     </Link>
                   </div>
+                  <ProfessionalDirections professional={pro} />
                 </div>
               </article>
             ))}
@@ -633,7 +644,7 @@ export function ExploreMapExperience({
               Search this area
             </button>
           </div>
-          <GeographicMap
+          <DiscoveryStreetMap
             pins={mapped.map((pro) => ({
               id: pro.id,
               label: pro.business_name,
@@ -683,6 +694,7 @@ export function ExploreMapExperience({
                   : ""}
               </span>
               <small>Next: {nextSlot(selectedPro)}</small>
+              <ProfessionalDirections professional={selectedPro} />
               <div>
                 <button type="button" onClick={() => setPreview(selectedPro)}>
                   Quick View

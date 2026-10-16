@@ -1,4 +1,5 @@
 import "./discovery-map.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { taxonomyCatalog } from "@/modules/taxonomy/repository";
 import { emptyTaxonomy } from "@/modules/taxonomy/domain";
 import { publicMetadata, publicPages } from "@/lib/public-seo";

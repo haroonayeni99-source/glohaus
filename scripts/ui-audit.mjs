@@ -43,7 +43,7 @@ await build({
   loader: { ".css": "empty" },
   tsconfig: "tsconfig.json",
 });
-const css = (
+const css = (await readFile("node_modules/maplibre-gl/dist/maplibre-gl.css", "utf8")) + "\n" + (
   await Promise.all(
     [
       "globals",

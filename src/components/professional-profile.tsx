@@ -1,4 +1,5 @@
 import { PlatformLabel } from "./platform-labels";
+import { ProfessionalDirections } from "./professional-directions";
 import Link from "next/link";
 import { ProfessionalVerificationBadges } from "./professional-verification-badges";
 import { FollowProfessionalButton } from "./follow-professional-button";
@@ -202,6 +203,7 @@ export function ProfessionalProfile({
                       View professional-confirmed studio pin
                     </a>
                   )}
+                <ProfessionalDirections professional={p} />
               </div>
               <div>
                 <h3>Get in touch</h3>

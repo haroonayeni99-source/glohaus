@@ -31,6 +31,7 @@ await build({
     "@/modules/professional-activity/repository": resolve("tests/fixtures/ui-audit/data.ts"),
     "@/modules/policies/repository": resolve("tests/fixtures/ui-audit/data.ts"),
     "@/modules/platform/repository": resolve("tests/fixtures/ui-audit/data.ts"),
+    "@/modules/shop/repository": resolve("tests/fixtures/ui-audit/data.ts"),
     "@/lib/db": resolve("tests/fixtures/customer-profile-data.ts"),
     "@/modules/accounts/customer-profile": resolve("tests/fixtures/customer-profile-data.ts"),
     "@/lib/page-access": resolve("tests/fixtures/ui-audit/data.ts"),

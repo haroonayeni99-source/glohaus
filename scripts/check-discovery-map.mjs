@@ -41,6 +41,19 @@ try {
       await expect(
         page.getByRole("link", { name: "Hair", exact: true }),
       ).toHaveAttribute("href", /categoryId=11111111/);
+      const firstCard = page.locator(".discovery-card").first();
+      const serviceLink = firstCard.locator(".matching-services a").first();
+      await serviceLink.scrollIntoViewIfNeeded();
+      await page.mouse.move(0, 0);
+      await expect(firstCard).not.toHaveClass(/is-selected/);
+      const restingLink = await serviceLink.boundingBox();
+      await serviceLink.hover();
+      await expect(firstCard).toHaveClass(/is-selected/);
+      const hoveredLink = await serviceLink.boundingBox();
+      expect(hoveredLink).toEqual(restingLink);
+      await page.mouse.move(0, 0);
+      await serviceLink.focus();
+      expect(await serviceLink.boundingBox()).toEqual(restingLink);
       await page
         .getByRole("button", { name: "Save Brixton Braids", exact: true })
         .click();
@@ -178,6 +191,7 @@ try {
         passed: true,
         checks: [
           "dynamic category links",
+          "service links stay in place on hover and focus",
           "save persists",
           "public media quick view",
           "real price pin selection",

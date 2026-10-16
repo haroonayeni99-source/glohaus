@@ -200,8 +200,6 @@
 }
 .discovery-card.is-selected {
   box-shadow: 0 0 0 2px var(--ui-text);
-  padding: 8px;
-  margin: -8px 0 0;
 }
 .discovery-card-photo {
   position: relative;

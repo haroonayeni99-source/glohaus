@@ -27,6 +27,7 @@ export async function adminOverview() {
 }
 export async function publicLabels() { return defaultLabels; }
 export async function adminCategories() { fail("categories"); return [{ id: ids.pro, name: "Nails", slug: "nails", active: true, sort_order: 1 }]; }
+export async function productCategories() { return [{ id: ids.pro, name: "Nails", slug: "nails", active: true, sort_order: 1 }]; }
 export async function ownerControls() { fail("owner"); return { staff: [{ id: ids.user, display_name: "Example Admin", email: "admin@example.test", status: "active", created_at: date, roles: ["admin"], permissions: [] }], audit: [{ id: ids.pro, action: "profile_updated", actor_role: "owner", reason: "Updated public information", created_at: date }] }; }
 export async function ownerProductFeeRule() { fail("product-fee"); return { id: ids.pro, percentageBasisPoints: 1000, fixedFeePence: 0, minimumFeePence: 0, maximumFeePence: null, minimumTransactionPence: 1, processingCostPayer: "platform", effectiveFrom: date }; }
 export async function ownerBookingFeeRule() { fail("booking-fee"); return { id: null, fixedFeePence: 100, effectiveFrom: null, usingDefault: true }; }

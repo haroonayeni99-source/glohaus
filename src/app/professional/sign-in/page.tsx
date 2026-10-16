@@ -27,7 +27,10 @@ export default async function Page({
   if (previewTarget) redirect(previewTarget);
 
   return (
-    <AuthFrame audience="professional">
+    <AuthFrame
+      audience="professional"
+      strapline="Your Talent. Your Business. Your GLOHAUS."
+    >
       {authConfigured() ? (
         <>
           <nav className="auth-switch" aria-label="Beauty professional sign in">

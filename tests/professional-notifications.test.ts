@@ -257,7 +257,7 @@ describe.sequential("professional notification delivery integration", () => {
     ).toHaveLength(0);
     const jobs = await deliveries();
     expect(jobs).toHaveLength(1);
-    expect(jobs[0].href).toContain(cid);
+    expect(jobs[0].href).toBe(`/messages?thread=${cid}&view=professional`);
     await asWorker((sql) =>
       sql.query("SELECT beauty.finish_push_delivery($1,'expired')", [
         jobs[0].id,

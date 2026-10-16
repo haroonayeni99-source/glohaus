@@ -177,7 +177,7 @@ DECLARE uid uuid; bid uuid; notice text; event text; heading text; detail text; 
  IF TG_TABLE_NAME='messages' THEN
   IF NEW.sender_role<>'customer' THEN RETURN NEW; END IF;
   SELECT p.user_id INTO uid FROM beauty.conversations c JOIN beauty.professional_profiles p ON p.id=c.professional_id WHERE c.id=NEW.conversation_id;
-  notice:='customer_message';event:='message:'||NEW.id;heading:='New customer message';detail:='A customer sent you a private message. Open your inbox to reply.';link:='/messages/'||NEW.conversation_id||'?view=professional';
+  notice:='customer_message';event:='message:'||NEW.id;heading:='New customer message';detail:='A customer sent you a private message. Open your inbox to reply.';link:='/messages?thread='||NEW.conversation_id||'&view=professional';
  ELSIF TG_TABLE_NAME='reviews' THEN
   bid:=NEW.booking_id;notice:='review_received';event:='review:'||NEW.id;heading:='New verified-booking review';detail:='A customer reviewed a completed appointment. Read the review in your dashboard.';link:='/professional/reviews';
   IF NOT EXISTS(SELECT 1 FROM beauty.bookings WHERE id=bid AND status='completed') THEN RETURN NEW; END IF;

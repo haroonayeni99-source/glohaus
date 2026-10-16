@@ -59,7 +59,7 @@ it("shares one live connection between bell and inbox, updates unread count and 
               kind: "customer_message",
               title: "New customer message",
               body: "Open your inbox to reply.",
-              href: "/messages/conversation?view=professional",
+              href: "/messages?thread=conversation&view=professional",
               read_at: null,
               created_at: "2026-10-15T12:00:00Z",
             },
@@ -74,7 +74,7 @@ it("shares one live connection between bell and inbox, updates unread count and 
   ).toContain("99+");
   expect(
     container.querySelector(
-      'a[href="/messages/conversation?view=professional"]',
+      'a[href="/messages?thread=conversation&view=professional"]',
     )?.textContent,
   ).toContain("New customer message");
   const mark = container.querySelector<HTMLButtonElement>(

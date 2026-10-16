@@ -42,4 +42,3 @@ Released after the owner requested deployment and addition of this production fe
 - Live browser verification reached the new Explore layout, loaded real OpenStreetMap street tiles, and confirmed Shop category links carry actual category IDs. The immediate production error/fatal log scan was empty.
 - Production currently has **0 published professionals, 0 published services, 0 confirmed public pins and 0 publicly listed products**. Publishing and public-pin consent remain the professionals' explicit actions. Existing private records were not published or fabricated for verification.
 - A test-only follow-up supplies product-category fixture data to the existing Owner/Admin browser harness, keeping server-only database code outside its isolated browser bundle. Navigation search now checks that both Service Categories and Product Categories remain accessible. This does not change production functionality.
-

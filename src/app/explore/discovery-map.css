@@ -806,3 +806,13 @@
 }
 
 .discovery-original .discovery-categories a.active { color: #fff; background: #ad3869; border-color: #ad3869; }
+
+/* The illustrated map keeps light cards in both themes. */
+.discovery-original .london-overview :is(.map-controls button, .map-pan-controls button, .map-street-card strong, .map-legend span) {
+  color: #241b20 !important;
+}
+.discovery-original .discovery-categories a.active {
+  color: #fff !important;
+  background: #ad3869 !important;
+  border-color: #ad3869 !important;
+}

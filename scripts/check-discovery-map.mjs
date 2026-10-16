@@ -150,6 +150,31 @@ try {
       await expect(page.locator(".london-overview")).toHaveCount(1);
       if (width <= 900)
         await page.getByRole("button", { name: "Map", exact: true }).click();
+      const controlContrasts = await page
+        .locator(
+          ".london-overview :is(.map-controls button, .map-pan-controls button, .map-street-card strong, .map-legend span)",
+        )
+        .evaluateAll((elements) =>
+          elements.map((element) => {
+            const rgb = getComputedStyle(element)
+              .color.match(/[0-9.]+/g)
+              .slice(0, 3)
+              .map(Number);
+            const luminance = rgb
+              .map((value) => {
+                const s = value / 255;
+                return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+              })
+              .reduce(
+                (sum, value, i) => sum + value * [0.2126, 0.7152, 0.0722][i],
+                0,
+              );
+            return 1.05 / (luminance + 0.05);
+          }),
+        );
+      expect(controlContrasts.length).toBeGreaterThan(0);
+      for (const contrast of controlContrasts)
+        expect(contrast).toBeGreaterThanOrEqual(4.5);
       await page.screenshot({
         path: `reports/london-overview-${theme}-${width}.png`,
         fullPage: true,
@@ -315,6 +340,7 @@ try {
           "public media quick view",
           "real price pin selection",
           "original map-first layout",
+          "readable map controls in both themes",
           "all 32 boroughs",
           "selected professional centred at street zoom",
           "viewport search",

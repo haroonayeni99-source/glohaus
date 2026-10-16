@@ -1,3 +1,4 @@
+import { scheduleNotificationDelivery } from "@/modules/notifications/schedule";
 import { z } from "zod";
 import { withAdmin } from "@/modules/admin/repository";
 import { stripe } from "@/modules/payments/stripe";
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
         ]);
       });
     }
+    scheduleNotificationDelivery();
     return json({ saved: true });
   } catch (error) {
     return policyError(error);

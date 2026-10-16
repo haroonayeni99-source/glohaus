@@ -406,7 +406,7 @@ describe.sequential("professional notification delivery integration", () => {
       "UPDATE beauty.bookings SET status='confirmed',starts_at=now()+interval '5 hours',ends_at=now()+interval '6 hours' WHERE id=$1",
       [bookingId],
     );
-    await preference("reminders", false, false);
+    await preference("reminders", false, true);
     await asWorker((sql) =>
       sql.query("SELECT beauty.prepare_professional_notifications()"),
     );
@@ -430,6 +430,13 @@ describe.sequential("professional notification delivery integration", () => {
         (n) => n.kind === "reminder" && n.email === "professional@example.test",
       ),
     ).toHaveLength(0);
+    const oldReminder=(await asUser('professional',inAppNotifications)).find(n=>n.kind==='booking_reminder')!;
+    await db.query("UPDATE beauty.bookings SET starts_at=now()+interval '7 hours',ends_at=now()+interval '8 hours' WHERE id=$1",[bookingId]);
+    await asWorker(sql=>sql.query('SELECT beauty.prepare_professional_notifications()'));
+    await deliveries();
+    const oldPush=(await db.query<{status:string}>('SELECT status FROM beauty.push_deliveries WHERE notification_id=$1',[oldReminder.id])).rows;
+    expect(oldPush).toHaveLength(2);expect(oldPush.every(n=>n.status==='skipped')).toBe(true);
+
   });
   it("records new completed-booking reviews without copying review text into email or push", async () => {
     await db.query(

@@ -238,7 +238,9 @@ END $$;
 CREATE FUNCTION beauty.claim_push_deliveries() RETURNS TABLE(id uuid,endpoint text,p256dh text,auth text,notification_id uuid,href text) LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$ BEGIN
  UPDATE beauty.push_deliveries d SET status='skipped',claimed_until=NULL FROM beauty.push_subscriptions s,beauty.in_app_notifications i,beauty.users u
  WHERE d.subscription_id=s.id AND d.notification_id=i.id AND u.id=s.user_id AND d.status='pending'
- AND (s.disabled_at IS NOT NULL OR u.status<>'active' OR u.deleted_at IS NOT NULL OR (i.kind<>'push_test' AND NOT beauty.notification_allowed(u.id,beauty.notification_category(i.kind),'push')));
+ AND (s.disabled_at IS NOT NULL OR u.status<>'active' OR u.deleted_at IS NOT NULL
+ OR (i.kind<>'push_test' AND NOT beauty.notification_allowed(u.id,beauty.notification_category(i.kind),'push'))
+ OR (i.kind='booking_reminder' AND NOT EXISTS(SELECT 1 FROM beauty.bookings b WHERE b.id=i.booking_id AND b.status='confirmed' AND b.starts_at>now() AND (i.event_key IS NULL OR i.event_key='reminder:'||b.id||':'||b.starts_at::text))));
  UPDATE beauty.push_deliveries SET status='failed',last_error='RETRY_EXHAUSTED' WHERE status='pending' AND (attempts>=5 OR due_at<now()-interval '24 hours') AND (claimed_until IS NULL OR claimed_until<now());
  RETURN QUERY WITH eligible AS(SELECT d.id FROM beauty.push_deliveries d WHERE d.status='pending' AND d.due_at<=now() AND (d.claimed_until IS NULL OR d.claimed_until<now()) ORDER BY d.due_at LIMIT 30 FOR UPDATE SKIP LOCKED),
  claimed AS(UPDATE beauty.push_deliveries d SET attempts=d.attempts+1,claimed_until=now()+interval '5 minutes' FROM eligible e WHERE d.id=e.id RETURNING d.*)

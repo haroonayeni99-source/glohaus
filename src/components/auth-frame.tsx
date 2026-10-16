@@ -35,17 +35,20 @@ const stories = {
 export function AuthFrame({
   children,
   audience = "customer",
+  strapline,
 }: {
   children: React.ReactNode;
   audience?: AuthAudience;
+  strapline?: string;
 }) {
   const story = stories[audience];
+  const tagline = strapline ?? story.strapline;
   return (
     <div className={`auth-layout auth-layout-${audience}`}>
       <aside className="auth-story">
         <div className="auth-brand-lockup">
           <Brand inverse={audience === "customer"} pro={audience === "professional"} />
-          <span>{story.strapline}</span>
+          <span>{tagline}</span>
         </div>
         <div className="auth-story-copy">
           <p className="eyebrow">{story.eyebrow}</p>
@@ -82,9 +85,7 @@ export function AuthFrame({
         )}
         <div className="auth-body">{children}</div>
         <p className="auth-footer">
-          {audience === "professional"
-            ? "GLOHAUS PRO · WORK • GROW • BELONG"
-            : "GLOHAUS · LOOK GOOD • FEEL GOOD • STAND OUT"}
+          {audience === "professional" ? "GLOHAUS PRO" : "GLOHAUS"} · {tagline}
         </p>
       </main>
     </div>

@@ -103,7 +103,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: inherit;
+  color: #fff;
   text-decoration: none;
   font-size: 12px;
 }

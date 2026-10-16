@@ -13,8 +13,8 @@ try{
   await expect(page.getByRole('heading',{name:'Notifications',exact:true})).toBeVisible();
   await expect(page.getByLabel('New bookings email',{exact:true})).toBeChecked();await expect(page.getByLabel('New bookings email',{exact:true})).toBeDisabled();
   await expect(page.getByRole('button',{name:'Enable this device',exact:true})).toBeDisabled();await expect(page.getByText('Phone push is awaiting secure server configuration.')).toBeVisible();
-  await page.getByLabel('Customer messages push',{exact:true}).check();await expect(page.getByRole('status').filter({hasText:'Notification preferences saved.'})).toBeVisible();
-  await page.getByLabel('Customer messages email',{exact:true}).uncheck();await expect(page.getByLabel('Customer messages email',{exact:true})).not.toBeChecked();
+  await page.getByLabel('Customer messages push',{exact:true}).click();await expect(page.getByRole('status').filter({hasText:'Notification preferences saved.'})).toBeVisible();
+  await page.getByLabel('Customer messages email',{exact:true}).click();await expect(page.getByLabel('Customer messages email',{exact:true})).not.toBeChecked();
   await page.reload();await expect(page.getByLabel('Customer messages push',{exact:true})).toBeChecked();await expect(page.getByLabel('Customer messages email',{exact:true})).not.toBeChecked();
   await page.getByRole('button',{name:'Disable device',exact:true}).click();await expect(page.getByText('Disabled',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Mark New customer message as read',exact:true}).click();await expect(page.locator('article[data-read="true"]')).toHaveCount(1);
@@ -22,7 +22,7 @@ try{
   expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);expect(errors).toEqual([]);
   await page.screenshot({path:`reports/professional-notifications-${theme}-${width}.png`,fullPage:true});results.push({theme,width,passed:true,checks:['essential email locked','separate preferences','saved after reload','device revoke','mark read','mobile bell','no overflow']});await context.close();
  }
- const page=await browser.newPage();await page.goto('http://127.0.0.1:3004/?fail=1');await page.getByLabel('Customer messages push',{exact:true}).check();await expect(page.getByRole('alert')).toContainText('Could not save');await expect(page.getByLabel('Customer messages push',{exact:true})).not.toBeChecked();results.push({name:'failed save retains preference',passed:true});
+ const page=await browser.newPage();await page.goto('http://127.0.0.1:3004/?fail=1');await page.getByLabel('Customer messages push',{exact:true}).click();await expect(page.getByRole('alert')).toContainText('Could not save');await expect(page.getByLabel('Customer messages push',{exact:true})).not.toBeChecked();results.push({name:'failed save retains preference',passed:true});
  await writeFile('reports/professional-notifications-results.json',JSON.stringify(results,null,2));console.log(JSON.stringify(results,null,2));
 }catch(error){
  for(const [i,context] of browser.contexts().entries())for(const [j,page] of context.pages().entries())await page.screenshot({path:`reports/professional-notifications-failed-${i}-${j}.png`,fullPage:true}).catch(()=>{});

@@ -1,6 +1,14 @@
 // Real components, fictional public pins and mocked geocoding/tiles/mutations only.
 import { chromium, expect } from "@playwright/test";
 import { writeFile } from "node:fs/promises";
+import sharp from "sharp";
+const streetTile = await sharp(
+  Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#e7eadf"/><path d="M0 100 H256 M90 0 V256" stroke="#fff" stroke-width="8"/></svg>',
+  ),
+)
+  .png()
+  .toBuffer();
 process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/location-entry.tsx";
 const { server } = await import("./ui-audit.mjs");
 const browser = await chromium.launch({
@@ -32,10 +40,11 @@ try {
       const page = await context.newPage();
       const errors = [];
       page.on("pageerror", (error) => errors.push(error.message));
-      await page.route("https://tile.openstreetmap.org/**", (route) =>
+      await context.route("https://tile.openstreetmap.org/**", (route) =>
         route.fulfill({
-          contentType: "image/svg+xml",
-          body: '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#e7eadf"/><path d="M0 100 H256 M90 0 V256" stroke="#fff" stroke-width="8"/></svg>',
+          contentType: "image/png",
+          headers: { "access-control-allow-origin": "*" },
+          body: streetTile,
         }),
       );
       const go = (path) =>
@@ -98,7 +107,9 @@ try {
       await page
         .getByRole("button", { name: "Use my location", exact: true })
         .click();
-      await expect(page.getByRole("status")).toContainText("2 matching professionals");
+      await expect(page.getByRole("status")).toContainText(
+        "2 matching professionals",
+      );
       await expect(
         page.getByText("London · Less than 0.1 miles away"),
       ).toBeVisible();
@@ -106,7 +117,9 @@ try {
         page.getByText("Area Only Studio", { exact: true }),
       ).toHaveCount(0);
       await page.getByLabel("Distance radius").selectOption("1");
-      await expect(page.getByRole("status")).toContainText("1 matching professional");
+      await expect(page.getByRole("status")).toContainText(
+        "1 matching professional",
+      );
       await expect(
         page.getByText("Further Studio", { exact: true }),
       ).toHaveCount(0);
@@ -119,7 +132,7 @@ try {
       ).toBeVisible();
       await page.getByRole("button", { name: "Zoom in street map" }).click();
       await page.getByRole("button", { name: "Move street map right" }).click();
-      await page.getByRole("button", { name: "Reset map" }).click();
+      await page.getByRole("button", { name: "Show all pins" }).click();
       await expect(page.getByText("OpenStreetMap contributors")).toBeVisible();
       await noOverflow(page);
       await page.getByRole("button", { name: "Clear my location" }).click();

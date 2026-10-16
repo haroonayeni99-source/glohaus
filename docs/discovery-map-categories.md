@@ -1,5 +1,15 @@
 # Beauty discovery map and category controls
 
+## Map navigation and directions refinement
+
+The requested prior map-first arrangement returns: the street map occupies the left 58% on desktop and results the right 42%, with the earlier neighbourhood cards and GLOHAUS pink accents. Mobile retains its List/Map switch. Existing category controls, search, prices, availability, favourites and booking links remain connected.
+
+Explore uses a lazily loaded MapLibre GL renderer with the same OpenStreetMap raster source, visible attribution and map privacy gate. The tilted street plane supports 2D/3D perspective, rotation, north reset, zoom, drag, touch gestures, button panning and fitting the visible professionals. It does not add building-height or terrain data or another mapping provider. Devices without working WebGL fall back to the existing street map. The precise professional public-pin editor is unchanged.
+
+Directions links on result cards, selected pins, Quick View and professional profiles use Google's universal Maps directions URL. Only a validated, explicitly confirmed public pin is eligible. No city-centre guess, private contact address or visitor origin is placed in the link. Google Maps handles the origin, travel mode and navigation after the customer opens it. This requires no Google Maps API key or paid directions integration.
+
+Regression checks cover the desktop panel order, actual WebGL canvas and perspective controls, link stability, Google Maps destinations, absent directions for area-only profiles, standard-map fallback, public-pin editing and existing service-to-booking journeys. This refinement requires no database migration.
+
 The Explore release extends the existing OpenStreetMap component, public location consent, service/speciality catalogue, calendar, public profile/media views, verified reviews, Following records and Owner/Admin MFA boundary. No mapping provider, payment flow, booking writer or financial rule is replaced.
 
 ## Customer journey

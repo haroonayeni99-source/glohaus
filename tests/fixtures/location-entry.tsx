@@ -42,7 +42,10 @@ const professionals: PublicProfessional[] = [
 ];
 let saved: unknown = null;
 let locationReads = 0;
+const browserFetch = window.fetch.bind(window);
 window.fetch = async (url, init) => {
+  const requestUrl = url instanceof Request ? url.url : String(url);
+  if (requestUrl.startsWith("https://tile.openstreetmap.org/")) return browserFetch(url, init);
   const requests = JSON.parse(
     sessionStorage.getItem("location-requests") ?? "[]",
   );

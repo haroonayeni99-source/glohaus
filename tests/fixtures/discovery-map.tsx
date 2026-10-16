@@ -90,8 +90,10 @@ function stored<T>(key: string, fallback: T): T {
     return fallback;
   }
 }
+const browserFetch = window.fetch.bind(window);
 window.fetch = async (url, init) => {
-  const path = String(url);
+  const path = url instanceof Request ? url.url : String(url);
+  if (path.startsWith("https://tile.openstreetmap.org/")) return browserFetch(url, init);
   const body = init?.body ? JSON.parse(String(init.body)) : null;
   localStorage.setItem(
     "discovery-last-request",

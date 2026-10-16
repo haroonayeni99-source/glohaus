@@ -1,27 +1,47 @@
 // Real components with isolated records and intercepted APIs/tiles. No live mutations.
 import { chromium, expect } from "@playwright/test";
 import { writeFile } from "node:fs/promises";
+import sharp from "sharp";
+const streetTile = await sharp(
+  Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#e5e9dd"/><path d="M0 90H256M110 0V256" stroke="white" stroke-width="12"/></svg>',
+  ),
+)
+  .png()
+  .toBuffer();
 process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/discovery-map.tsx";
 const { server } = await import("./ui-audit.mjs");
-const browser = await chromium.launch({
+const browserOptions = {
   executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined,
   headless: true,
-  args: ["--no-sandbox", "--disable-dev-shm-usage"],
-});
+  args: [
+    "--no-sandbox",
+    "--disable-dev-shm-usage",
+    "--use-gl=angle",
+    "--use-angle=swiftshader",
+    "--enable-unsafe-swiftshader",
+  ],
+};
+let browser = await chromium.launch(browserOptions);
 const results = [];
 try {
-  for (const theme of ["light", "night"])
-    for (const width of [320, 390, 820, 1440]) {
+  for (const theme of process.env.GLOHAUS_MAP_THEME
+    ? [process.env.GLOHAUS_MAP_THEME]
+    : ["light", "night"])
+    for (const width of process.env.GLOHAUS_MAP_WIDTH
+      ? [Number(process.env.GLOHAUS_MAP_WIDTH)]
+      : [320, 390, 820, 1440]) {
       const context = await browser.newContext({
         viewport: { width, height: 1000 },
       });
       const page = await context.newPage();
       const errors = [];
       page.on("pageerror", (e) => errors.push(e.message));
-      await page.route("https://tile.openstreetmap.org/**", (r) =>
+      await context.route("https://tile.openstreetmap.org/**", (r) =>
         r.fulfill({
-          contentType: "image/svg+xml",
-          body: '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#e5e9dd"/><path d="M0 90H256M110 0V256" stroke="white" stroke-width="12"/></svg>',
+          contentType: "image/png",
+          headers: { "access-control-allow-origin": "*" },
+          body: streetTile,
         }),
       );
       await page.route("**/api/media/**", (r) =>
@@ -41,6 +61,20 @@ try {
       await expect(
         page.getByRole("link", { name: "Hair", exact: true }),
       ).toHaveAttribute("href", /categoryId=11111111/);
+      const directions = page.getByRole("link", {
+        name: "Directions to Brixton Braids in Google Maps",
+        exact: true,
+      });
+      await expect(directions).toHaveAttribute(
+        "href",
+        "https://www.google.com/maps/dir/?api=1&destination=51.462%2C-0.115&dir_action=navigate",
+      );
+      await expect(
+        page.getByRole("link", {
+          name: "Directions to Area Studio in Google Maps",
+          exact: true,
+        }),
+      ).toHaveCount(0);
       const firstCard = page.locator(".discovery-card").first();
       const serviceLink = firstCard.locator(".matching-services a").first();
       await serviceLink.scrollIntoViewIfNeeded();
@@ -77,6 +111,11 @@ try {
         .click();
       await expect(page.getByRole("dialog")).toBeVisible();
       await expect(
+        page
+          .getByRole("dialog")
+          .getByRole("link", { name: /Directions to Brixton Braids/ }),
+      ).toHaveAttribute("href", /destination=51.462%2C-0.115/);
+      await expect(
         page.getByRole("dialog").locator("video[controls]"),
       ).toHaveCount(1);
       await expect(
@@ -89,6 +128,22 @@ try {
       await page
         .getByRole("button", { name: "Load street map", exact: true })
         .click();
+      await expect(page.locator(".discovery-gl-canvas canvas")).toBeVisible();
+      await expect(page.locator(".discovery-gl-map")).toHaveAttribute("aria-busy", "false", { timeout: 20000 });
+      await expect(
+        page.getByRole("button", { name: "3D", exact: true }),
+      ).toHaveAttribute("aria-pressed", "true");
+      await page.getByRole("button", { name: "2D", exact: true }).click();
+      await expect(
+        page.getByRole("button", { name: "2D", exact: true }),
+      ).toHaveAttribute("aria-pressed", "true");
+      await page.getByRole("button", { name: "3D", exact: true }).click();
+      await page
+        .getByRole("button", { name: "Rotate map right", exact: true })
+        .click();
+      await page
+        .getByRole("button", { name: "Reset map north", exact: true })
+        .click();
       const pin = page.getByRole("button", {
         name: "Brixton Braids, from £45.00",
         exact: true,
@@ -98,16 +153,22 @@ try {
       await expect(page.locator(".discovery-pin-card")).toContainText(
         "Knotless Braids",
       );
+      await expect(
+        page
+          .locator(".discovery-pin-card")
+          .getByRole("link", { name: /Directions to Brixton Braids/ }),
+      ).toHaveAttribute("href", /destination=51.462%2C-0.115/);
       if (width > 900) {
         const list = await page.locator(".map-pro-results").boundingBox(),
           map = await page.locator(".discovery-map-panel").boundingBox();
-        expect(list.x + list.width).toBeLessThanOrEqual(map.x + 2);
+        expect(map.x + map.width).toBeLessThanOrEqual(list.x + 2);
         expect(list.width / (list.width + map.width)).toBeCloseTo(0.42, 1);
       }
       await page.getByRole("button", { name: "Close map selection" }).click();
       await page.getByRole("button", { name: "Move street map right" }).click();
       await page.getByRole("button", { name: "Search this area" }).click();
       await expect(page.getByRole("status")).toContainText("matching");
+      await expect(page.locator(".discovery-map-help")).toHaveCount(0);
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth - innerWidth,
@@ -203,8 +264,50 @@ try {
         ],
       });
       await context.close();
+      // Release GPU/worker resources between software-rendered viewport cases.
+      await browser.close();
+      browser = await chromium.launch(browserOptions);
       console.log(`Verified ${theme} ${width}px`);
     }
+  const fallbackContext = await browser.newContext({
+    viewport: { width: 390, height: 1000 },
+  });
+  await fallbackContext.addInitScript(() => {
+    const getContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+      if (String(type).includes("webgl")) return null;
+      return getContext.call(this, type, ...args);
+    };
+  });
+  const fallbackPage = await fallbackContext.newPage();
+  await fallbackPage.route("https://tile.openstreetmap.org/**", (r) =>
+    r.fulfill({
+      contentType: "image/png",
+      body: streetTile,
+      headers: { "access-control-allow-origin": "*" },
+    }),
+  );
+  await fallbackPage.goto("http://127.0.0.1:3004/explore");
+  await fallbackPage.getByRole("button", { name: "Map", exact: true }).click();
+  await fallbackPage
+    .getByRole("button", { name: "Load street map", exact: true })
+    .click();
+  await expect(
+    fallbackPage.getByText("3D is unavailable on this device.", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await fallbackPage
+    .getByRole("button", { name: "Load street map", exact: true })
+    .click();
+  await expect(
+    fallbackPage.getByRole("button", {
+      name: "Brixton Braids, from £45.00",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await fallbackContext.close();
+  console.log("Verified unsupported-WebGL standard-map fallback");
   await writeFile(
     "reports/discovery-map-results.json",
     JSON.stringify(results, null, 2),

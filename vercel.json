@@ -14,7 +14,8 @@
       "feature/owner-account-visibility": false,
       "fix/lip-filler-taxonomy": false,
       "feature/professional-notifications": false,
-      "feature/discovery-map-categories": false
+      "feature/discovery-map-categories": false,
+      "feature/map-navigation-directions": false
     }
   },
   "regions": [

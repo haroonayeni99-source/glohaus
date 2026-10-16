@@ -1,0 +1,40 @@
+export const londonBoroughs = [
+  "Barking and Dagenham",
+  "Barnet",
+  "Bexley",
+  "Brent",
+  "Bromley",
+  "Camden",
+  "Croydon",
+  "Ealing",
+  "Enfield",
+  "Greenwich",
+  "Hackney",
+  "Hammersmith and Fulham",
+  "Haringey",
+  "Harrow",
+  "Havering",
+  "Hillingdon",
+  "Hounslow",
+  "Islington",
+  "Kensington and Chelsea",
+  "Kingston upon Thames",
+  "Lambeth",
+  "Lewisham",
+  "Merton",
+  "Newham",
+  "Redbridge",
+  "Richmond upon Thames",
+  "Southwark",
+  "Sutton",
+  "Tower Hamlets",
+  "Waltham Forest",
+  "Wandsworth",
+  "Westminster",
+] as const;
+
+export function londonBorough(value?: string) {
+  return londonBoroughs.find(
+    (name) => name.toLowerCase() === value?.trim().toLowerCase(),
+  );
+}

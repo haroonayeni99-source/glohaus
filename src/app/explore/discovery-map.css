@@ -767,3 +767,40 @@
     min-width: 84px;
   }
 }
+
+/* Restore the original illustrated Explore design; keep discovery controls scoped. */
+.discovery-original .map-explore-hero { padding-bottom: 18px; }
+.discovery-original .map-explore-title-row h1 { margin: 0; }
+.discovery-original .map-explore-search { width: 100%; }
+.discovery-original .map-explore-search input { padding: 8px 0; font: inherit; }
+.discovery-original .map-explore-search button { min-height: 36px; cursor: pointer; }
+.discovery-original .map-area-strip { margin-top: 20px; }
+.discovery-original .map-area-card { min-height: 110px; color: #fff; text-decoration: none; }
+.discovery-original .map-area-card span { overflow-wrap: anywhere; }
+.discovery-original .map-area-card.active { border-color: #f44e99; box-shadow: inset 0 0 0 2px #f44e99; }
+.discovery-original .map-results-layout { grid-template-columns: minmax(0, 1fr) minmax(360px, 420px); height: auto; min-height: 640px; }
+.discovery-original .discovery-map-panel { padding: 0; background: var(--ui-surface-muted); }
+.discovery-original .discovery-map-toolbar { padding: 12px; flex-wrap: wrap; }
+.discovery-original .discovery-map-panel .geo-map { margin: 0 12px; min-height: 480px; }
+.discovery-original .discovery-map-panel .geo-map-gate { margin: 0 12px; min-height: 480px; }
+.discovery-original .london-overview { min-height: 640px; flex: 1; border-right: 0; }
+.discovery-original .discovery-map-switch { align-self: flex-start; margin: 0 12px 12px; padding: 9px 14px; border-radius: 10px; border: 1px solid var(--ui-border); color: var(--ui-text); background: var(--ui-surface); cursor: pointer; min-height: 40px; }
+.discovery-original .discovery-pin-card { bottom: 95px; }
+.discovery-original .discovery-show-pin { display: inline-flex; align-items: center; gap: 5px; border: 0; padding: 8px 0; min-height: 40px; background: transparent; color: var(--ui-text); text-decoration: underline; text-align: left; cursor: pointer; font: inherit; font-size: 12px; }
+.discovery-original .discovery-area-only { display: block; font-size: 11px; color: var(--ui-muted); }
+.discovery-original .discovery-pin-note { padding-inline: 12px; }
+.discovery-original .discovery-map-panel .geo-price-pin { background: #f44e99 !important; color: #28121c !important; border-color: #fff; }
+.discovery-original .discovery-map-panel .geo-price-pin.is-selected { background: #a92d62 !important; color: #fff !important; outline: 3px solid #f44e9966; outline-offset: 3px; }
+@media (max-width: 900px) {
+  .discovery-original .map-explore-title-row { grid-template-columns: 1fr; gap: 14px; }
+  .discovery-original .map-results-layout { grid-template-columns: 1fr; min-height: 0; }
+  .discovery-original .mobile-view-map .discovery-map-panel { height: auto; min-height: 75dvh; padding: 0; }
+  .discovery-original .london-overview { min-height: 640px; }
+  .discovery-original .map-cluster { width: 85px; height: 85px; }
+  .discovery-original .map-cluster strong { font-size: 11px; }
+  .discovery-original .map-cluster small { font-size: 9px; }
+  .discovery-original .discovery-map-toolbar > span { max-width: 100%; }
+  .discovery-original .discovery-location-row select { max-width: 100%; }
+  .discovery-original .map-explore-search { grid-template-columns: 20px minmax(0, 1fr) auto; }
+  .discovery-original .map-explore-search button { font-size: 12px; }
+}

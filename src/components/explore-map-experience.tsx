@@ -16,7 +16,12 @@ import {
 import { TaxonomyFilters } from "./taxonomy-filters";
 import { ProfessionalVerificationBadges } from "./professional-verification-badges";
 import type { MapViewport } from "./geographic-map";
-import { DiscoveryStreetMap } from "./discovery-street-map";
+import { GeographicMap } from "./geographic-map";
+import { LondonMapOverview } from "./london-map-overview";
+import {
+  londonBoroughs,
+  londonBorough,
+} from "@/modules/professionals/london-boroughs";
 import { ProfessionalDirections } from "./professional-directions";
 import {
   coordinatesSchema,
@@ -36,15 +41,7 @@ import type { FollowStateMap } from "@/modules/follows/repository";
 const QuickView = dynamic(() =>
   import("./discovery-quick-view").then((m) => m.DiscoveryQuickView),
 );
-const areas = [
-  "Peckham",
-  "Brixton",
-  "Shoreditch",
-  "Soho",
-  "Camden",
-  "Notting Hill",
-  "Greenwich",
-];
+const areas = londonBoroughs;
 function bookingHref(pro: PublicProfessional) {
   const s = pro.matching_services?.[0];
   return s
@@ -86,6 +83,7 @@ export function ExploreMapExperience({
     [radius, setRadius] = useState(10);
   const [locating, setLocating] = useState(false),
     [locationNotice, setLocationNotice] = useState("");
+  const [streetView, setStreetView] = useState(false);
   const [mobileView, setMobileView] = useState<"map" | "list">("list");
   const [selected, setSelected] = useState<string | null>(null),
     [highlighted, setHighlighted] = useState<string | null>(null);
@@ -137,6 +135,17 @@ export function ExploreMapExperience({
         .getElementById(`discovery-${id}`)
         ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, []);
+  function showOnMap(pro: PublicProfessional) {
+    if (!mapped.some((pin) => pin.id === pro.id)) return;
+    setSelected(pro.id);
+    setStreetView(true);
+    setMobileView("map");
+    requestAnimationFrame(() =>
+      document
+        .getElementById("professional-map")
+        ?.scrollIntoView({ block: "nearest", behavior: "smooth" }),
+    );
+  }
   async function save(pro: PublicProfessional) {
     if (!signedIn) {
       router.push(
@@ -270,45 +279,60 @@ export function ExploreMapExperience({
   );
   return (
     <div
-      className={`map-explore-page discovery-hybrid${nearbyResults !== null ? " is-nearby" : ""}`}
+      className={`map-explore-page discovery-hybrid discovery-original${nearbyResults !== null ? " is-nearby" : ""}`}
     >
-      <section className="discovery-map-heading">
-        <div>
-          <p className="eyebrow">YOUR BEAUTY, YOUR NEIGHBOURHOOD</p>
-          <h1>
-            Find Beauty Professionals <em>Near You</em>
-          </h1>
-          <p>Find your service. Meet your professional. Make time for you.</p>
+      <section className="map-explore-hero">
+        <div className="map-explore-title-row">
+          <div>
+            <h1>
+              Find Beauty Professionals <em>Near You</em>
+            </h1>
+            <p>Find your service. Meet your professional. Make time for you.</p>
+          </div>
+          <form action="/explore" role="search" className="map-explore-search">
+            {Object.entries(hiddenInputs)
+              .filter(([key]) => key !== "q")
+              .map(([key, value]) => (
+                <input type="hidden" name={key} value={value} key={key} />
+              ))}
+            <Search size={20} aria-hidden />
+            <label className="sr-only" htmlFor="map-search">
+              Search service, professional or area
+            </label>
+            <input
+              id="map-search"
+              name="q"
+              defaultValue={query}
+              maxLength={100}
+              placeholder="Try knotless braids, nails or Peckham"
+            />
+            <button type="submit">Search</button>
+          </form>
         </div>
-        <form action="/explore" role="search" className="discovery-search">
-          {Object.entries(hiddenInputs)
-            .filter(([key]) => key !== "q")
-            .map(([key, value]) => (
-              <input type="hidden" name={key} value={value} key={key} />
-            ))}
-          <Search size={20} aria-hidden />
-          <label className="sr-only" htmlFor="map-search">
-            Search service, professional or area
-          </label>
-          <input
-            id="map-search"
-            name="q"
-            defaultValue={query}
-            maxLength={100}
-            placeholder="Try knotless braids, nails or Peckham"
-          />
-          <button type="submit">Search</button>
-        </form>
+        <nav className="map-area-strip" aria-label="Explore London areas">
+          {["All London", ...areas].map((area) => (
+            <Link
+              key={area}
+              className={`map-area-card ${area.toLowerCase().replaceAll(" ", "-")}${(area === "All London" ? !filters.location : filters.location === area) ? " active" : ""}`}
+              href={discoveryHref(query, {
+                ...filters,
+                location: area === "All London" ? undefined : area,
+              })}
+            >
+              <span>{area}</span>
+              <small>
+                {area === "All London"
+                  ? "Across the city"
+                  : "Explore the borough"}
+              </small>
+            </Link>
+          ))}
+        </nav>
       </section>
-      <nav className="map-area-strip discovery-area-strip" aria-label="Explore London areas">
-        {["All London", ...areas].map((area) => (
-          <Link key={area} className={`map-area-card ${area.toLowerCase().replaceAll(" ", "-")}${(area === "All London" ? !filters.location : filters.location === area) ? " active" : ""}`}
-            href={discoveryHref(query, { ...filters, location: area === "All London" ? undefined : area })}>
-            <span>{area}</span><small>{area === "All London" ? "Across the city" : "Explore the neighbourhood"}</small>
-          </Link>
-        ))}
-      </nav>
-      <nav className="discovery-categories" aria-label="Beauty categories">
+      <nav
+        className="discovery-categories map-service-filters"
+        aria-label="Beauty categories"
+      >
         <Link
           className={!filters.categoryId && !filters.category ? "active" : ""}
           href={discoveryHref(query, {
@@ -447,19 +471,27 @@ export function ExploreMapExperience({
             Clear my location
           </button>
         )}
-        <details>
-          <summary>Explore London areas</summary>
-          <nav>
+        <label>
+          London borough
+          <select
+            value={londonBorough(filters.location) ?? ""}
+            onChange={(event) =>
+              router.push(
+                discoveryHref(query, {
+                  ...filters,
+                  location: event.target.value || undefined,
+                }),
+              )
+            }
+          >
+            <option value="">All London boroughs</option>
             {areas.map((area) => (
-              <Link
-                key={area}
-                href={discoveryHref(query, { ...filters, location: area })}
-              >
+              <option key={area} value={area}>
                 {area}
-              </Link>
+              </option>
             ))}
-          </nav>
-        </details>
+          </select>
+        </label>
         <small>Location is used only for this search and isn’t stored.</small>
       </div>
       {locationNotice && (
@@ -614,6 +646,20 @@ export function ExploreMapExperience({
                       Book Now
                     </Link>
                   </div>
+                  {mapped.some((pin) => pin.id === pro.id) ? (
+                    <button
+                      className="discovery-show-pin"
+                      type="button"
+                      onClick={() => showOnMap(pro)}
+                    >
+                      <MapPin size={14} aria-hidden /> Show {pro.business_name}{" "}
+                      on map
+                    </button>
+                  ) : (
+                    <small className="discovery-area-only">
+                      Area only · no public pin shared
+                    </small>
+                  )}
                   <ProfessionalDirections professional={pro} />
                 </div>
               </article>
@@ -628,7 +674,7 @@ export function ExploreMapExperience({
             </div>
           )}
         </aside>
-        <div className="discovery-map-panel">
+        <div id="professional-map" className="discovery-map-panel">
           <div className="discovery-map-toolbar">
             <span>
               <MapPin size={16} />
@@ -644,38 +690,56 @@ export function ExploreMapExperience({
               Search this area
             </button>
           </div>
-          <DiscoveryStreetMap
-            pins={mapped.map((pro) => ({
-              id: pro.id,
-              label: pro.business_name,
-              priceLabel:
-                pro.from_price_pence != null
-                  ? money(pro.from_price_pence)
-                  : undefined,
-              latitude: pro.public_latitude!,
-              longitude: pro.public_longitude!,
-            }))}
-            focus={
-              selectedPro?.public_location_confirmed_at
-                ? {
-                    latitude: selectedPro.public_latitude!,
-                    longitude: selectedPro.public_longitude!,
-                  }
-                : (position ??
-                  (mapped[0]
-                    ? {
-                        latitude: mapped[0].public_latitude!,
-                        longitude: mapped[0].public_longitude!,
-                      }
-                    : undefined))
-            }
-            selectedId={selected}
-            highlightedId={highlighted}
-            onSelect={selectPin}
-            onHighlight={setHighlighted}
-            onViewportChange={setViewport}
-          />
-          {selectedPro && (
+          <button
+            className="discovery-map-switch"
+            type="button"
+            onClick={() => {
+              setStreetView((value) => !value);
+              setSelected(null);
+            }}
+          >
+            {streetView
+              ? "Back to London overview"
+              : "View confirmed business pins"}
+          </button>
+          {streetView ? (
+            <GeographicMap
+              pins={mapped.map((pro) => ({
+                id: pro.id,
+                label: pro.business_name,
+                priceLabel:
+                  pro.from_price_pence != null
+                    ? money(pro.from_price_pence)
+                    : undefined,
+                latitude: pro.public_latitude!,
+                longitude: pro.public_longitude!,
+              }))}
+              focus={
+                selectedPro?.public_location_confirmed_at
+                  ? {
+                      latitude: selectedPro.public_latitude!,
+                      longitude: selectedPro.public_longitude!,
+                    }
+                  : (position ??
+                    (mapped[0]
+                      ? {
+                          latitude: mapped[0].public_latitude!,
+                          longitude: mapped[0].public_longitude!,
+                        }
+                      : undefined))
+              }
+              initialZoom={selectedPro ? 16 : 12}
+              focusZoom={selectedPro ? 16 : undefined}
+              selectedId={selected}
+              highlightedId={highlighted}
+              onSelect={selectPin}
+              onHighlight={setHighlighted}
+              onViewportChange={setViewport}
+            />
+          ) : (
+            <LondonMapOverview query={query} filters={filters} />
+          )}
+          {streetView && selectedPro && (
             <div className="discovery-pin-card">
               <button
                 type="button"

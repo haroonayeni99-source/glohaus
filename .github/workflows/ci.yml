@@ -254,4 +254,6 @@ jobs:
         if: always()
         with:
           name: discovery-map-checks
-          path: reports/discovery-map-*
+          path: |
+            reports/discovery-map-*
+            reports/london-overview-*

@@ -1,6 +1,7 @@
 import { saveOptions } from "@/modules/taxonomy/repository";
 import { serviceSchema } from "./domain";
 import "server-only";
+import { boroughPolygon } from "./london-borough-boundaries";
 import type { NearbySearch } from "./location";
 import {
   discoveryCursor,
@@ -139,7 +140,13 @@ export async function publicProfessionals(
          NOT $6::boolean
          OR s.available
        )
-       AND ($9::text = '' OR p.city ILIKE $9 OR d.location_details ILIKE $9)
+       AND (
+         ($23::polygon IS NULL AND ($9::text = '' OR p.city ILIKE $9 OR d.location_details ILIKE $9))
+         OR ($23::polygon IS NOT NULL AND (
+           (loc.confirmed_at IS NOT NULL AND point(loc.longitude,loc.latitude) <@ $23::polygon)
+           OR (loc.confirmed_at IS NULL AND (p.city ILIKE $9 OR d.location_details ILIKE $9))
+         ))
+       )
        AND ($22::date IS NULL OR s.available)
        AND ($11::integer IS NULL OR s.from_price_pence <= $11)
        AND ($12::float IS NULL OR coalesce(r.rating,0) >= $12)
@@ -174,6 +181,7 @@ export async function publicProfessionals(
         near ? 101 : 25,
         after?.score ?? null,
         search,filters.categoryId??null,filters.specialityId??null,filters.templateId??null,filters.date??null,
+        boroughPolygon(filters.location),
       ],
     )
   ).rows;

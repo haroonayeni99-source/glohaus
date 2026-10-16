@@ -133,6 +133,7 @@ export function ProfessionalNotificationSettings({
           subscription = null;
         }
       }
+      const createdSubscription = !subscription;
       subscription ??= await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: keyBytes(publicKey),
@@ -152,7 +153,11 @@ export function ProfessionalNotificationSettings({
           localStorage.setItem("glohaus-push-device", saved.id);
         } catch {}
       } catch (error) {
-        await subscription.unsubscribe();
+        // A failed re-registration must not revoke a device that already works.
+        // Clean up only a subscription created by this attempt, and preserve
+        // the actionable save error if browser cleanup also fails.
+        if (createdSubscription)
+          await subscription.unsubscribe().catch(() => false);
         throw error;
       }
       await refresh();

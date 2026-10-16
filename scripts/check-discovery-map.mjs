@@ -11,7 +11,7 @@ const streetTile = await sharp(
   .toBuffer();
 process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/discovery-map.tsx";
 const { server } = await import("./ui-audit.mjs");
-const browser = await chromium.launch({
+const browserOptions = {
   executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined,
   headless: true,
   args: [
@@ -21,7 +21,8 @@ const browser = await chromium.launch({
     "--use-angle=swiftshader",
     "--enable-unsafe-swiftshader",
   ],
-});
+};
+let browser = await chromium.launch(browserOptions);
 const results = [];
 try {
   for (const theme of process.env.GLOHAUS_MAP_THEME
@@ -263,6 +264,9 @@ try {
         ],
       });
       await context.close();
+      // Release GPU/worker resources between software-rendered viewport cases.
+      await browser.close();
+      browser = await chromium.launch(browserOptions);
       console.log(`Verified ${theme} ${width}px`);
     }
   const fallbackContext = await browser.newContext({

@@ -19,6 +19,13 @@ try {
       const errors = [];
       page.on("pageerror", (e) => errors.push(e.message));
       await page.route("**/api/v1/**", async (route) => {
+        if (new URL(route.request().url()).pathname === "/api/v1/notifications/stream") {
+          await route.fulfill({
+            contentType: "text/event-stream",
+            body: 'event: notifications\ndata: {"unread":0,"items":[]}\n\n',
+          });
+          return;
+        }
         const body = route.request().postDataJSON();
         calls.push({ url: route.request().url(), body });
         const rate =

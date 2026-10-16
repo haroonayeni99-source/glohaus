@@ -112,3 +112,12 @@
     font-size: 0;
   }
 }
+
+/* Keep professional inbox text readable on the light dashboard surface. */
+:root:not([data-theme="night"]) .pro-notification-list article strong {
+  color: #211b20;
+}
+:root:not([data-theme="night"]) .pro-notification-list article small,
+:root:not([data-theme="night"]) .pro-notification-list article time {
+  color: #655a62;
+}

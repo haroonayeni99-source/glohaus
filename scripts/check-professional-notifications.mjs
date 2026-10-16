@@ -19,6 +19,20 @@ try{
   await page.getByRole('button',{name:'Disable device',exact:true}).click();await expect(page.getByText('Disabled',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Mark New customer message as read',exact:true}).click();await expect(page.locator('article[data-read="true"]')).toHaveCount(1);
   await expect(page.getByRole('link',{name:'Notifications',exact:true})).toBeVisible();
+  if(theme==='light'){
+   const contrasts=await page.locator('.pro-notification-list article').evaluateAll(cards=>{
+    const rgba=value=>{const parts=value.match(/[0-9.]+/g).map(Number);return [parts[0],parts[1],parts[2],parts[3]??1];};
+    const blend=(top,bottom)=>top.slice(0,3).map((v,i)=>v*top[3]+bottom[i]*(1-top[3]));
+    const luminance=rgb=>rgb.map(v=>{const s=v/255;return s<=.04045?s/12.92:((s+.055)/1.055)**2.4;}).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
+    return cards.flatMap(card=>Array.from(card.querySelectorAll('strong,small,time')).map(text=>{
+     const ancestors=[];for(let el=text;el;el=el.parentElement)ancestors.unshift(el);
+     const background=ancestors.reduce((base,el)=>blend(rgba(getComputedStyle(el).backgroundColor),base),[255,255,255]);
+     const foreground=blend(rgba(getComputedStyle(text).color),background);const a=luminance(foreground),b=luminance(background);
+     return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+    }));
+   });
+   expect(contrasts.length).toBeGreaterThan(0);for(const contrast of contrasts)expect(contrast).toBeGreaterThanOrEqual(4.5);
+  }
   expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);expect(errors).toEqual([]);
   await page.screenshot({path:`reports/professional-notifications-${theme}-${width}.png`,fullPage:true});results.push({theme,width,passed:true,checks:['essential email locked','separate preferences','saved after reload','device revoke','mark read','mobile bell','no overflow']});await context.close();
  }

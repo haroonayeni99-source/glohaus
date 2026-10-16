@@ -59,6 +59,7 @@ const coreSections = [
   ["Refund appeals", "refund-appeals", CreditCard],
   ["Payments", "payments", CreditCard],
   ["Analytics", "analytics", BarChart3],
+  ["Notification delivery", "push-delivery-health", MessageSquareWarning],
 ] as const;
 
 const ownerSections = [
@@ -114,6 +115,7 @@ const adminGroups = [
   {
     label: "Operations",
     ids: [
+      "push-delivery-health",
       "audit",
       "backend-health",
       "payment-readiness",

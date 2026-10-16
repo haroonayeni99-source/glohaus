@@ -29,6 +29,7 @@ const staticItems: SearchItem[] = [
   ["categories", "Categories", "Beauty services shown in search", "categories"],
   ["shop-fees", "Shop Fees", "Marketplace commission", "shop-fees"],
   ["backend", "System health", "Background tasks and emails", "backend-health"],
+  ["notifications", "Notification delivery", "Professional push devices, retries and delivery outcomes", "push-delivery-health"],
   [
     "payment-readiness",
     "Payment setup",

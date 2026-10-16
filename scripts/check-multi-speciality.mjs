@@ -3,7 +3,9 @@ import { readFile, writeFile } from "node:fs/promises";
 process.env.GLOHAUS_UI_AUDIT_ENTRY =
   "tests/fixtures/multi-speciality-entry.tsx";
 const { server } = await import("./ui-audit.mjs");
-const browser = await chromium.launch();
+const browser = await chromium.launch({
+  executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined,
+});
 const results = [];
 const photo = await readFile("public/images/categories/hair-v2.webp");
 const id = (n) => `90000000-0000-4000-8000-${String(n).padStart(12, "0")}`;

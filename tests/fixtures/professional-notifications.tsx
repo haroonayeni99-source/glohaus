@@ -2,6 +2,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { ProfessionalNotificationSettings } from "@/components/professional-notification-settings";
+import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { NotificationInbox } from "@/components/notification-inbox";
 import {
   notificationCategories,
@@ -56,6 +57,7 @@ window.fetch = async (url, options) => {
 };
 createRoot(document.getElementById("root")!).render(
   <div className="pro-app">
+    <ProfessionalNavigation active="more" displayName="Fixture Professional"/>
     <main className="pro-main pro-management-page">
       <p className="pro-kicker">LOCAL TEST · FICTIONAL RECORDS</p>
       <h1>Notifications</h1>

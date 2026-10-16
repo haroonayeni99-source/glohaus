@@ -29,6 +29,14 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Verify Owner account visibility and deletion controls
         run: node scripts/check-owner-account-controls.mjs
+      - name: Verify professional notification settings on desktop and mobile
+        run: node scripts/check-professional-notifications.mjs
+      - name: Save professional notification interface evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: professional-notifications-checks
+          path: reports/professional-notifications-*
       - name: Verify direct Discover and Story photo/video uploads
         run: node scripts/check-discover-story-media.mjs
       - name: Verify shared sign-out and approved verification badges

@@ -60,6 +60,7 @@ const css = (
       "../components/professional-policies",
       "../components/professional-activity",
       "../components/marketing-preferences",
+      "../components/professional-notifications",
     ].map((name) => readFile(`src/app/${name}.css`, "utf8")),
   )
 ).join("\n");

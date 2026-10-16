@@ -785,7 +785,7 @@
 .discovery-original .discovery-map-panel .geo-map-gate { margin: 0 12px; min-height: 480px; }
 .discovery-original .london-overview { min-height: 640px; flex: 1; border-right: 0; }
 .discovery-original .discovery-map-switch { align-self: flex-start; margin: 0 12px 12px; padding: 9px 14px; border-radius: 10px; border: 1px solid var(--ui-border); color: var(--ui-text); background: var(--ui-surface); cursor: pointer; min-height: 40px; }
-.discovery-original .discovery-pin-card { bottom: 95px; }
+.discovery-original .discovery-pin-card { position: static; transform: none; width: auto; margin: 12px; }
 .discovery-original .discovery-show-pin { display: inline-flex; align-items: center; gap: 5px; border: 0; padding: 8px 0; min-height: 40px; background: transparent; color: var(--ui-text); text-decoration: underline; text-align: left; cursor: pointer; font: inherit; font-size: 12px; }
 .discovery-original .discovery-area-only { display: block; font-size: 11px; color: var(--ui-muted); }
 .discovery-original .discovery-pin-note { padding-inline: 12px; }

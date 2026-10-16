@@ -46,8 +46,6 @@ jobs:
           name: commission-centre-checks
           path: reports/commission-*
       - run: pnpm test:e2e
-      - name: Verify public-pin and nearby-search journeys
-        run: node scripts/check-location-journeys.mjs
       - name: Verify client blocking and customer identity journeys
         run: node scripts/check-client-blocking.mjs
       - name: Verify desktop homepage and unchanged mobile layouts
@@ -250,6 +248,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: node scripts/check-discovery-map.mjs
+      - name: Verify public-pin and nearby-search journeys
+        run: node scripts/check-location-journeys.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -257,3 +257,4 @@ jobs:
           path: |
             reports/discovery-map-*
             reports/london-overview-*
+            reports/location-journeys.json

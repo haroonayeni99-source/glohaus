@@ -132,7 +132,7 @@ try {
       ).toBeVisible();
       await page.getByRole("button", { name: "Zoom in street map" }).click();
       await page.getByRole("button", { name: "Move street map right" }).click();
-      await page.getByRole("button", { name: "Show all pins" }).click();
+      await page.getByRole("button", { name: "Reset map" }).click();
       await expect(page.getByText("OpenStreetMap contributors")).toBeVisible();
       await noOverflow(page);
       await page.getByRole("button", { name: "Clear my location" }).click();

@@ -33,4 +33,13 @@ Apply only this migration after source review and passing checks, using the esta
 - Browser script `scripts/check-discovery-map.mjs` covers 320/390/820/1440px in light/night themes, persisted saves, public photo/video Quick View, service booking links, price-pin selection, the desktop split, viewport search, category creation/edit/hide/restore, product assignment and no horizontal overflow. It uses explicitly isolated records and intercepted APIs/tiles; no production account or provider is mutated for those checks.
 - Existing location-editor and nearby-search journeys, including denied/imprecise geolocation and stale requests after navigation, remain regression targets.
 
-Actual production status and final check results are recorded after the reviewed release.
+## Production release record
+
+Released after the owner requested deployment and addition of this production feature. PR #119 merged at `45693cc2428f6d70080bb7fbbf6a77b6079f9e89`. Deployment `dpl_29TVRWoqEeWJKNNj2riB54GqsfZb` is READY at https://www.glohaus.shop/explore and the existing custom domains are assigned.
+
+- Final feature-commit Verify GLOHAUS CI passed lint, TypeScript, all **1,048 tests in 116 files** and the production build. Eight expanded map browser cases passed in CI. Eight existing location-editor browser journeys passed locally.
+- Applied only the additive migration with its SHA-256 entry in the established ledger. Post-migration counts remain **11 bookings, 11 payments, 8 financial ledger entries and 1 product**. The public product view retains owner `beauty_catalog` and its account-visibility gate. The new helpers are not executable by anonymous/authenticated Data API roles. No new advisor notice names appeared.
+- Live browser verification reached the new Explore layout, loaded real OpenStreetMap street tiles, and confirmed Shop category links carry actual category IDs. The immediate production error/fatal log scan was empty.
+- Production currently has **0 published professionals, 0 published services, 0 confirmed public pins and 0 publicly listed products**. Publishing and public-pin consent remain the professionals' explicit actions. Existing private records were not published or fabricated for verification.
+- A test-only follow-up supplies product-category fixture data to the existing Owner/Admin browser harness, keeping server-only database code outside its isolated browser bundle. Navigation search now checks that both Service Categories and Product Categories remain accessible. This does not change production functionality.
+

@@ -153,7 +153,9 @@ try {
           await page
             .getByLabel("Find a tool", { exact: true })
             .fill("categories");
-          await expect(page.locator(".admin-navigation nav a")).toHaveCount(1);
+          await expect(page.locator(".admin-navigation nav a")).toHaveCount(2);
+          await expect(page.locator('.admin-navigation nav a[href="#categories"]')).toBeVisible();
+          await expect(page.locator('.admin-navigation nav a[href="#product-categories"]')).toBeVisible();
           await page.getByLabel("Find a tool", { exact: true }).fill("");
           await page
             .getByRole("button", { name: "Minimise administration menu" })

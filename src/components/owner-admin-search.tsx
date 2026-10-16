@@ -26,10 +26,26 @@ const staticItems: SearchItem[] = [
   ],
   ["marketing", "Marketing", "Campaigns and feature feedback", "marketing"],
   ["settings", "Platform labels", "Community names", "settings"],
-  ["categories", "Categories", "Beauty services shown in search", "categories"],
+  [
+    "categories",
+    "Service Categories",
+    "Beauty services shown in search",
+    "categories",
+  ],
+  [
+    "product-categories",
+    "Product Categories",
+    "Add edit remove marketplace product categories",
+    "product-categories",
+  ],
   ["shop-fees", "Shop Fees", "Marketplace commission", "shop-fees"],
   ["backend", "System health", "Background tasks and emails", "backend-health"],
-  ["notifications", "Notification delivery", "Professional push devices, retries and delivery outcomes", "push-delivery-health"],
+  [
+    "notifications",
+    "Notification delivery",
+    "Professional push devices, retries and delivery outcomes",
+    "push-delivery-health",
+  ],
   [
     "payment-readiness",
     "Payment setup",
@@ -211,7 +227,12 @@ export function OwnerAdminSearch({
               <small>{item.detail}</small>
             </button>
           ))}
-          {!results.length && <p>No results. Try a name, email or tool such as Categories, Website or Email.</p>}
+          {!results.length && (
+            <p>
+              No results. Try a name, email or tool such as Categories, Website
+              or Email.
+            </p>
+          )}
         </div>
       )}
     </div>

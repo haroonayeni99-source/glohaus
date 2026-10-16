@@ -84,10 +84,12 @@ export async function publicProfessionals(
          p.id,p.slug,p.business_name,p.bio,p.city,coalesce((SELECT category_name FROM beauty.public_professional_specialities ps WHERE ps.professional_id=p.id AND ps.is_primary LIMIT 1),p.category) AS category,p.verification_status,
          p.identity_verified,p.business_verified,p.professional_verified,
          d.photo_id,d.photo_alt,d.travels_to_you,
+         (SELECT id FROM beauty.public_media_assets a WHERE a.professional_id=p.id AND a.media_type='image' ORDER BY a.created_at DESC,a.id LIMIT 1) AS portfolio_photo_id,
          r.rating,r.review_count,r.ranking_score,coalesce(exposure.boosted,false) AS boosted,
          s.from_price_pence,
          beauty.public_professional_available_today(p.id) AS available_today,
          s.popular_services,s.matching_services,
+         beauty.public_next_service_slot((s.matching_services->0->>'id')::uuid,coalesce($22::date,(now() AT TIME ZONE 'Europe/London')::date)) AS next_available_at,
          loc.latitude AS public_latitude, loc.longitude AS public_longitude,
          loc.confirmed_at AS public_location_confirmed_at,
          geo.distance_miles
@@ -114,14 +116,15 @@ export async function publicProfessionals(
        ) r ON true
        LEFT JOIN LATERAL (
          SELECT min(svc.from_price_pence) AS from_price_pence,
-         (array_agg(svc.name ORDER BY svc.price_pence,svc.id))[1:2] AS popular_services,
-         jsonb_agg(jsonb_build_object('id',svc.id,'name',svc.name,'speciality_id',svc.speciality_id,'speciality_name',svc.speciality_name,'price_pence',svc.from_price_pence,'duration_minutes',svc.duration_minutes) ORDER BY svc.price_pence,svc.id) AS matching_services,
+         (array_agg(svc.name ORDER BY svc.from_price_pence,svc.id))[1:2] AS popular_services,
+         jsonb_agg(jsonb_build_object('id',svc.id,'name',svc.name,'speciality_id',svc.speciality_id,'speciality_name',svc.speciality_name,'price_pence',svc.from_price_pence,'duration_minutes',svc.duration_minutes) ORDER BY svc.from_price_pence,svc.id) AS matching_services,
          bool_or(CASE WHEN $6::boolean OR $22::date IS NOT NULL THEN beauty.public_service_available_on(svc.id,coalesce($22::date,(now() AT TIME ZONE 'Europe/London')::date)) ELSE false END) AS available
          FROM beauty.public_services svc WHERE svc.professional_id=p.id
          AND beauty.service_matches_treatment(svc.id,CASE WHEN resolved.kind IS NOT NULL THEN $18 ELSE '' END,$19,$20,$21)
          AND (resolved.kind IS NOT NULL OR $18='' OR to_tsvector('simple',svc.name) @@ plainto_tsquery('simple',$18) OR p.business_name ILIKE $1 OR p.city ILIKE $1 OR p.category ILIKE $1 OR d.location_details ILIKE $1)
          AND ($10::text='' OR svc.category ILIKE $10 OR svc.speciality_name ILIKE $10 OR svc.name ILIKE $10)
          AND ($11::integer IS NULL OR svc.from_price_pence<=$11)
+         AND ((NOT $6::boolean AND $22::date IS NULL) OR beauty.public_service_available_on(svc.id,coalesce($22::date,(now() AT TIME ZONE 'Europe/London')::date)))
        ) s ON true
        WHERE NOT coalesce(exposure.hidden,false)
        AND (s.matching_services IS NOT NULL OR (resolved.kind IS NULL AND $19::uuid IS NULL AND $20::uuid IS NULL AND $21::uuid IS NULL AND $10='' AND $11::integer IS NULL AND (p.business_name ILIKE $1 OR p.city ILIKE $1 OR d.location_details ILIKE $1)))

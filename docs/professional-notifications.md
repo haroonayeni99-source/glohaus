@@ -1,6 +1,6 @@
 # Professional notifications — implementation and release review
 
-Status: implemented on an isolated feature branch; not deployed. Production migration and VAPID configuration have not been applied. No real email, push message, purchase, booking or account mutation was used for testing.
+Status: released to https://www.glohaus.shop after the owner explicitly requested deployment on 16 October 2026. PR #118 is merged at 6e1efc3a68a4880bb80d241d39daad549a694f2a. Production deployment dpl_G8ffoHhW6Ctr8g83hUURquTQgfEd is READY, with the existing custom domains assigned. The reviewed migration is applied and VAPID keys are configured for Production (private key sensitive). Post-migration counts remain 11 bookings, 11 payments and 8 financial ledger entries. No real email, push message, purchase or booking was sent for testing.
 
 ## Existing systems retained
 
@@ -35,12 +35,12 @@ Status: implemented on an isolated feature branch; not deployed. Production migr
 - Graphical interface coverage is provided by `scripts/check-professional-notifications.mjs` in CI: 320/390/820/1440px, light/night themes, locked mandatory email, independent preference persistence after reload, device revocation, mark-read, mobile bell visibility and overflow. A failed-save case checks recovery. Screenshots/results are saved as the `professional-notifications-checks` artifact. These fictional local interface checks do not establish actual phone push reception. The cloud browser cannot reach the workspace server (`ERR_CONNECTION_REFUSED`); the repository CI supplies the isolated browser environment.
 - Actual Resend inbox delivery and Android/desktop/iPhone push reception have not been tested. Provider transport tests use a stub; no delivery claim is made from provider acceptance alone.
 
-## Configuration and controlled rollout after approval
+## Released configuration and remaining delivery verification
 
-1. Review the feature branch and passing checks. Branch preview deployments are explicitly disabled in `vercel.json`; do not merge to production until approved.
-2. Generate a VAPID key pair privately using the pinned `web-push` package. Set `VAPID_PUBLIC_KEY`, sensitive `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` (`mailto:` address controlled by GLOHAUS) as server environment variables. Never commit private keys, paste them into chat, or use `NEXT_PUBLIC_` for the private key. Keep the same pair for existing subscriptions; rotating keys requires re-enabling devices.
-3. Apply only `20261015234554_professional_notification_delivery.sql` using the established checksum migration ledger and a bounded transaction. Do not run the full historical migration backlog against production. This is an additive migration and retains existing inbox/outbox/history rows.
-4. Deploy the reviewed production source. Existing Resend API/webhook and cron credentials were confirmed present through metadata only; VAPID variables were absent at review.
+1. The owner approved release after local checks and review. PR #118 is merged; the notification feature branch retains disabled previews.
+2. A new VAPID key pair was generated privately and configured in the existing production Vercel project. The private key is a sensitive server-only variable. Keep the same pair for existing subscriptions; rotating keys requires re-enabling devices.
+3. Applied only `20261015234554_professional_notification_delivery.sql`, with a bounded transaction and its SHA-256 entry in the established migration ledger. Existing business-record counts were verified unchanged and the three new transport/preference tables have forced RLS.
+4. Production HTTP checks passed for Home, Explore, Shop, the PWA manifest and service worker. Notification settings retain their sign-in gate; the live stream returns 401 when signed out. Resend and cron configuration were retained.
 5. Use specifically designated disposable customer/professional accounts in a controlled test environment. Complete a paid booking and a multiple-seller product purchase; verify each actual inbox, email delivery webhook, and permitted device. Exercise cancellation, approved rescheduling, refund/dispute, optional opt-outs, mandatory notices, duplicate webhook delivery, device revocation and reconnect. Keep real financial test activity subject to the existing payment testing policy.
 6. On iPhone/iPad, install using Safari → Share → Add to Home Screen, then enable notifications from that installed app. Android/desktop require a compatible browser and notification permission. Mobile emulation does not establish actual phone push reception.
 

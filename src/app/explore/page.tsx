@@ -1,3 +1,4 @@
+import "./discovery-map.css";
 import { taxonomyCatalog } from "@/modules/taxonomy/repository";
 import { emptyTaxonomy } from "@/modules/taxonomy/domain";
 import { publicMetadata, publicPages } from "@/lib/public-seo";
@@ -80,6 +81,7 @@ export default async function Explore({
         <ExploreMapExperience
           key={JSON.stringify({ q, filters })}
           professionals={professionals}
+          signedIn={viewerSignedIn}
           taxonomy={taxonomy}
           query={q}
           filters={filters}

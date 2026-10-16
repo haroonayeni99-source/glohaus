@@ -106,7 +106,7 @@ export async function followStates(
   customerId: string | null,
   professionalIds: string[],
 ): Promise<FollowStateMap> {
-  const ids = [...new Set(professionalIds)].slice(0, 80);
+  const ids = [...new Set(professionalIds)].slice(0, 100);
   if (!ids.length) return {};
 
   const rows = (

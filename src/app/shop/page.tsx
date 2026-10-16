@@ -1,3 +1,4 @@
+import { z } from "zod";
 import {
   catalogueProducts,
   shopCollection,
@@ -23,33 +24,30 @@ import { AddToCartButton } from "@/components/add-to-cart-button";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { PublicHeader } from "@/components/public-header";
 import { withIdentity } from "@/lib/db";
-import { publicProducts } from "@/modules/shop/repository";
+import { productCategories, publicProducts } from "@/modules/shop/repository";
 import { money } from "@/modules/professionals/domain";
 import { publicViewerSignedIn } from "@/lib/public-viewer";
 
 export const dynamic = "force-dynamic";
-
-const categories = [
-  ["Hair", "Wigs, bundles, care"],
-  ["Nails", "Polish, sets, tools"],
-  ["Makeup", "Palettes, lips, face"],
-  ["Skincare", "Serums, creams, glow"],
-  ["Barber", "Grooming & clippers"],
-  ["Lashes", "Kits & extensions"],
-  ["Tools", "Brushes & devices"],
-  ["Fragrance", "Perfume & body mist"],
-] as const;
 
 export default async function ShopPage({
   searchParams,
 }: {
   searchParams: Promise<{
     q?: string | string[];
+    categoryId?: string | string[];
     collection?: string | string[];
   }>;
 }) {
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q : "";
+  const categoryId = z.uuid().safeParse(params.categoryId).success
+    ? (params.categoryId as string)
+    : undefined;
+  const categories = process.env.DATABASE_URL
+    ? await withIdentity("", (db) => productCategories(db)).catch(() => [])
+    : [];
+  const selectedCategory = categories.find((c) => c.id === categoryId);
   const collection = shopCollection(params.collection);
   const selectedCollection = collection
     ? shopCollections[collection]
@@ -58,7 +56,7 @@ export default async function ShopPage({
   const cartHref = viewerSignedIn ? "/cart" : "/sign-in?returnTo=%2Fcart";
   const products = process.env.DATABASE_URL
     ? await withIdentity("", (db) =>
-        publicProducts(db, { query: q, collection }),
+        publicProducts(db, { query: q, collection, categoryId }),
       ).catch(() => [])
     : [];
 
@@ -80,10 +78,11 @@ export default async function ShopPage({
 
           <p className="marketplace-side-label">Categories</p>
           <nav>
-            {categories.map(([name]) => (
+            {categories.map(({ id, name }) => (
               <Link
-                key={name}
-                href={`/shop?q=${encodeURIComponent(name)}#products`}
+                key={id}
+                href={shopHref(collection, q, id)}
+                aria-current={categoryId === id ? "page" : undefined}
               >
                 <Sparkles size={15} aria-hidden /> {name}
               </Link>
@@ -96,7 +95,7 @@ export default async function ShopPage({
             {Object.entries(shopCollections).map(([key, { label: name }]) => (
               <Link
                 key={name}
-                href={shopHref(shopCollection(key), q)}
+                href={shopHref(shopCollection(key), q, categoryId)}
                 aria-current={collection === key ? "page" : undefined}
               >
                 <Tag size={15} aria-hidden /> {name}
@@ -121,6 +120,9 @@ export default async function ShopPage({
 
         <section className="marketplace-main">
           <form className="marketplace-search" action="/shop" method="get">
+            {categoryId && (
+              <input type="hidden" name="categoryId" value={categoryId} />
+            )}
             {collection && (
               <input type="hidden" name="collection" value={collection} />
             )}
@@ -178,10 +180,11 @@ export default async function ShopPage({
             className="marketplace-category-strip"
             aria-label="Product categories"
           >
-            {categories.map(([name, description], index) => (
+            {categories.map(({ id, name }, index) => (
               <Link
-                key={name}
-                href={`/shop?q=${encodeURIComponent(name)}#products`}
+                key={id}
+                href={shopHref(collection, q, id)}
+                aria-current={categoryId === id ? "page" : undefined}
                 className={`marketplace-category marketplace-category-${index + 1}`}
               >
                 <div className="marketplace-category-art">
@@ -189,7 +192,7 @@ export default async function ShopPage({
                 </div>
                 <span>
                   <strong>{name}</strong>
-                  <small>{description}</small>
+                  <small>Browse {name.toLowerCase()} products</small>
                 </span>
                 <i>
                   <ArrowRight size={14} />
@@ -211,13 +214,15 @@ export default async function ShopPage({
                 <h2>
                   {selectedCollection
                     ? `${selectedCollection.label}${query ? ` for “${q}”` : ""}`
-                    : query
-                      ? `Results for “${q}”`
-                      : "Popular products"}
+                    : selectedCategory
+                      ? selectedCategory.name
+                      : query
+                        ? `Results for “${q}”`
+                        : "Popular products"}
                 </h2>
                 {selectedCollection && <p>{selectedCollection.description}</p>}
               </div>
-              {(query || collection) && (
+              {(query || collection || categoryId) && (
                 <Link href="/shop#products">Clear filters</Link>
               )}
             </div>
@@ -315,19 +320,19 @@ export default async function ShopPage({
                       : collection === "bestsellers" ||
                           collection === "trending"
                         ? "No paid sales to show yet."
-                        : query
+                        : categoryId || query
                           ? "No matching products yet."
                           : "Marketplace products are coming in."}
                   </h3>
                   <p>
                     {collection
                       ? "Try clearing the filters or browse all products."
-                      : query
+                      : categoryId || query
                         ? "Try another category or search term."
                         : "Real products will appear here as GLOHAUS professionals publish stock. We do not show fake listings or placeholder prices."}
                   </p>
                 </div>
-                {query || collection ? (
+                {query || collection || categoryId ? (
                   <Link href="/shop">Show all products</Link>
                 ) : (
                   <Link href="/explore">Explore professionals</Link>

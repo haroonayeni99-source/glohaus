@@ -43,7 +43,8 @@ function sectionOffset() {
 const coreSections = [
   ["Overview", "overview", LayoutDashboard],
   ["Settings", "settings", Settings],
-  ["Categories", "categories", BookOpenCheck],
+  ["Service Categories", "categories", BookOpenCheck],
+  ["Product Categories", "product-categories", PackageCheck],
   ["Users", "users", UsersRound],
   ["Professionals", "professionals", BadgeCheck],
   ["Professional Policies", "professional-policies", BookOpenCheck],
@@ -83,12 +84,21 @@ const adminGroups = [
   { label: "Workspace", ids: ["overview", "website-status", "settings"] },
   {
     label: "People & access",
-    ids: ["users", "auth-accounts", "professionals", "professional-policies", "professional-activity", "live-access", "staff"],
+    ids: [
+      "users",
+      "auth-accounts",
+      "professionals",
+      "professional-policies",
+      "professional-activity",
+      "live-access",
+      "staff",
+    ],
   },
   {
     label: "Marketplace & support",
     ids: [
       "categories",
+      "product-categories",
       "bookings",
       "orders",
       "reviews",

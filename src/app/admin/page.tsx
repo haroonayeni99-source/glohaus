@@ -1,3 +1,4 @@
+import { adminPushDeliveryOverview } from "@/modules/admin/repository";
 import { AdminProfessionalActivity } from "@/components/admin-professional-activity";
 import { activityOverview } from "@/modules/professional-activity/repository";
 import { AdminSupportInbox } from "@/components/admin-support-inbox";
@@ -83,6 +84,7 @@ export default async function Page() {
   const emailDelivery = isOwner
     ? await ownerEmailDeliveryOverview().catch(() => null)
     : null;
+  const pushDelivery = await adminPushDeliveryOverview().catch(()=>null);
   const authAccounts = isOwner
     ? await ownerAuthAccountOverview().catch(() => null)
     : [];
@@ -428,6 +430,13 @@ export default async function Page() {
             </div>
           </section>
         )}
+        {pushDelivery && <section id="push-delivery-health" className="admin-workspace-section admin-detail-card">
+          <p className="eyebrow">PROFESSIONAL NOTIFICATION HEALTH</p><h2>Push delivery</h2>
+          <p className="lead">Push provider acceptance confirms receipt by the push service. Device display depends on permission, connectivity and browser support. These totals contain no private message content.</p>
+          <p>{process.env.VAPID_PUBLIC_KEY&&process.env.VAPID_PRIVATE_KEY&&process.env.VAPID_SUBJECT?"VAPID configuration present.":"Push awaits VAPID configuration."}</p>
+          <div className="service-edit-list">{[["Active devices",pushDelivery.activeDevices],["Queued",pushDelivery.queued],["Accepted",pushDelivery.accepted],["Failed",pushDelivery.failed],["Expired devices",pushDelivery.expired],["Skipped / opted out",pushDelivery.skipped]].map(([label,value])=><article className="service-edit-row" key={String(label)}><h3>{label}</h3><strong>{value}</strong></article>)}</div>
+          <p>{pushDelivery.lastAcceptedAt?`Last accepted: ${new Date(pushDelivery.lastAcceptedAt).toLocaleString("en-GB",{timeZone:"Europe/London"})}`:"No push deliveries accepted yet."}</p>
+        </section>}
         {isOwner && emailDelivery && (
           <section
             id="email-delivery-health"

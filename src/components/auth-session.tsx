@@ -43,6 +43,7 @@ export function AuthSessionProvider({
           setSignedIn(next);
           // Refresh only identity transitions, not token refreshes or duplicate
           // SIGNED_IN events fired when a tab gains focus.
+          if (changed) window.dispatchEvent(new CustomEvent("glohaus:identity-change", {detail:{signedIn:next,userId}}));
           if (changed)
             queueMicrotask(() => {
               if (active) router.refresh();

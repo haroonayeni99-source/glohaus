@@ -654,3 +654,6 @@ export async function ownerBackendHealth(): Promise<OwnerBackendHealth> {
     );
   });
 }
+
+export type AdminPushDeliveryOverview={activeDevices:number;queued:number;accepted:number;failed:number;expired:number;skipped:number;lastAcceptedAt:string|null};
+export async function adminPushDeliveryOverview(){return withAdmin(async db=>(await db.query<{data:AdminPushDeliveryOverview}>("SELECT beauty.admin_push_delivery_overview() AS data")).rows[0].data);}

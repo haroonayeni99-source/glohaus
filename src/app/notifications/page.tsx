@@ -48,6 +48,7 @@ export default async function NotificationsPage({
           <p className="pro-kicker">ACTIVITY</p>
           <h1>Your notifications.</h1>
           <p className="pro-page-lead">Booking reminders, Shop updates and other account activity appear here as they are recorded.</p>
+          <Link href="/professional/settings/notifications">Notification settings →</Link>
           {content}
         </main>
       </div>

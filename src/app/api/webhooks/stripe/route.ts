@@ -1,3 +1,4 @@
+import { scheduleNotificationDelivery } from "@/modules/notifications/schedule";
 import { reconcileBookingProviderCost } from "@/modules/commission/provider-cost";
 import type Stripe from "stripe";
 import { stripe } from "@/modules/payments/stripe";
@@ -303,8 +304,8 @@ export async function POST(request: Request) {
           : dispute.payment_intent?.id;
 
       if (intentId)
-        await withPaymentWorker((db) =>
-          db.query(
+        await withPaymentWorker(async (db) => {
+          await db.query(
             "SELECT beauty.sync_booking_dispute($1,$2,$3,$4,$5,$6,$7,$8)",
             [
               event.id,
@@ -316,8 +317,9 @@ export async function POST(request: Request) {
               dispute.reason ?? null,
               dispute.evidence_details?.due_by ?? null,
             ],
-          ),
-        );
+          );
+          await db.query("SELECT beauty.notify_product_dispute($1,$2,$3)",[intentId,dispute.id,dispute.status]);
+        });
     } else if (
       event.type === "customer.subscription.updated" ||
       event.type === "customer.subscription.deleted"
@@ -346,6 +348,7 @@ export async function POST(request: Request) {
       });
     }
 
+    scheduleNotificationDelivery();
     return Response.json({ received: true });
   } catch {
     console.error("Stripe webhook processing failed");

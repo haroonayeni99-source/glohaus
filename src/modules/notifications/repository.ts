@@ -6,6 +6,12 @@ export type InAppNotification = {
   booking_id: string | null;
   product_order_id: string | null;
   kind:
+    | "customer_message"
+    | "review_received"
+    | "dispute_opened"
+    | "refund_requested"
+    | "promotion"
+    | "push_test"
     | "professional_activity"
     | "commission_changed"
     | "booking_policy_update"
@@ -15,6 +21,7 @@ export type InAppNotification = {
     | "booking_cancelled"
     | "appointment_completed"
     | "booking_reminder"
+    | "order_cancelled"
     | "order_paid"
     | "order_processing"
     | "order_shipped"
@@ -32,7 +39,9 @@ export type InAppNotification = {
 export async function inAppNotifications(db: SqlClient) {
   return (
     await db.query<InAppNotification>(
-      `SELECT id,booking_id,product_order_id,kind,title,body,href,read_at,created_at
+      `SELECT id,booking_id,product_order_id,kind,title,
+       CASE WHEN product_order_id IS NOT NULL THEN left(body||coalesce((SELECT ' Items: '||string_agg(product_name||' × '||quantity::text,', ' ORDER BY id) FROM beauty.product_order_items WHERE order_id=product_order_id),''),500) ELSE body END AS body,
+       href,read_at,created_at
        FROM beauty.in_app_notifications
        ORDER BY read_at NULLS FIRST,created_at DESC,id DESC
        LIMIT 100`,
@@ -43,16 +52,17 @@ export async function inAppNotifications(db: SqlClient) {
 /** A non-match is deliberately silent so a guessed ID reveals nothing. */
 export async function markInAppNotificationRead(db: SqlClient, id: string) {
   return (
-    await db.query<{ id: string }>(
-      `UPDATE beauty.in_app_notifications
+    (
+      await db.query<{ id: string }>(
+        `UPDATE beauty.in_app_notifications
        SET read_at=coalesce(read_at,now())
        WHERE id=$1
        RETURNING id`,
-      [id],
-    )
-  ).rows[0] ?? null;
+        [id],
+      )
+    ).rows[0] ?? null
+  );
 }
-
 
 export async function markAllInAppNotificationsRead(db: SqlClient) {
   const result = await db.query<{ count: number }>(

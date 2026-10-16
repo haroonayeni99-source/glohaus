@@ -123,27 +123,90 @@ try {
       ).toHaveAttribute("href", /service=33333333/);
       await page.getByRole("button", { name: "Close quick view" }).click();
       await expect(page.getByRole("dialog")).toHaveCount(0);
+      const borough = page.getByRole("combobox", {
+        name: "London borough",
+        exact: true,
+      });
+      await expect(borough.locator("option")).toHaveCount(33);
+      await expect(
+        page
+          .getByRole("navigation", { name: "Explore London areas" })
+          .getByRole("link"),
+      ).toHaveCount(33);
+      await expect(
+        page
+          .getByRole("navigation", { name: "Explore London areas" })
+          .getByRole("link", {
+            name: "Southwark Explore the borough",
+            exact: true,
+          }),
+      ).toHaveAttribute("href", /location=Southwark/);
+      await expect(
+        page.getByRole("button", {
+          name: "Show Area Studio on map",
+          exact: true,
+        }),
+      ).toHaveCount(0);
+      await expect(page.locator(".london-overview")).toHaveCount(1);
       if (width <= 900)
         await page.getByRole("button", { name: "Map", exact: true }).click();
+      const controlContrasts = await page
+        .locator(
+          ".london-overview :is(.map-controls button, .map-pan-controls button, .map-street-card strong, .map-legend span)",
+        )
+        .evaluateAll((elements) =>
+          elements.map((element) => {
+            const rgb = getComputedStyle(element)
+              .color.match(/[0-9.]+/g)
+              .slice(0, 3)
+              .map(Number);
+            const luminance = rgb
+              .map((value) => {
+                const s = value / 255;
+                return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+              })
+              .reduce(
+                (sum, value, i) => sum + value * [0.2126, 0.7152, 0.0722][i],
+                0,
+              );
+            return 1.05 / (luminance + 0.05);
+          }),
+        );
+      expect(controlContrasts.length).toBeGreaterThan(0);
+      for (const contrast of controlContrasts)
+        expect(contrast).toBeGreaterThanOrEqual(4.5);
+      await page.screenshot({
+        path: `reports/london-overview-${theme}-${width}.png`,
+        fullPage: true,
+      });
+      if (width <= 900)
+        await page.getByRole("button", { name: "List", exact: true }).click();
+      await page
+        .getByRole("button", {
+          name: "Show Brixton Braids on map",
+          exact: true,
+        })
+        .click();
+      await expect(page.locator(".london-overview")).toHaveCount(0);
+      if (width <= 900)
+        await expect(
+          page.getByRole("button", { name: "Map", exact: true }),
+        ).toHaveAttribute("aria-pressed", "true");
       await page
         .getByRole("button", { name: "Load street map", exact: true })
         .click();
-      await expect(page.locator(".discovery-gl-canvas canvas")).toBeVisible();
-      await expect(page.locator(".discovery-gl-map")).toHaveAttribute("aria-busy", "false", { timeout: 20000 });
-      await expect(
-        page.getByRole("button", { name: "3D", exact: true }),
-      ).toHaveAttribute("aria-pressed", "true");
-      await page.getByRole("button", { name: "2D", exact: true }).click();
-      await expect(
-        page.getByRole("button", { name: "2D", exact: true }),
-      ).toHaveAttribute("aria-pressed", "true");
-      await page.getByRole("button", { name: "3D", exact: true }).click();
-      await page
-        .getByRole("button", { name: "Rotate map right", exact: true })
-        .click();
-      await page
-        .getByRole("button", { name: "Reset map north", exact: true })
-        .click();
+      await expect(page.locator(".geo-map-surface")).toHaveAttribute(
+        "data-center-latitude",
+        "51.462",
+      );
+      await expect(page.locator(".geo-map-surface")).toHaveAttribute(
+        "data-center-longitude",
+        "-0.115",
+      );
+      await expect(page.locator(".geo-map-surface")).toHaveAttribute(
+        "data-zoom",
+        "16",
+      );
       const pin = page.getByRole("button", {
         name: "Brixton Braids, from £45.00",
         exact: true,
@@ -158,11 +221,31 @@ try {
           .locator(".discovery-pin-card")
           .getByRole("link", { name: /Directions to Brixton Braids/ }),
       ).toHaveAttribute("href", /destination=51.462%2C-0.115/);
+      if (width <= 900)
+        await page.getByRole("button", { name: "List", exact: true }).click();
+      await page
+        .getByRole("button", { name: "Show Nails & Glow on map", exact: true })
+        .click();
+      await expect(page.locator(".geo-map-surface")).toHaveAttribute(
+        "data-center-latitude",
+        "51.474",
+      );
+      await expect(page.locator(".geo-map-surface")).toHaveAttribute(
+        "data-center-longitude",
+        "-0.069",
+      );
+      await expect(page.locator(".geo-map-surface")).toHaveAttribute(
+        "data-zoom",
+        "16",
+      );
+      await expect(page.locator(".discovery-pin-card")).toContainText(
+        "Nails & Glow",
+      );
       if (width > 900) {
         const list = await page.locator(".map-pro-results").boundingBox(),
           map = await page.locator(".discovery-map-panel").boundingBox();
         expect(map.x + map.width).toBeLessThanOrEqual(list.x + 2);
-        expect(list.width / (list.width + map.width)).toBeCloseTo(0.42, 1);
+        expect(list.width).toBeCloseTo(420, -1);
       }
       await page.getByRole("button", { name: "Close map selection" }).click();
       await page.getByRole("button", { name: "Move street map right" }).click();
@@ -256,7 +339,10 @@ try {
           "save persists",
           "public media quick view",
           "real price pin selection",
-          "hybrid ratio",
+          "original map-first layout",
+          "readable map controls in both themes",
+          "all 32 boroughs",
+          "selected professional centred at street zoom",
           "viewport search",
           "no overflow",
           "admin adds edits hides and restores categories",
@@ -269,45 +355,6 @@ try {
       browser = await chromium.launch(browserOptions);
       console.log(`Verified ${theme} ${width}px`);
     }
-  const fallbackContext = await browser.newContext({
-    viewport: { width: 390, height: 1000 },
-  });
-  await fallbackContext.addInitScript(() => {
-    const getContext = HTMLCanvasElement.prototype.getContext;
-    HTMLCanvasElement.prototype.getContext = function (type, ...args) {
-      if (String(type).includes("webgl")) return null;
-      return getContext.call(this, type, ...args);
-    };
-  });
-  const fallbackPage = await fallbackContext.newPage();
-  await fallbackPage.route("https://tile.openstreetmap.org/**", (r) =>
-    r.fulfill({
-      contentType: "image/png",
-      body: streetTile,
-      headers: { "access-control-allow-origin": "*" },
-    }),
-  );
-  await fallbackPage.goto("http://127.0.0.1:3004/explore");
-  await fallbackPage.getByRole("button", { name: "Map", exact: true }).click();
-  await fallbackPage
-    .getByRole("button", { name: "Load street map", exact: true })
-    .click();
-  await expect(
-    fallbackPage.getByText("3D is unavailable on this device.", {
-      exact: false,
-    }),
-  ).toBeVisible();
-  await fallbackPage
-    .getByRole("button", { name: "Load street map", exact: true })
-    .click();
-  await expect(
-    fallbackPage.getByRole("button", {
-      name: "Brixton Braids, from £45.00",
-      exact: true,
-    }),
-  ).toBeVisible();
-  await fallbackContext.close();
-  console.log("Verified unsupported-WebGL standard-map fallback");
   await writeFile(
     "reports/discovery-map-results.json",
     JSON.stringify(results, null, 2),

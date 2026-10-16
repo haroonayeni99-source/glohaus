@@ -248,3 +248,33 @@ it("uses stable map projection and straight-line distance at zero, poles and dat
   expect(distanceLabel(1.42)).toBe("1.4 miles away");
   expect(distanceLabel(0.01)).toBe("Less than 0.1 miles away");
 });
+
+it("filters boroughs by confirmed public geometry before limiting, independently of the profile's area label", async () => {
+  await db.exec(`INSERT INTO beauty.users(auth_id,email,display_name) VALUES ('borough-peckham','borough-peckham@example.test','Peckham professional'),('borough-brixton','borough-brixton@example.test','Brixton professional');
+    INSERT INTO beauty.user_roles(user_id,role) SELECT id,'professional' FROM beauty.users WHERE auth_id LIKE 'borough-%';
+    INSERT INTO beauty.professional_profiles(user_id,slug,business_name,bio,city,category,publication_status) SELECT id,auth_id,display_name,'A professional with a confirmed public business location.',CASE WHEN auth_id='borough-peckham' THEN 'Peckham' ELSE 'Southwark' END,'Hair','published' FROM beauty.users WHERE auth_id LIKE 'borough-%';
+    INSERT INTO beauty.professional_public_locations SELECT id,CASE WHEN slug='borough-peckham' THEN 51.474 ELSE 51.462 END,CASE WHEN slug='borough-peckham' THEN -0.069 ELSE -0.115 END,'pin',now() FROM beauty.professional_profiles WHERE slug LIKE 'borough-%';`);
+  const southwark = await as("", (sql) =>
+    publicProfessionals(sql, "", undefined, {
+      ...defaultDiscoveryFilters,
+      location: "Southwark",
+    }),
+  );
+  expect(southwark.map((p) => p.slug)).toEqual(["borough-peckham"]);
+  const lambeth = await as("", (sql) =>
+    publicProfessionals(sql, "", undefined, {
+      ...defaultDiscoveryFilters,
+      location: "Lambeth",
+    }),
+  );
+  expect(lambeth.map((p) => p.slug)).toEqual(["borough-brixton"]);
+  expect(
+    await as("", (sql) =>
+      publicProfessionals(sql, "", undefined, {
+        ...defaultDiscoveryFilters,
+        location: "Southwark",
+        category: "Nails",
+      }),
+    ),
+  ).toEqual([]);
+});

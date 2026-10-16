@@ -20,6 +20,7 @@ export function GeographicMap({
   pins = [],
   focus,
   initialZoom = 12,
+  focusZoom,
   onChoose,
   selectedId,
   highlightedId,
@@ -30,6 +31,7 @@ export function GeographicMap({
   pins?: Pin[];
   focus?: Coordinates;
   initialZoom?: number;
+  focusZoom?: number;
   onChoose?: (point: Coordinates) => void;
   selectedId?: string | null;
   highlightedId?: string | null;
@@ -56,6 +58,7 @@ export function GeographicMap({
   ) {
     setLastFocus(focus);
     setCenter({ latitude: focus.latitude, longitude: focus.longitude });
+    if (focusZoom != null) setZoom(focusZoom);
   }
   useEffect(() => {
     if (!surface.current || !loaded) return;
@@ -152,6 +155,9 @@ export function GeographicMap({
     >
       <div
         className="geo-map-surface"
+        data-center-latitude={center.latitude}
+        data-center-longitude={center.longitude}
+        data-zoom={zoom}
         ref={surface}
         onPointerDown={(event) => {
           if (event.button !== 0) return;

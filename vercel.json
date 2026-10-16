@@ -15,7 +15,8 @@
       "fix/lip-filler-taxonomy": false,
       "feature/professional-notifications": false,
       "feature/discovery-map-categories": false,
-      "feature/map-navigation-directions": false
+      "feature/map-navigation-directions": false,
+      "fix/original-map-boroughs": false
     }
   },
   "regions": [

@@ -9,6 +9,7 @@ export type PushJob = {
   auth: string;
   notification_id: string;
   href: string;
+  reminder_title?: string | null;
 };
 export function pushFailure(error: unknown) {
   const status =
@@ -29,8 +30,11 @@ export async function deliverPushNotifications() {
     return { configured: false, processed: 0, accepted: 0 };
   const jobs = await withPaymentWorker(
     async (db) =>
-      (await db.query<PushJob>("SELECT * FROM beauty.claim_push_deliveries()"))
-        .rows,
+      (
+        await db.query<PushJob>(
+          "SELECT d.*,beauty.push_departure_heading(d.notification_id) AS reminder_title FROM beauty.claim_push_deliveries() d",
+        )
+      ).rows,
   );
   let accepted = 0;
   // Bounded concurrency keeps slow push providers from consuming the cron budget.
@@ -47,8 +51,17 @@ export async function deliverPushNotifications() {
               keys: { p256dh: job.p256dh, auth: job.auth },
             },
             JSON.stringify({
-              title: "GLOHAUS professional update",
+              title: job.href.startsWith("/account/bookings/")
+                ? "GLOHAUS appointment update"
+                : "GLOHAUS professional update",
               body: "You have a new update. Open your dashboard to view it securely.",
+              departureReminder: [
+                "Leave in approximately 15 minutes",
+                "Leave in approximately 5 minutes",
+                "It’s time to leave for your appointment",
+              ].includes(job.reminder_title || "")
+                ? job.reminder_title
+                : undefined,
               tag: `glohaus-${job.notification_id}`,
               href: safeNotificationHref(job.href),
             }),

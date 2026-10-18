@@ -63,6 +63,7 @@ const css = (await readFile("node_modules/maplibre-gl/dist/maplibre-gl.css", "ut
       "../components/professional-activity",
       "../components/marketing-preferences",
       "../components/professional-notifications",
+      "../components/appointment-arrival",
     ].map((name) => readFile(`src/app/${name}.css`, "utf8")),
   )
 ).join("\n");

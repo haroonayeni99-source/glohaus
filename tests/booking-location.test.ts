@@ -18,6 +18,7 @@ async function asUser<T>(authId: string, work: (sql: SqlClient) => Promise<T>) {
 
 beforeAll(async () => {
   await applyTestMigrations(db);
+  await db.exec("UPDATE beauty.arrival_settings SET journey_sharing=true");
 
   const professional = await asUser("location-pro", (sql) =>
     enrolAccount(sql, {
@@ -128,7 +129,9 @@ describe.sequential("booking journey location privacy", () => {
         [bookingId],
       ),
     );
-    expect(stopped.rows[0].sharing).toBe(false);
-    expect(stopped.rows[0].stopped_at).not.toBeNull();
+    expect(stopped.rows).toEqual([]);
+    const consent = await asUser("location-customer", sql => sql.query<{sharing:boolean;stopped_at:string}>("SELECT sharing,stopped_at FROM beauty.booking_location_sessions WHERE booking_id=$1",[bookingId]));
+    expect(consent.rows[0].sharing).toBe(false);
+    expect(consent.rows[0].stopped_at).not.toBeNull();
   });
 });

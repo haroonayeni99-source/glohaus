@@ -60,6 +60,7 @@ const coreSections = [
   ["Refund appeals", "refund-appeals", CreditCard],
   ["Payments", "payments", CreditCard],
   ["Analytics", "analytics", BarChart3],
+  ["Arrival & communications", "arrival-management", CalendarDays],
   ["Notification delivery", "push-delivery-health", MessageSquareWarning],
 ] as const;
 
@@ -125,6 +126,7 @@ const adminGroups = [
   {
     label: "Operations",
     ids: [
+      "arrival-management",
       "push-delivery-health",
       "audit",
       "backend-health",

@@ -2,6 +2,14 @@ import Link from "next/link";
 import { CalendarDays, ChevronRight, Clock } from "lucide-react";
 import { money } from "@/modules/professionals/domain";
 import type { BookingRecord } from "@/modules/bookings/repository";
+export type ArrivalSummary = {
+  detectedAt: string | null;
+  manualAt: string | null;
+  attendanceAt: string | null;
+  sharing: boolean;
+  late: boolean;
+  eta: string | null;
+};
 const day = new Intl.DateTimeFormat("en-GB", {
   day: "2-digit",
   timeZone: "Europe/London",
@@ -18,9 +26,11 @@ const time = new Intl.DateTimeFormat("en-GB", {
 export function BookingList({
   bookings,
   professional = false,
+  arrivals = {},
 }: {
   bookings: BookingRecord[];
   professional?: boolean;
+  arrivals?: Record<string, ArrivalSummary>;
 }) {
   return bookings.length ? (
     <div className="appointment-card-list">
@@ -36,8 +46,19 @@ export function BookingList({
           </span>
           <div className="appointment-card-copy">
             <h3>{booking.service_name}</h3>
-            {booking.taxonomy_snapshot?.specialityName&&<small>{booking.taxonomy_snapshot.specialityName}</small>}
-            {booking.service_options_snapshot&&<small>{[booking.service_options_snapshot.variationName,...(booking.service_options_snapshot.extraNames??[])].filter(Boolean).join(" · ")}</small>}
+            {booking.taxonomy_snapshot?.specialityName && (
+              <small>{booking.taxonomy_snapshot.specialityName}</small>
+            )}
+            {booking.service_options_snapshot && (
+              <small>
+                {[
+                  booking.service_options_snapshot.variationName,
+                  ...(booking.service_options_snapshot.extraNames ?? []),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </small>
+            )}
             <p>
               {professional ? booking.customer_name : booking.professional_name}
             </p>
@@ -46,6 +67,46 @@ export function BookingList({
               {time.format(new Date(booking.starts_at))} ·{" "}
               {money(booking.price_pence)}
             </span>
+            {professional && arrivals[booking.id] && (
+              <div
+                className="appointment-time"
+                style={{ display: "grid", gap: 4, fontSize: 12 }}
+              >
+                <span>
+                  {arrivals[booking.id].attendanceAt
+                    ? "Attendance confirmed"
+                    : arrivals[booking.id].detectedAt
+                      ? "Detected nearby"
+                      : arrivals[booking.id].manualAt
+                        ? "Manual check-in recorded"
+                        : "Arrival not recorded"}
+                </span>
+                {(arrivals[booking.id].detectedAt ||
+                  arrivals[booking.id].manualAt) && (
+                  <span>
+                    {time.format(
+                      new Date(
+                        arrivals[booking.id].detectedAt ||
+                          arrivals[booking.id].manualAt!,
+                      ),
+                    )}
+                  </span>
+                )}
+                <span>
+                  {arrivals[booking.id].sharing
+                    ? "Journey sharing active"
+                    : "Journey not shared"}
+                </span>
+                {arrivals[booking.id].late && (
+                  <span>
+                    Customer reported running late
+                    {arrivals[booking.id].eta
+                      ? ` · Estimated ${time.format(new Date(arrivals[booking.id].eta!))}`
+                      : ""}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
           <div className="appointment-card-status">
             <span

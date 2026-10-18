@@ -10,8 +10,8 @@ self.addEventListener("push", (event) => {
       ? data.href
       : "/notifications?view=professional";
   event.waitUntil(
-    self.registration.showNotification("GLOHAUS professional update", {
-      body: "You have a new update. Open your dashboard to view it securely.",
+    self.registration.showNotification(href.startsWith("/account/bookings/") ? "GLOHAUS appointment update" : "GLOHAUS professional update", {
+      body: href.startsWith("/account/bookings/") && ["Leave in approximately 15 minutes","Leave in approximately 5 minutes","It’s time to leave for your appointment"].includes(data.departureReminder) ? data.departureReminder : "You have a new update. Open your dashboard to view it securely.",
       icon: "/icons/glohaus-192.png",
       badge: "/icons/glohaus-192.png",
       tag: typeof data.tag === "string" ? data.tag : "glohaus-update",

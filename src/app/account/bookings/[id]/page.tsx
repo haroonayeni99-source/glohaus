@@ -15,6 +15,9 @@ import { PublicHeader } from "@/components/public-header";
 import { AccessMessage } from "@/components/access-message";
 import { BookingActions } from "@/components/booking-actions";
 import { BookingConfirmation } from "@/components/booking-confirmation";
+import { AppointmentArrival } from "@/components/appointment-arrival";
+import { arrivalState } from "@/modules/arrival/repository";
+import { ownPublicLocation } from "@/modules/professionals/location-repository";
 import { BookingJourneyLocation } from "@/components/booking-journey-location";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { bookingById } from "@/modules/bookings/repository";
@@ -40,6 +43,8 @@ export default async function Booking({
     const booking=await bookingById(db,id);
     return {
     booking,
+    arrival: booking ? await arrivalState(db,id) : null,
+    publicPoint: account.professionalId ? await ownPublicLocation(db,account.professionalId) : null,
     policies: booking ? await bookingPolicy(db,id) : null,
     hasReview:
       (
@@ -153,10 +158,11 @@ export default async function Booking({
           )}
         </section>
         )}
+        {data.arrival && <AppointmentArrival bookingId={id} initial={data.arrival} publicPoint={data.publicPoint} publicKey={process.env.VAPID_PUBLIC_KEY || null} />}
         <BookingJourneyLocation
           bookingId={id}
           professional={data.professional}
-          enabled={b.location_window_open}
+          enabled={b.location_window_open && Boolean(data.arrival?.config.journeySharing)}
         />
         <BookingPoliciesPanel id={id} data={data.policies!} professional={data.professional} status={b.status} professionalName={b.professional_name}/>
         {!data.professional &&

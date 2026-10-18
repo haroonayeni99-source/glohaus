@@ -769,6 +769,8 @@
 }
 
 /* Restore the original illustrated Explore design; keep discovery controls scoped. */
+.discovery-original .discovery-load-error h3 { color: var(--ui-text); }
+.discovery-original .discovery-load-error p { color: var(--ui-muted); }
 .discovery-load-error button { padding: 10px 16px; border: 1px solid var(--ui-border); border-radius: 10px; background: var(--ui-surface); color: var(--ui-text); font: inherit; cursor: pointer; }
 .discovery-load-error button:focus-visible { outline: 2px solid var(--ui-text); outline-offset: 3px; }
 .discovery-load-error button:disabled { opacity: .65; cursor: wait; }

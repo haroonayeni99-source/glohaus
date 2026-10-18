@@ -36,6 +36,7 @@ export function SiteFooter() {
         <Link href="/how-it-works">How it works</Link>
         <Link href="/faq">Help & FAQs</Link>
         <Link href="/contact">Contact Us</Link>
+        <Link href="/install">Install GLOHAUS</Link>
         <Link href="/sign-up?intent=professional">Join GLOHAUS PRO</Link>
         <Link href="/professional-terms">Professional guidelines</Link>
       </nav>

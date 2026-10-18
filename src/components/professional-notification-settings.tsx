@@ -1,6 +1,7 @@
 "use client";
 import { useSyncExternalStore, useState } from "react";
 import Link from "next/link";
+import { pushBrowserState, registerPwaWorker } from "@/lib/pwa-client";
 import {
   mandatoryEmail,
   notificationLabels,
@@ -20,12 +21,7 @@ function subscribeBrowserState(update: () => void) {
   };
 }
 function browserSnapshot() {
-  const supported =
-    window.isSecureContext &&
-    "serviceWorker" in navigator &&
-    "PushManager" in window &&
-    "Notification" in window;
-  return `${supported ? "supported" : "unsupported"}:${"Notification" in window ? Notification.permission : "default"}`;
+  return pushBrowserState();
 }
 function keyBytes(key: string) {
   const raw = atob(
@@ -38,10 +34,12 @@ export function ProfessionalNotificationSettings({
   initial,
   pushConfigured,
   publicKey,
+  audience = "professional",
 }: {
   initial: Settings;
   pushConfigured: boolean;
   publicKey: string | null;
+  audience?: "professional" | "customer";
 }) {
   const [settings, setSettings] = useState(initial),
     [busy, setBusy] = useState(false),
@@ -54,15 +52,29 @@ export function ProfessionalNotificationSettings({
   );
   const supported = browserState.startsWith("supported:");
   const permission = browserState.split(":")[1];
+  const customer = audience === "customer";
+  const settingsEndpoint = customer
+    ? "/api/v1/account/notification-settings"
+    : "/api/v1/professional/notification-settings";
+  const devicesEndpoint = customer
+    ? "/api/v1/account/push-subscriptions"
+    : "/api/v1/professional/push-subscriptions";
+  const labels = customer
+    ? {
+        ...notificationLabels,
+        bookings: "Booking updates",
+        messages: "Messages from professionals",
+      }
+    : notificationLabels;
   async function refresh() {
-    const response = await fetch("/api/v1/professional/notification-settings", {
+    const response = await fetch(settingsEndpoint, {
       cache: "no-store",
     });
     if (!response.ok) throw new Error("Could not reload settings. Try again.");
     setSettings(await response.json());
   }
   async function request(body: unknown) {
-    const response = await fetch("/api/v1/professional/push-subscriptions", {
+    const response = await fetch(devicesEndpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -91,14 +103,15 @@ export function ProfessionalNotificationSettings({
   }
   async function save(preference: NotificationPreference) {
     await run(async () => {
-      const response = await fetch(
-        "/api/v1/professional/notification-settings",
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(preference),
-        },
-      );
+      const response = await fetch(settingsEndpoint, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          customer
+            ? { category: preference.category, push: preference.push }
+            : preference,
+        ),
+      });
       if (!response.ok)
         throw new Error(
           "Could not save your notification choices. Please try again.",
@@ -117,9 +130,7 @@ export function ProfessionalNotificationSettings({
         throw new Error(
           "Notifications are blocked. Change this site's permission in your browser settings.",
         );
-      const registration = await navigator.serviceWorker.register("/sw.js", {
-        scope: "/",
-      });
+      const registration = await registerPwaWorker();
       await navigator.serviceWorker.ready;
       let subscription = await registration.pushManager.getSubscription();
       if (subscription) {
@@ -193,17 +204,30 @@ export function ProfessionalNotificationSettings({
   }
   return (
     <div className="pro-notification-settings">
-      <p>
-        Essential booking, order, cancellation, security and payment email
-        notices stay enabled. Every critical transaction remains in your
-        dashboard.
-      </p>
+      {!customer && (
+        <p>
+          Essential booking, order, cancellation, security and payment email
+          notices stay enabled. Every critical transaction remains in your
+          dashboard.
+        </p>
+      )}
+      {customer && (
+        <p>
+          Choose optional phone and browser alerts below. Essential booking and
+          payment emails and your private in-app records remain available.
+          Enabling this device does not grant location access or enable journey
+          reminders.
+        </p>
+      )}
       <section className="pro-settings-card" aria-labelledby="device-heading">
         <h2 id="device-heading">Phone and browser push</h2>
         <p>
           On iPhone or iPad, open GLOHAUS in Safari, choose Share → Add to Home
           Screen, then open the installed app to enable notifications. Supported
           Android and desktop browsers can enable push here.
+        </p>
+        <p>
+          <Link href="/install">Home Screen installation instructions</Link>
         </p>
         {!pushConfigured && (
           <p role="status">
@@ -212,8 +236,10 @@ export function ProfessionalNotificationSettings({
         )}
         {!supported && (
           <p>
-            Your browser does not currently support push here. Email and your
-            dashboard remain available.
+            {browserState.startsWith("install-first:")
+              ? "On this iPhone or iPad, open the installed Home Screen app to enable push. "
+              : "Your browser does not currently support push here. "}
+            Email and your dashboard remain available.
           </p>
         )}
         {permission === "denied" && (
@@ -267,7 +293,7 @@ export function ProfessionalNotificationSettings({
         <h2 id="alert-heading">Choose your alerts</h2>
         <div className="pro-notification-preference-heading" aria-hidden>
           <span>Notification</span>
-          <span>Email</span>
+          <span>{customer ? "In-app" : "Email"}</span>
           <span>Push</span>
         </div>
         {settings.preferences.map((preference) => (
@@ -276,27 +302,35 @@ export function ProfessionalNotificationSettings({
             key={preference.category}
           >
             <span>
-              {notificationLabels[preference.category]}
-              {mandatoryEmail.has(preference.category) && (
+              {labels[preference.category]}
+              {!customer && mandatoryEmail.has(preference.category) && (
                 <small>Essential email</small>
               )}
             </span>
-            <label>
-              <span className="sr-only">
-                {notificationLabels[preference.category]} email
+            {customer ? (
+              <span
+                aria-label={`${labels[preference.category]} in-app records`}
+              >
+                Available
               </span>
-              <input
-                type="checkbox"
-                checked={preference.email}
-                disabled={busy || mandatoryEmail.has(preference.category)}
-                onChange={(e) =>
-                  void save({ ...preference, email: e.target.checked })
-                }
-              />
-            </label>
+            ) : (
+              <label>
+                <span className="sr-only">
+                  {notificationLabels[preference.category]} email
+                </span>
+                <input
+                  type="checkbox"
+                  checked={preference.email}
+                  disabled={busy || mandatoryEmail.has(preference.category)}
+                  onChange={(e) =>
+                    void save({ ...preference, email: e.target.checked })
+                  }
+                />
+              </label>
+            )}
             <label>
               <span className="sr-only">
-                {notificationLabels[preference.category]} push
+                {labels[preference.category]} push
               </span>
               <input
                 type="checkbox"
@@ -309,10 +343,20 @@ export function ProfessionalNotificationSettings({
             </label>
           </div>
         ))}
-        <p>
-          Promotional email uses your existing professional promotions consent.{" "}
-          <Link href="/preferences">Manage all marketing preferences</Link>.
-        </p>
+        {!customer && (
+          <p>
+            Promotional email uses your existing professional promotions
+            consent.{" "}
+            <Link href="/preferences">Manage all marketing preferences</Link>.
+          </p>
+        )}
+        {customer && (
+          <p>
+            Smart Journey departure alerts also need an eligible journey plan
+            with reminders enabled. Installing the app does not enable
+            background GPS tracking.
+          </p>
+        )}
       </section>
       {message && <p role="status">{message}</p>}
       {error && (

@@ -7,7 +7,9 @@ import { publicViewerSignedIn } from "@/lib/public-viewer";
 import { jsonLd, publicOrigin } from "@/lib/public-seo";
 import { PlatformLabelsProvider } from "@/components/platform-labels";
 import { publicLabels } from "@/modules/platform/repository";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { PwaShell } from "@/components/pwa-shell";
+import "@/components/pwa.css";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 import "./globals.css";
@@ -47,7 +49,16 @@ export const metadata: Metadata = {
     "Discover, book and get inspired by independent beauty professionals near you.",
   robots: { index: false, follow: false },
   appleWebApp: { capable: true, title: "GLOHAUS", statusBarStyle: "default" },
-  icons: { apple: "/icons/glohaus-192.png" },
+  icons: { apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }] },
+};
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#e95f96" },
+    { media: "(prefers-color-scheme: dark)", color: "#231d1f" },
+  ],
 };
 export default async function RootLayout({
   children,
@@ -90,6 +101,7 @@ export default async function RootLayout({
           }}
         />
         {content}
+        <PwaShell />
         <SiteFooter />
         <ThemeToggle />
       </body>

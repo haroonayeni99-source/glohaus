@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { pushBrowserState, registerPwaWorker } from "@/lib/pwa-client";
 
 export function CustomerAppointmentPush({
   bookingId,
@@ -23,42 +25,59 @@ export function CustomerAppointmentPush({
     setBusy(true);
     setMessage("");
     try {
-      if (
-        !publicKey ||
-        !("serviceWorker" in navigator) ||
-        !("PushManager" in window) ||
-        !("Notification" in window)
-      )
+      if (!publicKey || !pushBrowserState().startsWith("supported:"))
         throw new Error(
           "Push is unavailable here. On iPhone, use an installed Home Screen web app where supported. In-app and email remain available.",
         );
-      if ((await Notification.requestPermission()) !== "granted")
+      if (
+        Notification.permission === "denied" ||
+        (await Notification.requestPermission()) !== "granted"
+      )
         throw new Error(
           "Notification permission was not granted. You can continue without push.",
         );
       if (!mounted.current) return;
-      const registration = await navigator.serviceWorker.register("/sw.js", {
-        scope: "/",
-      });
+      const registration = await registerPwaWorker();
       await navigator.serviceWorker.ready;
       let subscription = await registration.pushManager.getSubscription();
       const raw = atob(
         publicKey.replace(/-/g, "+").replace(/_/g, "/") +
           "=".repeat((4 - (publicKey.length % 4)) % 4),
       );
+      const key = Uint8Array.from(raw, (c) => c.charCodeAt(0));
+      const oldKey = subscription?.options.applicationServerKey;
+      if (
+        subscription &&
+        oldKey &&
+        Array.from(new Uint8Array(oldKey)).join() !== Array.from(key).join()
+      ) {
+        await subscription.unsubscribe();
+        subscription = null;
+      }
+      const created = !subscription;
       subscription ??= await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: Uint8Array.from(raw, (c) => c.charCodeAt(0)),
+        applicationServerKey: key,
       });
-      if (!mounted.current) return;
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(subscription.toJSON()),
-      });
-      if (!response.ok)
-        throw new Error("Could not register this device. Try again.");
-      const saved = await response.json();
+      if (!mounted.current) {
+        if (created) await subscription.unsubscribe().catch(() => false);
+        return;
+      }
+      let saved;
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(subscription.toJSON()),
+        });
+        if (!response.ok) {
+          throw new Error("Could not register this device. Try again.");
+        }
+        saved = await response.json();
+      } catch (error) {
+        if (created) await subscription.unsubscribe().catch(() => false);
+        throw error;
+      }
       if (mounted.current) {
         setSubscriptionId(saved.subscriptionId);
         setMessage(
@@ -103,6 +122,12 @@ export function CustomerAppointmentPush({
         Push notifications are optional. Registering this device does not enable
         location access, journey sharing or travel reminders. On supported
         iPhones, add GLOHAUS to your Home Screen first.
+      </p>
+      <p>
+        <Link href="/account/notifications">
+          Manage phone notifications and devices
+        </Link>{" "}
+        · <Link href="/install">Installation help</Link>
       </p>
       <button type="button" disabled={busy} onClick={() => void register()}>
         Enable phone notifications on this device

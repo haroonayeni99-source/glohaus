@@ -8,6 +8,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  home-screen-pwa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium webkit
+      - name: Verify install metadata, private offline fallback and safe worker updates
+        run: node scripts/check-pwa.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: home-screen-pwa-checks
+          path: reports/pwa-*
+
   verify:
     runs-on: ubuntu-latest
     steps:

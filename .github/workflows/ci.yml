@@ -106,6 +106,7 @@ jobs:
           path: |
             reports/launch-*.png
             reports/launch-workspace-results.json
+            reports/booking-payment-*
 
   profile-video:
     runs-on: ubuntu-latest

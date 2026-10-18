@@ -455,6 +455,8 @@ export function ProfessionalPolicyEditor({ data,initialServiceId="" }: { data: P
                 showPrice={false}
                 policy={{
                   ...sample,
+                  fullPrepayment: v.content.paymentRequirement === "full",
+                  paymentRequirement: v.content.paymentRequirement ?? "deposit_or_full",
                   rules: {
                     ...defaultPolicy,
                     ...Object.fromEntries(

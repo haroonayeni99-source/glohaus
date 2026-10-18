@@ -1,4 +1,5 @@
 import { beforeAll, afterAll, it, expect } from "vitest";
+import { readFile } from "node:fs/promises";
 import { createTestDatabase, applyTestMigrations } from "./test-database";
 import { enrolAccount, type SqlClient } from "@/modules/accounts/repository";
 import { arrivalAction, arrivalState } from "@/modules/arrival/repository";
@@ -503,4 +504,69 @@ it("denies public roles and preserves forced RLS on every new table", async () =
       ]);
     }),
   ).rejects.toThrow();
+});
+
+it("requires a healthy scheduler for operator activation and records the operator without impersonating an Owner session", async () => {
+  const activation = await readFile(
+    new URL("../scripts/activate-customer-journeys.sql", import.meta.url),
+    "utf8",
+  );
+  await db.exec(
+    "UPDATE beauty.arrival_settings SET journey_planner=false,departure_reminders=false,scheduler_tick_at=now()-interval '5 minutes'",
+  );
+  await expect(db.exec(activation)).rejects.toThrow(
+    "ARRIVAL_SCHEDULER_NOT_READY",
+  );
+  await db.exec("ROLLBACK");
+  expect(
+    (
+      await db.query<{ journey_planner: boolean }>(
+        "SELECT journey_planner FROM beauty.arrival_settings",
+      )
+    ).rows[0].journey_planner,
+  ).toBe(false);
+
+  await worker((sql) => sql.query("SELECT beauty.arrival_scheduler_tick()"));
+  const before = (
+    await db.query<Record<string, unknown>>(
+      "SELECT to_jsonb(s)-'updated_at'-'journey_planner'-'departure_reminders' AS untouched FROM beauty.arrival_settings s",
+    )
+  ).rows[0];
+  const customerPlans = await db.query(
+    "SELECT booking_id,reminders FROM beauty.appointment_journey_plans ORDER BY booking_id",
+  );
+  await db.exec(activation);
+  await db.exec(activation);
+  expect(
+    (
+      await db.query(
+        "SELECT journey_planner,departure_reminders FROM beauty.arrival_settings",
+      )
+    ).rows[0],
+  ).toEqual({ journey_planner: true, departure_reminders: true });
+  expect(
+    (
+      await db.query(
+        "SELECT to_jsonb(s)-'updated_at'-'journey_planner'-'departure_reminders' AS untouched FROM beauty.arrival_settings s",
+      )
+    ).rows[0],
+  ).toEqual(before);
+  expect(
+    (
+      await db.query(
+        "SELECT booking_id,reminders FROM beauty.appointment_journey_plans ORDER BY booking_id",
+      )
+    ).rows,
+  ).toEqual(customerPlans.rows);
+  const audits = (
+    await db.query(
+      "SELECT actor_user_id,actor_role,metadata FROM beauty.admin_audit_logs WHERE actor_reference='codex:authorised-deployment:2026-10-18'",
+    )
+  ).rows;
+  expect(audits).toHaveLength(1);
+  expect(audits[0]).toMatchObject({
+    actor_user_id: null,
+    actor_role: null,
+    metadata: { customerConsentChanged: false, routingChanged: false },
+  });
 });

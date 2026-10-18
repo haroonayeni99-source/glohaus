@@ -67,47 +67,47 @@ export function BookingList({
               {time.format(new Date(booking.starts_at))} ·{" "}
               {money(booking.price_pence)}
             </span>
+            {professional && arrivals[booking.id] && (
+              <div
+                className="appointment-time"
+                style={{ display: "grid", gap: 4, fontSize: 12 }}
+              >
+                <span>
+                  {arrivals[booking.id].attendanceAt
+                    ? "Attendance confirmed"
+                    : arrivals[booking.id].detectedAt
+                      ? "Detected nearby"
+                      : arrivals[booking.id].manualAt
+                        ? "Manual check-in recorded"
+                        : "Arrival not recorded"}
+                </span>
+                {(arrivals[booking.id].detectedAt ||
+                  arrivals[booking.id].manualAt) && (
+                  <span>
+                    {time.format(
+                      new Date(
+                        arrivals[booking.id].detectedAt ||
+                          arrivals[booking.id].manualAt!,
+                      ),
+                    )}
+                  </span>
+                )}
+                <span>
+                  {arrivals[booking.id].sharing
+                    ? "Journey sharing active"
+                    : "Journey not shared"}
+                </span>
+                {arrivals[booking.id].late && (
+                  <span>
+                    Customer reported running late
+                    {arrivals[booking.id].eta
+                      ? ` · Estimated ${time.format(new Date(arrivals[booking.id].eta!))}`
+                      : ""}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
-          {professional && arrivals[booking.id] && (
-            <div
-              className="appointment-time"
-              style={{ display: "grid", gap: 4, fontSize: 12 }}
-            >
-              <span>
-                {arrivals[booking.id].attendanceAt
-                  ? "Attendance confirmed"
-                  : arrivals[booking.id].detectedAt
-                    ? "Detected nearby"
-                    : arrivals[booking.id].manualAt
-                      ? "Manual check-in recorded"
-                      : "Arrival not recorded"}
-              </span>
-              {(arrivals[booking.id].detectedAt ||
-                arrivals[booking.id].manualAt) && (
-                <span>
-                  {time.format(
-                    new Date(
-                      arrivals[booking.id].detectedAt ||
-                        arrivals[booking.id].manualAt!,
-                    ),
-                  )}
-                </span>
-              )}
-              <span>
-                {arrivals[booking.id].sharing
-                  ? "Journey sharing active"
-                  : "Journey not shared"}
-              </span>
-              {arrivals[booking.id].late && (
-                <span>
-                  Customer reported running late
-                  {arrivals[booking.id].eta
-                    ? ` · Estimated ${time.format(new Date(arrivals[booking.id].eta!))}`
-                    : ""}
-                </span>
-              )}
-            </div>
-          )}
           <div className="appointment-card-status">
             <span
               className={`appointment-badge appointment-badge-${booking.status}`}

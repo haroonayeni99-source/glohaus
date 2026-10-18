@@ -689,7 +689,11 @@ function CustomerJourney({
       </button>
       <label>
         Transport
-        <select value={mode} onChange={(e) => setMode(e.target.value)}>
+        <select
+          aria-label="Transport"
+          value={mode}
+          onChange={(e) => setMode(e.target.value)}
+        >
           <option value="driving">Driving</option>
           <option value="transit">Public transport</option>
           <option value="walking">Walking</option>

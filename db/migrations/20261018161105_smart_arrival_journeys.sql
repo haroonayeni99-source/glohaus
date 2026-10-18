@@ -395,7 +395,7 @@ DECLARE pro uuid:=beauty.policy_actor_professional(); BEGIN
  'sharing',coalesce(s.journey_sharing AND live.sharing AND live.expires_at>now() AND live.last_observed_at>now()-interval '90 seconds' AND b.status='confirmed',false),
  'late',EXISTS(SELECT 1 FROM beauty.appointment_arrival_events e WHERE e.booking_id=b.id AND e.kind='late'),
  'eta',(SELECT e.details->>'eta' FROM beauty.appointment_arrival_events e WHERE e.booking_id=b.id AND e.kind='late' ORDER BY created_at DESC LIMIT 1)))
- FROM (SELECT id,status FROM beauty.bookings WHERE professional_id=pro ORDER BY starts_at DESC LIMIT 100) b
+ FROM (SELECT id,status FROM beauty.bookings WHERE professional_id=pro ORDER BY (ends_at>now() AND status='confirmed') DESC,starts_at ASC LIMIT 100) b
  LEFT JOIN beauty.appointment_arrivals a ON a.booking_id=b.id LEFT JOIN beauty.booking_location_sessions live ON live.booking_id=b.id CROSS JOIN beauty.arrival_settings s
  WHERE s.smart_arrival OR s.journey_planner OR a.booking_id IS NOT NULL),'{}');
 END $$;

@@ -29,4 +29,4 @@ try{
  }
  const page=await browser.newPage();await page.goto('http://127.0.0.1:3004/?fail=1');await page.getByRole('button',{name:'I’ve reviewed the location and arrival instructions',exact:true}).click();await expect(page.getByRole('status').filter({hasText:'Reload and review'})).toBeVisible();await expect(page.getByRole('button',{name:'Enable Smart Arrival',exact:true})).toBeDisabled();results.push({name:'failed acknowledgement cannot enable tracking',passed:true});
  await writeFile('reports/arrival-results.json',JSON.stringify(results,null,2));console.log(JSON.stringify(results,null,2));
-}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
+}catch(error){for(const [i,context] of browser.contexts().entries())for(const [j,page] of context.pages().entries())await page.screenshot({path:`reports/arrival-failed-${i}-${j}.png`,fullPage:true}).catch(()=>{});throw error;}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import {
   Heart,
   LocateFixed,
@@ -68,14 +68,17 @@ export function ExploreMapExperience({
   filters,
   taxonomy,
   signedIn = false,
+  loadFailed = false,
 }: {
   professionals: PublicProfessional[];
   query: string;
   filters: DiscoveryFilters;
   taxonomy?: TaxonomyCatalog;
   signedIn?: boolean;
+  loadFailed?: boolean;
 }) {
   const router = useRouter();
+  const [retrying, startRetry] = useTransition();
   const [nearbyResults, setNearbyResults] = useState<
     PublicProfessional[] | null
   >(null);
@@ -94,6 +97,7 @@ export function ExploreMapExperience({
     [saveNotice, setSaveNotice] = useState("");
   const sequence = useRef(0);
   const nearby = nearbyResults ?? professionals;
+  const unavailable = loadFailed && nearbyResults === null;
   const mapped = nearby.filter(
     (p) =>
       p.public_location_confirmed_at &&
@@ -207,7 +211,9 @@ export function ExploreMapExperience({
     } catch {
       if (current !== sequence.current) return;
       setLocationNotice(
-        "Nearby search is unavailable. Your previous results remain available; please try again.",
+        unavailable
+          ? "Nearby search is unavailable. Please try again."
+          : "Nearby search is unavailable. Your previous results remain available; please try again.",
       );
     } finally {
       if (current === sequence.current) setLocating(false);
@@ -521,6 +527,16 @@ export function ExploreMapExperience({
           </button>
         ))}
       </div>
+      {unavailable && (
+        <div className="map-pro-empty discovery-load-error" role="alert" aria-busy={retrying}>
+          <Search size={28} aria-hidden />
+          <h3>We couldn’t load professionals right now.</h3>
+          <p>Your search filters are saved. Try loading the results again.</p>
+          <button type="button" disabled={retrying} onClick={() => startRetry(() => router.refresh())}>
+            {retrying ? "Loading results…" : "Retry loading results"}
+          </button>
+        </div>
+      )}
       <section className={`map-results-layout mobile-view-${mobileView}`}>
         <aside className="map-pro-results">
           <header className="discovery-result-heading">
@@ -531,11 +547,11 @@ export function ExploreMapExperience({
                   ? `Professionals in ${filters.location}`
                   : "Discover your next beauty expert"}
             </h2>
-            <p>
+            {!unavailable && <p>
               {nearby.length} matching{" "}
               {nearby.length === 1 ? "professional" : "professionals"} ·{" "}
               {position ? "Closest first" : "Recommended"}
-            </p>
+            </p>}
             <small>
               Prices match your search. Availability is indicative and checked
               again when booking.
@@ -666,7 +682,7 @@ export function ExploreMapExperience({
               </article>
             ))}
           </div>
-          {!nearby.length && (
+          {!unavailable && !nearby.length && (
             <div className="map-pro-empty">
               <Search size={28} />
               <h3>No matching professionals yet.</h3>
@@ -769,7 +785,9 @@ export function ExploreMapExperience({
             </div>
           )}
           <p className="discovery-pin-note">
-            {mapped.length
+            {unavailable
+              ? "Business locations couldn’t be loaded. Retry the results to check available professionals."
+              : mapped.length
               ? `${mapped.length} confirmed public pins. ${nearby.length - mapped.length ? `${nearby.length - mapped.length} profiles show an area only.` : ""}`
               : "No confirmed public pins for this search. Browse the results or search another area."}{" "}
             Private addresses are never inferred.

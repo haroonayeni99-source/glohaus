@@ -1,7 +1,10 @@
 import React from "react";
+import { jsx } from "react/jsx-runtime";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { DesktopCustomerHome } from "@/components/desktop-customer-home";
+import { MobileCustomerHome } from "@/components/mobile-customer-home";
+import { AuthFrame } from "@/components/auth-frame";
 import { SiteFooter } from "@/components/site-footer";
 import { readFileSync, existsSync } from "node:fs";
 
@@ -12,6 +15,36 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/lib/supabase/client", () => ({ createClient: vi.fn() }));
 
 describe("public homepage navigation", () => {
+  it("takes each inspiration card to its service category on both homepage layouts", () => {
+    for (const Component of [DesktopCustomerHome, MobileCustomerHome]) {
+      const html = renderToStaticMarkup(React.createElement(Component));
+      for (const category of ["Hair", "Nails", "Makeup"]) {
+        expect(html).toContain(`href="/explore?category=${category}"`);
+      }
+    }
+  });
+  it("uses the requested professional sign-in motto without changing customer or registration copy", () => {
+    const signIn = renderToStaticMarkup(
+      jsx(AuthFrame, {
+        audience: "professional",
+        professionalSignIn: true,
+        children: null,
+      }),
+    );
+    expect(signIn).toContain("Your Talent. Your Business. Your GLOHAUS.");
+    expect(signIn).not.toContain("WORK • GROW • BELONG");
+    const signup = renderToStaticMarkup(
+      jsx(AuthFrame, {
+        audience: "professional",
+        children: null,
+      }),
+    );
+    expect(signup).toContain("WORK • GROW • BELONG");
+    const customer = renderToStaticMarkup(
+      jsx(AuthFrame, { children: null }),
+    );
+    expect(customer).not.toContain("Your Talent.");
+  });
   it("presents an anonymous visitor with join/sign-in, without private account panels or invented recommendations", () => {
     const html = renderToStaticMarkup(React.createElement(DesktopCustomerHome));
     expect(html).toContain('href="/sign-in"');

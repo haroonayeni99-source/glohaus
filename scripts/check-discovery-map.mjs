@@ -328,6 +328,14 @@ try {
               .categoryId,
         ),
       ).toBe(added.id);
+      await page.goto(`http://127.0.0.1:3004/explore?theme=${theme}&unavailable=1`);
+      const loadError = page.getByRole("alert");
+      await expect(loadError).toContainText("We couldn’t load professionals right now.");
+      await expect(page.getByRole("button", {name: "Retry loading results"})).toBeEnabled();
+      await expect(page.getByText("No matching professionals yet.", {exact: true})).toHaveCount(0);
+      await expect(page.getByText("0 matching professionals", {exact: false})).toHaveCount(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.screenshot({path: `reports/discovery-map-unavailable-${theme}-${width}.png`, fullPage: true});
       expect(errors).toEqual([]);
       results.push({
         theme,
@@ -347,6 +355,7 @@ try {
           "no overflow",
           "admin adds edits hides and restores categories",
           "seller assigns category",
+          "database failure shows a readable retry state without false zero results",
         ],
       });
       await context.close();

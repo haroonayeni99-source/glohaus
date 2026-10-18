@@ -237,9 +237,9 @@ export function MobileCustomerHome({
         <section className="mobile-home-inspiration">
           <h2>A little inspiration</h2>
           <nav aria-label="Beauty inspiration">
-            <Link href="/explore">The Hair Edit</Link>
-            <Link href="/explore">Nail Inspiration</Link>
-            <Link href="/explore">Beauty Looks</Link>
+            <Link href="/explore?category=Hair">The Hair Edit</Link>
+            <Link href="/explore?category=Nails">Nail Inspiration</Link>
+            <Link href="/explore?category=Makeup">Beauty Looks</Link>
             <Link href="/explore">Your next beauty space</Link>
           </nav>
           <Link className="mobile-home-shop-link" href="/shop">

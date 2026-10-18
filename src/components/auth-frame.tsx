@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { Brand } from "./brand";
-import { ArrowUpRight, CalendarDays, Heart, ShieldCheck, Sparkles, TrendingUp } from "lucide-react";
+import {
+  ArrowUpRight,
+  CalendarDays,
+  Heart,
+  ShieldCheck,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
 
 type AuthAudience = "customer" | "professional";
 
@@ -35,16 +42,30 @@ const stories = {
 export function AuthFrame({
   children,
   audience = "customer",
+  professionalSignIn = false,
 }: {
   children: React.ReactNode;
   audience?: AuthAudience;
+  professionalSignIn?: boolean;
 }) {
-  const story = stories[audience];
+  const professionalMotto = "Your Talent. Your Business. Your GLOHAUS.";
+  const showProfessionalMotto =
+    audience === "professional" && professionalSignIn;
+  const story = showProfessionalMotto
+    ? {
+        ...stories.professional,
+        strapline: professionalMotto,
+        title: "Your Talent.\nYour Business.\nYour GLOHAUS.",
+      }
+    : stories[audience];
   return (
     <div className={`auth-layout auth-layout-${audience}`}>
       <aside className="auth-story">
         <div className="auth-brand-lockup">
-          <Brand inverse={audience === "customer"} pro={audience === "professional"} />
+          <Brand
+            inverse={audience === "customer"}
+            pro={audience === "professional"}
+          />
           <span>{story.strapline}</span>
         </div>
         <div className="auth-story-copy">
@@ -52,7 +73,10 @@ export function AuthFrame({
           <h2>{story.title}</h2>
           <p>{story.description}</p>
         </div>
-        <div className="auth-benefits" aria-label={`What you can do with ${audience === "professional" ? "GLOHAUS PRO" : "GLOHAUS"}`}>
+        <div
+          className="auth-benefits"
+          aria-label={`What you can do with ${audience === "professional" ? "GLOHAUS PRO" : "GLOHAUS"}`}
+        >
           {story.benefits.map(({ icon: Icon, text }) => (
             <span key={text}>
               <Icon size={16} aria-hidden /> {text}
@@ -77,14 +101,17 @@ export function AuthFrame({
         </Link>
         {audience === "professional" && (
           <Link className="auth-preview-link" href="/professional-preview">
-            See a GLOHAUS PRO page preview <ArrowUpRight size={15} aria-hidden />
+            See a GLOHAUS PRO page preview{" "}
+            <ArrowUpRight size={15} aria-hidden />
           </Link>
         )}
         <div className="auth-body">{children}</div>
         <p className="auth-footer">
-          {audience === "professional"
-            ? "GLOHAUS PRO · WORK • GROW • BELONG"
-            : "GLOHAUS · LOOK GOOD • FEEL GOOD • STAND OUT"}
+          {showProfessionalMotto
+            ? professionalMotto
+            : audience === "professional"
+              ? "GLOHAUS PRO · WORK • GROW • BELONG"
+              : "GLOHAUS · LOOK GOOD • FEEL GOOD • STAND OUT"}
         </p>
       </main>
     </div>

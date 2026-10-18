@@ -24,7 +24,11 @@ export default async function Explore({
   searchParams: Promise<{
     q?: string;
     location?: string;
-    category?: string;categoryId?:string;specialityId?:string;templateId?:string;date?:string;
+    category?: string;
+    categoryId?: string;
+    specialityId?: string;
+    templateId?: string;
+    date?: string;
     price?: string;
     rating?: string;
     after?: string;
@@ -38,19 +42,22 @@ export default async function Explore({
   const { query: q, filters, after } = discoveryOptions(await searchParams);
   const viewerSignedIn = await publicViewerSignedIn();
 
-  let taxonomy=emptyTaxonomy;
+  let taxonomy = emptyTaxonomy;
   let next: string | null = null;
   let professionals: PublicProfessional[] = [];
+  let loadFailed = !process.env.DATABASE_URL;
 
   if (process.env.DATABASE_URL) {
     try {
-      const result = await withIdentity("", (db) =>
-        discoveryPage(db, q, after, filters),
-      );
+      const result = await withIdentity("", async (db) => ({
+        ...(await discoveryPage(db, q, after, filters)),
+        taxonomy: await taxonomyCatalog(db),
+      }));
       professionals = result.professionals;
       next = result.next;
-      taxonomy=await withIdentity("",db=>taxonomyCatalog(db));
+      taxonomy = result.taxonomy;
     } catch (error) {
+      loadFailed = true;
       const code =
         typeof error === "object" && error !== null && "code" in error
           ? String((error as { code?: unknown }).code ?? "")
@@ -86,8 +93,9 @@ export default async function Explore({
           taxonomy={taxonomy}
           query={q}
           filters={filters}
+          loadFailed={loadFailed}
         />
-        {(after || next) && (
+        {!loadFailed && (after || next) && (
           <nav
             className="map-pagination"
             aria-label="Professional search pages"

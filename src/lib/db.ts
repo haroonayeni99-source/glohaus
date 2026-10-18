@@ -1,6 +1,7 @@
 import "server-only";
 import { serialSqlClient } from "./serial-sql-client";
 import { Pool, type PoolClient } from "pg";
+import { attachDatabasePool } from "@vercel/functions";
 import type { SqlClient } from "@/modules/accounts/repository";
 import { AccessError } from "@/modules/accounts/domain";
 
@@ -28,6 +29,33 @@ function isTransientConnectionError(error: unknown) {
   );
 }
 
+// Classify failures without logging URLs, credentials, SQL, or customer details.
+function connectionFailure(error: unknown) {
+  const code = errorCode(error);
+  const message = error instanceof Error ? error.message : "";
+  if (/timeout|timed out/i.test(message) || code === "ETIMEDOUT")
+    return "TIMEOUT";
+  if (
+    ["ECONNRESET", "EPIPE", "ECONNREFUSED"].includes(code) ||
+    /connection terminated|connection closed|socket hang up|read eof|server closed/i.test(
+      message,
+    )
+  )
+    return "CONNECTION_CLOSED";
+  if (["ENOTFOUND", "EAI_AGAIN"].includes(code)) return "DNS";
+  if (code.startsWith("28")) return "AUTHENTICATION";
+  if (code === "53300") return "CAPACITY";
+  return "UNKNOWN";
+}
+
+function retryableConnect(error: unknown) {
+  return (
+    isTransientConnectionError(error) ||
+    ["EAI_AGAIN", "ECONNREFUSED", "53300"].includes(errorCode(error)) ||
+    connectionFailure(error) === "TIMEOUT"
+  );
+}
+
 function pool(): Pool {
   if (!process.env.DATABASE_URL) throw new AccessError("UNAVAILABLE", 503);
   const connectionString = process.env.DATABASE_URL;
@@ -36,11 +64,15 @@ function pool(): Pool {
     const dbPool = new Pool({
       connectionString,
       ssl: { rejectUnauthorized: false },
-      max: 1,
+      max: 3,
       connectionTimeoutMillis: 5000,
       idleTimeoutMillis: 5000,
       allowExitOnIdle: true,
     });
+
+    // Keep healthy connections warm while Vercel drains idle clients before
+    // suspending an instance. Failed transactions still discard their client.
+    attachDatabasePool(dbPool);
 
     // Supavisor may recycle idle transaction-pooler sockets. Pool-level errors
     // should be logged rather than crashing the serverless process.
@@ -59,24 +91,40 @@ function pool(): Pool {
 
 async function connectWithRetry(): Promise<PoolClient> {
   const delays = [0, 125, 450] as const;
-  let lastError: unknown;
+  const startedAt = Date.now();
 
-  for (const delay of delays) {
+  for (const [index, delay] of delays.entries()) {
     if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
     try {
-      return await pool().connect();
+      const client = await pool().connect();
+      if (index > 0)
+        console.info("Database connection recovered", {
+          attempts: index + 1,
+          elapsedMs: Date.now() - startedAt,
+        });
+      return client;
     } catch (error) {
-      lastError = error;
-      console.error("Database connection attempt failed", {
-        type: error instanceof Error ? error.name : "UnknownError",
-        code: errorCode(error),
-      });
-      // Bad credentials and programming errors will not improve on retry.
-      if (!isTransientConnectionError(error)) throw error;
+      const retrying = retryableConnect(error) && index < delays.length - 1;
+      const details = {
+        reason: connectionFailure(error),
+        code: /^[A-Z0-9_]{2,20}$/.test(errorCode(error))
+          ? errorCode(error)
+          : "UNSPECIFIED",
+        attempt: index + 1,
+        elapsedMs: Date.now() - startedAt,
+        waiting: globalDb.beautyPool?.waitingCount ?? 0,
+      };
+      if (retrying)
+        console.warn("Database connection retry scheduled", details);
+      else {
+        console.error("Database connection unavailable", details);
+        // Do not multiply exhausted connection retries in withIdentity().
+        throw new AccessError("UNAVAILABLE", 503);
+      }
     }
   }
 
-  throw lastError;
+  throw new AccessError("UNAVAILABLE", 503);
 }
 
 async function runWithIdentity<T>(
@@ -85,6 +133,8 @@ async function runWithIdentity<T>(
 ): Promise<T> {
   const db = await connectWithRetry();
   let activeConnectionError: unknown = null;
+  let committed = false;
+  let commitStarted = false;
   const onClientError = (error: Error) => {
     activeConnectionError = error;
     console.warn("Active database connection closed", {
@@ -98,7 +148,8 @@ async function runWithIdentity<T>(
   try {
     await db.query("BEGIN");
     // Refuse owner/bypass credentials, even if an operator misconfigures DATABASE_URL.
-    const { rows } = await db.query(`SELECT r.rolsuper OR r.rolbypassrls OR EXISTS (
+    const { rows } =
+      await db.query(`SELECT r.rolsuper OR r.rolbypassrls OR EXISTS (
       SELECT 1
       FROM pg_roles privileged
       WHERE privileged.rolname IN (
@@ -127,7 +178,9 @@ async function runWithIdentity<T>(
     const result = await work(sql);
     await sql.drain();
     if (activeConnectionError) throw activeConnectionError;
+    commitStarted = true;
     await db.query("COMMIT");
+    committed = true;
     return result;
   } catch (error) {
     // Drain already queued work before rollback; failed queues skip later queries.
@@ -138,10 +191,20 @@ async function runWithIdentity<T>(
       // A dropped socket cannot roll back locally; the server-side transaction
       // is already gone with the connection.
     }
+    // A disconnected COMMIT may already have succeeded on the server. Replaying
+    // it could duplicate a write, so let the caller reload the stored outcome.
+    if (commitStarted && isTransientConnectionError(error)) {
+      console.error("Database commit confirmation unavailable", {
+        reason: connectionFailure(error),
+      });
+      throw new AccessError("UNAVAILABLE", 503);
+    }
     throw error;
   } finally {
     db.removeListener("error", onClientError);
-    db.release(true);
+    // All role and identity settings above are transaction-local. Only reuse
+    // clients whose transaction finished successfully; discard every failure.
+    db.release(!committed || Boolean(activeConnectionError));
   }
 }
 
@@ -156,9 +219,12 @@ export async function withIdentity<T>(
     } catch (error) {
       lastError = error;
       if (!isTransientConnectionError(error) || attempt === 1) throw error;
-      console.warn("Retrying database transaction after transient connection loss", {
-        code: errorCode(error),
-      });
+      console.warn(
+        "Retrying database transaction after transient connection loss",
+        {
+          code: errorCode(error),
+        },
+      );
       await new Promise((resolve) => setTimeout(resolve, 125));
     }
   }

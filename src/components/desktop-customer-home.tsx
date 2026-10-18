@@ -32,21 +32,25 @@ const trends = [
     "The Hair Edit",
     "Explore textures & styles",
     "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&w=700&q=85",
+    "/explore?category=Hair",
   ],
   [
     "Nail Inspiration",
     "Find your next nail look",
     "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=700&q=85",
+    "/explore?category=Nails",
   ],
   [
     "Beauty Looks",
     "Makeup inspiration",
     "https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=700&q=85",
+    "/explore?category=Makeup",
   ],
   [
     "Your next beauty space",
     "Explore the directory",
     "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=700&q=85",
+    "/explore",
   ],
 ] as const;
 
@@ -327,8 +331,8 @@ export function DesktopCustomerHome({
             </Link>
           </div>
           <div className="desktop-trend-grid">
-            {trends.map(([title, sub, img]) => (
-              <Link href="/explore" key={title}>
+            {trends.map(([title, sub, img, href]) => (
+              <Link href={href} key={title}>
                 <Image fill sizes="300px" src={img} alt="" />
                 <span>
                   <strong>{title}</strong>

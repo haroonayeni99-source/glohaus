@@ -76,14 +76,37 @@ test("Shop collections are real parameters and preserve a search", async ({
   ).toBeVisible();
   await page.getByRole("link", { name: "Trending", exact: true }).click();
   await expect(page).toHaveURL(/collection=trending/);
+  // This browser server deliberately has no DATABASE_URL. That is an outage,
+  // not a successful empty collection (covered by shop-page-failure.test.ts).
   await expect(
-    page.getByRole("heading", { name: "No paid sales to show yet." }),
+    page
+      .getByRole("alert")
+      .getByRole("heading", { name: "The marketplace couldn’t load." }),
   ).toBeVisible();
+  const retryRequest = page.waitForRequest(
+    (request) =>
+      request.isNavigationRequest() &&
+      new URL(request.url()).pathname === "/shop",
+  );
+  await page
+    .getByRole("alert")
+    .getByRole("button", { name: "Try again", exact: true })
+    .click();
+  const retry = await retryRequest;
+  expect(retry.method()).toBe("GET");
+  expect(new URL(retry.url()).searchParams.get("q")).toBe("Oil");
+  expect(new URL(retry.url()).searchParams.get("collection")).toBe("trending");
+  await expect(page.getByRole("alert")).toContainText(
+    "The marketplace couldn’t load.",
+  );
   await page.getByRole("link", { name: "Deals & offers", exact: true }).click();
   await expect(page).toHaveURL(/collection=deals/);
   await expect(
-    page.getByRole("heading", { name: "No offers available right now." }),
+    page.getByRole("heading", { name: "Deals & offers for “Oil”" }),
   ).toBeVisible();
+  await expect(page.getByRole("alert")).toContainText(
+    "The marketplace couldn’t load.",
+  );
   await page.getByRole("link", { name: "Clear filters", exact: true }).click();
   await expect(page).toHaveURL("/shop#products");
 });

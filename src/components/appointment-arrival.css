@@ -106,3 +106,6 @@ html[data-theme="night"] .appointment-arrival select {
     padding: 12px;
   }
 }
+.appointment-arrival .automatic-journey-route { margin-block: 1rem; padding-block: 1rem; border-block: 1px solid var(--line, #aaa); }
+.appointment-arrival .google-route-estimate { border: 1px solid var(--line, #aaa); padding: .75rem; margin-block: .75rem; }
+.appointment-arrival p.google-maps-attribution { font-family: sans-serif; font-style: normal; font-weight: 400; font-size: 14px; letter-spacing: normal; white-space: nowrap; color: #1f1f1f !important; background: #fff; width: fit-content; padding: 5px 10px; }

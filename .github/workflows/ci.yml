@@ -293,7 +293,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright install --with-deps chromium webkit
       - name: Verify professional arrival tools, customer journeys and Owner communications
         run: node scripts/check-arrival.mjs
       - uses: actions/upload-artifact@v4

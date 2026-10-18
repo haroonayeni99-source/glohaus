@@ -1,4 +1,5 @@
 import "server-only";
+import { refreshJourneyRoutes } from "@/modules/journey-routing/worker";
 import { deliverPushNotifications } from "@/modules/notifications/push-worker";
 import { safeNotificationHref } from "@/modules/notifications/preferences";
 import {
@@ -20,6 +21,7 @@ export async function runNotificationWorker() {
   let push:
     Awaited<ReturnType<typeof deliverPushNotifications>> | { error: string };
   try {
+    await refreshJourneyRoutes();
     await withPaymentWorker(async (db) => {
       await db.query("SELECT beauty.prepare_arrival_reminders()");
       await db.query("SELECT beauty.prepare_professional_notifications()");

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import type { ArrivalConfig } from "@/modules/arrival/domain";
 import "./appointment-arrival.css";
+import { AdminJourneyRouting } from "./admin-journey-routing";
 export type ArrivalOverview = {
   config: ArrivalConfig;
   counts: Record<string, number>;
@@ -32,7 +33,13 @@ export type ArrivalOverview = {
     delivery_status: string | null;
     attempts: number | null;
     last_error: string | null;
-    push: { status: string; sentAt: string | null; error: string | null }[];
+    push: {
+      status: string;
+      sentAt: string | null;
+      error: string | null;
+      displayedAt?: string | null;
+      clickedAt?: string | null;
+    }[];
   }[];
 };
 export function AdminArrival({
@@ -86,6 +93,7 @@ export function AdminArrival({
   }
   return (
     <div className="appointment-arrival">
+      <AdminJourneyRouting owner={owner} />
       <p>
         Professional arrival tools and customer journey planning have separate
         switches. No private live customer location or starting address is shown
@@ -268,9 +276,13 @@ export function AdminArrival({
             {item.push.length
               ? item.push
                   .map((p) =>
-                    p.status === "accepted"
-                      ? "Accepted by push service (device display unconfirmed)"
-                      : p.status,
+                    p.clickedAt
+                      ? `Device-reported click: ${p.clickedAt}`
+                      : p.displayedAt
+                        ? `Device-reported display: ${p.displayedAt}`
+                        : p.status === "accepted"
+                          ? "Accepted by push service (device display unconfirmed)"
+                          : p.status,
                   )
                   .join(", ")
               : "No delivery queued for a registered device"}

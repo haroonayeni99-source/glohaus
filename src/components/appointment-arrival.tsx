@@ -5,6 +5,8 @@ import { directionsUrl, lateness } from "@/modules/arrival/domain";
 import { GeographicMap } from "./geographic-map";
 import type { Coordinates } from "@/modules/professionals/location";
 import "./appointment-arrival.css";
+import { AutomaticJourneyRoute } from "./automatic-journey-route";
+import { CustomerAppointmentPush } from "./customer-appointment-push";
 
 const time = (value: string) =>
   new Intl.DateTimeFormat("en-GB", {
@@ -253,7 +255,9 @@ export function AppointmentArrival({
     pro = data.professional,
     upcoming = data.status === "confirmed";
   if (!data.config.smartArrival && !data.config.journeyPlanner && !a)
-    return null;
+    return !pro && upcoming && publicKey ? (
+      <CustomerAppointmentPush bookingId={bookingId} publicKey={publicKey} />
+    ) : null;
   return (
     <section
       ref={panel}
@@ -269,6 +273,9 @@ export function AppointmentArrival({
       </p>
       <h2>{pro ? "Manage arrivals" : "Travel and arrival"}</h2>
       <p>Appointment: {time(data.startsAt)} · London time</p>
+      {!pro && upcoming && !data.config.journeyPlanner && (
+        <CustomerAppointmentPush bookingId={bookingId} publicKey={publicKey} />
+      )}
       <p>
         Accepted late-arrival allowance: {data.graceMinutes} minutes.{" "}
         {data.lateInstructions}
@@ -499,6 +506,7 @@ export function AppointmentArrival({
       )}
       {!pro && data.config.journeyPlanner && a && upcoming && (
         <CustomerJourney
+          onSaved={setData}
           data={data}
           busy={busy}
           submit={run}
@@ -580,12 +588,14 @@ export function AppointmentArrival({
   );
 }
 function CustomerJourney({
+  onSaved,
   data,
   busy,
   submit,
   bookingId,
   publicKey,
 }: {
+  onSaved: (state: ArrivalState) => void;
   data: ArrivalState;
   busy: boolean;
   submit: (action: ArrivalAction) => Promise<void>;
@@ -595,6 +605,7 @@ function CustomerJourney({
   const [origin, setOrigin] = useState(""),
     [mode, setMode] = useState(data.plan?.mode ?? "driving"),
     [message, setMessage] = useState("");
+  const [routingBusy, setRoutingBusy] = useState(false);
   const locationGeneration = useRef(0);
   useEffect(
     () => () => {
@@ -620,62 +631,19 @@ function CustomerJourney({
       { maximumAge: 0, timeout: 12000 },
     );
   }
-  async function enablePush() {
-    try {
-      if (
-        !publicKey ||
-        !("serviceWorker" in navigator) ||
-        !("PushManager" in window) ||
-        !("Notification" in window)
-      )
-        throw new Error(
-          "Push is unavailable here. In-app and email reminders remain available. On iPhone, use an installed Home Screen web app where supported.",
-        );
-      if ((await Notification.requestPermission()) !== "granted")
-        throw new Error(
-          "Notification permission was not granted. You can continue without push.",
-        );
-      const registration = await navigator.serviceWorker.register("/sw.js", {
-        scope: "/",
-      });
-      await navigator.serviceWorker.ready;
-      let subscription = await registration.pushManager.getSubscription();
-      const raw = atob(
-        publicKey.replace(/-/g, "+").replace(/_/g, "/") +
-          "=".repeat((4 - (publicKey.length % 4)) % 4),
-      );
-      subscription ??= await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: Uint8Array.from(raw, (c) => c.charCodeAt(0)),
-      });
-      const response = await fetch(
-        `/api/v1/bookings/${bookingId}/journey-push`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(subscription.toJSON()),
-        },
-      );
-      if (!response.ok)
-        throw new Error("Could not register this device. Try again.");
-      setMessage(
-        "This device is registered for appointment updates. Push acceptance does not guarantee you will see a notification.",
-      );
-    } catch (e) {
-      setMessage(e instanceof Error ? e.message : "Push could not be enabled.");
-    }
-  }
   return (
     <details className="customer-journey">
       <summary>Plan my journey</summary>
       <p>
-        Your starting address stays on this device until you choose to open
-        Google Maps. It is not saved to GLOHAUS or shown to your professional.
+        Your starting address stays on this device until you open directions or
+        explicitly calculate an automatic route. It is never shown to your
+        professional.
       </p>
       <label>
         Starting address
         <input
           value={origin}
+          disabled={routingBusy}
           onChange={(e) => {
             locationGeneration.current++;
             setOrigin(e.target.value);
@@ -684,7 +652,7 @@ function CustomerJourney({
           maxLength={300}
         />
       </label>
-      <button type="button" onClick={useLocation}>
+      <button type="button" onClick={useLocation} disabled={routingBusy}>
         Use my current location
       </button>
       <label>
@@ -692,6 +660,7 @@ function CustomerJourney({
         <select
           aria-label="Transport"
           value={mode}
+          disabled={routingBusy}
           onChange={(e) => setMode(e.target.value)}
         >
           <option value="driving">Driving</option>
@@ -707,15 +676,26 @@ function CustomerJourney({
       >
         Check route and current travel estimate in Google Maps
       </a>
+      <AutomaticJourneyRoute
+        bookingId={bookingId}
+        origin={origin}
+        mode={mode}
+        data={data}
+        onSaved={onSaved}
+        onBusyChange={(value) => {
+          if (value) locationGeneration.current++;
+          setRoutingBusy(value);
+        }}
+      />
       <p>
-        Enter the journey duration from your directions below. GLOHAUS uses that
-        estimate to calculate departure. Automatic traffic and transport
-        monitoring is not connected.
+        Alternatively, enter the journey duration from your directions below.
+        Saving a manual estimate stops automatic route rechecks for this plan.
       </p>
       <form
         key={data.plan?.revision ?? 0}
         onSubmit={(event) => {
           event.preventDefault();
+          if (routingBusy) return;
           const form = new FormData(event.currentTarget);
           void submit({
             action: "plan",
@@ -762,7 +742,7 @@ function CustomerJourney({
           />
           Send optional departure reminders
         </label>
-        <button className="button" disabled={busy}>
+        <button className="button" disabled={busy || routingBusy}>
           Save journey plan
         </button>
       </form>
@@ -785,11 +765,7 @@ function CustomerJourney({
           Stop travel reminders
         </button>
       )}
-      {data.config.departureReminders && (
-        <button type="button" onClick={() => void enablePush()}>
-          Enable phone notifications on this device
-        </button>
-      )}
+      <CustomerAppointmentPush bookingId={bookingId} publicKey={publicKey} />
       <small>
         Reminders run on the server and do not require this page to stay open.
         Delivery depends on your email provider, device permissions and

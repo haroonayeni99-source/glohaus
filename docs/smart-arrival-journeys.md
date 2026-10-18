@@ -1,6 +1,6 @@
 # Smart Arrival and customer journeys
 
-Implementation branch: `feature/smart-arrival-journeys`. This document distinguishes implemented work from release prerequisites. Production has not been changed by this branch.
+Released through PR #129 on 18 October 2026. The additive database migration is applied and checksum-recorded, and application commit `58fa23f0550bd2d07b53f102b7f4d63fbbf92cb1` is deployed to production. This document distinguishes deployed implementation from activation and device-verification prerequisites.
 
 ## Approved role split
 
@@ -46,6 +46,12 @@ Vercel's current cron documentation says Pro/Enterprise allow one-minute schedul
 ## Release and verification
 
 New Smart Arrival, customer planner and departure-reminder flags default OFF. Existing optional live sharing remains available with tighter privacy controls; its Owner switch can disable it. Branch previews are disabled in `vercel.json`.
+
+Production verification on 18 October: all four new tables have forced RLS and no direct anonymous/authenticated table grants; the migration checksum matches the repository; the sharing nonce and stale-reminder guards are present. Vercel deployment `dpl_EG1DYYbUYBTASr9U4KdJTu9Sx96Z` reached READY with the production domains attached. The homepage, Shop and updated privacy page returned HTTP 200. Signed-out arrival/Admin requests and unsigned cron requests returned HTTP 401 with private/no-store caching. The scheduled worker recorded a real scheduler heartbeat after deployment; no manual heartbeat or test notification was injected.
+
+Release checks on application head `75ecd9f` passed: lint, TypeScript, production build, 1,127 tests, all ten foundation jobs, 25 arrival browser checks and the existing 44 end-to-end tests. CI evidence: https://github.com/haroonayeni99-source/glohaus/actions/runs/39147352297 and https://github.com/haroonayeni99-source/glohaus/actions/runs/39147352363 . No release check remains failed. Supabase's first connector attempts expired without changing the schema; the refreshed request subsequently applied the migration successfully.
+
+Activation is available to the signed-in Owner under Admin → Arrival & communications → Feature controls, with the existing MFA requirement and an audited reason. Enable the professional tools, customer planner and optional departure reminders independently after the privacy assessment and consented foreground-device/delivery checks below. A recent scheduler heartbeat is enforced before reminders can be enabled. No paid mapping API or additional environment variable needs configuring for the current manual-estimate planner.
 
 Run lint, TypeScript, the complete migration/unit suite, production build, existing browser regressions and the new `smart-arrival` CI job. The new browser fixture uses real components with fictional, intercepted API responses; the separate database suite exercises real migrations/roles and authenticated functions. This is not evidence of live-device background geofencing or actual email/push arrival.
 

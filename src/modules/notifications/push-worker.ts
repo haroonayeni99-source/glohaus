@@ -1,4 +1,5 @@
 import "server-only";
+import { pushReceiptToken } from "./device-receipts";
 import webPush from "web-push";
 import { withPaymentWorker } from "@/modules/payments/worker";
 import { isPushEndpoint, safeNotificationHref } from "./preferences";
@@ -64,10 +65,11 @@ export async function deliverPushNotifications() {
                 : undefined,
               tag: `glohaus-${job.notification_id}`,
               href: safeNotificationHref(job.href),
+              deliveryReceipt: pushReceiptToken(job.id),
             }),
             {
               vapidDetails: { subject, publicKey, privateKey },
-              TTL: 3600,
+              TTL: job.reminder_title ? 240 : 3600,
               timeout: 5000,
               urgency: "normal",
             },

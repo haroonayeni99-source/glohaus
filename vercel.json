@@ -3,6 +3,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
+      "feature/automatic-journey-routing": false,
       "feature/smart-arrival-journeys": false,
       "feature/multi-speciality": false,
       "fix/session-consistency": false,

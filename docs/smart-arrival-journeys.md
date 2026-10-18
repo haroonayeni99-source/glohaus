@@ -1,5 +1,7 @@
 # Smart Arrival and customer journeys
 
+Follow-up automatic-routing implementation and activation/device checklist: [journey-routing-activation.md](journey-routing-activation.md). The original release notes below describe the initial deployed version; provider activation and physical-device verification are tracked separately in that follow-up.
+
 Released through PR #129 on 18 October 2026. The additive database migration is applied and checksum-recorded, and application commit `58fa23f0550bd2d07b53f102b7f4d63fbbf92cb1` is deployed to production. This document distinguishes deployed implementation from activation and device-verification prerequisites.
 
 ## Approved role split

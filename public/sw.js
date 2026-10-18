@@ -1,4 +1,13 @@
 /* GLOHAUS Web Push worker. No authenticated pages or API responses are cached. */
+async function reportReceipt(token, kind) {
+  if (typeof token !== "string" || token.length > 500) return;
+  try {
+    await fetch("/api/v1/notifications/push-receipt", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, kind }), cache: "no-store", credentials: "omit",
+    });
+  } catch {} // Receipt failure must not prevent display or opening the booking.
+}
 self.addEventListener("push", (event) => {
   let data = {};
   try {
@@ -16,8 +25,8 @@ self.addEventListener("push", (event) => {
       badge: "/icons/glohaus-192.png",
       tag: typeof data.tag === "string" ? data.tag : "glohaus-update",
       renotify: false,
-      data: { href },
-    }),
+      data: { href, deliveryReceipt: data.deliveryReceipt },
+    }).then(() => reportReceipt(data.deliveryReceipt, "displayed")),
   );
 });
 self.addEventListener("notificationclick", (event) => {
@@ -31,7 +40,7 @@ self.addEventListener("notificationclick", (event) => {
   );
   if (url.origin !== self.location.origin) return;
   event.waitUntil(
-    self.clients
+    Promise.all([reportReceipt(event.notification.data?.deliveryReceipt, "clicked"), self.clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then(async (clients) => {
         for (const client of clients) {
@@ -44,6 +53,6 @@ self.addEventListener("notificationclick", (event) => {
           }
         }
         return self.clients.openWindow(url.href);
-      }),
+      })]),
   );
 });

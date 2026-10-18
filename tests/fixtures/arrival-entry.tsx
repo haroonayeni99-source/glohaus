@@ -49,6 +49,66 @@ window.fetch = async (input, init) => {
   if (!url.startsWith("/api/"))
     throw new Error("External network blocked in fixture");
   const body = init?.body ? JSON.parse(String(init.body)) : null;
+  if (url === "/api/v1/admin/journey-routing")
+    return Response.json({
+      enabled: false,
+      configured: false,
+      dailyLimit: 100,
+      monthlyLimit: 3000,
+      refreshMinutes: 15,
+      changeMinutes: 5,
+      usedToday: 0,
+      usedMonth: 0,
+      failedToday: 0,
+      activeRefreshes: 0,
+      schedulerReady: true,
+      registeredDevices: 0,
+      pushAccepted: 1,
+      deviceDisplayed: 0,
+      deviceClicked: 0,
+      emailsDelivered: 1,
+    });
+  if (url.endsWith("/journey-route")) {
+    if (init?.method === "DELETE") return Response.json({ stopped: true });
+    if (init?.method !== "POST")
+      return Response.json({
+        enabled: params.has("routing"),
+        configured: params.has("routing"),
+        automaticUpdates: false,
+        checkedAt: null,
+        lastError: null,
+      });
+    if (params.has("routeFail"))
+      return Response.json(
+        { error: { code: "ROUTE_PROVIDER_UNAVAILABLE" } },
+        { status: 503 },
+      );
+    (window as unknown as { arrivalRequests: unknown[] }).arrivalRequests.push({
+      ...body,
+      path: "journey-route",
+    });
+    state.plan = {
+      duration_minutes: 36,
+      buffer_minutes: body.bufferMinutes,
+      mode: body.mode,
+      reminders: body.reminders,
+      departure_at: new Date(
+        new Date(state.startsAt).getTime() - (36 + body.bufferMinutes) * 60000,
+      ).toISOString(),
+      revision: (state.plan?.revision ?? 0) + 1,
+    };
+    return Response.json({
+      state: structuredClone(state),
+      estimate: {
+        travelMinutes: 30,
+        trafficAware: body.mode === "driving",
+        transitSchedule: body.mode === "transit",
+        warnings: [],
+        checkedAt: new Date().toISOString(),
+      },
+      automaticUpdates: body.automaticUpdates,
+    });
+  }
   if (body) {
     (window as unknown as { arrivalRequests: unknown[] }).arrivalRequests.push(
       body,

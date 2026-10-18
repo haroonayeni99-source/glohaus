@@ -1,5 +1,5 @@
 // Isolated real-component browser regression. All accounts and mutations are fictional.
-import {chromium,expect} from '@playwright/test';
+import {chromium,webkit,expect} from '@playwright/test';
 import {writeFile} from 'node:fs/promises';
 process.env.GLOHAUS_UI_AUDIT_ENTRY='tests/fixtures/arrival-entry.tsx';
 const {server}=await import('./ui-audit.mjs');
@@ -28,5 +28,17 @@ try{
   await page.screenshot({path:`reports/arrival-${role}-${theme}-${width}.png`,fullPage:true});results.push({role,theme,width,passed:true});await context.close();
  }
  const page=await browser.newPage();await page.goto('http://127.0.0.1:3004/?fail=1');await page.getByRole('button',{name:'I’ve reviewed the location and arrival instructions',exact:true}).click();await expect(page.getByRole('status').filter({hasText:'Reload and review'})).toBeVisible();await expect(page.getByRole('button',{name:'Enable Smart Arrival',exact:true})).toBeDisabled();results.push({name:'failed acknowledgement cannot enable tracking',passed:true});
+ for(const engine of ['chromium','webkit']) {
+  const routeBrowser=engine==='chromium'?browser:await webkit.launch({headless:true});
+  try { for(const theme of ['light','night']) {
+   const context=await routeBrowser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+   await page.goto(`http://127.0.0.1:3004/?routing=1&theme=${theme}`);await page.getByText('Plan my journey',{exact:true}).click();await page.getByLabel('Starting address',{exact:true}).fill('Private fictional starting address');await page.getByLabel('Transport',{exact:true}).selectOption('transit');
+   await page.getByLabel('Send optional departure reminders for this route',{exact:true}).check();await page.getByLabel('Recheck this route until departure and notify me of significant increases',{exact:true}).check();await page.getByLabel('Use Google Maps to calculate this appointment journey',{exact:true}).check();
+   await page.getByRole('button',{name:'Calculate and save journey',exact:true}).click();await expect(page.getByText(/Estimated travel: 30 minutes/)).toBeVisible();await expect(page.getByText(/Recommended departure:/)).toBeVisible();
+   const sent=await page.evaluate(()=>window.arrivalRequests);const privateRequests=sent.filter(r=>JSON.stringify(r).includes('Private fictional starting address'));expect(privateRequests).toHaveLength(1);expect(privateRequests.every(r=>r.path==='journey-route'&&r.providerConsent===true)).toBe(true);
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);expect(errors).toEqual([]);await page.screenshot({path:`reports/arrival-route-${engine}-${theme}-390.png`,fullPage:true});results.push({name:`automatic transit route ${engine} ${theme}`,passed:true});await context.close();
+  }} finally { if(engine==='webkit')await routeBrowser.close(); }
+ }
+ const failedRoute=await browser.newPage();await failedRoute.goto('http://127.0.0.1:3004/?routing=1&routeFail=1');await failedRoute.getByText('Plan my journey',{exact:true}).click();await failedRoute.getByLabel('Starting address',{exact:true}).fill('SE15 5AA');await failedRoute.getByLabel('Use Google Maps to calculate this appointment journey',{exact:true}).check();await failedRoute.getByRole('button',{name:'Calculate and save journey',exact:true}).click();await expect(failedRoute.getByRole('status').filter({hasText:'previous plan is unchanged'})).toBeVisible();results.push({name:'routing failure preserves manual fallback',passed:true});
  await writeFile('reports/arrival-results.json',JSON.stringify(results,null,2));console.log(JSON.stringify(results,null,2));
 }catch(error){for(const [i,context] of browser.contexts().entries())for(const [j,page] of context.pages().entries())await page.screenshot({path:`reports/arrival-failed-${i}-${j}.png`,fullPage:true}).catch(()=>{});throw error;}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

@@ -7,32 +7,56 @@ const port = 3015,
   base = `http://127.0.0.1:${port}`;
 const originalWorker = await readFile("public/sw.js", "utf8");
 let serverLog = "";
-const server = spawn(
-  process.execPath,
-  [
-    "node_modules/next/dist/bin/next",
-    "start",
-    "--hostname",
-    "127.0.0.1",
-    "--port",
-    String(port),
-  ],
-  {
-    env: {
-      ...process.env,
-      DATABASE_URL: "",
-      NEXT_PUBLIC_SUPABASE_URL: "",
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "",
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: "",
-      NEXT_PUBLIC_APP_URL: base,
+function startServer() {
+  const child = spawn(
+    process.execPath,
+    [
+      "node_modules/next/dist/bin/next",
+      "start",
+      "--hostname",
+      "127.0.0.1",
+      "--port",
+      String(port),
+    ],
+    {
+      env: {
+        ...process.env,
+        DATABASE_URL: "",
+        NEXT_PUBLIC_SUPABASE_URL: "",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "",
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "",
+        NEXT_PUBLIC_APP_URL: base,
+      },
+      stdio: ["ignore", "pipe", "pipe"],
     },
-    stdio: ["ignore", "pipe", "pipe"],
-  },
-);
-for (const stream of [server.stdout, server.stderr])
-  stream.on("data", (chunk) => {
-    serverLog = (serverLog + chunk).slice(-12000);
-  });
+  );
+  for (const stream of [child.stdout, child.stderr])
+    stream.on("data", (chunk) => {
+      serverLog = (serverLog + chunk).slice(-12000);
+    });
+  return child;
+}
+let server = startServer();
+async function stopServer() {
+  const old = server;
+  const stopped = new Promise((resolve) => old.once("exit", resolve));
+  old.kill("SIGTERM");
+  await stopped;
+}
+async function ready() {
+  await expect
+    .poll(
+      async () => {
+        try {
+          return (await fetch(`${base}/install`)).status;
+        } catch {
+          return 0;
+        }
+      },
+      { timeout: 50000 },
+    )
+    .toBe(200);
+}
 const results = [],
   browsers = [];
 await mkdir("reports", { recursive: true });
@@ -176,12 +200,17 @@ try {
         path: `reports/pwa-${name}-${theme}.png`,
         fullPage: true,
       });
-      await context.setOffline(true);
+      // Playwright 1.63 WebKit kills SW-fulfilled requests before dispatch when
+      // setOffline(true) is used: microsoft/playwright#42775. Stop the actual
+      // local origin instead, retaining all fallback/status/cache assertions.
+      if (name === "iphone-webkit") await stopServer();
+      else await context.setOffline(true);
       const offline = await page.goto(
         `${base}/account/bookings/offline-fixture`,
         { waitUntil: "domcontentloaded" },
       );
       expect(offline.status()).toBe(503);
+      expect(offline.fromServiceWorker()).toBe(true);
       await expect(
         page.getByRole("heading", { name: "You’re offline." }),
       ).toBeVisible();
@@ -221,7 +250,10 @@ try {
         path: `reports/pwa-offline-${name}-${theme}.png`,
         fullPage: true,
       });
-      await context.setOffline(false);
+      if (name === "iphone-webkit") {
+        server = startServer();
+        await ready();
+      } else await context.setOffline(false);
       await page.reload();
       await expect(
         page.getByRole("heading", { name: "You’re offline." }),
@@ -299,5 +331,6 @@ try {
 } finally {
   await writeFile("public/sw.js", originalWorker);
   await Promise.all(browsers.map((b) => b.close()));
-  server.kill("SIGTERM");
+  if (server.exitCode === null && server.signalCode === null)
+    server.kill("SIGTERM");
 }

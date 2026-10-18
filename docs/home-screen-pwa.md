@@ -51,6 +51,8 @@ The new tests exercise real migrations and roles for customer settings/device is
 
 Final automated results and the review commit are recorded in the pull request. No physical iPhone, Android, actual payment or new email/push receipt is claimed by this report.
 
+The pinned Playwright 1.63 WebKit has a [confirmed offline-emulation defect](https://github.com/microsoft/playwright/issues/42775) that blocks service-worker responses before dispatch. The WebKit fallback check therefore stops and restarts the actual isolated local origin; it still requires the worker-served 503 response, correct static help, failed API access, exact safe cache contents and successful reconnection. Chromium additionally uses full browser offline emulation. This is a server-unavailability control, distinct from a physical device losing connectivity; no fallback assertions are skipped.
+
 ## Approval and release sequence
 
 1. Review the PR, complete checks and migration. Approve production deployment explicitly.

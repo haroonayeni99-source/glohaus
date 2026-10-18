@@ -2,6 +2,7 @@ import { recordProfessionalVisit } from "@/modules/professional-activity/reposit
 import "server-only";
 import { redirect } from "next/navigation";
 import { getIdentity } from "./identity";
+import { safeReturnTo } from "./return-to";
 import { withIdentity } from "./db";
 import {
   accountDatabaseUnavailable,
@@ -17,6 +18,7 @@ import {
 
 export async function pageAccount(
   role?: Role,
+  returnTo?: string,
 ): Promise<
   | { account: Account; error: null }
   | { account: null; error: AccessError["code"] }
@@ -40,8 +42,11 @@ export async function pageAccount(
     }
   } catch (error) {
     if (error instanceof AccessError) {
-      if (error.code === "UNAUTHENTICATED")
-        redirect(role === "professional" ? "/professional/sign-in" : "/sign-in");
+      if (error.code === "UNAUTHENTICATED") {
+        const signIn = role === "professional" ? "/professional/sign-in" : "/sign-in";
+        const destination = safeReturnTo(returnTo, "");
+        redirect(destination ? `${signIn}?${new URLSearchParams({ returnTo: destination })}` : signIn);
+      }
       if (error.code === "ONBOARDING_REQUIRED")
         redirect(
           role === "professional"

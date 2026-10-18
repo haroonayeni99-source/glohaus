@@ -11,7 +11,7 @@ import { customerCart } from "@/modules/shop/repository";
 export const metadata = { title: "Your cart" };
 
 export default async function CartPage() {
-  const result = await pageAccount("customer");
+  const result = await pageAccount("customer", "/cart");
   if (!result.account)
     return (
       <div className="standalone-message">

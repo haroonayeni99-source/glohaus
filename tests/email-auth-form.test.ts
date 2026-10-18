@@ -60,11 +60,12 @@ afterEach(() => vi.unstubAllGlobals());
 async function submit(
   mode: "sign-in" | "sign-up",
   audience: "customer" | "professional" = "customer",
+  requestedDestination?: string,
 ) {
   const tree = EmailAuthForm({
     mode,
     audience,
-    redirectTo: audience === "professional" ? "/professional" : "/account",
+    redirectTo: requestedDestination ?? (audience === "professional" ? "/professional" : "/account"),
   });
   expect(tree.props.action).toBeUndefined();
   const preventDefault = vi.fn();
@@ -72,6 +73,13 @@ async function submit(
   expect(preventDefault).toHaveBeenCalled();
 }
 describe("email authentication submission", () => {
+  it("returns a customer to their cart after a successful password sign-in", async () => {
+    mocks.signIn.mockResolvedValue({ data: { session: {}, user: {} }, error: null });
+    mocks.fetch.mockResolvedValueOnce(Response.json({ redirectTo: "/account" }))
+      .mockResolvedValueOnce(Response.json({ account: { roles: ["customer"] } }));
+    await submit("sign-in", "customer", "/cart");
+    expect(mocks.push).toHaveBeenCalledWith("/cart");
+  });
   it.each(["sign-in", "sign-up"] as const)(
     "recovers from rejected %s requests without redirecting",
     async (mode) => {

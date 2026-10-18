@@ -924,3 +924,11 @@ describe("multi-speciality booking and discovery acceptance", () => {
       ).toHaveLength(0);
     }));
 });
+
+it("charges the full selected variation and extras while preserving their snapshot",()=>isolated(async tx=>{
+  const p=await as(tx,"",async()=>(await tx.query<{p:{token:string;pricePence:number;depositPence:number}}>("SELECT beauty.service_payment_policy($1,$2,$3,'full') AS p",[retwist,variation,[extra]])).rows[0].p);
+  const b=await as(tx,"multi-customer",async()=>(await tx.query<{b:{id:string;pricePence:number;depositPence:number}}>("SELECT beauty.reserve_booking_with_payment($1,$2,$3,true,$4,$5,'full') AS b",[retwist,start(),p.token,variation,[extra]])).rows[0].b);
+  expect(b.depositPence).toBe(p.pricePence);expect(b.pricePence).toBe(p.pricePence);
+  const row=(await tx.query<{service_options_snapshot:{variationId:string;extraIds:string[];depositPence:number}}>("SELECT service_options_snapshot FROM beauty.bookings WHERE id=$1",[b.id])).rows[0];
+  expect(row.service_options_snapshot).toMatchObject({variationId:variation,extraIds:[extra],depositPence:b.pricePence});
+}));

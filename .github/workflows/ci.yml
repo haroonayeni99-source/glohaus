@@ -258,3 +258,25 @@ jobs:
             reports/discovery-map-*
             reports/london-overview-*
             reports/location-journeys.json
+
+  booking-payments:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Verify deposit, full and required payment choices in light and night mode
+        run: node scripts/check-booking-payments.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: booking-payment-checks
+          path: reports/booking-payment-*

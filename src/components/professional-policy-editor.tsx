@@ -117,15 +117,16 @@ export function ProfessionalPolicyEditor({ data,initialServiceId="" }: { data: P
     serviceCustomRules: serviceId ? policy.customRules : "",
     timezone: "Europe/London",
     pricePence: 5000,
-    depositPence: Math.round((5000 * (resolved.depositPercent || 30)) / 100),
+    depositPence: resolved.paymentRequirement === "full" ? 5000 : Math.round((5000 * (resolved.depositPercent || 30)) / 100),
     bookingFeePence: 100,
-    fullPrepayment: false,
+    fullPrepayment: resolved.paymentRequirement === "full",
+    paymentRequirement: resolved.paymentRequirement ?? "deposit_or_full",
     publishedAt: null,
   };
   return (
     <div className="professional-policies">
       <p>
-        General policies apply to all appointments. Service timing, deposit and
+        General policies apply to all appointments. Service timing, payment and
         guest choices override general choices; preparation and safety
         requirements are added together. Existing bookings retain their accepted
         terms.
@@ -250,6 +251,15 @@ export function ProfessionalPolicyEditor({ data,initialServiceId="" }: { data: P
               Verified deposits remain 15%–40%. Unverified trial bookings retain
               full online prepayment and existing limits.
             </small>
+          </label>
+          <label>
+            Booking payment
+            <select value={policy.paymentRequirement ?? ""} onChange={e=>field("paymentRequirement",e.target.value === "" ? null : e.target.value as "deposit_or_full" | "full")}>
+              {serviceId && <option value="">Use general policy</option>}
+              <option value="deposit_or_full">Allow deposit or full payment</option>
+              <option value="full">Require full payment online</option>
+            </select>
+            <small>Verified professionals can require full payment or let customers choose. With a deposit, the remaining balance is paid at the appointment, including cash if agreed. Unverified bookings still require full payment online.</small>
           </label>
           {(
             [
@@ -445,6 +455,8 @@ export function ProfessionalPolicyEditor({ data,initialServiceId="" }: { data: P
                 showPrice={false}
                 policy={{
                   ...sample,
+                  fullPrepayment: v.content.paymentRequirement === "full",
+                  paymentRequirement: v.content.paymentRequirement ?? "deposit_or_full",
                   rules: {
                     ...defaultPolicy,
                     ...Object.fromEntries(

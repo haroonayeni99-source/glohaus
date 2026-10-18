@@ -24,7 +24,7 @@ export function PaymentSummary({
         <strong>{money(servicePricePence)}</strong>
       </div>
       <div>
-        <span>Deposit due now</span>
+        <span>{depositPence === servicePricePence ? "Full service payment" : "Deposit due now"}</span>
         <strong>{money(depositPence)}</strong>
       </div>
       {hasFee && (

@@ -63,7 +63,7 @@ export function BookingPicker({
   returnPath: string;
   professionalName: string;
   bookingFeePence: number;
-  initialSelection?: { serviceId?: string; date?: string; startsAt?: string;variationId?:string;extraIds?:string[] };
+  initialSelection?: { paymentChoice?: "auto" | "deposit" | "full"; serviceId?: string; date?: string; startsAt?: string;variationId?:string;extraIds?:string[] };
   verificationStatus?: "unverified" | "pending" | "verified" | "restricted";
   starterBookingsRemaining?: number | null;
 }) {
@@ -97,19 +97,22 @@ export function BookingPicker({
   const [earlyServiceBefore,setEarlyServiceBefore] = useState(0);
   const [policy,setPolicy] = useState<PolicyPreview|null>(null);
   const [policyReload,setPolicyReload] = useState(0);
+  const [paymentChoice,setPaymentChoice] = useState<"auto" | "deposit" | "full">(initialSelection?.paymentChoice ?? "auto");
+  const [loadingPolicy,setLoadingPolicy] = useState(true);
   const [needsAccount, setNeedsAccount] = useState(false);
   const [step, setStep] = useState<"appointment" | "summary">("appointment");
 
   const listedService = services.find((item) => item.id === serviceId);
   const service = listedService && policy ? {...listedService,price_pence:policy.pricePence,deposit_pence:policy.depositPence,duration_minutes:policy.serviceOptions?.durationMinutes??listedService?.duration_minutes??0} : listedService;
-  const starterFullPrepayment = policy ? policy.fullPrepayment : verificationStatus !== "verified";
+  const fullPrepayment = policy ? policy.fullPrepayment : verificationStatus !== "verified";
+  const starterFullPrepayment = policy?.fullPaymentReason === "starter" || verificationStatus !== "verified";
   const invalidVerifiedDeposit =
     !!service &&
-    !starterFullPrepayment &&
+    !fullPrepayment &&
     !isRequiredDepositWithinLimit(service.price_pence, service.deposit_pence);
   const effectiveBookingFeePence = policy?.bookingFeePence ?? bookingFeePence;
   const amountDueNowPence = service
-    ? starterFullPrepayment
+    ? fullPrepayment
       ? service.price_pence + effectiveBookingFeePence
       : service.deposit_pence + effectiveBookingFeePence
     : effectiveBookingFeePence;
@@ -120,9 +123,9 @@ export function BookingPicker({
 
   useEffect(()=>{
     const controller=new AbortController();
-    void fetch(`/api/v1/policies?serviceId=${encodeURIComponent(serviceId)}${optionsQuery?`&${optionsQuery}`:""}`,{signal:controller.signal}).then(async response=>{const result=await response.json();if(!response.ok)throw Error(result.error?.message||"Booking policies could not be loaded.");if(!controller.signal.aborted){setPolicy(result.policy);setEarlyServiceBefore(Date.parse(result.earlyServiceBefore));setAccepted(false);setEarlyServiceRequested(false);}}).catch(e=>{if(!controller.signal.aborted){setPolicy(null);setNotice(e instanceof Error?e.message:"Could not load booking policies.");}});
+    void fetch(`/api/v1/policies?serviceId=${encodeURIComponent(serviceId)}&paymentChoice=${paymentChoice}${optionsQuery?`&${optionsQuery}`:""}`,{signal:controller.signal}).then(async response=>{const result=await response.json();if(!response.ok){if(result.error?.code==="FULL_PAYMENT_REQUIRED"){setPaymentChoice("auto");}throw Error(result.error?.message||"Booking policies could not be loaded.");}if(!controller.signal.aborted){setPolicy(result.policy);setEarlyServiceBefore(Date.parse(result.earlyServiceBefore));setAccepted(false);setEarlyServiceRequested(false);}}).catch(e=>{if(!controller.signal.aborted){setPolicy(null);setNotice(e instanceof Error?e.message:"Could not load booking policies.");}}).finally(()=>{if(!controller.signal.aborted)setLoadingPolicy(false);});
     return ()=>controller.abort();
-  },[serviceId,policyReload,optionsQuery]);
+  },[serviceId,policyReload,optionsQuery,paymentChoice]);
 
   useEffect(() => {
     if (!date || !serviceId) return;
@@ -179,7 +182,7 @@ export function BookingPicker({
     : "";
 
   async function submitBooking() {
-    if (!service || !selected || !accepted || !policy || (earlyServiceNeeded&&!earlyServiceRequested)) return;
+    if (!service || !selected || !accepted || !policy || loadingPolicy || (earlyServiceNeeded&&!earlyServiceRequested)) return;
     setSubmitting(true);
     setNotice("");
     try {
@@ -191,12 +194,13 @@ export function BookingPicker({
           startsAt: selected,
           acceptPolicy: true,
           policyToken:policy.token,
+          paymentChoice,
           earlyServiceRequested,
         }),
       });
       const result = await response.json();
       if (!response.ok) {
-        if(result.error?.code==="POLICY_CHANGED"){setAccepted(false);setEarlyServiceRequested(false);setPolicyReload(v=>v+1);}
+        if(result.error?.code==="POLICY_CHANGED"){setAccepted(false);setEarlyServiceRequested(false);setLoadingPolicy(true);setPolicyReload(v=>v+1);}
         setClientBlocked(result.error?.code === "CLIENT_BLOCKED");
         if (
           response.status === 401 ||
@@ -264,7 +268,7 @@ export function BookingPicker({
             <select
               value={serviceId}
               onChange={(event) => {
-                setServiceId(event.target.value);setVariationId(null);setExtraIds([]);
+                setServiceId(event.target.value);setVariationId(null);setExtraIds([]);setPaymentChoice("auto");setLoadingPolicy(true);
                 setPolicy(null);
                 setAccepted(false);
                 setEarlyServiceRequested(false);
@@ -285,8 +289,8 @@ export function BookingPicker({
           </label>
 
           {!!listedService?.options?.length&&<fieldset><legend>Personalise your service</legend>
-          {listedService.options.some(o=>o.kind==="variation")&&<label>Size, length or style<select value={variationId??""} onChange={e=>{setVariationId(e.target.value||null);setPolicy(null);setAccepted(false);setSelected("");setSlots([]);setLoadingSlots(Boolean(date));}}><option value="">Standard · {money(listedService.price_pence)} · {listedService.duration_minutes} min</option>{listedService.options.filter(o=>o.kind==="variation").map(o=><option key={o.id} value={o.id}>{o.name} · {Object.values(o.attributes).filter(Boolean).join(" / ")} · {money(o.pricePence)} · {o.durationMinutes} min</option>)}</select></label>}
-          {listedService.options.filter(o=>o.kind==="extra").map(o=><label key={o.id} className="policy-check"><input type="checkbox" checked={extraIds.includes(o.id)} onChange={e=>{setExtraIds(e.target.checked?[...extraIds,o.id]:extraIds.filter(id=>id!==o.id));setPolicy(null);setAccepted(false);setSelected("");setSlots([]);setLoadingSlots(Boolean(date));}}/>{o.name} · +{money(o.pricePence)} · +{o.durationMinutes} min</label>)}
+          {listedService.options.some(o=>o.kind==="variation")&&<label>Size, length or style<select value={variationId??""} onChange={e=>{setVariationId(e.target.value||null);setLoadingPolicy(true);setPolicy(null);setAccepted(false);setSelected("");setSlots([]);setLoadingSlots(Boolean(date));}}><option value="">Standard · {money(listedService.price_pence)} · {listedService.duration_minutes} min</option>{listedService.options.filter(o=>o.kind==="variation").map(o=><option key={o.id} value={o.id}>{o.name} · {Object.values(o.attributes).filter(Boolean).join(" / ")} · {money(o.pricePence)} · {o.durationMinutes} min</option>)}</select></label>}
+          {listedService.options.filter(o=>o.kind==="extra").map(o=><label key={o.id} className="policy-check"><input type="checkbox" checked={extraIds.includes(o.id)} onChange={e=>{setExtraIds(e.target.checked?[...extraIds,o.id]:extraIds.filter(id=>id!==o.id));setLoadingPolicy(true);setPolicy(null);setAccepted(false);setSelected("");setSlots([]);setLoadingSlots(Boolean(date));}}/>{o.name} · +{money(o.pricePence)} · +{o.durationMinutes} min</label>)}
           </fieldset>}
           <div className="booking-service-preview booking-service-reference">
             {service.asset_id ? (service.asset_media_type==="video"?<ViewportVideo src={`/api/media/${service.asset_id}`} label={service.image_alt||service.name}/>:<Image
@@ -387,16 +391,16 @@ export function BookingPicker({
                   ? "Service setup needs attention"
                   : starterFullPrepayment
                     ? "Starter booking · full payment online"
-                    : "Deposit required · " + money(service.deposit_pence)}
+                    : fullPrepayment ? "Full service payment · " + money(service.price_pence) : "Deposit · " + money(service.deposit_pence)}
               </strong>
               <span>
                 {invalidVerifiedDeposit
                   ? "The professional needs to correct this service’s deposit before it can be booked online."
                   : starterFullPrepayment
                     ? "The full service price is paid securely through GLOHAUS at booking, plus the booking fee. This keeps the booking and GLOHAUS commission protected while the professional is unverified or pending verification."
-                    : "This secures the appointment. The remaining " +
+                    : fullPrepayment ? (policy?.fullPaymentReason === "professional" ? "This professional requires the full service price online at booking, plus the booking fee." : "You have chosen to pay the full service price online, plus the booking fee. No service balance will remain.") : "This secures the appointment. You can also choose to pay in full online. The remaining " +
                       money(service.price_pence - service.deposit_pence) +
-                      " is due for the service."}
+                      " is due at the appointment, including cash if agreed with the professional."}
               </span>
               <small>
                 {invalidVerifiedDeposit
@@ -417,6 +421,7 @@ export function BookingPicker({
             disabled={
               !selected ||
               !policy ||
+              loadingPolicy ||
               loadingSlots ||
               invalidVerifiedDeposit ||
               verificationStatus === "restricted" ||
@@ -475,6 +480,16 @@ export function BookingPicker({
           </div>
 
           {policy?.serviceOptions&&<p>{[policy.serviceOptions.variationName,...policy.serviceOptions.extraNames].filter(Boolean).join(" · ")} · {policy.serviceOptions.durationMinutes} minutes</p>}
+          {!starterFullPrepayment && policy?.paymentRequirement !== "full" && (
+            <fieldset className="booking-payment-choice" disabled={loadingPolicy || submitting}>
+              <legend>How would you like to pay?</legend>
+              <label className="policy-check"><input type="radio" name="booking-payment" value="deposit" checked={paymentChoice === "deposit" || (paymentChoice === "auto" && !fullPrepayment)} onChange={()=>{setPaymentChoice("deposit");setAccepted(false);setLoadingPolicy(true);setNotice("");}}/><span>Pay deposit online — {money((policy?.requiredDepositPence ?? listedService!.deposit_pence) + effectiveBookingFeePence)} including booking fee. Pay the balance at the appointment, including cash if agreed.</span></label>
+              <label className="policy-check"><input type="radio" name="booking-payment" value="full" checked={paymentChoice === "full" || (paymentChoice === "auto" && fullPrepayment)} onChange={()=>{setPaymentChoice("full");setAccepted(false);setLoadingPolicy(true);setNotice("");}}/><span>Pay in full online — {money(service.price_pence + effectiveBookingFeePence)} including booking fee. No service balance to pay later.</span></label>
+            </fieldset>
+          )}
+          {policy?.fullPaymentReason === "professional" && <p className="booking-help">This professional requires full payment online before the appointment.</p>}
+          {loadingPolicy && <p role="status">Updating payment details…</p>}
+          {!policy && !loadingPolicy && <button type="button" onClick={()=>{setLoadingPolicy(true);setPolicyReload(v=>v+1);}}>Retry payment details</button>}
           <PaymentSummary
             servicePricePence={policyService!.price_pence}
             depositPence={policyService!.deposit_pence}
@@ -490,6 +505,7 @@ export function BookingPicker({
             <input
               type="checkbox"
               checked={accepted}
+              disabled={loadingPolicy}
               onChange={(event) => setAccepted(event.target.checked)}
             />
             <span>
@@ -503,7 +519,7 @@ export function BookingPicker({
           <button
             className="button full-width booking-pay-button"
             type="button"
-            disabled={!ready || !accepted || !policy || submitting || (earlyServiceNeeded&&!earlyServiceRequested)}
+            disabled={!ready || !accepted || !policy || loadingPolicy || submitting || (earlyServiceNeeded&&!earlyServiceRequested)}
             onClick={() => void submitBooking()}
           >
             {submitting
@@ -539,6 +555,7 @@ export function BookingPicker({
             "?" +
             new URLSearchParams({
               bookService: serviceId,
+              bookPayment: paymentChoice,
               bookDate: date,
               bookTime: selected,bookVariation:variationId??"",bookExtras:extraIds.join(","),
             }).toString()

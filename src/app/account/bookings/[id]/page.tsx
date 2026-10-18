@@ -74,6 +74,9 @@ export default async function Booking({
     notFound();
   }
   const b = data.booking;
+  const feePence = data.policies?.terms?.snapshot.bookingFeePence ?? 0;
+  const servicePaidPence = Math.max(0, Math.min(b.deposit_pence, b.captured_pence - feePence));
+  const remainingServicePence = Math.min(b.price_pence, Math.max(0, b.price_pence - servicePaidPence + b.refunded_pence));
   const detail = (
     <>
         <p className="eyebrow">{b.status.replaceAll("_", " ")}</p>
@@ -82,12 +85,12 @@ export default async function Booking({
             ? b.status === "confirmed"
               ? "Appointment confirmed."
               : b.status === "payment_pending"
-                ? "Awaiting customer deposit."
+                ? "Awaiting customer payment."
                 : "Appointment details."
             : b.status === "confirmed"
               ? "You’re booked in."
               : b.status === "payment_pending"
-                ? "Awaiting your deposit."
+                ? "Awaiting your payment."
                 : "Your appointment."}
         </h1>
         <p className="lead">
@@ -104,8 +107,8 @@ export default async function Booking({
             professionalName={b.professional_name}
             startsAt={new Date(b.starts_at).toISOString()}
             endsAt={new Date(b.ends_at).toISOString()}
-            depositPence={b.captured_pence}
-            remainingPence={b.price_pence - b.captured_pence + b.refunded_pence}
+            depositPence={servicePaidPence}
+            remainingPence={remainingServicePence}
           />
         ) : (
         <section className="editor-form">
@@ -122,7 +125,7 @@ export default async function Booking({
               Service total<strong>{money(b.price_pence)}</strong>
             </span>
             <span>
-              Deposit received<strong>{money(b.captured_pence)}</strong>
+              Payment received<strong>{money(b.captured_pence)}</strong>
             </span>
             <span>
               Refunded<strong>{money(b.refunded_pence)}</strong>
@@ -131,7 +134,7 @@ export default async function Booking({
               <span>
                 Service balance
                 <strong>
-                  {money(b.price_pence - b.captured_pence + b.refunded_pence)}
+                  {money(remainingServicePence)}
                 </strong>
               </span>
             )}
@@ -144,7 +147,7 @@ export default async function Booking({
           )}
           {b.payment_status === "refund_required" && (
             <p className="form-notice">
-              Your deposit is awaiting a refund decision or payment review. A
+              Your payment is awaiting a refund decision or payment review. A
               cancellation does not itself mean a refund has been sent.
             </p>
           )}

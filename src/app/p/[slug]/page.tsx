@@ -53,6 +53,7 @@ export default async function Profile({
   searchParams: Promise<{
     service?:string;speciality?:string;reviewService?:string;
     bookService?: string;
+    bookPayment?: string;
     bookVariation?:string;bookExtras?:string;
     bookDate?: string;
     bookTime?: string;
@@ -256,6 +257,7 @@ export default async function Profile({
             starterBookingsRemaining={data.access.starterBookingsRemaining}
             initialSelection={{
               serviceId: booking.bookService||booking.service,
+              paymentChoice: booking.bookPayment === "full" || booking.bookPayment === "deposit" ? booking.bookPayment : "auto",
               variationId:booking.bookVariation,extraIds:booking.bookExtras?.split(",").slice(0,10),
               date: booking.bookDate,
               startsAt: booking.bookTime,

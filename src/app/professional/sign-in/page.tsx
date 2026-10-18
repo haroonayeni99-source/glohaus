@@ -27,7 +27,7 @@ export default async function Page({
   if (previewTarget) redirect(previewTarget);
 
   return (
-    <AuthFrame audience="professional">
+    <AuthFrame audience="professional" professionalSignIn>
       {authConfigured() ? (
         <>
           <nav className="auth-switch" aria-label="Beauty professional sign in">

@@ -198,7 +198,8 @@ createRoot(document.getElementById("root")!).render(
   ) : (
     <ExploreMapExperience
       signedIn
-      professionals={pros}
+      professionals={params.has("unavailable") ? [] : pros}
+      loadFailed={params.has("unavailable")}
       query=""
       filters={defaultDiscoveryFilters}
       taxonomy={{

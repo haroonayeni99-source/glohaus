@@ -17,6 +17,8 @@ export const bookingPolicy = (db: SqlClient, id: string) =>
   data<BookingPolicy>(db, "SELECT beauty.booking_policy_overview($1) AS data", [
     id,
   ]);
+export const servicePaymentPolicy = (db: SqlClient, id: string, choice: "auto" | "deposit" | "full", options?: {variationId?: string|null;extraIds?: string[]}) =>
+  data<PolicyPreview>(db, "SELECT beauty.service_payment_policy($1,$2,$3,$4) AS data", [id,options?.variationId??null,options?.extraIds??[],choice]);
 export const adminPolicies = (
   db: SqlClient,
   query = "",

@@ -230,3 +230,28 @@ it("requires an Admin review reason before opening a consequential confirmation"
   expect(container.querySelector("dialog")?.hasAttribute("open")).toBe(false);
   expect(fetchMock).not.toHaveBeenCalled();
 });
+
+it("updates full-payment totals, clears acceptance and submits the chosen mode",async()=>{
+ const startsAt=new Date(Date.now()+20*86400000).toISOString();
+ let resolveFull:((r:Response)=>void)|undefined;
+ fetchMock.mockImplementation(async(url:string)=>{
+   if(url.includes("/availability?"))return Response.json({slots:[startsAt]});
+   if(url.includes("/policies?")){
+     if(url.includes("paymentChoice=full"))return new Promise<Response>(resolve=>{resolveFull=resolve;});
+     return Response.json({policy:{...policy,paymentChoice:"deposit",paymentRequirement:"deposit_or_full",requiredDepositPence:1500},earlyServiceBefore:new Date().toISOString()});
+   }
+   return Response.json({error:{message:"Isolated checkout captured"}},{status:409});
+ });
+ await render(React.createElement(BookingPicker,{services:[{id:serviceId,professional_id:"pro",name:"Manicure",description:"",duration_minutes:60,price_pence:5000,deposit_pence:1500}],ready:true,returnPath:"/p/studio",professionalName:"Studio",bookingFeePence:100,verificationStatus:"verified",initialSelection:{serviceId,date:startsAt.slice(0,10),startsAt}}));
+ await click("Continue");
+ await act(async()=>container.querySelector<HTMLInputElement>('input[type="checkbox"]')!.click());
+ await act(async()=>container.querySelector<HTMLInputElement>('input[value="full"]')!.click());
+ expect(container.querySelector<HTMLButtonElement>('.booking-pay-button')!.disabled).toBe(true);
+ expect(container.querySelector<HTMLInputElement>('input[type="checkbox"]')!.checked).toBe(false);
+ await act(async()=>resolveFull!(Response.json({policy:{...policy,depositPence:5000,fullPrepayment:true,paymentChoice:"full",paymentRequirement:"deposit_or_full",requiredDepositPence:1500,fullPaymentReason:"customer"},earlyServiceBefore:new Date().toISOString()})));
+ expect(container.querySelector('.booking-pay-button')!.textContent).toContain("£51.00");
+ expect(container.querySelector('.payment-summary-balance')!.textContent).toContain("£0.00");
+ await act(async()=>container.querySelector<HTMLInputElement>('input[type="checkbox"]')!.click());
+ await act(async()=>container.querySelector<HTMLButtonElement>('.booking-pay-button')!.click());
+ const post=fetchMock.mock.calls.find(c=>c[1]?.method==="POST")!;expect(JSON.parse(post[1].body)).toMatchObject({paymentChoice:"full",policyToken:policy.token});
+});

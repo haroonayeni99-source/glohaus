@@ -35,7 +35,7 @@ export function BookingConfirmation({
       `DTSTART:${calendarDate(startsAt)}`,
       `DTEND:${calendarDate(endsAt)}`,
       `SUMMARY:${escape(`${serviceName} with ${professionalName}`)}`,
-      `DESCRIPTION:${escape(`Booked through GLOHAUS. Deposit paid: ${money(depositPence)}. Remaining service balance: ${money(remainingPence)}.`)}`,
+      `DESCRIPTION:${escape(`Booked through GLOHAUS. ${remainingPence === 0 ? "Service payment" : "Deposit"} paid: ${money(depositPence)}. Remaining service balance: ${money(remainingPence)}.`)}`,
       "END:VEVENT",
       "END:VCALENDAR",
     ].join("\r\n");
@@ -71,7 +71,7 @@ export function BookingConfirmation({
           </dd>
         </div>
         <div>
-          <dt>Deposit paid</dt>
+          <dt>{remainingPence === 0 ? "Service paid in full" : "Deposit paid"}</dt>
           <dd>{money(depositPence)}</dd>
         </div>
         <div>

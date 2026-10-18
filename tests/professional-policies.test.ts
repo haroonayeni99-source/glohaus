@@ -1159,3 +1159,84 @@ describe("versioned professional policies and payments", () => {
       expect(admin.disputes).toEqual([]);
     }));
 });
+
+// These exercises run the real PostgreSQL reservation, snapshot and ledger functions.
+async function paymentPreview(tx: SqlClient, choice = "auto") {
+  return as(tx, "", async () => (await tx.query<{data:PolicyPreview}>(
+    "SELECT beauty.service_payment_policy($1,NULL,'{}',$2) AS data",[service,choice])).rows[0].data);
+}
+async function paymentReserve(tx: SqlClient, choice = "auto", token?: string) {
+  const p = await paymentPreview(tx,choice);
+  return as(tx,"policy-customer",async ()=>(await tx.query<{data:{id:string;depositPence:number;pricePence:number}}>(
+    "SELECT beauty.reserve_booking_with_payment($1,$2,$3,true,NULL,'{}',$4) AS data",[service,time(72),token??p.token,choice])).rows[0].data);
+}
+describe("optional full service payments",()=>{
+  it("keeps new privileged entry points unavailable to public database roles",async()=>{
+    for(const role of ["anon","authenticated"]){
+      const rows=(await db.query<{allowed:boolean}>("SELECT has_function_privilege($1,'beauty.reserve_booking_with_payment(uuid,timestamptz,text,boolean,uuid,uuid[],text)','EXECUTE') OR has_function_privilege($1,'beauty.service_payment_policy(uuid,uuid,uuid[],text)','EXECUTE') AS allowed",[role])).rows;
+      expect(rows[0].allowed).toBe(false);
+    }
+  });
+  it("defaults to the existing deposit, while customers may choose the full price",()=>isolated(async tx=>{
+    const deposit=await paymentPreview(tx); const full=await paymentPreview(tx,"full");
+    expect(deposit.depositPence).toBe(2000); expect(deposit.paymentChoice).toBe("deposit");
+    expect(full).toMatchObject({pricePence:5000,depositPence:5000,requiredDepositPence:2000,paymentChoice:"full",fullPrepayment:true,fullPaymentReason:"customer"});
+    expect(full.token).not.toBe(deposit.token);
+    expect((await paymentPreview(tx)).depositPence).toBe(2000);
+    const b=await paymentReserve(tx,"full",full.token); expect(b.depositPence).toBe(5000);
+    expect((await overview(tx,b.id)).terms?.snapshot).toMatchObject({paymentChoice:"full",depositPence:5000});
+    const row=(await as(tx,"policy-customer",()=>tx.query<{accepted_policy:PolicyPreview}>("SELECT beauty.booking_policy_overview(id)->'terms'->'snapshot' AS accepted_policy FROM beauty.bookings WHERE id=$1",[b.id]))).rows[0];
+    expect(row.accepted_policy.fullPrepayment).toBe(true);
+  }));
+  it("collects the full service amount plus one booking fee and records commission once",()=>isolated(async tx=>{
+    const b=await paymentReserve(tx,"full");
+    expect(await paid(tx,b.id)).toBe(5100);
+    const quote=(await tx.query<{customer_total_pence:number;professional_platform_fee_pence:number;professional_proceeds_pence:number}>("SELECT customer_total_pence,professional_platform_fee_pence,professional_proceeds_pence FROM beauty.financial_quotes WHERE booking_id=$1",[b.id])).rows[0];
+    expect(quote.customer_total_pence).toBe(5100);
+    expect(quote.professional_proceeds_pence+quote.professional_platform_fee_pence).toBe(5000);
+    expect(quote.professional_platform_fee_pence).toBeGreaterThanOrEqual(0);
+    const p=(await tx.query<{captured_pence:number}>("SELECT captured_pence FROM beauty.payments WHERE booking_id=$1",[b.id])).rows[0];expect(p.captured_pence).toBe(5100);
+    await as(tx,"",()=>tx.query("SELECT beauty.record_booking_payment_finance($1,$2)",[b.id,"pi_"+b.id]),"beauty_payment_worker");
+    const n=(await tx.query<{n:number}>("SELECT count(*)::int AS n FROM beauty.financial_ledger_transactions WHERE event_reference=$1",["booking-payment:"+b.id])).rows[0];expect(n.n).toBe(1);
+  }));
+  it("lets professionals require full payment and forbids a deposit downgrade",()=>isolated(async tx=>{
+    await save(tx,{paymentRequirement:"full"});
+    expect(await paymentPreview(tx)).toMatchObject({depositPence:5000,paymentRequirement:"full",fullPaymentReason:"professional"});
+    await expect(paymentPreview(tx,"deposit")).rejects.toThrow("FULL_PAYMENT_REQUIRED");
+    expect((await paymentReserve(tx)).depositPence).toBe(5000);
+  }));
+  it("inherits general payment settings and supports a service-specific override",()=>isolated(async tx=>{
+    await save(tx,{paymentRequirement:"full"});await save(tx,{paymentRequirement:null},true);
+    expect((await paymentPreview(tx)).paymentRequirement).toBe("full");
+    await save(tx,{paymentRequirement:"deposit_or_full"},true);
+    expect((await paymentPreview(tx)).depositPence).toBe(2000);
+    expect((await paymentPreview(tx,"full")).depositPence).toBe(5000);
+  }));
+  it("does not rewrite a paid booking when the professional changes the policy",()=>isolated(async tx=>{
+    const b=await paymentReserve(tx,"full");await paid(tx,b.id);const old=await overview(tx,b.id);
+    await save(tx,{paymentRequirement:"full"});await save(tx,{paymentRequirement:"deposit_or_full",depositPercent:15});
+    expect((await overview(tx,b.id)).terms).toEqual(old.terms);
+  }));
+  it("rejects stale or forged payment tokens without leaving a booking",()=>isolated(async tx=>{
+    const deposit=await paymentPreview(tx);
+    await expect(paymentReserve(tx,"full",deposit.token)).rejects.toThrow("POLICY_CHANGED");
+    expect((await tx.query("SELECT id FROM beauty.bookings WHERE professional_id=$1",[pro])).rows).toHaveLength(0);
+  }));
+  it("reuses the same full-payment reservation on retry and rejects a changed amount",()=>isolated(async tx=>{
+    const b=await paymentReserve(tx,"full");const retry=await paymentReserve(tx,"full");expect(retry.id).toBe(b.id);
+    await expect(paymentReserve(tx,"deposit")).rejects.toThrow("POLICY_CHANGED");
+  }));
+  it("keeps unverified full payment and restrictions regardless of the published setting",()=>isolated(async tx=>{
+    await tx.query("UPDATE beauty.services SET deposit_pence=0 WHERE id=$1",[service]);
+    await tx.query("UPDATE beauty.professional_trust_status SET verification_status='unverified' WHERE professional_id=$1",[pro]);
+    await save(tx,{paymentRequirement:"deposit_or_full"});
+    expect(await paymentPreview(tx)).toMatchObject({depositPence:5000,fullPrepayment:true,fullPaymentReason:"starter",paymentRequirement:"full"});
+    await expect(paymentPreview(tx,"deposit")).rejects.toThrow("FULL_PAYMENT_REQUIRED");
+    expect((await paymentReserve(tx)).depositPence).toBe(5000);
+  }));
+  it("preserves refund assessment for full payments",()=>isolated(async tx=>{
+    const b=await paymentReserve(tx,"full");await paid(tx,b.id);await cancel(tx,b.id,"policy-pro");
+    const state=await overview(tx,b.id);expect(state.assessment.remainingPaidPence).toBe(5100);
+    expect(state.assessment.mandatoryFullRefund).toBe(true);
+  }));
+});

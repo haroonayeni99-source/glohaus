@@ -16,6 +16,7 @@ const schema = z
     acceptPolicy: z.literal(true),
     policyToken: z.string().regex(/^[a-f0-9]{32}$/),
     earlyServiceRequested: z.boolean(),
+    paymentChoice: z.enum(["auto", "deposit", "full"]).optional(),
     variationId:bookingOptionsSchema.shape.variationId,extraIds:bookingOptionsSchema.shape.extraIds,
   })
   .strict();
@@ -56,8 +57,8 @@ export async function POST(request: Request) {
 
       const reservation = (
         await db.query<{ booking: Reservation }>(
-          parsed.data.variationId||parsed.data.extraIds?.length?"SELECT beauty.reserve_booking($1,$2,$3,$4,$5,$6) AS booking":"SELECT beauty.reserve_booking($1,$2,$3,$4) AS booking",
-          [parsed.data.serviceId, parsed.data.startsAt, parsed.data.policyToken, parsed.data.earlyServiceRequested,...(parsed.data.variationId||parsed.data.extraIds?.length?[parsed.data.variationId??null,parsed.data.extraIds??[]]:[])],
+          parsed.data.paymentChoice ? "SELECT beauty.reserve_booking_with_payment($1,$2,$3,$4,$5,$6,$7) AS booking" : parsed.data.variationId||parsed.data.extraIds?.length?"SELECT beauty.reserve_booking($1,$2,$3,$4,$5,$6) AS booking":"SELECT beauty.reserve_booking($1,$2,$3,$4) AS booking",
+          [parsed.data.serviceId, parsed.data.startsAt, parsed.data.policyToken, parsed.data.earlyServiceRequested,...(parsed.data.paymentChoice||parsed.data.variationId||parsed.data.extraIds?.length?[parsed.data.variationId??null,parsed.data.extraIds??[]]:[]),...(parsed.data.paymentChoice?[parsed.data.paymentChoice]:[])],
         )
       ).rows[0].booking;
       // Throw before the transaction commits: unavailable paid checkout must not leave a slot held.
@@ -76,12 +77,15 @@ export async function POST(request: Request) {
           price_pence: number;
           deposit_pence: number;
           professional_id: string;
+          accepted_policy?: { fullPrepayment?: boolean; pricePence?: number; depositPence?: number };
         }>(
-          "SELECT price_pence,deposit_pence,professional_id FROM beauty.bookings WHERE id=$1",
+          "SELECT price_pence,deposit_pence,professional_id,beauty.booking_policy_overview(id)->'terms'->'snapshot' AS accepted_policy FROM beauty.bookings WHERE id=$1",
           [booking.id],
         )
       ).rows[0];
       if (!row) return false;
+
+      if (row.accepted_policy?.fullPrepayment && row.deposit_pence === row.price_pence && row.accepted_policy.pricePence === row.price_pence && row.accepted_policy.depositPence === row.deposit_pence) return true;
 
       const access = await professionalAccessState(db, row.professional_id);
       if (!access.verified) {

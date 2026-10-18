@@ -37,6 +37,8 @@ jobs:
         run: node scripts/check-media-theme-pricing.mjs
       - name: Verify support inbox and Owner/Admin navigation
         run: node scripts/check-launch-workspace.mjs
+      - name: Verify full and deposit booking payment choices
+        run: node scripts/check-booking-payments.mjs
       - name: Verify commission Centre and professional feedback
         run: node scripts/check-commission-centre.mjs
       - name: Save commission Centre browser evidence

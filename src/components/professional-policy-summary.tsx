@@ -32,6 +32,10 @@ export function ProfessionalPolicySummary({
       )}
       <dl>
         <div>
+          <dt>Booking payment</dt>
+          <dd>{policy.paymentRequirement === "full" ? "Full payment online is required before the appointment." : policy.fullPrepayment ? "The full service price is paid online at booking." : "Pay the deposit or choose to pay in full online. Any remaining balance is due at the appointment, including cash if agreed with the professional."}</dd>
+        </div>
+        <div>
           <dt>Cancellation notice</dt>
           <dd>
             {r.cancellationHours} hours. Timely cancellations and professional
@@ -124,7 +128,7 @@ export function ProfessionalPolicySummary({
       <p>
         Custom instructions cannot remove your statutory rights, impose
         automatic penalties or override GLOHAUS refund protections. Payment
-        stays within GLOHAUS.
+        for the online booking is handled securely through GLOHAUS.
       </p>
       <p>
         For an online booking, you can cancel an unperformed service without

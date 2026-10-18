@@ -31,6 +31,7 @@ export const policyFieldsSchema = z
       ])
       .nullable(),
     depositPercent: z.number().int().min(15).max(40).nullable(),
+    paymentRequirement: z.enum(["deposit_or_full", "full"]).nullable().optional(),
     rescheduleHours: z
       .union([
         z.literal(6),
@@ -59,6 +60,7 @@ export const defaultPolicy: PolicyFields = {
   lateInstructions: "",
   cancellationHours: 24,
   depositPercent: null,
+  paymentRequirement: "deposit_or_full",
   rescheduleHours: 24,
   maxReschedules: 1,
   freeReschedule: true,
@@ -75,6 +77,7 @@ export const defaultPolicy: PolicyFields = {
 export const inheritedPolicy: PolicyFields = {
   ...defaultPolicy,
   graceMinutes: null,
+  paymentRequirement: null,
   cancellationHours: null,
   rescheduleHours: null,
   maxReschedules: null,
@@ -209,6 +212,10 @@ export type PolicyPreview = {
   depositPence: number;
   bookingFeePence: number;
   fullPrepayment: boolean;
+  paymentChoice?: "deposit" | "full";
+  paymentRequirement?: "deposit_or_full" | "full";
+  requiredDepositPence?: number;
+  fullPaymentReason?: "starter" | "professional" | "customer" | null;
   publishedAt: string | null;
 };
 export type PolicyVersion = {

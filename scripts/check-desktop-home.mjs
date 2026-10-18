@@ -14,17 +14,24 @@ const desktopCss = styles.slice(desktopStart, desktopEnd);
 const categories = ["hair", "nails", "barber", "waxing", "injectables"];
 const placeholder = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a3ioAAAAASUVORK5CYII=", "base64");
 const results = [];
-// Compare settled renders without allowing any pixel differences. A screenshot
-// itself can trigger image rasterisation; CSS replacement can trigger it again.
-async function stableScreenshot(page) {
-  const options = { animations: "disabled", caret: "hide" };
-  let previous = await page.screenshot(options);
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const current = await page.screenshot(options);
-    if (current.equals(previous)) return current;
-    previous = current;
-  }
-  throw new Error("Homepage screenshot did not settle");
+// The invariant is that desktop CSS cannot change mobile layout or styling.
+// Compare browser-computed values exactly; image rasterisation can vary between
+// screenshots even when every element's geometry and style remain identical.
+async function mobileAppearance(page) {
+  return page.evaluate(() => {
+    const computed = (element, pseudo = null) => {
+      const style = getComputedStyle(element, pseudo);
+      return Object.fromEntries(Array.from(style, name => [name, style.getPropertyValue(name)]));
+    };
+    const elements = [document.documentElement, document.body,
+      ...document.querySelectorAll(".mobile-customer-home, .mobile-customer-home *")];
+    return elements.map(element => ({
+      tag: element.tagName, className: element.getAttribute("class"),
+      rect: element.getBoundingClientRect().toJSON(),
+      scrollWidth: element.scrollWidth, scrollHeight: element.scrollHeight,
+      style: computed(element), before: computed(element, "::before"), after: computed(element, "::after"),
+    }));
+  });
 }
 try {
   for (const theme of ["light", "night"]) {
@@ -88,19 +95,29 @@ try {
           return rect.width && rect.height && rect.top < innerHeight && rect.bottom > 0;
         }).map(img => img.decode().catch(() => {})));
       });
-      const before = await stableScreenshot(page);
+      const before = await mobileAppearance(page);
+      await page.screenshot({ path: `reports/desktop-home-mobile-${theme}-${width}-before.png`, animations: "disabled", caret: "hide" });
       await page.evaluate(css => {
         const style = document.querySelector("style");
         if (!style.textContent.includes(css)) throw new Error("Cannot establish mobile baseline");
         style.textContent = style.textContent.replace(css, "");
       }, desktopCss);
-      const baseline = await stableScreenshot(page);
-      if (!before.equals(baseline)) {
-        await writeFile(`reports/desktop-home-mobile-${theme}-${width}-before.png`, before);
-        await writeFile(`reports/desktop-home-mobile-${theme}-${width}-baseline.png`, baseline);
-      }
-      expect(before.equals(baseline), `Mobile pixels changed at ${width}px in ${theme}`).toBe(true);
-      results.push({ theme, width, mobileUnchanged: true, passed: true });
+      const baseline = await mobileAppearance(page);
+      await page.screenshot({ path: `reports/desktop-home-mobile-${theme}-${width}-baseline.png`, animations: "disabled", caret: "hide" });
+      await writeFile(`reports/desktop-home-mobile-${theme}-${width}-appearance.json`, JSON.stringify({before, baseline}));
+      expect(before, `Mobile geometry or styles changed at ${width}px in ${theme}`).toEqual(baseline);
+      await expect(page.locator(".desktop-customer-home")).toBeHidden();
+      // Negative controls prove both geometry and colour regressions are detected.
+      const layoutChange = await page.addStyleTag({ content: ".mobile-home-main{padding-top:333px!important}" });
+      await expect.poll(() => mobileAppearance(page)).not.toEqual(baseline);
+      await layoutChange.evaluate(element => element.remove());
+      await expect.poll(() => mobileAppearance(page)).toEqual(baseline);
+      const colourChange = await page.addStyleTag({ content: ".mobile-home-search{color:rgb(1,2,3)!important}" });
+      await expect.poll(() => page.locator(".mobile-home-search").evaluate(element => getComputedStyle(element).color)).toBe("rgb(1, 2, 3)");
+      expect(await mobileAppearance(page)).not.toEqual(baseline);
+      await colourChange.evaluate(element => element.remove());
+      await expect.poll(() => mobileAppearance(page)).toEqual(baseline);
+      results.push({ theme, width, mobileUnchanged: true, comparison: "exact-geometry-and-computed-styles", negativeControlsPassed: true, passed: true });
       await page.close();
     }
   }

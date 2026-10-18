@@ -108,6 +108,8 @@ root.render(
             {
               id: "notice",
               booking_id: "fictional-booking",
+              recipient_role: "customer",
+              recipient_name: "Fixture Customer",
               title: "Appointment arrival update",
               body: "Review your location and arrival instructions.",
               created_at: new Date().toISOString(),

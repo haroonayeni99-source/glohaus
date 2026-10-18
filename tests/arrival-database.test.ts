@@ -460,6 +460,19 @@ it("lets Owner review delivery separately from read/acknowledged and append a co
   ).rows[0].data;
   expect(data).not.toHaveProperty("liveLocation");
   expect(data.communications).toBeDefined();
+  const communications = data.communications as {
+    recipient_role: string;
+    recipient_name: string;
+    body: string;
+  }[];
+  expect(
+    communications.some(
+      (n) =>
+        n.recipient_role === "customer" &&
+        n.recipient_name === "Customer" &&
+        n.body.includes("version 1"),
+    ),
+  ).toBe(true);
   expect(
     (await as("customer", (sql) => arrivalState(sql, id))).events.some(
       (e) => e.kind === "correction",

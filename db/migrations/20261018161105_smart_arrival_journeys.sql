@@ -119,7 +119,7 @@ BEGIN
   version=appointment_arrivals.version+1,acknowledged_at=NULL,consent_at=NULL,candidate_at=NULL,detection_status='off',updated_at=now();
   UPDATE beauty.booking_location_sessions SET sharing=false,last_latitude=NULL,last_longitude=NULL,last_accuracy_m=NULL,last_observed_at=NULL,stopped_at=now() WHERE booking_id=target;
   UPDATE beauty.appointment_journey_plans SET reminders=false WHERE booking_id=target;
-  detail:='Review your agreed appointment location and arrival instructions. Acknowledge the current version on your booking before enabling location detection. Location permissions remain optional.';
+  detail:='Review arrival instructions version '||(coalesce(a.version,0)+1)::text||' and your agreed appointment location. Acknowledge this version on your booking before enabling location detection. Location permissions remain optional.';
  ELSIF operation='attendance' OR operation='started' THEN
   IF NOT pro THEN RAISE EXCEPTION 'FORBIDDEN' USING ERRCODE='42501'; END IF;
   IF NOT s.smart_arrival OR a.booking_id IS NULL OR now()<b.starts_at-interval '3 hours' THEN RAISE EXCEPTION 'ARRIVAL_WINDOW' USING ERRCODE='22023'; END IF;
@@ -230,9 +230,9 @@ CREATE FUNCTION beauty.admin_arrival_overview(target uuid DEFAULT NULL) RETURNS 
  'events',coalesce((SELECT jsonb_agg(to_jsonb(e)-'actor_id' ORDER BY created_at DESC) FROM (SELECT id,booking_id,kind,created_at,details FROM beauty.appointment_arrival_events WHERE (target IS NULL OR booking_id=target) AND kind NOT IN('plan_saved','reminders_stopped') ORDER BY created_at DESC LIMIT 100) e),'[]'),
  'policy',CASE WHEN target IS NULL THEN NULL ELSE (SELECT jsonb_build_object('acknowledgedAt',acknowledged_at,'source',acknowledgement_source,'versionToken',snapshot->>'token','rules',snapshot->'rules') FROM beauty.booking_policy_terms WHERE booking_id=target) END,
  'communications',coalesce((SELECT jsonb_agg(to_jsonb(n) ORDER BY created_at DESC) FROM (
- SELECT i.id,i.booking_id,i.title,i.body,i.created_at,i.read_at,o.sent_at,o.delivered_at,o.delivery_status,o.attempts,o.last_error,
+ SELECT i.id,i.booking_id,CASE WHEN i.user_id=b.customer_id THEN 'customer' ELSE 'professional' END AS recipient_role,CASE WHEN i.user_id=b.customer_id THEN b.customer_name ELSE b.professional_name END AS recipient_name,i.title,i.body,i.created_at,i.read_at,o.sent_at,o.delivered_at,o.delivery_status,o.attempts,o.last_error,
  coalesce((SELECT jsonb_agg(jsonb_build_object('status',d.status,'sentAt',d.sent_at,'error',d.last_error)) FROM beauty.push_deliveries d WHERE d.notification_id=i.id),'[]') AS push
- FROM beauty.in_app_notifications i LEFT JOIN beauty.notification_outbox o ON o.notification_id=i.id
+ FROM beauty.in_app_notifications i JOIN beauty.bookings b ON b.id=i.booking_id LEFT JOIN beauty.notification_outbox o ON o.notification_id=i.id
  WHERE (target IS NULL OR i.booking_id=target) AND i.kind IN('arrival_update','journey_departure') ORDER BY i.created_at DESC LIMIT 100)n),'[]'));
 END $$;
 CREATE FUNCTION beauty.owner_arrival_settings(payload jsonb,reason text) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$

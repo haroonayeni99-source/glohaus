@@ -23,7 +23,7 @@ try{
   }else if(role==='professional'){
    await expect(page.getByRole('heading',{name:'Manage arrivals',exact:true})).toBeVisible();await expect(page.getByText('Plan my journey',{exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'Enable Smart Arrival',exact:true})).toHaveCount(0);
    await page.getByRole('button',{name:'Confirm physical attendance',exact:true}).click();await page.getByRole('button',{name:'Record appointment started',exact:true}).click();await expect(page.getByRole('button',{name:'Record appointment started',exact:true})).toBeDisabled();
-  }else{await expect(page.getByText(/Explicit acknowledgement is recorded separately/)).toBeVisible();await expect(page.getByText('Email: sent · Attempts: 1',{exact:false})).toBeVisible();await expect(page.getByText('Accepted by push service (device display unconfirmed)',{exact:false})).toBeVisible();}
+  }else{await expect(page.getByText('To: Customer · Fixture Customer',{exact:true})).toBeVisible();await expect(page.getByText(/Explicit acknowledgement is recorded separately/)).toBeVisible();await expect(page.getByText('Email: sent · Attempts: 1',{exact:false})).toBeVisible();await expect(page.getByText('Accepted by push service (device display unconfirmed)',{exact:false})).toBeVisible();}
   expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);expect(errors).toEqual([]);
   await page.screenshot({path:`reports/arrival-${role}-${theme}-${width}.png`,fullPage:true});results.push({role,theme,width,passed:true});await context.close();
  }

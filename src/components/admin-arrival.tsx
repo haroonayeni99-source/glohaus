@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
 import type { ArrivalConfig } from "@/modules/arrival/domain";
 import "./appointment-arrival.css";
 export type ArrivalOverview = {
@@ -22,6 +21,8 @@ export type ArrivalOverview = {
   communications: {
     id: string;
     booking_id: string;
+    recipient_role: "customer" | "professional";
+    recipient_name: string;
     title: string;
     body: string;
     created_at: string;
@@ -46,14 +47,14 @@ export function AdminArrival({
     [booking, setBooking] = useState(""),
     [notice, setNotice] = useState(""),
     [busy, setBusy] = useState(false);
-  async function request(body?: unknown) {
+  async function request(body?: unknown, selectedBooking = booking) {
     setBusy(true);
     setNotice("");
     try {
       const response = await fetch(
         body
           ? "/api/v1/admin/arrival"
-          : `/api/v1/admin/arrival${booking ? `?bookingId=${encodeURIComponent(booking)}` : ""}`,
+          : `/api/v1/admin/arrival${selectedBooking ? `?bookingId=${encodeURIComponent(selectedBooking)}` : ""}`,
         body
           ? {
               method: "POST",
@@ -223,9 +224,15 @@ export function AdminArrival({
               timeZone: "Europe/London",
             })}
           </summary>
-          <Link href={`/account/bookings/${event.booking_id}`}>
-            Booking {event.booking_id}
-          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              setBooking(event.booking_id);
+              void request(undefined, event.booking_id);
+            }}
+          >
+            Review booking {event.booking_id}
+          </button>
           <pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
             {JSON.stringify(event.details, null, 2)}
           </pre>
@@ -234,6 +241,11 @@ export function AdminArrival({
       {data.communications.map((item) => (
         <article className="editor-form" key={item.id}>
           <strong>{item.title}</strong>
+          <p>
+            To:{" "}
+            {item.recipient_role === "customer" ? "Customer" : "Professional"} ·{" "}
+            {item.recipient_name}
+          </p>
           <p>{item.body}</p>
           <p>Booking: {item.booking_id}</p>
           <p>

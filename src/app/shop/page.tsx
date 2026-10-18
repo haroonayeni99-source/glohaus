@@ -27,6 +27,7 @@ import { withIdentity } from "@/lib/db";
 import { productCategories, publicProducts } from "@/modules/shop/repository";
 import { money } from "@/modules/professionals/domain";
 import { publicViewerSignedIn } from "@/lib/public-viewer";
+import { ShopCatalogueRetry } from "@/components/shop-catalogue-retry";
 
 export const dynamic = "force-dynamic";
 
@@ -255,18 +256,7 @@ export default async function ShopPage({
                     moment.
                   </p>
                 </div>
-                <form action="/shop#products" method="get">
-                  {q && <input type="hidden" name="q" value={q} />}
-                  {collection && (
-                    <input type="hidden" name="collection" value={collection} />
-                  )}
-                  {categoryId && (
-                    <input type="hidden" name="categoryId" value={categoryId} />
-                  )}
-                  <button className="button" type="submit">
-                    Try again
-                  </button>
-                </form>
+                <ShopCatalogueRetry />
               </section>
             ) : visibleProducts.length ? (
               <div

@@ -68,9 +68,10 @@ test("FAQ has one shared footer with a contact link", async ({ page }) => {
 test("Shop collections are real parameters and preserve a search", async ({
   page,
 }) => {
-  await page.goto("/shop?q=Oil");
+  const categoryId = "11111111-1111-4111-8111-111111111111";
+  await page.goto(`/shop?q=Oil&categoryId=${categoryId}`);
   await page.getByRole("link", { name: "Bestsellers", exact: true }).click();
-  await expect(page).toHaveURL(/q=Oil&collection=bestsellers#products/);
+  await expect(page).toHaveURL(/q=Oil&collection=bestsellers&categoryId=/);
   await expect(
     page.getByRole("heading", { name: "Bestsellers for “Oil”" }),
   ).toBeVisible();
@@ -94,6 +95,7 @@ test("Shop collections are real parameters and preserve a search", async ({
   expect(retry.method()).toBe("GET");
   expect(new URL(retry.url()).searchParams.get("q")).toBe("Oil");
   expect(new URL(retry.url()).searchParams.get("collection")).toBe("trending");
+  expect(new URL(retry.url()).searchParams.get("categoryId")).toBe(categoryId);
   await expect(outage).toContainText("The marketplace couldn’t load.");
   await page.getByRole("link", { name: "Deals & offers", exact: true }).click();
   await expect(page).toHaveURL(/collection=deals/);

@@ -81,24 +81,13 @@ it.each(["connection", "categories", "products"])(
     });
     const alert = document.querySelector('[role="alert"]')!;
     expect(alert.textContent).toContain("The marketplace couldn’t load.");
-    // A native GET form re-requests even the same filtered URL and fragment.
-    const retry = alert.querySelector("form")!;
-    expect(retry.method).toBe("get");
-    expect(retry.getAttribute("action")).toBe("/shop#products");
-    expect(retry.querySelector('button[type="submit"]')?.textContent).toBe(
+    expect(alert.querySelector('button[type="button"]')?.textContent).toBe(
       "Try again",
     );
-    const filters = Object.fromEntries(
-      [...retry.querySelectorAll("input")].map((input) => [
-        input.name,
-        input.value,
-      ]),
-    );
-    expect(filters).toEqual({
-      q: "Oil & care",
-      collection: "deals",
-      categoryId,
-    });
+    // Browser coverage verifies that reload re-requests the complete current URL.
+    expect(
+      (document.querySelector('[name="q"]') as HTMLInputElement).value,
+    ).toBe("Oil & care");
     expect(document.body.textContent).not.toMatch(
       /No offers|No paid sales|coming in|fake listings|private connection/,
     );

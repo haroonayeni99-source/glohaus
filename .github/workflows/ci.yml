@@ -27,6 +27,8 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - name: Install media test encoder
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Verify desktop homepage and unchanged mobile layouts
+        run: node scripts/check-desktop-home.mjs
       - name: Verify Owner account visibility and deletion controls
         run: node scripts/check-owner-account-controls.mjs
       - name: Verify direct Discover and Story photo/video uploads
@@ -48,8 +50,6 @@ jobs:
       - run: pnpm test:e2e
       - name: Verify client blocking and customer identity journeys
         run: node scripts/check-client-blocking.mjs
-      - name: Verify desktop homepage and unchanged mobile layouts
-        run: node scripts/check-desktop-home.mjs
       - name: Verify Owner image upload, preview, save and independent devices
         run: node scripts/check-homepage-media.mjs
       - name: Save Discover and Story media checks

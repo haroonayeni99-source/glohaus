@@ -14,6 +14,18 @@ const desktopCss = styles.slice(desktopStart, desktopEnd);
 const categories = ["hair", "nails", "barber", "waxing", "injectables"];
 const placeholder = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a3ioAAAAASUVORK5CYII=", "base64");
 const results = [];
+// Compare settled renders without allowing any pixel differences. A screenshot
+// itself can trigger image rasterisation; CSS replacement can trigger it again.
+async function stableScreenshot(page) {
+  const options = { animations: "disabled", caret: "hide" };
+  let previous = await page.screenshot(options);
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const current = await page.screenshot(options);
+    if (current.equals(previous)) return current;
+    previous = current;
+  }
+  throw new Error("Homepage screenshot did not settle");
+}
 try {
   for (const theme of ["light", "night"]) {
     for (const width of [1100, 1280, 1440, 1920]) {
@@ -65,6 +77,8 @@ try {
       const page = await browser.newPage({ viewport: { width, height: 1000 } });
       await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.request().resourceType() === "image" ? route.fulfill({ contentType: "image/png", body: placeholder }) : route.abort());
       await page.goto(`http://127.0.0.1:3004/?theme=${theme}`);
+      // Mirror Next Image's fill positioning in this isolated Image shim too.
+      await page.addStyleTag({ content: ".mobile-home-categories img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}" });
       await expect(page.locator(".mobile-customer-home")).toBeVisible();
       await expect(page.locator(".desktop-customer-home")).toBeHidden();
       await page.evaluate(async () => {
@@ -74,13 +88,13 @@ try {
           return rect.width && rect.height && rect.top < innerHeight && rect.bottom > 0;
         }).map(img => img.decode().catch(() => {})));
       });
-      const before = await page.screenshot({ animations: "disabled", caret: "hide" });
+      const before = await stableScreenshot(page);
       await page.evaluate(css => {
         const style = document.querySelector("style");
         if (!style.textContent.includes(css)) throw new Error("Cannot establish mobile baseline");
         style.textContent = style.textContent.replace(css, "");
       }, desktopCss);
-      const baseline = await page.screenshot({ animations: "disabled", caret: "hide" });
+      const baseline = await stableScreenshot(page);
       if (!before.equals(baseline)) {
         await writeFile(`reports/desktop-home-mobile-${theme}-${width}-before.png`, before);
         await writeFile(`reports/desktop-home-mobile-${theme}-${width}-baseline.png`, baseline);

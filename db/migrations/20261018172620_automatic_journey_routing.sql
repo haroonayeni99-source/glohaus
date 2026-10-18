@@ -164,7 +164,7 @@ END $$;
 ALTER TABLE beauty.push_deliveries ADD COLUMN displayed_at timestamptz,ADD COLUMN clicked_at timestamptz;
 CREATE FUNCTION beauty.record_push_device_receipt(target uuid,kind text) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$ BEGIN
  IF kind NOT IN('displayed','clicked') THEN RAISE EXCEPTION 'INVALID_REQUEST' USING ERRCODE='22023'; END IF;
- UPDATE beauty.push_deliveries SET displayed_at=CASE WHEN kind='displayed' THEN coalesce(displayed_at,now()) ELSE displayed_at END,clicked_at=CASE WHEN kind='clicked' THEN coalesce(clicked_at,now()) ELSE clicked_at END WHERE id=target AND due_at>now()-interval '24 hours' AND status IN('pending','accepted');
+ UPDATE beauty.push_deliveries SET displayed_at=CASE WHEN kind='displayed' THEN now() ELSE displayed_at END,clicked_at=CASE WHEN kind='clicked' THEN now() ELSE clicked_at END WHERE id=target AND due_at>now()-interval '24 hours' AND status IN('pending','accepted') AND ((kind='displayed' AND displayed_at IS NULL) OR (kind='clicked' AND clicked_at IS NULL));
 END $$;
 CREATE FUNCTION beauty.test_customer_journey_push(target uuid,device uuid) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$
 DECLARE identity jsonb:=beauty.policy_booking_actor(target); uid uuid:=(identity->>'actor')::uuid; nid uuid; BEGIN

@@ -129,3 +129,15 @@
 }
 .booking-journey .booking-payment-choice legend { font-weight: 700; padding: 0 5px; }
 .booking-journey .booking-payment-choice .policy-check { align-items: flex-start; line-height: 1.6; }
+
+/* The approved booking card remains light in night mode; its nested policy
+   summary must use the same light surface and readable text palette. */
+:root[data-theme="night"] .booking-journey .booking-policy .professional-policies {
+  --text-strong: #231b1f;
+  --surface: #fff;
+  --line: #eadde2;
+  color: #231b1f;
+}
+:root[data-theme="night"] .booking-journey .booking-service-reference small {
+  color: #6d5a61;
+}

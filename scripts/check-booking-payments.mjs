@@ -12,6 +12,16 @@ try{
     await page.getByRole("radio",{name:/Pay in full online/}).check();
     await expect(page.locator(".booking-pay-button")).toHaveText("Continue to pay £51.00");
     await expect(page.locator(".payment-summary-balance")).toContainText("£0.00");
+    const contrasts=await page.evaluate(()=>{
+      const rgb=s=>s.match(/[\d.]+/g)?.slice(0,3).map(Number)??[255,255,255];
+      const luminance=c=>c.map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;}).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0);
+      return [".booking-policy dd",".booking-service-reference small",".booking-payment-choice label"].map(selector=>{
+        const el=document.querySelector(selector);let parent=el;let bg="rgba(0, 0, 0, 0)";
+        while(parent&&(bg==="transparent"||bg==="rgba(0, 0, 0, 0)")){bg=getComputedStyle(parent).backgroundColor;parent=parent.parentElement;}
+        const a=luminance(rgb(getComputedStyle(el).color));const b=luminance(rgb(bg));return {selector,ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
+      });
+    });
+    for(const result of contrasts)expect(result.ratio,`${theme} ${result.selector} contrast`).toBeGreaterThanOrEqual(4.5);
     await page.screenshot({path:`reports/booking-payment-full-${theme}-${width}.png`,fullPage:true});
     await page.getByRole("radio",{name:/Pay deposit online/}).check();
     await expect(page.locator(".booking-pay-button")).toHaveText("Continue to pay £16.00");

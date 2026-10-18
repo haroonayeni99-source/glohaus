@@ -27,6 +27,7 @@ import { withIdentity } from "@/lib/db";
 import { productCategories, publicProducts } from "@/modules/shop/repository";
 import { money } from "@/modules/professionals/domain";
 import { publicViewerSignedIn } from "@/lib/public-viewer";
+import { ShopCatalogueRetry } from "@/components/shop-catalogue-retry";
 
 export const dynamic = "force-dynamic";
 
@@ -44,21 +45,39 @@ export default async function ShopPage({
   const categoryId = z.uuid().safeParse(params.categoryId).success
     ? (params.categoryId as string)
     : undefined;
-  const categories = process.env.DATABASE_URL
-    ? await withIdentity("", (db) => productCategories(db)).catch(() => [])
-    : [];
-  const selectedCategory = categories.find((c) => c.id === categoryId);
   const collection = shopCollection(params.collection);
   const selectedCollection = collection
     ? shopCollections[collection]
     : undefined;
   const viewerSignedIn = await publicViewerSignedIn();
   const cartHref = viewerSignedIn ? "/cart" : "/sign-in?returnTo=%2Fcart";
-  const products = process.env.DATABASE_URL
-    ? await withIdentity("", (db) =>
-        publicProducts(db, { query: q, collection, categoryId }),
-      ).catch(() => [])
-    : [];
+  let categories: Awaited<ReturnType<typeof productCategories>> = [];
+  let products: Awaited<ReturnType<typeof publicProducts>> = [];
+  let loadFailed = !process.env.DATABASE_URL;
+  if (process.env.DATABASE_URL) {
+    try {
+      const catalogue = await withIdentity("", async (db) => ({
+        categories: await productCategories(db),
+        products: await publicProducts(db, {
+          query: q,
+          collection,
+          categoryId,
+        }),
+      }));
+      categories = catalogue.categories;
+      products = catalogue.products;
+    } catch (error) {
+      loadFailed = true;
+      console.error("Shop catalogue unavailable", {
+        type: error instanceof Error ? error.name : "UnknownError",
+        code:
+          typeof error === "object" && error !== null && "code" in error
+            ? String(error.code ?? "")
+            : "",
+      });
+    }
+  }
+  const selectedCategory = categories.find((c) => c.id === categoryId);
 
   const query = q.trim().toLowerCase();
   const visibleProducts = catalogueProducts(products, q, collection);
@@ -227,7 +246,19 @@ export default async function ShopPage({
               )}
             </div>
 
-            {visibleProducts.length ? (
+            {loadFailed ? (
+              <section className="marketplace-empty" role="alert">
+                <ShoppingBag size={30} aria-hidden />
+                <div>
+                  <h3>The marketplace couldn’t load.</h3>
+                  <p>
+                    Products are temporarily unavailable. Please try again in a
+                    moment.
+                  </p>
+                </div>
+                <ShopCatalogueRetry />
+              </section>
+            ) : visibleProducts.length ? (
               <div
                 className="marketplace-product-grid"
                 aria-label="Published products"
@@ -383,7 +414,9 @@ export default async function ShopPage({
               <strong>Featured products</strong>
               <a href="#products">View all →</a>
             </div>
-            {bestsellers.length ? (
+            {loadFailed ? (
+              <p>Featured products are temporarily unavailable.</p>
+            ) : bestsellers.length ? (
               bestsellers.map((product, index) => (
                 <Link
                   key={product.id}

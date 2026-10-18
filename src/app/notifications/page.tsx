@@ -60,6 +60,7 @@ export default async function NotificationsPage({
         <p className="eyebrow">ACTIVITY</p>
         <h1>Your notifications.</h1>
         <p className="lead">Booking reminders, Shop updates and other account activity appear here as they are recorded.</p>
+        <Link href="/account/notifications">Phone notification settings →</Link>
         {content}
       </main>
     </>

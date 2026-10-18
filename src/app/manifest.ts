@@ -5,11 +5,11 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "GLOHAUS",
     short_name: "GLOHAUS",
     description: "Your GLOHAUS bookings, beauty business and community.",
-    start_url: "/professional",
+    start_url: "/",
     scope: "/",
     display: "standalone",
-    background_color: "#151515",
-    theme_color: "#151515",
+    background_color: "#e95f96",
+    theme_color: "#e95f96",
     icons: [
       {
         src: "/icons/glohaus-192.png",
@@ -22,6 +22,12 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: "512x512",
         type: "image/png",
         purpose: "any",
+      },
+      {
+        src: "/icons/glohaus-maskable-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
       },
     ],
   };

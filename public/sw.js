@@ -1,4 +1,49 @@
-/* GLOHAUS Web Push worker. No authenticated pages or API responses are cached. */
+/* One GLOHAUS worker for installation, static offline help and existing push.
+   Never cache pages, APIs, payment responses, uploads, maps or account data. */
+const STATIC_CACHE = "glohaus-pwa-static-v1";
+const OFFLINE_URL = "/offline.html";
+const STATIC_FILES = [OFFLINE_URL, "/icons/glohaus-192.png", "/icons/glohaus-512.png", "/icons/apple-touch-icon.png", "/icons/glohaus-maskable-512.png"];
+self.addEventListener("install", (event) => {
+  event.waitUntil(caches.open(STATIC_CACHE).then((cache) =>
+    cache.addAll(STATIC_FILES.map((url) => new Request(url, { cache: "reload", credentials: "omit" }))),
+  ));
+  // No skipWaiting: keep open bookings, payments and forms on their current worker.
+});
+self.addEventListener("activate", (event) => {
+  event.waitUntil(caches.keys().then((keys) => Promise.all(keys
+    .filter((key) => key.startsWith("glohaus-pwa-static-") && key !== STATIC_CACHE)
+    .map((key) => caches.delete(key)),
+  )).then(() => self.clients.claim()));
+});
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "GLOHAUS_ACTIVATE_UPDATE" && event.source?.url &&
+      new URL(event.source.url).origin === self.location.origin) {
+    event.waitUntil(self.skipWaiting());
+  }
+});
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
+  if (request.method !== "GET") return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+  // Exact allowlist; never cache query-bearing assets or arbitrary responses.
+  if (!url.search && STATIC_FILES.includes(url.pathname)) {
+    event.respondWith(caches.open(STATIC_CACHE).then(async (cache) =>
+      (await cache.match(url.pathname)) || fetch(request),
+    ));
+    return;
+  }
+  if (request.mode !== "navigate" || url.pathname.startsWith("/api/") ||
+      url.pathname.startsWith("/_next/")) return;
+  event.respondWith(fetch(request).catch(async () => {
+    const cache = await caches.open(STATIC_CACHE);
+    const offline = await cache.match(OFFLINE_URL);
+    return new Response(offline ? await offline.text() : "GLOHAUS is offline. Reconnect to view current account and booking information.", {
+      status: 503,
+      headers: { "Content-Type": offline ? "text/html; charset=utf-8" : "text/plain; charset=utf-8", "Cache-Control": "private, no-store", "Content-Security-Policy": "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" },
+    });
+  }));
+});
 async function reportReceipt(token, kind) {
   if (typeof token !== "string" || token.length > 500) return;
   try {
@@ -19,7 +64,7 @@ self.addEventListener("push", (event) => {
       ? data.href
       : "/notifications?view=professional";
   event.waitUntil(
-    self.registration.showNotification(href.startsWith("/account/bookings/") ? "GLOHAUS appointment update" : "GLOHAUS professional update", {
+    self.registration.showNotification(href.startsWith("/account/bookings/") ? "GLOHAUS appointment update" : "GLOHAUS update", {
       body: href.startsWith("/account/bookings/") && ["Leave in approximately 15 minutes","Leave in approximately 5 minutes","It’s time to leave for your appointment"].includes(data.departureReminder) ? data.departureReminder : "You have a new update. Open your dashboard to view it securely.",
       icon: "/icons/glohaus-192.png",
       badge: "/icons/glohaus-192.png",

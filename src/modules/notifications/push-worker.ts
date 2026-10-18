@@ -52,9 +52,7 @@ export async function deliverPushNotifications() {
               keys: { p256dh: job.p256dh, auth: job.auth },
             },
             JSON.stringify({
-              title: job.href.startsWith("/account/bookings/")
-                ? "GLOHAUS appointment update"
-                : "GLOHAUS professional update",
+              title: "GLOHAUS update",
               body: "You have a new update. Open your dashboard to view it securely.",
               departureReminder: [
                 "Leave in approximately 15 minutes",

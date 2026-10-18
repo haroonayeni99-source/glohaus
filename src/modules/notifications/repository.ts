@@ -9,6 +9,7 @@ export type InAppNotification = {
     | "arrival_update"
     | "journey_departure"
     | "customer_message"
+    | "professional_message"
     | "review_received"
     | "dispute_opened"
     | "refund_requested"

@@ -255,7 +255,18 @@ export default async function ShopPage({
                     moment.
                   </p>
                 </div>
-                <a href={shopHref(collection, q, categoryId)}>Try again</a>
+                <form action="/shop#products" method="get">
+                  {q && <input type="hidden" name="q" value={q} />}
+                  {collection && (
+                    <input type="hidden" name="collection" value={collection} />
+                  )}
+                  {categoryId && (
+                    <input type="hidden" name="categoryId" value={categoryId} />
+                  )}
+                  <button className="button" type="submit">
+                    Try again
+                  </button>
+                </form>
               </section>
             ) : visibleProducts.length ? (
               <div

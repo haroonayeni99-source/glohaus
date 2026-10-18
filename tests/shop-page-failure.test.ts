@@ -81,13 +81,24 @@ it.each(["connection", "categories", "products"])(
     });
     const alert = document.querySelector('[role="alert"]')!;
     expect(alert.textContent).toContain("The marketplace couldn’t load.");
-    const retry = new URL(
-      alert.querySelector("a")!.href,
-      "https://www.glohaus.shop",
+    // A native GET form re-requests even the same filtered URL and fragment.
+    const retry = alert.querySelector("form")!;
+    expect(retry.method).toBe("get");
+    expect(retry.getAttribute("action")).toBe("/shop#products");
+    expect(retry.querySelector('button[type="submit"]')?.textContent).toBe(
+      "Try again",
     );
-    expect(retry.searchParams.get("q")).toBe("Oil & care");
-    expect(retry.searchParams.get("collection")).toBe("deals");
-    expect(retry.searchParams.get("categoryId")).toBe(categoryId);
+    const filters = Object.fromEntries(
+      [...retry.querySelectorAll("input")].map((input) => [
+        input.name,
+        input.value,
+      ]),
+    );
+    expect(filters).toEqual({
+      q: "Oil & care",
+      collection: "deals",
+      categoryId,
+    });
     expect(document.body.textContent).not.toMatch(
       /No offers|No paid sales|coming in|fake listings|private connection/,
     );

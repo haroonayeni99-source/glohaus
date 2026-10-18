@@ -3,7 +3,7 @@ process.env.GLOHAUS_UI_AUDIT_ENTRY="tests/fixtures/booking-payments-entry.tsx";
 const {server}=await import("./ui-audit.mjs");
 const browser=await chromium.launch({executablePath:process.env.GLOHAUS_TEST_BROWSER||undefined,headless:true,args:["--no-sandbox"]});
 try{
- for(const theme of ["light","dark"])for(const width of [375,1280]){
+ for(const theme of ["light","night"])for(const width of [375,1280]){
   const page=await browser.newPage({viewport:{width,height:900}});
   for(const mode of ["choice","required","starter"]){
    await page.goto(`http://127.0.0.1:3004/?theme=${theme}&mode=${mode}`);await page.getByRole("button",{name:"Continue",exact:true}).click();

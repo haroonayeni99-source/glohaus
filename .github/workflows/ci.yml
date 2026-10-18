@@ -27,8 +27,6 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - name: Install media test encoder
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
-      - name: Verify full and deposit booking payment choices
-        run: node scripts/check-booking-payments.mjs
       - name: Verify Owner account visibility and deletion controls
         run: node scripts/check-owner-account-controls.mjs
       - name: Verify direct Discover and Story photo/video uploads
@@ -106,7 +104,6 @@ jobs:
           path: |
             reports/launch-*.png
             reports/launch-workspace-results.json
-            reports/booking-payment-*
 
   profile-video:
     runs-on: ubuntu-latest
@@ -261,3 +258,25 @@ jobs:
             reports/discovery-map-*
             reports/london-overview-*
             reports/location-journeys.json
+
+  booking-payments:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Verify deposit, full and required payment choices in light and night mode
+        run: node scripts/check-booking-payments.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: booking-payment-checks
+          path: reports/booking-payment-*

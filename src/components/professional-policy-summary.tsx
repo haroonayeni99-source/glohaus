@@ -17,6 +17,7 @@ export function ProfessionalPolicySummary({
   showPrice?: boolean;
 }) {
   const r = policy.rules;
+  const paymentRequirement = policy.paymentRequirement ?? r.paymentRequirement;
   return (
     <div className="professional-policies policy-summary">
       {showPrice && (
@@ -33,7 +34,7 @@ export function ProfessionalPolicySummary({
       <dl>
         <div>
           <dt>Booking payment</dt>
-          <dd>{policy.paymentRequirement === "full" ? "Full payment online is required before the appointment." : policy.fullPrepayment ? "The full service price is paid online at booking." : "Pay the deposit or choose to pay in full online. Any remaining balance is due at the appointment, including cash if agreed with the professional."}</dd>
+          <dd>{paymentRequirement === "full" ? "Full payment online is required before the appointment." : policy.fullPrepayment ? "The full service price is paid online at booking." : "Pay the deposit or choose to pay in full online. Any remaining balance is due at the appointment, including cash if agreed with the professional."}</dd>
         </div>
         <div>
           <dt>Cancellation notice</dt>

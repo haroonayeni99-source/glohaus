@@ -4,6 +4,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { ProfessionalPolicyEditor } from "@/components/professional-policy-editor";
 import { BookingPicker } from "@/components/booking-picker";
+import { ProfessionalPolicySummary } from "@/components/professional-policy-summary";
 import { AdminProfessionalPolicies } from "@/components/admin-professional-policies";
 import {
   defaultPolicy,
@@ -254,4 +255,9 @@ it("updates full-payment totals, clears acceptance and submits the chosen mode",
  await act(async()=>container.querySelector<HTMLInputElement>('input[type="checkbox"]')!.click());
  await act(async()=>container.querySelector<HTMLButtonElement>('.booking-pay-button')!.click());
  const post=fetchMock.mock.calls.find(c=>c[1]?.method==="POST")!;expect(JSON.parse(post[1].body)).toMatchObject({paymentChoice:"full",policyToken:policy.token});
+});
+
+it("shows the full-payment requirement when Admin previews a published policy version",async()=>{
+ await render(React.createElement(ProfessionalPolicySummary,{showPrice:false,policy:{...policy,rules:{...defaultPolicy,paymentRequirement:"full"}}}));
+ expect(container.textContent).toContain("Full payment online is required before the appointment.");
 });

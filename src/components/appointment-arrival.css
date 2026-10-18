@@ -1,0 +1,108 @@
+.appointment-arrival {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  margin-block: 24px;
+}
+.appointment-arrival form {
+  display: grid;
+  gap: 14px;
+  margin-block: 16px;
+}
+.appointment-arrival label {
+  display: grid;
+  gap: 7px;
+  font-weight: 600;
+}
+.appointment-arrival input:not([type="checkbox"]),
+.appointment-arrival textarea,
+.appointment-arrival select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line, #aaa);
+  border-radius: 10px;
+  background: var(--surface, #fff);
+  color: inherit;
+  font: inherit;
+}
+.appointment-arrival textarea {
+  min-height: 96px;
+}
+.appointment-arrival .arrival-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.appointment-arrival .arrival-choice input {
+  margin-top: 4px;
+  flex: none;
+}
+.appointment-arrival details {
+  border: 1px solid var(--line, #aaa);
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 0;
+}
+.appointment-arrival summary {
+  font-weight: 700;
+  cursor: pointer;
+}
+.appointment-arrival small {
+  display: block;
+  line-height: 1.6;
+}
+.appointment-arrival button {
+  width: fit-content;
+  max-width: 100%;
+  white-space: normal;
+}
+.appointment-arrival .arrival-records {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.appointment-arrival .arrival-records p {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line, #aaa);
+  border-radius: 10px;
+  overflow-wrap: anywhere;
+}
+.appointment-arrival .arrival-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.appointment-arrival .arrival-actions small {
+  flex-basis: 100%;
+}
+.appointment-arrival a {
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+}
+.appointment-arrival :disabled {
+  opacity: 0.6;
+}
+.appointment-arrival p {
+  overflow-wrap: anywhere;
+}
+.appointment-arrival .geographic-map {
+  min-width: 0;
+}
+html[data-theme="night"] .appointment-arrival input:not([type="checkbox"]),
+html[data-theme="night"] .appointment-arrival textarea,
+html[data-theme="night"] .appointment-arrival select {
+  background: #18171c;
+  color: #f7f3f7;
+  color-scheme: dark;
+}
+@media (max-width: 600px) {
+  .appointment-arrival .arrival-records {
+    grid-template-columns: 1fr;
+  }
+  .appointment-arrival details {
+    padding: 12px;
+  }
+}

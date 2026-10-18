@@ -3,6 +3,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
+      "feature/smart-arrival-journeys": false,
       "feature/multi-speciality": false,
       "fix/session-consistency": false,
       "fix/marketing-preferences": false,
@@ -29,7 +30,7 @@
     },
     {
       "path": "/api/cron/notifications",
-      "schedule": "5 * * * *"
+      "schedule": "* * * * *"
     }
   ]
 }

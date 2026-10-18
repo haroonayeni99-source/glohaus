@@ -1,3 +1,4 @@
+import { AdminArrival, type ArrivalOverview } from "@/components/admin-arrival";
 import { AdminCategoryManager } from "@/components/admin-category-manager";
 import { productCategories } from "@/modules/shop/repository";
 import { adminPushDeliveryOverview } from "@/modules/admin/repository";
@@ -75,6 +76,7 @@ export default async function Page() {
   const activity = await withAdmin((db) => activityOverview(db)).catch(
     () => null,
   );
+  const arrivals = await withAdmin(async db => (await db.query<{data:ArrivalOverview}>("SELECT beauty.admin_arrival_overview(NULL) AS data")).rows[0].data).catch(() => null);
   const labels = await publicLabels();
   const shopCategories = await withAdmin((db) =>
     productCategories(db, true),
@@ -141,6 +143,7 @@ export default async function Page() {
           referrals={referrals}
           owner={owner}
         />
+        <section id="arrival-management" className="admin-workspace-section admin-detail-card"><h2>Arrival & customer communications</h2>{arrivals ? <AdminArrival initial={arrivals} owner={isOwner}/> : <p role="alert">Arrival management could not be loaded. Reload to try again.</p>}</section>
         <section
           id="professional-policies"
           className="admin-workspace-section admin-detail-card"

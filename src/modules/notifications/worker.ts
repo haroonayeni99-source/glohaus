@@ -21,6 +21,7 @@ export async function runNotificationWorker() {
     Awaited<ReturnType<typeof deliverPushNotifications>> | { error: string };
   try {
     await withPaymentWorker(async (db) => {
+      await db.query("SELECT beauty.prepare_arrival_reminders()");
       await db.query("SELECT beauty.prepare_professional_notifications()");
       await db.query("SELECT beauty.prepare_professional_promotions()");
     });

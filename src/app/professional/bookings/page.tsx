@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
 import { AccessMessage } from "@/components/access-message";
-import { BookingList } from "@/components/booking-list";
+import { BookingList, type ArrivalSummary } from "@/components/booking-list";
 import { BookingNavigation } from "@/components/booking-navigation";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { bookingListOptions } from "@/modules/bookings/listing";
@@ -29,6 +29,11 @@ export default async function Bookings({
       { role: "professional", id: account.professionalId! },
       options,
     ),
+    arrivals: (
+      await db.query<{ data: Record<string, ArrivalSummary> }>(
+        "SELECT beauty.my_arrival_summaries() AS data",
+      )
+    ).rows[0].data,
     totals: (
       await db.query<{ captured: number; refunded: number }>(
         "SELECT coalesce(sum(p.captured_pence),0)::integer AS captured,coalesce(sum(p.refunded_pence),0)::integer AS refunded FROM beauty.payments p JOIN beauty.bookings b ON b.id=p.booking_id WHERE b.professional_id=$1",
@@ -38,7 +43,10 @@ export default async function Bookings({
   }));
   return (
     <div className="pro-app">
-      <ProfessionalNavigation active="bookings" displayName={account.displayName} />
+      <ProfessionalNavigation
+        active="bookings"
+        displayName={account.displayName}
+      />
       <main id="main" className="pro-main pro-list-page">
         <p className="pro-kicker">YOUR APPOINTMENTS</p>
         <h1>Keep your booking week in view.</h1>
@@ -69,7 +77,11 @@ export default async function Bookings({
             after={Boolean(options.after)}
             next={data.page.next}
           >
-            <BookingList bookings={data.page.bookings} professional />
+            <BookingList
+              bookings={data.page.bookings}
+              professional
+              arrivals={data.arrivals}
+            />
           </BookingNavigation>
         </section>
       </main>

@@ -6,6 +6,8 @@ export type InAppNotification = {
   booking_id: string | null;
   product_order_id: string | null;
   kind:
+    | "arrival_update"
+    | "journey_departure"
     | "customer_message"
     | "review_received"
     | "dispute_opened"

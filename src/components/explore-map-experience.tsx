@@ -102,6 +102,8 @@ export function ExploreMapExperience({
   const sequence = useRef(0);
   const nearby = nearbyResults ?? professionals;
   const unavailable = loadFailed && nearbyResults === null;
+  const showExamples =
+    !unavailable && !position && !locating && examples.length > 0;
   const mapped = nearby.filter(
     (p) =>
       p.public_location_confirmed_at &&
@@ -545,21 +547,27 @@ export function ExploreMapExperience({
         <aside className="map-pro-results">
           <header className="discovery-result-heading">
             <h2>
-              {query
-                ? `Professionals for “${query}”`
-                : filters.location
-                  ? `Professionals in ${filters.location}`
-                  : "Discover your next beauty expert"}
+              {showExamples
+                ? "Explore beauty profiles"
+                : query
+                  ? `Professionals for “${query}”`
+                  : filters.location
+                    ? `Professionals in ${filters.location}`
+                    : "Discover your next beauty expert"}
             </h2>
-            {!unavailable && <p>
-              {nearby.length} matching{" "}
-              {nearby.length === 1 ? "professional" : "professionals"} ·{" "}
-              {position ? "Closest first" : "Recommended"}
-            </p>}
-            <small>
-              Prices match your search. Availability is indicative and checked
-              again when booking.
-            </small>
+            {!unavailable && (!showExamples || nearby.length > 0) && (
+              <p>
+                {nearby.length} matching{" "}
+                {nearby.length === 1 ? "professional" : "professionals"} ·{" "}
+                {position ? "Closest first" : "Recommended"}
+              </p>
+            )}
+            {(!showExamples || nearby.length > 0) && (
+              <small>
+                Prices match your search. Availability is indicative and checked
+                again when booking.
+              </small>
+            )}
           </header>
           <div className="map-pro-list">
             {nearby.map((pro) => (
@@ -686,7 +694,7 @@ export function ExploreMapExperience({
               </article>
             ))}
           </div>
-          {!unavailable && !nearby.length && (
+          {!unavailable && !nearby.length && !showExamples && (
             <div className="map-pro-empty">
               <Search size={28} />
               <h3>No matching professionals yet.</h3>
@@ -694,7 +702,7 @@ export function ExploreMapExperience({
               <Link href="/explore">Clear filters</Link>
             </div>
           )}
-          {!position && !locating && <ExampleProfessionalListings examples={examples} />}
+          {showExamples && <ExampleProfessionalListings examples={examples} />}
         </aside>
         <div id="professional-map" className="discovery-map-panel">
           <div className="discovery-map-toolbar">

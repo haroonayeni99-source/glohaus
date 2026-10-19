@@ -95,10 +95,21 @@ try {
         await expect(page.locator(".profile-example-card")).toHaveCount(3);
         await page.getByRole("link", { name: "Reset", exact: true }).click();
         await expect(page.locator(".profile-example-card")).toHaveCount(10);
-        await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
-          "content",
-          /noindex/,
-        );
+        // Next can briefly retain matching streamed metadata during navigation.
+        // Verify every emitted policy rather than assuming one physical tag.
+        await expect
+          .poll(() =>
+            page
+              .locator('meta[name="robots"]')
+              .evaluateAll(
+                (tags) =>
+                  tags.length > 0 &&
+                  tags.every((tag) =>
+                    /\bnoindex\b/.test(tag.getAttribute("content") || ""),
+                  ),
+              ),
+          )
+          .toBe(true);
         expect(
           await page.evaluate(
             () => document.documentElement.scrollWidth <= innerWidth,
@@ -117,14 +128,16 @@ try {
           await expect(
             page.getByRole("button", { name: /^(Follow|Book|Pay)/ }),
           ).toHaveCount(0);
-          await expect(
-            page.locator('script[type="application/ld+json"]'),
-          ).toHaveCount(1); // Existing GLOHAUS organisation metadata only.
+          const structuredData = await page
+            .locator('script[type="application/ld+json"]')
+            .allTextContents();
+          expect(structuredData.length).toBeGreaterThan(0);
           expect(
-            await page
-              .locator('script[type="application/ld+json"]')
-              .textContent(),
-          ).not.toContain('"BeautySalon"');
+            structuredData.every(
+              (text) =>
+                !/"BeautySalon"|"LocalBusiness"|"AggregateRating"/.test(text),
+            ),
+          ).toBe(true);
           const destinations = await page
             .locator(".professional-public a")
             .evaluateAll((links) =>

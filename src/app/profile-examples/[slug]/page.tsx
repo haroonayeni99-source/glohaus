@@ -7,10 +7,11 @@ import { BottomNavigation } from "@/components/bottom-navigation";
 import { publicViewerSignedIn } from "@/lib/public-viewer";
 import {
   findProfileExample,
-  profileExamples,
 } from "@/modules/professionals/examples";
 import { money } from "@/modules/professionals/domain";
 import "@/components/profile-examples.css";
+import { publicExampleVisibility } from "@/modules/professionals/example-visibility-repository";
+import { visibleProfileExamples } from "@/modules/professionals/example-visibility";
 
 export async function generateMetadata({
   params,
@@ -18,8 +19,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const p = findProfileExample((await params).slug);
+  const visible = visibleProfileExamples(await publicExampleVisibility());
   return {
-    title: p ? `${p.name} · Example profile` : "Example profile unavailable",
+    title: p && visible.includes(p) ? `${p.name} · Example profile` : "Example profile unavailable",
     robots: { index: false, follow: false },
   };
 }
@@ -32,7 +34,8 @@ export default async function ExampleProfilePage({
   searchParams: Promise<{ speciality?: string; service?: string }>;
 }) {
   const p = findProfileExample((await params).slug);
-  if (!p) notFound();
+  const visible = visibleProfileExamples(await publicExampleVisibility());
+  if (!p || !visible.includes(p)) notFound();
   const query = await searchParams;
   const selected =
     p.services.find((s) => s.id === query.service) ?? p.services[0];
@@ -43,7 +46,7 @@ export default async function ExampleProfilePage({
     : undefined;
   const signedIn = await publicViewerSignedIn();
   const next =
-    profileExamples[(profileExamples.indexOf(p) + 1) % profileExamples.length];
+    visible[(visible.indexOf(p) + 1) % visible.length];
   return (
     <>
       <PublicHeader signedIn={signedIn} />
@@ -66,7 +69,7 @@ export default async function ExampleProfilePage({
           </p>
         </div>
         <nav aria-label="Example profiles">
-          <Link href="/profile-examples">All ten examples</Link>
+          <Link href="/profile-examples">{visible.length === 10 ? "All ten examples" : "All available examples"}</Link>
           <Link href={next.path}>Next example →</Link>
         </nav>
       </div>

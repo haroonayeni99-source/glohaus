@@ -12,6 +12,13 @@ import ExamplesPage from "@/app/profile-examples/page";
 import ExamplePage, {
   generateMetadata,
 } from "@/app/profile-examples/[slug]/page";
+const visibility = vi.hoisted(() => ({
+  enabled: true,
+  hiddenSlugs: [] as string[],
+}));
+vi.mock("@/modules/professionals/example-visibility-repository", () => ({
+  publicExampleVisibility: async () => visibility,
+}));
 vi.mock("@/lib/public-viewer", () => ({
   publicViewerSignedIn: async () => false,
 }));
@@ -201,5 +208,50 @@ it("leaves account creation and marketplace mutations out of the examples", asyn
     expect(source).not.toMatch(
       /createUser|enrolAccount|withIdentity|INSERT INTO|stripe\(|fetch\(/,
     );
+  }
+});
+
+it("removes hidden profiles from the gallery, direct URLs and next-example links", async () => {
+  visibility.hiddenSlugs = [profileExamples[1].slug];
+  try {
+    const gallery = html(
+      await ExamplesPage({ searchParams: Promise.resolve({}) }),
+    );
+    expect(gallery.querySelectorAll(".profile-example-card")).toHaveLength(9);
+    expect(
+      gallery.querySelector(`a[href="${profileExamples[1].path}"]`),
+    ).toBeNull();
+    await expect(
+      ExamplePage({
+        params: Promise.resolve({ slug: profileExamples[1].slug }),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow("NOT_FOUND");
+    const first = html(
+      await ExamplePage({
+        params: Promise.resolve({ slug: profileExamples[0].slug }),
+        searchParams: Promise.resolve({}),
+      }),
+    );
+    expect(
+      first
+        .querySelector('nav[aria-label="Example profiles"] a:last-child')
+        ?.getAttribute("href"),
+    ).toBe(profileExamples[2].path);
+    visibility.enabled = false;
+    expect(
+      html(
+        await ExamplesPage({ searchParams: Promise.resolve({}) }),
+      ).querySelectorAll(".profile-example-card"),
+    ).toHaveLength(0);
+    await expect(
+      ExamplePage({
+        params: Promise.resolve({ slug: profileExamples[0].slug }),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow("NOT_FOUND");
+  } finally {
+    visibility.enabled = true;
+    visibility.hiddenSlugs = [];
   }
 });

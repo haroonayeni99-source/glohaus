@@ -23,6 +23,8 @@ import {
   londonBorough,
 } from "@/modules/professionals/london-boroughs";
 import { ProfessionalDirections } from "./professional-directions";
+import { ExampleProfessionalListings } from "./example-professional-listings";
+import type { ExampleListing } from "@/modules/professionals/example-visibility";
 import {
   coordinatesSchema,
   distanceLabel,
@@ -69,6 +71,7 @@ export function ExploreMapExperience({
   taxonomy,
   signedIn = false,
   loadFailed = false,
+  examples = [],
 }: {
   professionals: PublicProfessional[];
   query: string;
@@ -76,6 +79,7 @@ export function ExploreMapExperience({
   taxonomy?: TaxonomyCatalog;
   signedIn?: boolean;
   loadFailed?: boolean;
+  examples?: ExampleListing[];
 }) {
   const router = useRouter();
   const [retrying, startRetry] = useTransition();
@@ -690,6 +694,7 @@ export function ExploreMapExperience({
               <Link href="/explore">Clear filters</Link>
             </div>
           )}
+          {!position && !locating && <ExampleProfessionalListings examples={examples} />}
         </aside>
         <div id="professional-map" className="discovery-map-panel">
           <div className="discovery-map-toolbar">

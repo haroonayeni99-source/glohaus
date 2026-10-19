@@ -5,7 +5,8 @@ import { PublicHeader } from "@/components/public-header";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { ProfileExamplesReset } from "@/components/profile-examples-reset";
 import { publicViewerSignedIn } from "@/lib/public-viewer";
-import { profileExamples } from "@/modules/professionals/examples";
+import { publicExampleVisibility } from "@/modules/professionals/example-visibility-repository";
+import { visibleProfileExamples } from "@/modules/professionals/example-visibility";
 import "@/components/profile-examples.css";
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default async function ProfileExamplesPage({
 }) {
   const params = await searchParams;
   const signedIn = await publicViewerSignedIn();
+  const profileExamples = visibleProfileExamples(await publicExampleVisibility());
   const categories = [...new Set(profileExamples.map((p) => p.category))];
   const category = categories.includes(params.category ?? "")
     ? params.category
@@ -42,9 +44,9 @@ export default async function ProfileExamplesPage({
       <main id="main" className="profile-examples-page">
         <header className="profile-examples-intro">
           <p className="eyebrow">YOUR BUSINESS. YOUR GLOHAUS.</p>
-          <h1>Ten profiles. Plenty of possibilities.</h1>
+          <h1>{profileExamples.length === 10 ? "Ten profiles. Plenty of possibilities." : "Explore example profiles."}</h1>
           <p>
-            Explore example storefronts across eight beauty categories. See how
+            Explore example storefronts across {categories.length} beauty categories. See how
             a logo, introduction, specialities, portfolio, service menu, hours
             and booking policies can work together.
           </p>
@@ -154,8 +156,8 @@ export default async function ProfileExamplesPage({
         </section>
         {!examples.length && (
           <p>
-            No examples match both filters.{" "}
-            <Link href="/profile-examples">View all ten profiles.</Link>
+            No example profiles are currently available for this selection.{" "}
+            <Link href="/profile-examples">View all available examples.</Link>
           </p>
         )}
         <section className="profile-examples-footer">

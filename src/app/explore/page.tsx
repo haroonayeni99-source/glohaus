@@ -16,6 +16,8 @@ import {
 import { discoveryPage } from "@/modules/professionals/repository";
 import type { PublicProfessional } from "@/modules/professionals/domain";
 import { publicViewerSignedIn } from "@/lib/public-viewer";
+import { readExampleVisibility } from "@/modules/professionals/example-visibility-repository";
+import { defaultExampleVisibility, exampleListings, visibleProfileExamples } from "@/modules/professionals/example-visibility";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +44,7 @@ export default async function Explore({
 }) {
   const { query: q, filters, after } = discoveryOptions(await searchParams);
   const viewerSignedIn = await publicViewerSignedIn();
+  let exampleVisibility = process.env.DATABASE_URL ? { enabled: false, hiddenSlugs: [] as string[] } : defaultExampleVisibility;
 
   let taxonomy = emptyTaxonomy;
   let next: string | null = null;
@@ -53,10 +56,12 @@ export default async function Explore({
       const result = await withIdentity("", async (db) => ({
         ...(await discoveryPage(db, q, after, filters)),
         taxonomy: await taxonomyCatalog(db),
+        exampleVisibility: await readExampleVisibility(db).catch(() => ({ enabled: false, hiddenSlugs: [] })),
       }));
       professionals = result.professionals;
       next = result.next;
       taxonomy = result.taxonomy;
+      exampleVisibility = result.exampleVisibility;
     } catch (error) {
       loadFailed = true;
       const code =
@@ -95,6 +100,7 @@ export default async function Explore({
           query={q}
           filters={filters}
           loadFailed={loadFailed}
+          examples={exampleListings(exampleVisibility, q, filters, taxonomy)}
         />
         {!loadFailed && (after || next) && (
           <nav
@@ -113,10 +119,10 @@ export default async function Explore({
             )}
           </nav>
         )}
-        <section className="profile-examples-callout" aria-label="Professional profile examples">
-          <div><strong>See what a GLOHAUS profile can look like.</strong><p>Browse ten fictional examples across different beauty categories.</p></div>
+        {visibleProfileExamples(exampleVisibility).length > 0 && <section className="profile-examples-callout" aria-label="Professional profile examples">
+          <div><strong>See what a GLOHAUS profile can look like.</strong><p>Browse fictional examples across different beauty categories.</p></div>
           <Link href="/profile-examples">Explore example profiles →</Link>
-        </section>
+        </section>}
       </main>
       <BottomNavigation active="search" signedIn={viewerSignedIn} />
     </>

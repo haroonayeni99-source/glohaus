@@ -37,6 +37,10 @@ import { withOwner } from "@/modules/admin/repository";
 import { OwnerReferralOverview } from "@/components/owner-referral-overview";
 import { OwnerDashboardOverview } from "@/components/owner-dashboard-overview";
 import { WebsiteStatusControl } from "@/components/website-status-control";
+import { OwnerExampleProfiles } from "@/components/owner-example-profiles";
+import "@/components/profile-examples.css";
+import { readExampleVisibility } from "@/modules/professionals/example-visibility-repository";
+import { profileExamples } from "@/modules/professionals/examples";
 import { HomepageMediaControl } from "@/components/homepage-media-control";
 import { OwnerMarketingPanel } from "@/components/owner-marketing-panel";
 import { OwnerBackendHealthPanel } from "@/components/owner-backend-health-panel";
@@ -120,6 +124,7 @@ export default async function Page() {
   const publicSiteEnabled = isOwner
     ? await ownerPublicSiteStatus().catch(() => null)
     : true;
+  const exampleVisibility = isOwner ? await withOwner(readExampleVisibility).catch(() => null) : null;
   const homepageMedia = isOwner
     ? await ownerHomepageMedia().catch(() => null)
     : null;
@@ -180,6 +185,10 @@ export default async function Page() {
             )}
           </section>
         )}
+        {isOwner && <section id="profile-examples" className="admin-workspace-section admin-detail-card">
+          <p className="eyebrow">EXAMPLE CONTENT</p><h2>Example profiles</h2>
+          {exampleVisibility ? <OwnerExampleProfiles initial={exampleVisibility} profiles={profileExamples.map(({ slug, name, category }) => ({ slug, name, category }))} /> : <AdminSectionUnavailable label="Example profile controls" />}
+        </section>}
         {isOwner && marketing && (
           <section
             id="marketing"

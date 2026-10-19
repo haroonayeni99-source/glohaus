@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
 import { BottomNavigation } from "@/components/bottom-navigation";
+import { ProfileExamplesReset } from "@/components/profile-examples-reset";
 import { publicViewerSignedIn } from "@/lib/public-viewer";
 import { profileExamples } from "@/modules/professionals/examples";
 import "@/components/profile-examples.css";
@@ -98,7 +99,7 @@ export default async function ProfileExamplesPage({
           <button className="button" type="submit">
             Show examples
           </button>
-          <a href="/profile-examples">Reset</a>
+          <ProfileExamplesReset />
         </form>
         <p role="status">
           {examples.length} {examples.length === 1 ? "example" : "examples"}

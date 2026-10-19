@@ -99,6 +99,14 @@ try {
           page.getByRole("combobox", { name: "Category", exact: true }),
         ).toHaveValue("");
         await page
+          .getByRole("combobox", { name: "Category", exact: true })
+          .selectOption("Nails");
+        await page.getByRole("link", { name: "Reset", exact: true }).click();
+        await expect(
+          page.getByRole("combobox", { name: "Category", exact: true }),
+        ).toHaveValue("");
+        await expect(page.locator(".profile-example-card")).toHaveCount(10);
+        await page
           .locator(".profile-example-card-image img")
           .evaluateAll((images) =>
             images.forEach((image) => {

@@ -128,13 +128,18 @@ try {
         background_color: "#e95f96",
       });
       expect(manifest.viewport).toContain("viewport-fit=cover");
+      expect(manifest.data.icons.map((icon) => icon.src)).toEqual([
+        "/icons/glohaus-home-192-v2.png",
+        "/icons/glohaus-home-512-v2.png",
+        "/icons/glohaus-home-maskable-512-v2.png",
+      ]);
       const dimensions = await page.evaluate(async () => {
         return Promise.all(
           [
-            "/icons/glohaus-192.png",
-            "/icons/glohaus-512.png",
-            "/icons/apple-touch-icon.png",
-            "/icons/glohaus-maskable-512.png",
+            "/icons/glohaus-home-192-v2.png",
+            "/icons/glohaus-home-512-v2.png",
+            "/icons/glohaus-home-apple-180-v2.png",
+            "/icons/glohaus-home-maskable-512-v2.png",
           ].map(
             (src) =>
               new Promise((resolve) => {
@@ -152,7 +157,7 @@ try {
         [180, 180],
         [512, 512],
       ]);
-      expect(manifest.apple).toContain("/icons/apple-touch-icon.png");
+      expect(manifest.apple).toContain("/icons/glohaus-home-apple-180-v2.png");
       await page.evaluate(async () => {
         await navigator.serviceWorker.ready;
         if (!navigator.serviceWorker.controller)
@@ -244,6 +249,10 @@ try {
           "/icons/glohaus-512.png",
           "/icons/apple-touch-icon.png",
           "/icons/glohaus-maskable-512.png",
+          "/icons/glohaus-home-192-v2.png",
+          "/icons/glohaus-home-512-v2.png",
+          "/icons/glohaus-home-apple-180-v2.png",
+          "/icons/glohaus-home-maskable-512-v2.png",
         ].sort(),
       );
       await page.screenshot({

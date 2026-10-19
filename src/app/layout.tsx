@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     "Discover, book and get inspired by independent beauty professionals near you.",
   robots: { index: false, follow: false },
   appleWebApp: { capable: true, title: "GLOHAUS", statusBarStyle: "default" },
-  icons: { apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }] },
+  icons: { apple: [{ url: "/icons/glohaus-home-apple-180-v2.png", sizes: "180x180", type: "image/png" }] },
 };
 export const viewport: Viewport = {
   width: "device-width",

@@ -14,7 +14,7 @@ This extends the deployed arrival system. Implementation and automated fixture c
 ## Required provider setup
 
 1. In Google Cloud, use a project with billing, enable **Routes API** and create a server API key restricted to that API. Review application restrictions suitable for your server deployment. Do not use a browser/referrer-restricted key for server calls and never expose the key as `NEXT_PUBLIC_*`.
-2. In Vercel **glohaus1 → Settings → Environment Variables → Production**, add `GOOGLE_MAPS_ROUTES_API_KEY` as sensitive.
+2. In Vercel **glohaus1 → Settings → Environment Variables → Production**, add `GOOGLE_ROUTES_API_KEY` as sensitive. The legacy `GOOGLE_MAPS_ROUTES_API_KEY` name remains supported; the current name takes precedence when both are set. Neither name may use a `NEXT_PUBLIC_` prefix. Readiness checks and provider requests use the same server-only resolver.
 3. Generate an independent 32-byte random encryption key using a trusted password/secret manager or `node -e 'process.stdout.write(require("node:crypto").randomBytes(32).toString("hex"))'`. Save its 64 hexadecimal characters as sensitive `JOURNEY_ROUTING_ENCRYPTION_KEY`. Do not paste either secret into a chat, source file or report. Rotating this key invalidates old encrypted route origins; affected customers must calculate and opt in again.
 4. Redeploy the verified release so both server-only variables are available. Existing `CRON_SECRET`, Resend and VAPID variables are reused.
 5. Under **Admin → Arrival & communications → Automatic routing & delivery readiness**, verify credentials are configured, review the limits and enable routing with an audited reason. The existing **Feature controls** independently enable professional arrival tools, customer planning and departure reminders. Reminders require a recent signed scheduler heartbeat. Neither routing setup nor these switches grants customer location permission.
@@ -29,6 +29,12 @@ Defaults are 100 reserved requests/day and 3,000/month across this application. 
 Sources: https://developers.google.com/maps/billing-and-pricing/pricing , https://developers.google.com/maps/documentation/routes/usage-and-billing , https://developers.google.com/maps/documentation/routes/policies , https://developers.google.com/maps/documentation/routes/transit-route . Provider attribution is displayed with estimates; Google routes are not drawn on the existing non-Google map. Public Terms and Privacy describe the optional Google processing. Controller review of lawful basis/consent, transparency, retention and any necessary DPIA remains part of rollout.
 
 ## Physical device and delivery checklist
+
+### Explicit live-provider deployment diagnostic
+
+`scripts/check-google-routes-live.mjs` bundles the actual server estimator and runs only when explicitly invoked with `GLOHAUS_LIVE_ROUTES_PROBE=1`. It makes at most three requests for public London station coordinates (driving, walking and transit), checks traffic/transit flags and derives a departure time from a future appointment deadline. Output contains only safe status, mode, duration and departure fields. It never reads a customer account, creates a booking, logs a key or writes an origin. It is not run by the normal build, CI or recurring cron.
+
+Before the diagnostic deployment, reserve three requests in the existing daily/monthly usage counter under the settings row lock and record an operator audit. Use a one-deployment build-command override to run the diagnostic before the normal build; do not change the project's permanent build command or copy secrets to local files. A failed diagnostic must leave routing disabled. After all three real requests pass on the exact deployed source/environment, `scripts/activate-google-routing.sql` enables only routing, requiring healthy existing planning/reminder controls and recording an operator audit. Existing request limits, customer consent, GPS controls and financial rules are preserved. Physical-device receipt tests remain separate.
 
 The server scheduler and existing email delivery records were inspected. Resend's sending domain is verified, and a real booking-reminder delivery receipt exists in GLOHAUS. Those records do not prove a new route-change email or a push was received. At the start of this work there were no active push subscriptions; a physical push test could not yet be performed.
 

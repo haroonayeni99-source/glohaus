@@ -15,7 +15,7 @@ Requested by Haroon on 18 October 2026. Existing application and financial rules
 | Feature | Status and evidence |
 | --- | --- |
 | Customer manual journey duration, transport mode and departure buffer | PASS in `tests/arrival-database.test.ts`, `tests/arrival-domain.test.ts` and `scripts/check-arrival.mjs`; activation verified separately in production |
-| Automatic estimates, traffic-aware driving and transit timetables | FAIL activation: `GOOGLE_MAPS_ROUTES_API_KEY` is absent. Provider/parser, quota, encryption, consent and invalidation tests exist in `tests/journey-routing*.test.ts`; an actual Google result is NOT VERIFIED |
+| Automatic estimates, traffic-aware driving and transit timetables | Activation is tracked by the 19 October follow-up in `journey-routing-activation.md`. `GOOGLE_ROUTES_API_KEY` is the current name; `GOOGLE_MAPS_ROUTES_API_KEY` remains supported. Automated provider/parser, quota, encryption, consent and invalidation tests are separate from the required explicit live provider diagnostic and audited activation |
 | Recommended departure time | PASS automated arrival/routing tests; manual duration remains explicitly labelled |
 | Google Maps directions | PASS automatic directions-link tests and arrival browser checks; external app handoff on a physical phone is NOT VERIFIED |
 | Departure reminders and preference opt-out | PASS isolated SQL tests for minute scheduler, consent, deduplication, cancellation/reschedule/location invalidation and stale stages |
@@ -38,7 +38,7 @@ Requested by Haroon on 18 October 2026. Existing application and financial rules
 
 ## No-code account requirements
 
-1. Google Cloud: authorise a billing-enabled project with Routes API enabled and a server key restricted to Routes API. Put the key in Vercel `glohaus1` Production as sensitive `GOOGLE_MAPS_ROUTES_API_KEY`. Do not paste it into chat or use a `NEXT_PUBLIC_` name. The independent encryption key already exists. After deployment and a successful consented provider test, enable the existing Owner routing control. The app's existing 100/day and 3,000/month limits remain unchanged.
+1. Google Cloud: authorise a billing-enabled project with Routes API enabled and a server key restricted to Routes API. Put the key in Vercel `glohaus1` Production as sensitive `GOOGLE_ROUTES_API_KEY` (legacy `GOOGLE_MAPS_ROUTES_API_KEY` also works). Do not paste it into chat or use a `NEXT_PUBLIC_` name. The independent encryption key already exists. After deployment and a successful provider diagnostic, enable the existing routing control through Owner MFA or the explicitly authorised, audited deployment procedure. The app's existing 100/day and 3,000/month limits remain unchanged.
 2. Stripe: authorise the existing Glohaus test environment/sandbox through the Stripe connection. Production stays in live mode. Automated provider transactions must use the isolated test context and isolated application database, with separate test webhook secrets. A test API key must never replace production payment credentials.
 3. Physical devices: follow the checklist below. No code changes or terminal commands are required.
 

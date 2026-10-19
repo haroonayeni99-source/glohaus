@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { googleRoutesApiKey } from "./config";
 import {
   RoutingError,
   type JourneyOrigin,
@@ -98,7 +99,7 @@ export async function estimateRoute(
   mode: Transport,
   bufferMinutes: number,
 ) {
-  const apiKey = process.env.GOOGLE_MAPS_ROUTES_API_KEY?.trim();
+  const apiKey = googleRoutesApiKey();
   if (!apiKey) throw new RoutingError("ROUTING_NOT_CONFIGURED");
   let response: Response;
   try {

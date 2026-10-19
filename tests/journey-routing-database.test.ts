@@ -1,4 +1,5 @@
 import { beforeAll, beforeEach, afterAll, it, expect } from "vitest";
+import { readFile } from "node:fs/promises";
 import { createTestDatabase, applyTestMigrations } from "./test-database";
 import { enrolAccount, type SqlClient } from "@/modules/accounts/repository";
 const db = await createTestDatabase();
@@ -406,4 +407,67 @@ it("does not duplicate the same leave-reminder stage across refreshed plan revis
       )
     ).rows[0].n,
   ).toBe(2);
+});
+it("activates routing through an audited operator action without changing limits or opting in customers", async () => {
+  const sql = await readFile(
+    new URL("../scripts/activate-google-routing.sql", import.meta.url),
+    "utf8",
+  );
+  await db.exec(
+    "UPDATE beauty.arrival_settings SET routing_enabled=false,scheduler_tick_at=now()-interval '5 minutes'",
+  );
+  await expect(db.exec(sql)).rejects.toThrow("JOURNEY_ACTIVATION_NOT_READY");
+  await db.exec("ROLLBACK");
+  expect(
+    (
+      await db.query<{ routing_enabled: boolean }>(
+        "SELECT routing_enabled FROM beauty.arrival_settings",
+      )
+    ).rows[0].routing_enabled,
+  ).toBe(false);
+  await worker("SELECT beauty.arrival_scheduler_tick()");
+  const before = (
+    await db.query(
+      "SELECT to_jsonb(s)-'routing_enabled'-'updated_at' AS data FROM beauty.arrival_settings s",
+    )
+  ).rows[0];
+  const plans = (
+    await db.query(
+      "SELECT booking_id,auto_refresh,origin_ciphertext FROM beauty.appointment_journey_routes ORDER BY booking_id",
+    )
+  ).rows;
+  await db.exec(sql);
+  await db.exec(sql);
+  expect(
+    (
+      await db.query<{ routing_enabled: boolean }>(
+        "SELECT routing_enabled FROM beauty.arrival_settings",
+      )
+    ).rows[0].routing_enabled,
+  ).toBe(true);
+  expect(
+    (
+      await db.query(
+        "SELECT to_jsonb(s)-'routing_enabled'-'updated_at' AS data FROM beauty.arrival_settings s",
+      )
+    ).rows[0],
+  ).toEqual(before);
+  expect(
+    (
+      await db.query(
+        "SELECT booking_id,auto_refresh,origin_ciphertext FROM beauty.appointment_journey_routes ORDER BY booking_id",
+      )
+    ).rows,
+  ).toEqual(plans);
+  const audits = (
+    await db.query(
+      "SELECT actor_user_id,actor_role,metadata FROM beauty.admin_audit_logs WHERE actor_reference='codex:google-routing-activation:2026-10-19'",
+    )
+  ).rows;
+  expect(audits).toHaveLength(1);
+  expect(audits[0]).toMatchObject({
+    actor_user_id: null,
+    actor_role: null,
+    metadata: { customerConsentChanged: false, limitsChanged: false },
+  });
 });

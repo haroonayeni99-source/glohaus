@@ -3,6 +3,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
+      "feature/profile-examples": false,
       "feature/home-screen-logo": false,
       "fix/android-notification-open": false,
       "fix/google-routes-key-activation": false,

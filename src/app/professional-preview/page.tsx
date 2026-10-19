@@ -93,6 +93,7 @@ export default async function ProfessionalPreviewPage({
         <nav aria-label="Professional preview navigation">
           <Link href="/professional-preview">Dashboard</Link>
           <Link href="/customer-preview">Customer POV</Link>
+          <Link href="/profile-examples">Example profiles</Link>
           <Link href="/sign-in?intent=professional&returnTo=/professional">
             Professional sign in
           </Link>

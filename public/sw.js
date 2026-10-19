@@ -74,30 +74,46 @@ self.addEventListener("push", (event) => {
     }).then(() => reportReceipt(data.deliveryReceipt, "displayed")),
   );
 });
+async function openNotificationDestination(url) {
+  let windows = [];
+  try {
+    windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+  } catch {} // A suspended client list must not prevent opening the app.
+  const candidates = windows.filter((client) => {
+    try {
+      return new URL(client.url).origin === self.location.origin && typeof client.focus === "function";
+    } catch { return false; }
+  });
+  // Reuse the destination first, rather than redirecting an unrelated open tab.
+  candidates.sort((a, b) => Number(b.url === url.href) - Number(a.url === url.href));
+  for (const client of candidates) {
+    try {
+      // Focus while the notification tap still grants user activation. Waiting
+      // for a page load first can lose Android's permission to foreground it.
+      const focused = await client.focus();
+      if (!focused) continue;
+      // Client.url can lag behind Next.js client-side navigation. Reload the
+      // target even when its last document URL appears to match.
+      if (typeof focused.navigate === "function" && await focused.navigate(url.href)) return;
+    } catch {} // Closed/suspended windows must not swallow the notification tap.
+  }
+  // Chrome for Android can route this into the installed standalone app.
+  const opened = await self.clients.openWindow(url.href);
+  if (opened && typeof opened.focus === "function") {
+    try { await opened.focus(); } catch {} // The destination is already open.
+  }
+}
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const href = event.notification.data?.href;
   const url = new URL(
-    typeof href === "string" && /^\/(?!\/)/.test(href)
+    typeof href === "string" && /^\/(?!\/)[a-zA-Z0-9_/?=&-]*$/.test(href)
       ? href
       : "/notifications?view=professional",
     self.location.origin,
   );
   if (url.origin !== self.location.origin) return;
   event.waitUntil(
-    Promise.all([reportReceipt(event.notification.data?.deliveryReceipt, "clicked"), self.clients
-      .matchAll({ type: "window", includeUncontrolled: true })
-      .then(async (clients) => {
-        for (const client of clients) {
-          if (
-            new URL(client.url).origin === self.location.origin &&
-            "focus" in client
-          ) {
-            await client.navigate(url.href);
-            return client.focus();
-          }
-        }
-        return self.clients.openWindow(url.href);
-      })]),
+    Promise.all([openNotificationDestination(url), reportReceipt(event.notification.data?.deliveryReceipt, "clicked")]),
   );
 });

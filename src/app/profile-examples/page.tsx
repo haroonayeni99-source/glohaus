@@ -65,7 +65,11 @@ export default async function ProfileExamplesPage({
         <form className="profile-examples-filters" action="/profile-examples">
           <label>
             Category
-            <select name="category" defaultValue={category ?? ""}>
+            <select
+              aria-label="Category"
+              name="category"
+              defaultValue={category ?? ""}
+            >
               <option value="">All categories</option>
               {categories.map((c) => (
                 <option key={c} value={c}>
@@ -76,7 +80,11 @@ export default async function ProfileExamplesPage({
           </label>
           <label>
             Profile style
-            <select name="style" defaultValue={style ?? ""}>
+            <select
+              aria-label="Profile style"
+              name="style"
+              defaultValue={style ?? ""}
+            >
               <option value="">All styles</option>
               <option value="signature">Signature</option>
               <option value="minimal">Minimal</option>

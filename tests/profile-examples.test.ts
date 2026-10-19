@@ -108,6 +108,17 @@ it.each(profileExamples)(
   },
 );
 it("filters examples by category and style, and handles empty or invalid filters", async () => {
+  const gallery = html(
+    await ExamplesPage({ searchParams: Promise.resolve({}) }),
+  );
+  expect(
+    gallery
+      .querySelector('select[name="category"]')
+      ?.getAttribute("aria-label"),
+  ).toBe("Category");
+  expect(
+    gallery.querySelector('select[name="style"]')?.getAttribute("aria-label"),
+  ).toBe("Profile style");
   const count = async (query: { category?: string; style?: string }) =>
     html(
       await ExamplesPage({ searchParams: Promise.resolve(query) }),

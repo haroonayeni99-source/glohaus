@@ -88,7 +88,9 @@ try {
         );
         await page.goto(`${base}/profile-examples`);
         await expect(page.locator(".profile-example-card")).toHaveCount(10);
-        await page.getByLabel("Category", { exact: true }).selectOption("Hair");
+        await page
+          .getByRole("combobox", { name: "Category", exact: true })
+          .selectOption("Hair");
         await page.getByRole("button", { name: "Show examples" }).click();
         await expect(page.locator(".profile-example-card")).toHaveCount(3);
         await page.getByRole("link", { name: "Reset", exact: true }).click();
@@ -190,6 +192,18 @@ try {
       allPassed: true,
     }),
   );
+} catch (error) {
+  for (const [i, browser] of browsers.entries())
+    for (const [j, context] of browser.contexts().entries())
+      for (const [k, page] of context.pages().entries()) {
+        await page
+          .screenshot({
+            path: `reports/profile-examples-failed-${i}-${j}-${k}.png`,
+            fullPage: true,
+          })
+          .catch(() => {});
+      }
+  throw error;
 } finally {
   for (const browser of browsers) await browser.close();
   const stopped = new Promise((resolve) => server.once("exit", resolve));

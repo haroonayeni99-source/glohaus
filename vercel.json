@@ -3,6 +3,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
+      "feature/journey-notification-verification": false,
       "feature/home-screen-pwa": false,
       "feature/automatic-journey-routing": false,
       "feature/smart-arrival-journeys": false,

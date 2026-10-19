@@ -18,28 +18,65 @@ import {
 const DEFAULT_APP_URL = "https://glohaus.shop";
 const DEFAULT_EMAIL_FROM = "GLOHAUS <noreply@glohaus.shop>";
 export async function runNotificationWorker() {
+  const preparationFailures: string[] = [];
+  let journeyRouting:
+    Awaited<ReturnType<typeof refreshJourneyRoutes>> | { error: string };
+  try {
+    journeyRouting = await refreshJourneyRoutes();
+  } catch {
+    journeyRouting = { error: "JOURNEY_REFRESH_FAILED" };
+    preparationFailures.push("journeyRouting");
+    console.error("Notification preparation failed", {
+      stage: "journeyRouting",
+    });
+  }
+  // Each preparation has its own transaction. A failed route/provider or one
+  // notification category must not roll back or suppress unrelated deliveries.
+  for (const [stage, statement] of [
+    ["arrivalReminders", "SELECT beauty.prepare_arrival_reminders()"],
+    [
+      "professionalNotifications",
+      "SELECT beauty.prepare_professional_notifications()",
+    ],
+    [
+      "professionalPromotions",
+      "SELECT beauty.prepare_professional_promotions()",
+    ],
+  ]) {
+    try {
+      await withPaymentWorker((db) => db.query(statement));
+    } catch {
+      preparationFailures.push(stage);
+      console.error("Notification preparation failed", { stage });
+    }
+  }
   let push:
     Awaited<ReturnType<typeof deliverPushNotifications>> | { error: string };
   try {
-    await refreshJourneyRoutes();
-    await withPaymentWorker(async (db) => {
-      await db.query("SELECT beauty.prepare_arrival_reminders()");
-      await db.query("SELECT beauty.prepare_professional_notifications()");
-      await db.query("SELECT beauty.prepare_professional_promotions()");
-    });
     push = await deliverPushNotifications();
   } catch {
     push = { error: "PUSH_WORKER_FAILED" };
+    console.error(
+      "Push notification delivery pending; scheduled worker will retry",
+    );
   }
   if (!process.env.RESEND_API_KEY) {
     await withPaymentWorker((db) =>
       db.query("SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)", [
         "notifications",
         false,
-        JSON.stringify({ code: "EMAIL_NOT_CONFIGURED", push }),
+        JSON.stringify({
+          code: "EMAIL_NOT_CONFIGURED",
+          push,
+          journeyRouting,
+          preparationFailures,
+        }),
       ]),
     ).catch(() => {});
-    return Response.json({ emailConfigured: false, push }, { status: 503 });
+    return Response.json(
+      { emailConfigured: false, push, journeyRouting, preparationFailures },
+      { status: 503 },
+    );
   }
 
   const appUrl = process.env.GLOHAUS_PUBLIC_URL?.trim() || DEFAULT_APP_URL;
@@ -275,6 +312,8 @@ export async function runNotificationWorker() {
     }
     const summary = {
       push,
+      journeyRouting,
+      preparationFailures,
       professionalJobs: professionalJobs.length,
       processed:
         jobs.length +
@@ -294,14 +333,16 @@ export async function runNotificationWorker() {
     await withPaymentWorker((db) =>
       db.query("SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)", [
         "notifications",
-        !("error" in push),
+        !("error" in push) && preparationFailures.length === 0,
         JSON.stringify(summary),
       ]),
     ).catch((error) => {
       console.error("Failed to record notification worker health", error);
     });
 
-    return Response.json(summary);
+    return Response.json(summary, {
+      status: "error" in push || preparationFailures.length ? 503 : 200,
+    });
   } catch {
     console.error("Notification worker failed");
     await withPaymentWorker((db) =>

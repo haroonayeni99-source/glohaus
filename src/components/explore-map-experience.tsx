@@ -103,7 +103,7 @@ export function ExploreMapExperience({
   const nearby = nearbyResults ?? professionals;
   const unavailable = loadFailed && nearbyResults === null;
   const showExamples =
-    !unavailable && !position && !locating && examples.length > 0;
+    !position && !locating && examples.length > 0;
   const mapped = nearby.filter(
     (p) =>
       p.public_location_confirmed_at &&

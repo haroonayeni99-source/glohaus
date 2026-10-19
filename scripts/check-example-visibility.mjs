@@ -111,6 +111,17 @@ try {
           results.push({ engine, theme, width, passed: true });
           await context.close();
         }
+    } catch (error) {
+      for (const context of browser.contexts())
+        for (const page of context.pages()) {
+          await page
+            .screenshot({
+              path: `reports/profile-examples-owner-failed-${engine}.png`,
+              fullPage: true,
+            })
+            .catch(() => {});
+        }
+      throw error;
     } finally {
       await browser.close();
     }

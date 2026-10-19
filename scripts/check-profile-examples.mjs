@@ -231,7 +231,7 @@ try {
             .click();
           await expect(page.locator(".profile-example-card")).toHaveCount(10);
         }
-        await page.locator('a[href="/explore"]').first().click();
+        await page.locator('.glohaus-site-footer a[href="/explore"]').click();
         await expect(page.locator(".example-discovery-card")).toHaveCount(10);
         await expect(page.locator(".example-listings")).toContainText(
           "FICTIONAL BUSINESS",

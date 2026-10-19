@@ -236,18 +236,29 @@ try {
         await context.close();
       }
   }
-  const missing = await fetch(`${base}/profile-examples/not-a-template`);
-  const missingHtml = await missing.text();
+  const missingContext = await browsers[0].newContext();
+  const missingPage = await missingContext.newPage();
+  const missing = await missingPage.goto(
+    `${base}/profile-examples/not-a-template`,
+  );
   // Next returns 200 when notFound() resolves after streaming starts, with
   // the not-found UI and noindex: nextjs.org/docs/app/api-reference/file-conventions/not-found
-  expect([200, 404]).toContain(missing.status);
-  expect(missingHtml).toContain("<h1>This page isn’t here.</h1>");
-  expect(missingHtml).toMatch(
-    /<meta[^>]+name="robots"[^>]+content="[^"]*\bnoindex\b/,
-  );
-  expect(missingHtml).not.toMatch(
-    /class="(?:professional-public|profile-example-banner)/,
-  );
+  expect([200, 404]).toContain(missing.status());
+  await expect(
+    missingPage.getByRole("heading", {
+      level: 1,
+      name: "This page isn’t here.",
+      exact: true,
+    }),
+  ).toBeVisible({ timeout: 15000 });
+  await expect(
+    missingPage.locator('meta[name="robots"][content*="noindex"]').first(),
+  ).toBeAttached();
+  await expect(
+    missingPage.locator(".professional-public, .profile-example-banner"),
+  ).toHaveCount(0);
+  const missingStatus = missing.status();
+  await missingContext.close();
   await writeFile(
     "reports/profile-examples-results.json",
     JSON.stringify(results, null, 2),
@@ -257,7 +268,7 @@ try {
       examples: slugs.length,
       browserCases: results.length,
       unknownProfileRejected: true,
-      unknownProfileStatus: missing.status,
+      unknownProfileStatus: missingStatus,
       mutations: 0,
       allPassed: true,
     }),

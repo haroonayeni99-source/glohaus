@@ -91,6 +91,11 @@ try {
         await page
           .getByRole("combobox", { name: "Category", exact: true })
           .selectOption("Hair");
+        // Avoid WebKit's document-replacement/pending-prefetch error (#42823).
+        // Content readiness still uses assertions; this only drains preloads
+        // before the native GET form replaces the current document.
+        if (engine === "webkit")
+          await page.waitForLoadState("networkidle", { timeout: 15000 });
         await page.getByRole("button", { name: "Show examples" }).click();
         await expect(page.locator(".profile-example-card")).toHaveCount(3);
         await page.getByRole("link", { name: "Reset", exact: true }).click();
@@ -151,7 +156,14 @@ try {
           fullPage: true,
         });
         for (const slug of slugs) {
-          await page.goto(`${base}/profile-examples/${slug}`);
+          await page
+            .locator(
+              `.profile-example-card h2 a[href="/profile-examples/${slug}"]`,
+            )
+            .click();
+          await expect(page).toHaveURL(
+            new RegExp(`/profile-examples/${slug}$`),
+          );
           await expect(page.locator(".profile-example-banner")).toContainText(
             "FICTIONAL BUSINESS",
           );
@@ -214,6 +226,10 @@ try {
               fullPage: true,
             });
           results.push({ slug, engine, theme, width, passed: true });
+          await page
+            .getByRole("link", { name: "All ten examples", exact: true })
+            .click();
+          await expect(page.locator(".profile-example-card")).toHaveCount(10);
         }
         expect(errors).toEqual([]);
         expect(mutations).toEqual([]);

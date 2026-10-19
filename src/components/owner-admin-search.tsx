@@ -12,6 +12,7 @@ type SearchItem = {
 };
 
 const staticItems: SearchItem[] = [
+  ["examples", "Example profiles", "Show, hide or restore fictional profiles", "profile-examples"],
   [
     "website",
     "Website ON / OFF",

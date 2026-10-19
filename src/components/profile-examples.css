@@ -224,3 +224,15 @@
     padding: 20px;
   }
 }
+
+.example-listings { margin: 28px 0; color: var(--ink); }
+.example-listings > p { line-height: 1.6; margin-bottom: 18px; }
+.example-discovery-card .discovery-card-photo { min-height: 180px; }
+.example-discovery-card .discovery-card-copy p { overflow-wrap: anywhere; }
+.example-discovery-card .discovery-card-copy > .eyebrow { color: var(--ink); }
+.owner-example-profiles fieldset { border: 0; padding: 0; margin: 20px 0; min-width: 0; }
+.owner-example-profiles label { display: flex; align-items: center; gap: 12px; min-height: 48px; cursor: pointer; }
+.owner-example-profiles input[type="checkbox"] { flex: 0 0 20px; width: 20px; height: 20px; }
+.owner-example-profile-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px 20px; margin-top: 18px; }
+.owner-example-profile-list small { display: block; font-weight: normal; }
+@media (max-width:600px) { .owner-example-profile-list { grid-template-columns: minmax(0,1fr); } }

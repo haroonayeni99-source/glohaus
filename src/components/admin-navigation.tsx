@@ -68,6 +68,7 @@ const ownerSections = [
   ["Website ON / OFF", "website-status", Globe2],
   ["Marketing", "marketing", MessageSquareWarning],
   ["Homepage Images", "homepage-media", Settings],
+  ["Example profiles", "profile-examples", UsersRound],
   ["Booking Fee", "booking-fee", CreditCard],
   ["Shop Fees", "shop-fees", CreditCard],
   ["Sign-ups & sign-ins", "auth-accounts", UsersRound],
@@ -121,7 +122,7 @@ const adminGroups = [
   },
   {
     label: "Content & growth",
-    ids: ["homepage-media", "content", "marketing", "referrals"],
+    ids: ["homepage-media", "profile-examples", "content", "marketing", "referrals"],
   },
   {
     label: "Operations",

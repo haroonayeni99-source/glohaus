@@ -5,7 +5,8 @@ import { PublicHeader } from "@/components/public-header";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { ProfileExamplesReset } from "@/components/profile-examples-reset";
 import { publicViewerSignedIn } from "@/lib/public-viewer";
-import { profileExamples } from "@/modules/professionals/examples";
+import { publicExampleVisibility } from "@/modules/professionals/example-visibility-repository";
+import { visibleProfileExamples } from "@/modules/professionals/example-visibility";
 import "@/components/profile-examples.css";
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default async function ProfileExamplesPage({
 }) {
   const params = await searchParams;
   const signedIn = await publicViewerSignedIn();
+  const profileExamples = visibleProfileExamples(await publicExampleVisibility());
   const categories = [...new Set(profileExamples.map((p) => p.category))];
   const category = categories.includes(params.category ?? "")
     ? params.category
@@ -154,7 +156,7 @@ export default async function ProfileExamplesPage({
         </section>
         {!examples.length && (
           <p>
-            No examples match both filters.{" "}
+            No example profiles are currently available for this selection.{" "}
             <Link href="/profile-examples">View all ten profiles.</Link>
           </p>
         )}

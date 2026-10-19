@@ -231,6 +231,21 @@ try {
             .click();
           await expect(page.locator(".profile-example-card")).toHaveCount(10);
         }
+        await page.locator('a[href="/explore"]').first().click();
+        await expect(page.locator(".example-discovery-card")).toHaveCount(10);
+        await expect(page.locator(".example-listings")).toContainText(
+          "FICTIONAL BUSINESS",
+        );
+        await expect(page.locator(".example-listings button")).toHaveCount(0);
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+        await page.screenshot({
+          path: `reports/profile-examples-explore-${engine}-${theme}-${width}.png`,
+          fullPage: true,
+        });
         expect(errors).toEqual([]);
         expect(mutations).toEqual([]);
         await context.close();

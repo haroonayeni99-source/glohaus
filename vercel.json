@@ -3,6 +3,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
+      "feature/example-listings": false,
       "feature/profile-examples": false,
       "feature/home-screen-logo": false,
       "fix/android-notification-open": false,

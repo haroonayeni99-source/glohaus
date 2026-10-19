@@ -12,6 +12,13 @@ import {
 import { money } from "@/modules/professionals/domain";
 import "@/components/profile-examples.css";
 
+// These examples are a finite gallery, not user-generated account slugs.
+// Reject unknown paths before Next starts streaming a successful response.
+export const dynamicParams = false;
+export function generateStaticParams() {
+  return profileExamples.map(({ slug }) => ({ slug }));
+}
+
 export async function generateMetadata({
   params,
 }: {

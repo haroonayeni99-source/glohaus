@@ -419,8 +419,11 @@ it("activates routing through an audited operator action without changing limits
   await expect(db.exec(sql)).rejects.toThrow("JOURNEY_ACTIVATION_NOT_READY");
   await db.exec("ROLLBACK");
   expect(
-    (await db.query("SELECT routing_enabled FROM beauty.arrival_settings"))
-      .rows[0].routing_enabled,
+    (
+      await db.query<{ routing_enabled: boolean }>(
+        "SELECT routing_enabled FROM beauty.arrival_settings",
+      )
+    ).rows[0].routing_enabled,
   ).toBe(false);
   await worker("SELECT beauty.arrival_scheduler_tick()");
   const before = (
@@ -436,8 +439,11 @@ it("activates routing through an audited operator action without changing limits
   await db.exec(sql);
   await db.exec(sql);
   expect(
-    (await db.query("SELECT routing_enabled FROM beauty.arrival_settings"))
-      .rows[0].routing_enabled,
+    (
+      await db.query<{ routing_enabled: boolean }>(
+        "SELECT routing_enabled FROM beauty.arrival_settings",
+      )
+    ).rows[0].routing_enabled,
   ).toBe(true);
   expect(
     (

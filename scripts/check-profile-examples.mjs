@@ -236,8 +236,17 @@ try {
         await context.close();
       }
   }
-  expect((await fetch(`${base}/profile-examples/not-a-template`)).status).toBe(
-    404,
+  const missing = await fetch(`${base}/profile-examples/not-a-template`);
+  const missingHtml = await missing.text();
+  // Next returns 200 when notFound() resolves after streaming starts, with
+  // the not-found UI and noindex: nextjs.org/docs/app/api-reference/file-conventions/not-found
+  expect([200, 404]).toContain(missing.status);
+  expect(missingHtml).toContain("<h1>This page isn’t here.</h1>");
+  expect(missingHtml).toMatch(
+    /<meta[^>]+name="robots"[^>]+content="[^"]*\bnoindex\b/,
+  );
+  expect(missingHtml).not.toMatch(
+    /class="(?:professional-public|profile-example-banner)/,
   );
   await writeFile(
     "reports/profile-examples-results.json",
@@ -247,7 +256,8 @@ try {
     JSON.stringify({
       examples: slugs.length,
       browserCases: results.length,
-      unknownProfile404: true,
+      unknownProfileRejected: true,
+      unknownProfileStatus: missing.status,
       mutations: 0,
       allPassed: true,
     }),

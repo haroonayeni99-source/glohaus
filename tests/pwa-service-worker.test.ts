@@ -16,6 +16,7 @@ async function harness() {
         "glohaus-pwa-static-v0",
         "unrelated-cache",
         "glohaus-pwa-static-v1",
+        "glohaus-pwa-static-v2",
       ]),
     delete: vi.fn().mockResolvedValue(true),
   };
@@ -74,6 +75,10 @@ it("precaches only the static help screen and exact icons, omitting credentials"
     "/icons/glohaus-512.png",
     "/icons/apple-touch-icon.png",
     "/icons/glohaus-maskable-512.png",
+    "/icons/glohaus-home-192-v2.png",
+    "/icons/glohaus-home-512-v2.png",
+    "/icons/glohaus-home-apple-180-v2.png",
+    "/icons/glohaus-home-maskable-512-v2.png",
   ]);
   expect(
     requests.every(
@@ -85,9 +90,10 @@ it("precaches only the static help screen and exact icons, omitting credentials"
 it("deletes only its old static caches and activates updates only on a same-origin request", async () => {
   const h = await harness();
   await h.lifecycle("activate");
-  expect(h.caches.delete).toHaveBeenCalledExactlyOnceWith(
-    "glohaus-pwa-static-v0",
-  );
+  expect(h.caches.delete.mock.calls).toEqual([
+    ["glohaus-pwa-static-v0"],
+    ["glohaus-pwa-static-v1"],
+  ]);
   await h.lifecycle("message", {
     data: { type: "GLOHAUS_ACTIVATE_UPDATE" },
     source: { url: "https://attacker.test/" },

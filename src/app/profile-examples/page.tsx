@@ -62,7 +62,11 @@ export default async function ProfileExamplesPage({
             Compare profile options and plans →
           </Link>
         </header>
-        <form className="profile-examples-filters" action="/profile-examples">
+        <form
+          key={`${category ?? "all"}:${style ?? "all"}`}
+          className="profile-examples-filters"
+          action="/profile-examples"
+        >
           <label>
             Category
             <select
@@ -94,7 +98,7 @@ export default async function ProfileExamplesPage({
           <button className="button" type="submit">
             Show examples
           </button>
-          <Link href="/profile-examples">Reset</Link>
+          <a href="/profile-examples">Reset</a>
         </form>
         <p role="status">
           {examples.length} {examples.length === 1 ? "example" : "examples"}

@@ -95,6 +95,29 @@ try {
         await expect(page.locator(".profile-example-card")).toHaveCount(3);
         await page.getByRole("link", { name: "Reset", exact: true }).click();
         await expect(page.locator(".profile-example-card")).toHaveCount(10);
+        await expect(
+          page.getByRole("combobox", { name: "Category", exact: true }),
+        ).toHaveValue("");
+        await page
+          .locator(".profile-example-card-image img")
+          .evaluateAll((images) =>
+            images.forEach((image) => {
+              image.loading = "eager";
+            }),
+          );
+        await expect
+          .poll(() =>
+            page
+              .locator(".profile-example-card-image img")
+              .evaluateAll(
+                (images) =>
+                  images.length === 10 &&
+                  images.every(
+                    (image) => image.complete && image.naturalWidth > 0,
+                  ),
+              ),
+          )
+          .toBe(true);
         // Next can briefly retain matching streamed metadata during navigation.
         // Verify every emitted policy rather than assuming one physical tag.
         await expect

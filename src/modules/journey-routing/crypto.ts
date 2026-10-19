@@ -1,6 +1,7 @@
 import "server-only";
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { originSchema, type JourneyOrigin } from "./domain";
+import { googleRoutesApiKey } from "./config";
 
 function key() {
   const raw = process.env.JOURNEY_ROUTING_ENCRYPTION_KEY || "";
@@ -9,7 +10,7 @@ function key() {
 }
 export function routingConfigured() {
   return (
-    Boolean(process.env.GOOGLE_MAPS_ROUTES_API_KEY?.trim()) &&
+    Boolean(googleRoutesApiKey()) &&
     /^[a-f\d]{64}$/i.test(process.env.JOURNEY_ROUTING_ENCRYPTION_KEY || "")
   );
 }

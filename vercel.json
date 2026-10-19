@@ -3,6 +3,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
+      "fix/google-routes-key-activation": false,
       "feature/journey-notification-verification": false,
       "feature/home-screen-pwa": false,
       "feature/automatic-journey-routing": false,

@@ -27,6 +27,7 @@ const ctx: RouteContext = {
   mode: "driving",
 };
 beforeEach(() => {
+  vi.stubEnv("GOOGLE_ROUTES_API_KEY", "");
   vi.stubEnv("GOOGLE_MAPS_ROUTES_API_KEY", "server-only-key");
   vi.stubEnv("JOURNEY_ROUTING_ENCRYPTION_KEY", "ab".repeat(32));
   vi.stubEnv("CRON_SECRET", "receipt-secret");
@@ -36,6 +37,41 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
+});
+it("uses the current server key name for readiness and provider requests", async () => {
+  vi.stubEnv("GOOGLE_MAPS_ROUTES_API_KEY", "");
+  vi.stubEnv("GOOGLE_ROUTES_API_KEY", "  current-server-key  ");
+  expect(routingConfigured()).toBe(true);
+  fetchMock.mockResolvedValue(
+    Response.json({ routes: [{ duration: "1200s" }] }),
+  );
+  await estimateRoute({ address: "Public fixture" }, ctx, "walking", 10);
+  expect(fetchMock.mock.calls[0][1].headers["X-Goog-Api-Key"]).toBe(
+    "current-server-key",
+  );
+});
+it("prefers the current key over the legacy name and falls back when it is blank", async () => {
+  vi.stubEnv("GOOGLE_ROUTES_API_KEY", "current-server-key");
+  fetchMock.mockImplementation(async () =>
+    Response.json({ routes: [{ duration: "1200s" }] }),
+  );
+  await estimateRoute({ address: "Public fixture" }, ctx, "walking", 10);
+  expect(fetchMock.mock.calls[0][1].headers["X-Goog-Api-Key"]).toBe(
+    "current-server-key",
+  );
+  vi.stubEnv("GOOGLE_ROUTES_API_KEY", "   ");
+  await estimateRoute({ address: "Public fixture" }, ctx, "walking", 10);
+  expect(fetchMock.mock.calls[1][1].headers["X-Goog-Api-Key"]).toBe(
+    "server-only-key",
+  );
+});
+it("refuses provider calls before networking if both key names are absent", async () => {
+  vi.stubEnv("GOOGLE_MAPS_ROUTES_API_KEY", "");
+  expect(routingConfigured()).toBe(false);
+  await expect(
+    estimateRoute({ address: "Public fixture" }, ctx, "driving", 10),
+  ).rejects.toThrow("ROUTING_NOT_CONFIGURED");
+  expect(fetchMock).not.toHaveBeenCalled();
 });
 it("encrypts only a booking-bound origin and rejects tampering, another booking and a rotated key", () => {
   const origin = { address: "Private fictional starting address" };

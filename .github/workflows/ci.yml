@@ -8,6 +8,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  profile-examples:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium webkit
+      - name: Verify ten fictional profiles, mobile themes and non-transactional previews
+        run: node scripts/check-profile-examples.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: profile-examples-checks
+          path: reports/profile-examples-*
+
   home-screen-pwa:
     runs-on: ubuntu-latest
     timeout-minutes: 10

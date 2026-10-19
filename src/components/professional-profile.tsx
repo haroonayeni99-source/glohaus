@@ -45,6 +45,7 @@ export type ProfilePresentation = {
     portfolio_layout: "grid" | "feature";
     service_style: "cards" | "clean";
   };
+  example?: { basePath: string; mediaSources: Record<string, string> };
 };
 export function ProfessionalProfile({
   professional: p,
@@ -63,11 +64,14 @@ export function ProfessionalProfile({
   messageHref,
   bookingFeePence,
   presentation,
+  example,
 }: ProfilePresentation) {
+  const profilePath = example?.basePath ?? `/p/${p.slug}`;
+  const mediaSource = (id: string) => example?.mediaSources[id] ?? `/api/media/${id}`;
   const services=allServices.filter(s=>!selectedSpeciality||s.speciality_id===selectedSpeciality).sort((a,b)=>(a.speciality_name??"Other services").localeCompare(b.speciality_name??"Other services")||a.price_pence-b.price_pence);
   const assets=allAssets.filter(a=>!selectedSpeciality||a.speciality_ids?.includes(selectedSpeciality));
   const reviews=allReviews.filter(r=>(!selectedSpeciality||r.speciality_id===selectedSpeciality)&&(!reviewService||r.service_id===reviewService));
-  const specialityTabs=(anchor:string)=><nav className="taxonomy-tabs" aria-label={`${anchor} specialities`}><Link aria-current={!selectedSpeciality?"page":undefined} href={`/p/${p.slug}#${anchor}`}>All {anchor==="services"?"Services":anchor}</Link>{specialities.map(s=><Link key={s.speciality_id} aria-current={selectedSpeciality===s.speciality_id?"page":undefined} href={`?speciality=${s.speciality_id}#${anchor}`}>{s.name}</Link>)}</nav>;
+  const specialityTabs=(anchor:string)=><nav className="taxonomy-tabs" aria-label={`${anchor} specialities`}><Link aria-current={!selectedSpeciality?"page":undefined} href={`${profilePath}#${anchor}`}>All {anchor==="services"?"Services":anchor}</Link>{specialities.map(s=><Link key={s.speciality_id} aria-current={selectedSpeciality===s.speciality_id?"page":undefined} href={`?speciality=${s.speciality_id}#${anchor}`}>{s.name}</Link>)}</nav>;
   const safeHref = (value: string) => {
     try {
       const url = new URL(value);
@@ -111,7 +115,7 @@ export function ProfessionalProfile({
               width={180}
               height={180}
               unoptimized
-              src={`/api/media/${d.photo_id}`}
+              src={mediaSource(d.photo_id)}
               alt={d.photo_alt || p.business_name}
               priority
             />
@@ -129,7 +133,7 @@ export function ProfessionalProfile({
           <h1>{p.business_name}</h1>
           {!!specialities.length&&<p>{specialities.map(s=>s.name).join(" · ")}<small className="professional-verification-note">Specialities declared by the professional.</small></p>}
           <div className="professional-meta">
-            <ProfessionalVerificationBadges professional={p} />
+            {example ? <span className="professional-card-verification">Example profile</span> : <ProfessionalVerificationBadges professional={p} />}
             <span>
               <MapPin size={16} aria-hidden />
               {p.city}, England
@@ -150,12 +154,12 @@ export function ProfessionalProfile({
           )}
           <p className="professional-bio">{p.bio}</p>
           <div className="professional-social-actions">
-            <FollowProfessionalButton
+            {example ? <span>Profile customisation example</span> : <FollowProfessionalButton
               professionalId={p.id}
               initialFollowing={follow.following}
               initialFollowerCount={follow.followerCount}
               signedIn={follow.signedIn}
-            />
+            />}
             {messageHref && (
               <a className="professional-message-button" href={messageHref}>
                 <MessageCircle size={16} aria-hidden />
@@ -165,7 +169,7 @@ export function ProfessionalProfile({
           </div>
         </div>
         <a className="button professional-book-button" href="#booking">
-          Book an appointment <ArrowUpRight size={18} aria-hidden />
+          {example ? "Preview appointment" : "Book an appointment"} <ArrowUpRight size={18} aria-hidden />
         </a>
       </header>
       {live}
@@ -203,7 +207,7 @@ export function ProfessionalProfile({
                       View professional-confirmed studio pin
                     </a>
                   )}
-                <ProfessionalDirections professional={p} />
+                {!example && <ProfessionalDirections professional={p} />}
               </div>
               <div>
                 <h3>Get in touch</h3>
@@ -227,7 +231,7 @@ export function ProfessionalProfile({
                     Contact on Instagram <ArrowUpRight size={16} />
                   </a>
                 ) : (
-                  <p>Choose a service and book through GLOHAUS.</p>
+                  <p>{example ? "Example business · Contact details are not active." : "Choose a service and book through GLOHAUS."}</p>
                 )}
               </div>
             </div>
@@ -258,13 +262,13 @@ export function ProfessionalProfile({
                   asset.media_type === "video" ? (
                     <ViewportVideo
                       key={asset.id}
-                      src={`/api/media/${asset.id}`}
+                      src={mediaSource(asset.id)}
                       label={asset.alt_text}
                     />
                   ) : (
                     <Image
                       key={asset.id}
-                      src={`/api/media/${asset.id}`}
+                      src={mediaSource(asset.id)}
                       width={600}
                       height={750}
                       unoptimized
@@ -293,8 +297,8 @@ export function ProfessionalProfile({
                     service.asset_id ? "service-with-image" : undefined
                   }
                 >
-                  {service.asset_id && (service.asset_media_type==="video"?<ViewportVideo src={`/api/media/${service.asset_id}`} label={service.image_alt||service.name}/>:<Image
-                      src={`/api/media/${service.asset_id}`}
+                  {service.asset_id && (service.asset_media_type==="video"?<ViewportVideo src={mediaSource(service.asset_id)} label={service.image_alt||service.name}/>:<Image
+                      src={mediaSource(service.asset_id)}
                       alt={service.image_alt || service.name}
                       width={96}
                       height={96}
@@ -307,7 +311,7 @@ export function ProfessionalProfile({
                     />
                   )}
                   <div>
-                    <Link href={`/p/${p.slug}/services/${service.id}`}>Service details & policies</Link>
+                    <Link href={example ? `?service=${encodeURIComponent(service.id)}#booking` : `/p/${p.slug}/services/${service.id}`}>{example ? "Preview service & options" : "Service details & policies"}</Link>
                     <h3>{service.name}</h3>
                     <p>{service.description}</p>
                     <span>
@@ -327,9 +331,9 @@ export function ProfessionalProfile({
                     </span>
                     <a
                       className="profile-service-book"
-                      href={`?bookService=${encodeURIComponent(service.id)}#booking`}
+                      href={`?${example ? "service" : "bookService"}=${encodeURIComponent(service.id)}#booking`}
                     >
-                      {service.has_variations?"Choose options":"Book"} <ArrowUpRight size={14} />
+                      {example ? "Preview" : service.has_variations?"Choose options":"Book"} <ArrowUpRight size={14} />
                     </a>
                   </div>
                 </article></div>
@@ -346,7 +350,7 @@ export function ProfessionalProfile({
             <p className="eyebrow">REAL VISITS. REAL EXPERIENCES.</p>
             <h2>Kind words.</h2>
             {specialityTabs("reviews")}
-            <form action={` /p/${p.slug}`.trim()}><input type="hidden" name="speciality" value={selectedSpeciality??""}/><label>Reviews for service<select name="reviewService" defaultValue={reviewService??""}><option value="">All services</option>{allServices.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label><button type="submit">Filter reviews</button></form>
+            {!example && <form action={profilePath}><input type="hidden" name="speciality" value={selectedSpeciality??""}/><label>Reviews for service<select name="reviewService" defaultValue={reviewService??""}><option value="">All services</option>{allServices.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label><button type="submit">Filter reviews</button></form>}
             {rating !== null && (
               <p className="profile-rating-summary">
                 <Star size={20} aria-hidden />
@@ -366,7 +370,7 @@ export function ProfessionalProfile({
               ))
             ) : (
               <p className="profile-empty">
-                No reviews yet. Reviews appear after completed appointments.
+                {example ? "This fictional profile has no customer reviews. Real profiles collect reviews after completed appointments." : "No reviews yet. Reviews appear after completed appointments."}
               </p>
             )}
           </section>
@@ -375,7 +379,7 @@ export function ProfessionalProfile({
           <section
             id="booking"
             className="professional-section booking-anchor"
-            aria-label="Book an appointment"
+            aria-label={example ? "Example appointment" : "Book an appointment"}
           >
             {allServices.length ? (
               booking

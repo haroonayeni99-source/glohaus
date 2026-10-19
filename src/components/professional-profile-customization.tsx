@@ -29,6 +29,7 @@ export function ProfessionalProfileCustomization({
         <Link className="button small" href="/professional/plans">
           Compare plans
         </Link>
+        <Link className="text-link" href="/profile-examples">Explore ten example profiles</Link>
       </section>
     );
 
@@ -134,8 +135,8 @@ export function ProfessionalProfileCustomization({
         <button className="button" type="button" disabled={busy} onClick={() => void save()}>
           {busy ? "Saving…" : "Save presentation"}
         </button>
-        <Link className="text-link" href="/professional-preview">
-          Preview GLOHAUS layout
+        <Link className="text-link" href={`/profile-examples?style=${settings.profileStyle}`}>
+          Explore example profiles
         </Link>
       </div>
       {message && <p className="form-notice" role="status">{message}</p>}

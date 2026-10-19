@@ -120,7 +120,7 @@ export default async function Explore({
           </nav>
         )}
         {visibleProfileExamples(exampleVisibility).length > 0 && <section className="profile-examples-callout" aria-label="Professional profile examples">
-          <div><strong>See what a GLOHAUS profile can look like.</strong><p>Browse ten fictional examples across different beauty categories.</p></div>
+          <div><strong>See what a GLOHAUS profile can look like.</strong><p>Browse fictional examples across different beauty categories.</p></div>
           <Link href="/profile-examples">Explore example profiles →</Link>
         </section>}
       </main>

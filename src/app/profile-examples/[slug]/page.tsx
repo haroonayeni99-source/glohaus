@@ -69,7 +69,7 @@ export default async function ExampleProfilePage({
           </p>
         </div>
         <nav aria-label="Example profiles">
-          <Link href="/profile-examples">All ten examples</Link>
+          <Link href="/profile-examples">{visible.length === 10 ? "All ten examples" : "All available examples"}</Link>
           <Link href={next.path}>Next example →</Link>
         </nav>
       </div>

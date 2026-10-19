@@ -44,9 +44,9 @@ export default async function ProfileExamplesPage({
       <main id="main" className="profile-examples-page">
         <header className="profile-examples-intro">
           <p className="eyebrow">YOUR BUSINESS. YOUR GLOHAUS.</p>
-          <h1>Ten profiles. Plenty of possibilities.</h1>
+          <h1>{profileExamples.length === 10 ? "Ten profiles. Plenty of possibilities." : "Explore example profiles."}</h1>
           <p>
-            Explore example storefronts across eight beauty categories. See how
+            Explore example storefronts across {categories.length} beauty categories. See how
             a logo, introduction, specialities, portfolio, service menu, hours
             and booking policies can work together.
           </p>
@@ -157,7 +157,7 @@ export default async function ProfileExamplesPage({
         {!examples.length && (
           <p>
             No example profiles are currently available for this selection.{" "}
-            <Link href="/profile-examples">View all ten profiles.</Link>
+            <Link href="/profile-examples">View all available examples.</Link>
           </p>
         )}
         <section className="profile-examples-footer">

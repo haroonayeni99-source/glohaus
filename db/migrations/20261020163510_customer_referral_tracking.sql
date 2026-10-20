@@ -6,9 +6,9 @@ CREATE TABLE IF NOT EXISTS beauty.customer_referral_codes (
 );
 CREATE TABLE IF NOT EXISTS beauty.customer_referrals (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  referrer_user_id uuid NOT NULL REFERENCES beauty.users(id),
-  referred_user_id uuid NOT NULL UNIQUE REFERENCES beauty.users(id),
-  referral_code text NOT NULL REFERENCES beauty.customer_referral_codes(code),
+  referrer_user_id uuid NOT NULL REFERENCES beauty.users(id) ON DELETE CASCADE,
+  referred_user_id uuid NOT NULL UNIQUE REFERENCES beauty.users(id) ON DELETE CASCADE,
+  referral_code text NOT NULL REFERENCES beauty.customer_referral_codes(code) ON DELETE CASCADE,
   created_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT customer_referral_no_self CHECK (referrer_user_id <> referred_user_id)
 );

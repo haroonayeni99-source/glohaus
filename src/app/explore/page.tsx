@@ -16,6 +16,7 @@ import {
 import { discoveryPage } from "@/modules/professionals/repository";
 import type { PublicProfessional } from "@/modules/professionals/domain";
 import { publicViewerSignedIn } from "@/lib/public-viewer";
+import { resolvePostcodeLocation } from "@/modules/professionals/postcode-search";
 import { readExampleVisibility } from "@/modules/professionals/example-visibility-repository";
 import { defaultExampleVisibility, exampleListings, visibleProfileExamples } from "@/modules/professionals/example-visibility";
 
@@ -44,6 +45,7 @@ export default async function Explore({
 }) {
   const { query: q, filters, after } = discoveryOptions(await searchParams);
   const viewerSignedIn = await publicViewerSignedIn();
+  const postcodeCentre = await resolvePostcodeLocation(filters.location);
   let exampleVisibility = process.env.DATABASE_URL ? { enabled: false, hiddenSlugs: [] as string[] } : defaultExampleVisibility;
 
   let taxonomy = emptyTaxonomy;
@@ -54,7 +56,11 @@ export default async function Explore({
   if (process.env.DATABASE_URL) {
     try {
       const result = await withIdentity("", async (db) => ({
-        ...(await discoveryPage(db, q, after, filters)),
+        ...(await discoveryPage(
+          db, q, postcodeCentre ? undefined : after,
+          postcodeCentre ? { ...filters, location: undefined } : filters,
+          postcodeCentre ? { ...postcodeCentre, radiusMiles: 10, query: q, filters: { ...filters, location: undefined } } : undefined,
+        )),
         taxonomy: await taxonomyCatalog(db),
         exampleVisibility: await readExampleVisibility(db).catch(() => ({ enabled: false, hiddenSlugs: [] })),
       }));
@@ -99,10 +105,11 @@ export default async function Explore({
           taxonomy={taxonomy}
           query={q}
           filters={filters}
+          postcodeCentre={postcodeCentre}
           loadFailed={loadFailed}
           examples={exampleListings(exampleVisibility, q, filters, taxonomy)}
         />
-        {!loadFailed && (after || next) && (
+        {!loadFailed && !postcodeCentre && (after || next) && (
           <nav
             className="map-pagination"
             aria-label="Professional search pages"

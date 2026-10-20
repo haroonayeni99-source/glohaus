@@ -15,10 +15,17 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
   const params = await searchParams;
   const period = growthPeriod(params.period);
   const rank = ["completedBookings","uniqueClients","returningClients","completedValuePence"].includes(params.rank??"") ? params.rank! : "completedBookings";
-  const [result, referralRows, activeRows] = await Promise.all([
+  const [result, referralRows, activeRows, profileOpenRows, customerReferrals] = await Promise.all([
     withOwner(db => ownerGrowthOverview(db, period)).catch(() => null),
     withOwner(db => ownerReferralPeriod(db, period)).catch(() => null),
     withOwner(db => ownerMeaningfulActivity(db, period)).catch(() => null),
+    withOwner(async db => (await db.query<{professionalId:string;opens:number}>(
+      'SELECT professional_id AS "professionalId", opens::float8 AS opens FROM beauty.owner_profile_open_counts($1)',
+      [period==="week"?7:period==="year"?366:31]
+    )).rows).catch(() => null),
+    withOwner(async db => (await db.query<{data:{total:number;last30Days:number}}>(
+      "SELECT beauty.owner_customer_referrals_summary() AS data"
+    )).rows[0]?.data).catch(() => null),
   ]);
   const rows = [...(result?.rows ?? [])].sort((a,b)=>Number(b[rank as keyof typeof b])-Number(a[rank as keyof typeof a]));
   const totalBookings = rows.reduce((sum, row) => sum + row.completedBookings, 0);
@@ -59,6 +66,16 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
         {!activeRows.length&&<tr><td colSpan={3}>No qualifying activity in this period.</td></tr>}
         </tbody></table></div> : <p role="alert">Activity statistics temporarily unavailable.</p>}
     </section>
-    <p style={{marginTop:24}}>Website visits and profile-view conversions need an independently validated event source; they are not estimated here.</p>
+    <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
+      <h2>Professional profile opens</h2>
+      <p>Recorded opens from signed-in visitors; not a unique visitor count.</p>
+      {profileOpenRows ? <ul>{profileOpenRows.map(row=><li key={row.professionalId}>{result?.rows.find(p=>p.professionalId===row.professionalId)?.businessName??"Professional"}: {Number(row.opens)} opens</li>)}</ul> : <p role="alert">Profile opening statistics unavailable.</p>}
+    </section>
+    <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
+      <h2>Customer referrals</h2>
+      {customerReferrals ? <p>{customerReferrals.total} attributed registrations overall · {customerReferrals.last30Days} in the last 30 days.</p> : <p role="alert">Customer referral statistics unavailable.</p>}
+      <p>Rewards remain disabled.</p>
+    </section>
+    <p>Website-wide unique visits and precise view-to-booking conversions are not estimated.</p>
   </main>;
 }

@@ -1,11 +1,11 @@
 import type { Coordinates } from "./location";
 
-const FULL_POSTCODE = /^(GIR\\s?0AA|(?:[A-Z]{1,2}\\d[A-Z\\d]?)\\s*\\d[A-Z]{2})$/i;
-const OUTWARD_CODE = /^[A-Z]{1,2}\\d[A-Z\\d]?$/i;
+const FULL_POSTCODE = /^(GIR\s?0AA|(?:[A-Z]{1,2}\d[A-Z\d]?)\s*\d[A-Z]{2})$/i;
+const OUTWARD_CODE = /^[A-Z]{1,2}\d[A-Z\d]?$/i;
 
 /** Public postcode centroids only; no customer device location is stored. */
 export async function resolvePostcodeLocation(value?: string): Promise<Coordinates | null> {
-  const compact = (value ?? "").trim().toUpperCase().replace(/\\s+/g, "");
+  const compact = (value ?? "").trim().toUpperCase().replace(/\s+/g, "");
   const full = FULL_POSTCODE.test(compact);
   if (!full && !OUTWARD_CODE.test(compact)) return null;
   const path = full ? "postcodes" : "outcodes";

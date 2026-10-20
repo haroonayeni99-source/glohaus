@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OwnerGrowthRewardDraft } from "@/components/owner-growth-reward-draft";
 import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
 import { AccessMessage } from "@/components/access-message";
@@ -15,6 +16,10 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
   const params = await searchParams;
   const period = growthPeriod(params.period);
   const rank = ["completedBookings","uniqueClients","returningClients","completedValuePence"].includes(params.rank??"") ? params.rank! : "completedBookings";
+  const [rewardDraft, customerReferralSummary] = await Promise.all([
+    withOwner(async db => (await db.query<{data:{enabled:boolean;customerCreditPence:number;professionalRewardPence:number}}>("SELECT beauty.owner_customer_reward_draft() AS data")).rows[0]?.data).catch(()=>null),
+    withOwner(async db => (await db.query<{data:{total:number;last30Days:number}}>("SELECT beauty.owner_customer_referrals_summary() AS data")).rows[0]?.data).catch(()=>null),
+  ]);
   const [result, referralRows, activeRows] = await Promise.all([
     withOwner(db => ownerGrowthOverview(db, period)).catch(() => null),
     withOwner(db => ownerReferralPeriod(db, period)).catch(() => null),
@@ -59,6 +64,12 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
         {!activeRows.length&&<tr><td colSpan={3}>No qualifying activity in this period.</td></tr>}
         </tbody></table></div> : <p role="alert">Activity statistics temporarily unavailable.</p>}
     </section>
+    <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
+      <h2>Customer referrals</h2>
+      {customerReferralSummary ? <p>{customerReferralSummary.total} attributed customer accounts · {customerReferralSummary.last30Days} in the last 30 days.</p>
+        : <p>Customer referral statistics are unavailable until the new database migration is applied.</p>}
+    </section>
+    {rewardDraft && <OwnerGrowthRewardDraft initial={rewardDraft}/>}
     <p style={{marginTop:24}}>Website visits and profile-view conversions need an independently validated event source; they are not estimated here.</p>
   </main>;
 }

@@ -56,11 +56,14 @@ export default async function Explore({
   if (process.env.DATABASE_URL) {
     try {
       const result = await withIdentity("", async (db) => ({
-        ...(await discoveryPage(
-          db, q, postcodeCentre ? undefined : after,
-          postcodeCentre ? { ...filters, location: undefined } : filters,
-          postcodeCentre ? { ...postcodeCentre, radiusMiles: 10, query: q, filters: { ...filters, location: undefined } } : undefined,
-        )),
+        ...(await (postcodeCentre
+          ? discoveryPage(db, q, undefined, { ...filters, location: undefined }, {
+              ...postcodeCentre,
+              radiusMiles: 10,
+              query: q,
+              filters: { ...filters, location: undefined },
+            })
+          : discoveryPage(db, q, after, filters))),
         taxonomy: await taxonomyCatalog(db),
         exampleVisibility: await readExampleVisibility(db).catch(() => ({ enabled: false, hiddenSlugs: [] })),
       }));

@@ -25,6 +25,7 @@ export async function migrationPlan() {
       name: "recovered/20261010_starter_reservation_definition.sql",
       url: new URL("../db/recovered/20261010_starter_reservation_definition.sql", import.meta.url),
     }] : []),
+    ...(name === "20261020220000_growth_audit_and_appreciation_foundations.sql" ? [{ name: "recovered/20261020_customer_referral_tables.sql", url: new URL("../db/recovered/20261020_customer_referral_tables.sql", import.meta.url) }] : []),
     { name, url: new URL(name, directory) },
   ]);
 }

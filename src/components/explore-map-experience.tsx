@@ -68,6 +68,7 @@ export function ExploreMapExperience({
   professionals,
   query,
   filters,
+  postcodeCentre,
   taxonomy,
   signedIn = false,
   loadFailed = false,
@@ -76,6 +77,7 @@ export function ExploreMapExperience({
   professionals: PublicProfessional[];
   query: string;
   filters: DiscoveryFilters;
+  postcodeCentre?: Coordinates | null;
   taxonomy?: TaxonomyCatalog;
   signedIn?: boolean;
   loadFailed?: boolean;
@@ -107,7 +109,7 @@ export function ExploreMapExperience({
     Boolean(londonBorough(locationSearch)) ||
     /\blondon\b/i.test(locationSearch) ||
     /^(?:E|EC|N|NW|SE|SW|W|WC)\d{1,2}[A-Z]?(?:\s*\d[A-Z]{2})?$/i.test(locationSearch);
-  const showLondonOverview = londonSearch && !streetView;
+  const showLondonOverview = londonSearch && !streetView && !postcodeCentre;
   const nearby = nearbyResults ?? professionals;
   const unavailable = loadFailed && nearbyResults === null;
   const showExamples =
@@ -773,7 +775,7 @@ export function ExploreMapExperience({
                       latitude: selectedPro.public_latitude!,
                       longitude: selectedPro.public_longitude!,
                     }
-                  : (position ??
+                  : (position ?? postcodeCentre ??
                     (mapped[0]
                       ? {
                           latitude: mapped[0].public_latitude!,
@@ -800,7 +802,7 @@ export function ExploreMapExperience({
                 latitude: pro.public_latitude!,
                 longitude: pro.public_longitude!,
               }))}
-              focus={{ latitude: mapped[0].public_latitude!, longitude: mapped[0].public_longitude! }}
+              focus={postcodeCentre ?? { latitude: mapped[0].public_latitude!, longitude: mapped[0].public_longitude! }}
               initialZoom={11}
               selectedId={selected}
               highlightedId={highlighted}
@@ -812,7 +814,7 @@ export function ExploreMapExperience({
             <div className="map-pro-empty" role="status">
               <MapPin size={28} />
               <h3>No confirmed map pins for {locationSearch}</h3>
-              <p>Professionals may still appear in the results list. Try another city or postcode, or widen your search.</p>
+              <p>Try another city or postcode, or widen your search.</p>
             </div>
           )}
           {streetView && selectedPro && (

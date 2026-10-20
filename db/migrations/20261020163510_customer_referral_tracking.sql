@@ -76,3 +76,37 @@ REVOKE ALL ON FUNCTION beauty.owner_customer_referrals_summary() FROM PUBLIC,ano
 GRANT EXECUTE ON FUNCTION beauty.my_customer_referrals() TO beauty_app;
 GRANT EXECUTE ON FUNCTION beauty.claim_customer_referral(text) TO beauty_app;
 GRANT EXECUTE ON FUNCTION beauty.owner_customer_referrals_summary() TO beauty_app;
+
+-- Owners may prepare reward amounts, but cannot enable rewards through this rollout.
+CREATE OR REPLACE FUNCTION beauty.owner_customer_reward_draft()
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog
+AS $$
+BEGIN
+  PERFORM beauty.require_owner();
+  RETURN coalesce((SELECT value FROM beauty.platform_settings WHERE key='customer_referral_rewards'),
+    '{"enabled":false,"customerCreditPence":0,"professionalRewardPence":0,"qualification":"completed_paid_booking"}'::jsonb);
+END $$;
+
+CREATE OR REPLACE FUNCTION beauty.owner_save_customer_reward_draft(customer_credit_pence integer, professional_reward_pence integer)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog
+AS $$
+DECLARE actor uuid; next_value jsonb;
+BEGIN
+  actor:=beauty.require_owner();
+  IF customer_credit_pence IS NULL OR professional_reward_pence IS NULL
+    OR customer_credit_pence < 0 OR customer_credit_pence > 5000
+    OR professional_reward_pence < 0 OR professional_reward_pence > 5000
+  THEN RAISE EXCEPTION 'INVALID_REQUEST' USING ERRCODE='22023'; END IF;
+  next_value:=jsonb_build_object('enabled',false,'customerCreditPence',customer_credit_pence,
+    'professionalRewardPence',professional_reward_pence,'qualification','completed_paid_booking');
+  INSERT INTO beauty.platform_settings(key,value,updated_at,updated_by)
+  VALUES ('customer_referral_rewards',next_value,now(),actor)
+  ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at,updated_by=excluded.updated_by;
+  PERFORM beauty.write_admin_audit(actor,'owner','referrals.reward_draft',actor,'platform_setting',NULL,
+    'Owner saved a disabled customer referral reward draft',next_value);
+  RETURN next_value;
+END $$;
+REVOKE ALL ON FUNCTION beauty.owner_customer_reward_draft() FROM PUBLIC,anon,authenticated,beauty_catalog;
+REVOKE ALL ON FUNCTION beauty.owner_save_customer_reward_draft(integer,integer) FROM PUBLIC,anon,authenticated,beauty_catalog;
+GRANT EXECUTE ON FUNCTION beauty.owner_customer_reward_draft() TO beauty_app;
+GRANT EXECUTE ON FUNCTION beauty.owner_save_customer_reward_draft(integer,integer) TO beauty_app;

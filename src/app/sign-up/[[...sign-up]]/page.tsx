@@ -13,13 +13,14 @@ export const metadata = { title: "Create your account" };
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ intent?: string; returnTo?: string }>;
+  searchParams: Promise<{ intent?: string; returnTo?: string; ref?: string }>;
 }) {
-  const { intent, returnTo } = await searchParams;
+  const { intent, returnTo, ref } = await searchParams;
+  const customerReferral = typeof ref === "string" && /^GC[A-F0-9]{16}$/.test(ref.toUpperCase()) ? ref.toUpperCase() : null;
   const previewTarget = productionAuthUrl(
     "/sign-up",
     new URLSearchParams(
-      Object.entries({ intent, returnTo }).filter(
+      Object.entries({ intent, returnTo, ref: customerReferral ?? undefined }).filter(
         (entry): entry is [string, string] => typeof entry[1] === "string",
       ),
     ),
@@ -29,9 +30,7 @@ export default async function Page({
     intent === "customer" || intent === "professional" ? intent : null;
 
   if (!selectedIntent) {
-    const customerHref = returnTo
-      ? `/sign-up?intent=customer&returnTo=${encodeURIComponent(returnTo)}`
-      : "/sign-up?intent=customer";
+    const customerHref = "/sign-up?intent=customer" + (returnTo ? "&returnTo=" + encodeURIComponent(returnTo) : "") + (customerReferral ? "&ref=" + encodeURIComponent(customerReferral) : "");
 
     return (
       <AuthFrame>
@@ -84,7 +83,7 @@ export default async function Page({
   const professional = selectedIntent === "professional";
   const target = professional
     ? "/onboarding?intent=professional"
-    : safeTarget || "/account";
+    : customerReferral ? "/account/invite?ref=" + encodeURIComponent(customerReferral) : safeTarget || "/account";
 
   return (
     <AuthFrame audience={professional ? "professional" : "customer"}>

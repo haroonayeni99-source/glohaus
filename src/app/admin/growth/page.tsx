@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { saveRewardDraft } from "./reward-action";
 import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
 import { AccessMessage } from "@/components/access-message";
@@ -8,17 +9,27 @@ import { growthPeriod, ownerGrowthOverview, ownerReferralPeriod, ownerMeaningful
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Growth & Performance | GLOHAUS" };
 
-export default async function GrowthPage({ searchParams }: { searchParams: Promise<{ period?: string; rank?: string }> }) {
+export default async function GrowthPage({ searchParams }: { searchParams: Promise<{ period?: string; rank?: string; rewardDraft?: string }> }) {
   const account = await pageAccount("admin");
   if (!account.account) return <AuthFrame><AccessMessage code={account.error ?? undefined} /></AuthFrame>;
   if (!account.account.roles.includes("owner")) return <main className="admin-workspace"><p role="alert">Owner access required.</p></main>;
   const params = await searchParams;
   const period = growthPeriod(params.period);
   const rank = ["completedBookings","uniqueClients","returningClients","completedValuePence"].includes(params.rank??"") ? params.rank! : "completedBookings";
-  const [result, referralRows, activeRows] = await Promise.all([
+  const [result, referralRows, activeRows, profileOpenRows, customerReferrals, rewardDraft] = await Promise.all([
     withOwner(db => ownerGrowthOverview(db, period)).catch(() => null),
     withOwner(db => ownerReferralPeriod(db, period)).catch(() => null),
     withOwner(db => ownerMeaningfulActivity(db, period)).catch(() => null),
+    withOwner(async db => (await db.query<{professionalId:string;opens:number}>(
+      'SELECT professional_id AS "professionalId", opens::float8 AS opens FROM beauty.owner_profile_open_counts($1)',
+      [period==="week"?7:period==="year"?366:31]
+    )).rows).catch(() => null),
+    withOwner(async db => (await db.query<{data:{total:number;last30Days:number}}>(
+      "SELECT beauty.owner_customer_referrals_summary() AS data"
+    )).rows[0]?.data).catch(() => null),
+    withOwner(async db => (await db.query<{value:{enabled:boolean;customerCreditPence:number;professionalWaiverDays:number;minimumCompletedBookings:number}|null}>(
+      "SELECT value FROM beauty.platform_settings WHERE key='referral_rewards_draft'"
+    )).rows[0]?.value).catch(() => null),
   ]);
   const rows = [...(result?.rows ?? [])].sort((a,b)=>Number(b[rank as keyof typeof b])-Number(a[rank as keyof typeof a]));
   const totalBookings = rows.reduce((sum, row) => sum + row.completedBookings, 0);
@@ -59,6 +70,36 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
         {!activeRows.length&&<tr><td colSpan={3}>No qualifying activity in this period.</td></tr>}
         </tbody></table></div> : <p role="alert">Activity statistics temporarily unavailable.</p>}
     </section>
-    <p style={{marginTop:24}}>Website visits and profile-view conversions need an independently validated event source; they are not estimated here.</p>
+    <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
+      <h2>Professional profile opens</h2>
+      <p>Recorded opens from signed-in visitors; not a unique visitor count.</p>
+      {profileOpenRows ? <ul>{profileOpenRows.map(row=><li key={row.professionalId}>{result?.rows.find(p=>p.professionalId===row.professionalId)?.businessName??"Professional"}: {Number(row.opens)} opens</li>)}</ul> : <p role="alert">Profile opening statistics unavailable.</p>}
+    </section>
+    <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
+      <h2>Customer referrals</h2>
+      {customerReferrals ? <p>{customerReferrals.total} attributed registrations overall · {customerReferrals.last30Days} in the last 30 days.</p> : <p role="alert">Customer referral statistics unavailable.</p>}
+      <p>Rewards remain disabled.</p>
+    </section>
+    <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
+      <p className="eyebrow">OWNER CONTROL · DRAFT ONLY</p>
+      <h2>Referral rewards planning</h2>
+      <p>Rewards are permanently OFF in this release. These values are planning settings only. They cannot issue booking credits, waive commission or trigger payments.</p>
+      <form action={saveRewardDraft} style={{display:"grid",gap:12,maxWidth:440}}>
+        <label>Proposed customer booking credit (pence, maximum £10)
+          <input type="number" name="customerCreditPence" min="0" max="1000" step="1" required defaultValue={rewardDraft?.customerCreditPence??0}/>
+        </label>
+        <label>Proposed professional commission waiver (days, maximum 30)
+          <input type="number" name="professionalWaiverDays" min="0" max="30" step="1" required defaultValue={rewardDraft?.professionalWaiverDays??0}/>
+        </label>
+        <label>Minimum qualifying completed paid bookings (1 to 5)
+          <input type="number" name="minimumBookings" min="1" max="5" step="1" required defaultValue={rewardDraft?.minimumCompletedBookings??1}/>
+        </label>
+        <button className="button" type="submit">Save draft settings (rewards stay off)</button>
+      </form>
+      {params.rewardDraft==="saved"&&<p role="status">Draft saved. Rewards remain disabled.</p>}
+      {params.rewardDraft==="invalid"&&<p role="alert">Invalid reward settings. No changes saved.</p>}
+      {params.rewardDraft==="unavailable"&&<p role="alert">Settings unavailable; no changes saved.</p>}
+    </section>
+    <p>Website-wide unique visits and precise view-to-booking conversions are not estimated.</p>
   </main>;
 }

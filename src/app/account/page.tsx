@@ -71,6 +71,7 @@ const links = [
     "/account/orders",
     PackageCheck,
   ],
+  ["Invite friends", "Share GLOHAUS with someone", "/account/invite", Users],
   ["Notifications", "Keep up with your appointments", "/notifications", Bell],
   ["Phone notification settings", "Choose alerts, enable devices and send a test", "/account/notifications", Bell],
   ["Install GLOHAUS", "Add GLOHAUS to your Home Screen", "/install", Smartphone],

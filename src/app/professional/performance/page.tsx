@@ -39,7 +39,11 @@ export default async function Page({searchParams}:{searchParams:Promise<{period?
        WHERE b.professional_id=$1 AND b.status='completed' AND b.completed_at>=NOW()-$2::interval
          AND pay.captured_pence>pay.refunded_pence
        GROUP BY b.service_name ORDER BY bookings DESC,b.service_name ASC LIMIT 5`,[id,interval])).rows;
-    return {row,referrals,code,popularServices};
+    const days=period==="week"?7:period==="year"?366:31;
+    const opens=(await db.query<{count:number}>(
+      'SELECT beauty.my_profile_open_count($1,$2)::float8 AS count',[id,days]
+    )).rows[0]?.count??0;
+    return {row,referrals,code,popularServices,opens};
   }).catch(()=>null);
   const money=(pence:number)=>new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"}).format(pence/100);
   return <main style={{maxWidth:950,margin:"0 auto",padding:"clamp(20px,4vw,48px)"}}>
@@ -51,8 +55,9 @@ export default async function Page({searchParams}:{searchParams:Promise<{period?
     </nav>
     {!metrics?<p role="alert">Performance data is temporarily unavailable. No estimated figures are shown.</p>:<>
       <section className="admin-detail-card" style={{padding:24}}>
-        <h2>My bookings</h2><p><strong>{metrics.row.bookings}</strong> completed bookings · <strong>{metrics.row.clients}</strong> unique clients · <strong>{metrics.row.repeatClients}</strong> repeat clients</p>
+        <h2>My bookings</h2><p><strong>{metrics.opens}</strong> signed-in customer profile opens (not unique visitors)</p><p><strong>{metrics.row.bookings}</strong> completed bookings · <strong>{metrics.row.clients}</strong> unique clients · <strong>{metrics.row.repeatClients}</strong> repeat clients</p>
         <p>{money(metrics.row.netPence)} captured payments net of refunds on completed bookings.</p>
+        <p>{metrics.opens>0 ? (100*metrics.row.bookings/metrics.opens).toFixed(1) : "—"} bookings per 100 signed-in profile opens (an engagement indicator, not a unique-visitor conversion rate).</p>
       </section>
       <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
         <h2>Your most popular services</h2>

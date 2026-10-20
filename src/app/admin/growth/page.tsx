@@ -2,8 +2,8 @@ import Link from "next/link";
 import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
 import { AccessMessage } from "@/components/access-message";
-import { withOwner, ownerProfessionalReferralOverview } from "@/modules/admin/repository";
-import { growthPeriod, ownerGrowthOverview } from "@/modules/admin/growth-performance";
+import { withOwner } from "@/modules/admin/repository";
+import { growthPeriod, ownerGrowthOverview, ownerReferralPeriod } from "@/modules/admin/growth-performance";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Growth & Performance | GLOHAUS" };
@@ -15,7 +15,7 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
   const period = growthPeriod((await searchParams).period);
   const [result, referralRows] = await Promise.all([
     withOwner(db => ownerGrowthOverview(db, period)).catch(() => null),
-    ownerProfessionalReferralOverview().catch(() => null),
+    withOwner(db => ownerReferralPeriod(db, period)).catch(() => null),
   ]);
   const rows = result?.rows ?? [];
   const totalBookings = rows.reduce((sum, row) => sum + row.completedBookings, 0);
@@ -39,10 +39,10 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
           {!rows.length && <tr><td colSpan={5}>No qualifying completed bookings in this period.</td></tr>}</tbody></table></div>
       </section></>}
     <section className="admin-detail-card" style={{ padding: 24, marginTop: 20 }}><h2>Referral performance</h2>
-      <p>Existing referral codes and attributed accounts. Rewards are not enabled.</p>
-      {referralRows ? <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Professional</th><th>Code</th><th>Qualified</th><th>Total sign-ups</th></tr></thead><tbody>
-      {referralRows.map(r=><tr key={r.professionalId}><td>{r.businessName}</td><td>{r.code}</td><td>{r.qualifiedReferrals}</td><td>{r.totalReferrals}</td></tr>)}
-      {!referralRows.length&&<tr><td colSpan={4}>No referrals recorded yet.</td></tr>}</tbody></table></div> : <p role="alert">Referral reporting unavailable.</p>}
+      <p>Attributed accounts created within the selected reporting period. Rewards are not enabled.</p>
+      {referralRows ? <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Professional</th><th>Qualified</th><th>Attributed accounts</th></tr></thead><tbody>
+      {referralRows.map(r=><tr key={r.professionalId}><td>{r.businessName}</td><td>{r.qualifiedReferrals}</td><td>{r.referredAccounts}</td></tr>)}
+      {!referralRows.length&&<tr><td colSpan={3}>No referrals recorded in this period.</td></tr>}</tbody></table></div> : <p role="alert">Referral reporting unavailable.</p>}
     </section>
     <p style={{marginTop:24}}>Website visits and profile-view conversions need an independently validated event source; they are not estimated here.</p>
   </main>;

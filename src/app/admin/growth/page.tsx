@@ -3,7 +3,7 @@ import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
 import { AccessMessage } from "@/components/access-message";
 import { withOwner } from "@/modules/admin/repository";
-import { growthPeriod, ownerGrowthOverview, ownerReferralPeriod } from "@/modules/admin/growth-performance";
+import { growthPeriod, ownerGrowthOverview, ownerReferralPeriod, ownerMeaningfulActivity } from "@/modules/admin/growth-performance";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Growth & Performance | GLOHAUS" };
@@ -15,9 +15,10 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
   const params = await searchParams;
   const period = growthPeriod(params.period);
   const rank = ["completedBookings","uniqueClients","returningClients","completedValuePence"].includes(params.rank??"") ? params.rank! : "completedBookings";
-  const [result, referralRows] = await Promise.all([
+  const [result, referralRows, activeRows] = await Promise.all([
     withOwner(db => ownerGrowthOverview(db, period)).catch(() => null),
     withOwner(db => ownerReferralPeriod(db, period)).catch(() => null),
+    withOwner(db => ownerMeaningfulActivity(db, period)).catch(() => null),
   ]);
   const rows = [...(result?.rows ?? [])].sort((a,b)=>Number(b[rank as keyof typeof b])-Number(a[rank as keyof typeof a]));
   const totalBookings = rows.reduce((sum, row) => sum + row.completedBookings, 0);
@@ -48,6 +49,15 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
       {referralRows ? <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Professional</th><th>Qualified</th><th>Attributed accounts</th></tr></thead><tbody>
       {referralRows.map(r=><tr key={r.professionalId}><td>{r.businessName}</td><td>{r.qualifiedReferrals}</td><td>{r.referredAccounts}</td></tr>)}
       {!referralRows.length&&<tr><td colSpan={3}>No referrals recorded in this period.</td></tr>}</tbody></table></div> : <p role="alert">Referral reporting unavailable.</p>}
+    </section>
+    <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
+      <h2>Meaningful professional activity</h2>
+      <p>Genuine replies sent to customers, not repeated page visits. Message contents are never shown.</p>
+      {activeRows ? <div className="admin-table-wrap"><table className="admin-table">
+        <thead><tr><th>Professional</th><th>Replies</th><th>Conversations</th></tr></thead><tbody>
+        {activeRows.map(row=><tr key={row.professionalId}><td>{row.businessName}</td><td>{row.replies}</td><td>{row.conversations}</td></tr>)}
+        {!activeRows.length&&<tr><td colSpan={3}>No qualifying activity in this period.</td></tr>}
+        </tbody></table></div> : <p role="alert">Activity statistics temporarily unavailable.</p>}
     </section>
     <p style={{marginTop:24}}>Website visits and profile-view conversions need an independently validated event source; they are not estimated here.</p>
   </main>;

@@ -13,13 +13,14 @@ export const metadata = { title: "Create your account" };
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ intent?: string; returnTo?: string }>;
+  searchParams: Promise<{ intent?: string; returnTo?: string; ref?: string }>;
 }) {
-  const { intent, returnTo } = await searchParams;
+  const { intent, returnTo, ref } = await searchParams;
+  const referralCode = typeof ref==="string" && /^GC[A-F0-9]{16}$/.test(ref.toUpperCase()) ? ref.toUpperCase() : undefined;
   const previewTarget = productionAuthUrl(
     "/sign-up",
     new URLSearchParams(
-      Object.entries({ intent, returnTo }).filter(
+      Object.entries({ intent, returnTo, ref:referralCode }).filter(
         (entry): entry is [string, string] => typeof entry[1] === "string",
       ),
     ),
@@ -29,9 +30,10 @@ export default async function Page({
     intent === "customer" || intent === "professional" ? intent : null;
 
   if (!selectedIntent) {
-    const customerHref = returnTo
-      ? `/sign-up?intent=customer&returnTo=${encodeURIComponent(returnTo)}`
-      : "/sign-up?intent=customer";
+    const customerParams = new URLSearchParams({ intent:"customer" });
+    if(returnTo) customerParams.set("returnTo",returnTo);
+    if(referralCode) customerParams.set("ref",referralCode);
+    const customerHref = `/sign-up?${customerParams.toString()}`;
 
     return (
       <AuthFrame>
@@ -93,6 +95,7 @@ export default async function Page({
           mode="sign-up"
           redirectTo={target}
           audience={professional ? "professional" : "customer"}
+          referralCode={professional ? undefined : referralCode}
         />
       ) : (
         <AccessMessage />

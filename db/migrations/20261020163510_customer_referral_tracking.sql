@@ -33,7 +33,7 @@ BEGIN
     AND status='active' AND deleted_at IS NULL;
   IF actor IS NULL THEN RAISE EXCEPTION 'FORBIDDEN' USING ERRCODE='42501'; END IF;
   INSERT INTO beauty.customer_referral_codes(user_id,code)
-  VALUES (actor,'GC'||upper(substr(replace(actor::text,'-',''),1,16)))
+  VALUES (actor,'GC'||upper(encode(gen_random_bytes(8),'hex')))
   ON CONFLICT (user_id) DO NOTHING;
   SELECT code INTO code_value FROM beauty.customer_referral_codes WHERE user_id=actor;
   SELECT count(*)::integer INTO total_count FROM beauty.customer_referrals WHERE referrer_user_id=actor;

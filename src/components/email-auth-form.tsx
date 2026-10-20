@@ -11,10 +11,12 @@ export function EmailAuthForm({
   mode,
   redirectTo,
   audience = "customer",
+  referralCode,
 }: {
   mode: "sign-in" | "sign-up";
   redirectTo: string;
   audience?: "customer" | "professional";
+  referralCode?: string;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +32,7 @@ export function EmailAuthForm({
       fetch("/api/v1/accounts/enrol", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: "{}",
+        body: JSON.stringify(mode==="sign-up" && audience==="customer" && referralCode ? {referralCode} : {}),
         cache: "no-store",
       });
 
@@ -82,6 +84,7 @@ export function EmailAuthForm({
       : "https://www.glohaus.shop";
     const url = new URL("/auth/callback", origin);
     url.searchParams.set("next", next);
+    if(mode==="sign-up" && audience==="customer" && referralCode) url.searchParams.set("ref",referralCode);
     return url.toString();
   }
 

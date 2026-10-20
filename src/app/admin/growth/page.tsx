@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OwnerGrowthRewardDraft } from "@/components/owner-growth-reward-draft";
 import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
 import { AccessMessage } from "@/components/access-message";
@@ -15,11 +16,20 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
   const params = await searchParams;
   const period = growthPeriod(params.period);
   const rank = ["completedBookings","uniqueClients","returningClients","completedValuePence"].includes(params.rank??"") ? params.rank! : "completedBookings";
+  const [rewardDraft, customerReferralSummary] = await Promise.all([
+    withOwner(async db => (await db.query<{data:{enabled:boolean;customerCreditPence:number;professionalRewardPence:number}}>("SELECT beauty.owner_customer_reward_draft() AS data")).rows[0]?.data).catch(()=>null),
+    withOwner(async db => (await db.query<{data:{total:number;last30Days:number}}>("SELECT beauty.owner_customer_referrals_summary() AS data")).rows[0]?.data).catch(()=>null),
+  ]);
   const [result, referralRows, activeRows] = await Promise.all([
     withOwner(db => ownerGrowthOverview(db, period)).catch(() => null),
     withOwner(db => ownerReferralPeriod(db, period)).catch(() => null),
     withOwner(db => ownerMeaningfulActivity(db, period)).catch(() => null),
   ]);
+  const days=period==="week"?7:period==="year"?366:31;
+  const viewRows=await withOwner(async db=>(await db.query<{professional_id:string;opens:number}>(
+    "SELECT professional_id,opens::float8 AS opens FROM beauty.owner_profile_open_counts($1)",[days]
+  )).rows).catch(()=>null);
+  const opensByProfessional=new Map((viewRows??[]).map(r=>[r.professional_id,Number(r.opens)]));
   const rows = [...(result?.rows ?? [])].sort((a,b)=>Number(b[rank as keyof typeof b])-Number(a[rank as keyof typeof a]));
   const totalBookings = rows.reduce((sum, row) => sum + row.completedBookings, 0);
   const totalValue = rows.reduce((sum, row) => sum + Number(row.completedValuePence), 0);
@@ -40,9 +50,10 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
         <nav aria-label="Leaderboard ranking" style={{display:"flex",gap:10,flexWrap:"wrap",margin:"14px 0"}}>
           {([["completedBookings","Bookings"],["uniqueClients","Clients"],["returningClients","Repeat clients"],["completedValuePence","Net value"]] as const).map(([key,label])=>
             <Link href={`/admin/growth?period=${period}&rank=${key}`} key={key} aria-current={rank===key?"page":undefined}>{label}{rank===key?" ✓":""}</Link>)}
-        </nav><div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Professional</th><th>Completed bookings</th><th>Unique clients</th><th>Repeat clients</th><th>Net captured</th></tr></thead>
-          <tbody>{rows.map(row=><tr key={row.professionalId}><td>{row.businessName}</td><td>{row.completedBookings}</td><td>{row.uniqueClients}</td><td>{row.returningClients}</td><td>{money(Number(row.completedValuePence))}</td></tr>)}
-          {!rows.length && <tr><td colSpan={5}>No qualifying completed bookings in this period.</td></tr>}</tbody></table></div>
+        </nav><div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Professional</th><th>Completed bookings</th><th>Unique clients</th><th>Repeat clients</th><th>Signed-in opens</th><th>Net captured</th></tr></thead>
+          <tbody>{rows.map(row=><tr key={row.professionalId}><td>{row.businessName}</td><td>{row.completedBookings}</td><td>{row.uniqueClients}</td><td>{row.returningClients}</td><td>{viewRows ? (opensByProfessional.get(row.professionalId)??0) : "—"}</td><td>{money(Number(row.completedValuePence))}</td></tr>)}
+          {!rows.length && <tr><td colSpan={6}>No qualifying completed bookings in this period.</td></tr>}</tbody></table></div>
+        <p><small>Profile opens are aggregate, signed-in customer page views; not unique visitors. Do not treat bookings divided by opens as a verified funnel conversion rate.</small></p>
       </section></>}
     <section className="admin-detail-card" style={{ padding: 24, marginTop: 20 }}><h2>Referral performance</h2>
       <p>Attributed accounts created within the selected reporting period. Rewards are not enabled.</p>
@@ -59,6 +70,12 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
         {!activeRows.length&&<tr><td colSpan={3}>No qualifying activity in this period.</td></tr>}
         </tbody></table></div> : <p role="alert">Activity statistics temporarily unavailable.</p>}
     </section>
+    <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
+      <h2>Customer referrals</h2>
+      {customerReferralSummary ? <p>{customerReferralSummary.total} attributed customer accounts · {customerReferralSummary.last30Days} in the last 30 days.</p>
+        : <p>Customer referral statistics are unavailable until the new database migration is applied.</p>}
+    </section>
+    {rewardDraft && <OwnerGrowthRewardDraft initial={rewardDraft}/>}
     <p style={{marginTop:24}}>Website visits and profile-view conversions need an independently validated event source; they are not estimated here.</p>
   </main>;
 }

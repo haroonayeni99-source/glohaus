@@ -2,6 +2,7 @@ import { publicMetadata, publicOrigin, jsonLd } from "@/lib/public-seo";
 import { notFound } from "next/navigation";
 import { PublicHeader } from "@/components/public-header";
 import { ProfessionalProfile } from "@/components/professional-profile";
+import { ProfessionalProfileOpenSignal } from "@/components/professional-profile-open-signal";
 import { BookingPicker } from "@/components/booking-picker";
 import { BottomNavigation } from "@/components/bottom-navigation";
 import { DiscoveryLiveStrip } from "@/components/discovery-live-strip";
@@ -172,6 +173,7 @@ export default async function Profile({
       stats,
       follow,
       signedIn: Boolean(viewer),
+      countCustomerOpen: Boolean(viewer?.roles.includes("customer")),
       bookingFeePence,
       stories,
       lastMinute,
@@ -224,6 +226,7 @@ export default async function Profile({
           }),
         }}
       />
+      {data.countCustomerOpen && <ProfessionalProfileOpenSignal professionalId={data.professional.id} />}
       <PublicHeader />
       <ProfessionalProfile
         professional={data.professional}

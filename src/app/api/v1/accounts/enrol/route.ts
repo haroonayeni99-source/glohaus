@@ -37,6 +37,8 @@ export async function PUT(request: Request) {
   try {
     assertSameOrigin(request);
     const identity = await getIdentity();
+    const input = await smallJson(request);
+    const referralCode = input && typeof input==="object" && "referralCode" in input && typeof input.referralCode==="string" && /^GC[A-F0-9]{16}$/.test(input.referralCode) ? input.referralCode : null;
     let account;
     try {
       account = await withIdentity(identity.authId, (db) =>
@@ -47,6 +49,12 @@ export async function PUT(request: Request) {
       account = (await supabaseAccount()) ?? (await supabaseEnrolAccount("customer"));
     }
     authorize(account, identity);
+    if(referralCode) {
+      // Optional attribution cannot interrupt account creation if the migration is not deployed.
+      await withIdentity(identity.authId,db=>
+        db.query("SELECT beauty.claim_customer_referral($1)",[referralCode])
+      ).catch(()=>null);
+    }
     return json({ redirectTo: workspacePath(account) });
   } catch (error) {
     return apiError(error);

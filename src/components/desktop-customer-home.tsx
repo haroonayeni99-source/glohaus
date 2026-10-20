@@ -19,6 +19,7 @@ import {
   WalletCards,
   Gift,
   ShieldCheck,
+  Star,
 } from "lucide-react";
 import { Brand } from "./brand";
 import { AccountControls } from "./account-controls";

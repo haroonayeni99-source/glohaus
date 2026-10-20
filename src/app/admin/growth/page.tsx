@@ -16,7 +16,7 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
   const params = await searchParams;
   const period = growthPeriod(params.period);
   const rank = ["completedBookings","uniqueClients","returningClients","completedValuePence"].includes(params.rank??"") ? params.rank! : "completedBookings";
-  const [result, referralRows, activeRows, profileOpenRows, customerReferrals, rewardDraft] = await Promise.all([
+  const [result, referralRows, activeRows, profileOpenRows, customerReferrals, customerReferralsInPeriod, rewardDraft] = await Promise.all([
     withOwner(db => ownerGrowthOverview(db, period)).catch(() => null),
     withOwner(db => ownerReferralPeriod(db, period)).catch(() => null),
     withOwner(db => ownerMeaningfulActivity(db, period)).catch(() => null),
@@ -27,6 +27,13 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
     withOwner(async db => (await db.query<{data:{total:number;last30Days:number}}>(
       "SELECT beauty.owner_customer_referrals_summary() AS data"
     )).rows[0]?.data).catch(() => null),
+    withOwner(async db => (await db.query<{registrations:number;referrers:number}>(
+      `SELECT COUNT(*)::integer AS registrations,
+        COUNT(DISTINCT referrer_user_id)::integer AS referrers
+       FROM beauty.customer_referrals
+       WHERE created_at >= NOW()-$1::interval AND created_at <= NOW()`,
+      [period==="week"?"7 days":period==="year"?"1 year":"1 month"]
+    )).rows[0]).catch(() => null),
     withOwner(async db => (await db.query<{value:{enabled:boolean;customerCreditPence:number;professionalWaiverDays:number;minimumCompletedBookings:number}|null}>(
       "SELECT value FROM beauty.platform_settings WHERE key='referral_rewards_draft'"
     )).rows[0]?.value).catch(() => null),
@@ -78,6 +85,7 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
     <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
       <h2>Customer referrals</h2>
       {customerReferrals ? <p>{customerReferrals.total} attributed registrations overall · {customerReferrals.last30Days} in the last 30 days.</p> : <p role="alert">Customer referral statistics unavailable.</p>}
+      {customerReferralsInPeriod ? <p><strong>{customerReferralsInPeriod.registrations}</strong> attributed registrations from <strong>{customerReferralsInPeriod.referrers}</strong> distinct referrers during the selected {period==="week"?"7 days":period==="month"?"month":"year"}.</p> : <p role="alert">Period referral statistics unavailable.</p>}
       <p>Rewards remain disabled.</p>
     </section>
     <section className="admin-detail-card" style={{padding:24,marginTop:20}}>

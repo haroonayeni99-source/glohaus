@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ReferralShareActions } from "@/components/referral-share-actions";
 import { pageAccount } from "@/lib/page-access";
 import { withAccount } from "@/lib/api-account";
 import { AuthFrame } from "@/components/auth-frame";
@@ -49,7 +50,7 @@ export default async function Page({searchParams}:{searchParams:Promise<{period?
       </section>
       <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
         <h2>Refer &amp; Grow</h2><p><strong>{metrics.referrals.qualified}</strong> qualified referrals out of {metrics.referrals.total} attributed accounts.</p>
-        {metrics.code?<><p>Your referral code: <strong>{metrics.code}</strong></p><p>Share your code directly with someone interested in GLOHAUS.</p></>:<p>No referral code assigned yet.</p>}
+        {metrics.code?<><p>Your referral code: <strong>{metrics.code}</strong></p><p>Share your code directly with someone interested in GLOHAUS.</p><ReferralShareActions code={metrics.code} /></>:<p>No referral code assigned yet.</p>}
         <p>Reward incentives are not yet active; referrals do not create automatic credits or payouts.</p>
       </section>
     </>}

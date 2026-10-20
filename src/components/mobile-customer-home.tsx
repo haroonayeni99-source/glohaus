@@ -132,13 +132,18 @@ export function MobileCustomerHome({
               <br />
               near you.
             </h1>
-            <p>Find and book beauty professionals near you.</p>
+            <p>Discover their work, compare services and book with confidence.</p>
             <Link className="mobile-home-glow" href="/explore">
               Find a professional
             </Link>
           </div>
         </section>
 
+        <div className="glohaus-mobile-trust" aria-label="Explore with confidence">
+          <span><ShieldCheck size={16} aria-hidden /> Verification details</span>
+          <span>Customer reviews</span>
+          <span>Clear service information</span>
+        </div>
         <Link
           className="mobile-home-professional-join"
           href="/sign-up?intent=professional"
@@ -146,7 +151,7 @@ export function MobileCustomerHome({
           Join as a professional <span aria-hidden>→</span>
         </Link>
         <Link className="mobile-home-discover-link" href="/discover">
-          Discover more beauty inspiration
+          Explore beauty looks and inspiration
           <span aria-hidden>→</span>
         </Link>
         {!signedIn && <HomeMarketplaceGuide />}

@@ -110,3 +110,61 @@ REVOKE ALL ON FUNCTION beauty.owner_customer_reward_draft() FROM PUBLIC,anon,aut
 REVOKE ALL ON FUNCTION beauty.owner_save_customer_reward_draft(integer,integer) FROM PUBLIC,anon,authenticated,beauty_catalog;
 GRANT EXECUTE ON FUNCTION beauty.owner_customer_reward_draft() TO beauty_app;
 GRANT EXECUTE ON FUNCTION beauty.owner_save_customer_reward_draft(integer,integer) TO beauty_app;
+
+-- Only aggregate profile opens by day. Never store viewer identity, IP, device, or cookies.
+CREATE TABLE beauty.professional_profile_open_daily (
+  professional_id uuid NOT NULL REFERENCES beauty.professional_profiles(id) ON DELETE CASCADE,
+  day date NOT NULL,
+  opens integer NOT NULL DEFAULT 0 CHECK (opens BETWEEN 0 AND 1000000),
+  PRIMARY KEY(professional_id,day)
+);
+ALTER TABLE beauty.professional_profile_open_daily ENABLE ROW LEVEL SECURITY;
+ALTER TABLE beauty.professional_profile_open_daily FORCE ROW LEVEL SECURITY;
+REVOKE ALL ON beauty.professional_profile_open_daily FROM PUBLIC,anon,authenticated;
+
+CREATE OR REPLACE FUNCTION beauty.record_profile_open(target_professional uuid)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog
+AS $$
+DECLARE actor uuid;
+BEGIN
+  SELECT id INTO actor FROM beauty.users WHERE auth_id=beauty.auth_id()
+    AND status='active' AND deleted_at IS NULL;
+  IF actor IS NULL OR target_professional IS NULL THEN RETURN; END IF;
+  IF NOT EXISTS(SELECT 1 FROM beauty.public_professionals WHERE id=target_professional) THEN RETURN; END IF;
+  INSERT INTO beauty.professional_profile_open_daily(professional_id,day,opens)
+    VALUES(target_professional,(now() AT TIME ZONE 'Europe/London')::date,1)
+    ON CONFLICT (professional_id,day)
+    DO UPDATE SET opens=least(1000000,beauty.professional_profile_open_daily.opens+1);
+END $$;
+
+CREATE OR REPLACE FUNCTION beauty.my_profile_open_count(target_professional uuid,lookback_days integer)
+RETURNS bigint LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog
+AS $$
+DECLARE actor uuid;
+BEGIN
+  SELECT id INTO actor FROM beauty.users WHERE auth_id=beauty.auth_id()
+    AND status='active' AND deleted_at IS NULL;
+  IF actor IS NULL OR lookback_days NOT IN(7,31,366) OR NOT EXISTS(
+    SELECT 1 FROM beauty.professional_profiles WHERE id=target_professional AND user_id=actor
+  ) THEN RAISE EXCEPTION 'FORBIDDEN' USING ERRCODE='42501'; END IF;
+  RETURN COALESCE((SELECT SUM(opens) FROM beauty.professional_profile_open_daily
+    WHERE professional_id=target_professional AND day>=CURRENT_DATE-(lookback_days-1)),0);
+END $$;
+
+CREATE OR REPLACE FUNCTION beauty.owner_profile_open_counts(lookback_days integer)
+RETURNS TABLE(professional_id uuid,opens bigint) LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog
+AS $$
+BEGIN
+  PERFORM beauty.require_owner();
+  IF lookback_days NOT IN(7,31,366) THEN RAISE EXCEPTION 'INVALID_REQUEST' USING ERRCODE='22023'; END IF;
+  RETURN QUERY SELECT v.professional_id,SUM(v.opens)::bigint
+    FROM beauty.professional_profile_open_daily v
+    WHERE v.day>=CURRENT_DATE-(lookback_days-1)
+    GROUP BY v.professional_id;
+END $$;
+REVOKE ALL ON FUNCTION beauty.record_profile_open(uuid) FROM PUBLIC,anon,authenticated,beauty_catalog;
+REVOKE ALL ON FUNCTION beauty.my_profile_open_count(uuid,integer) FROM PUBLIC,anon,authenticated,beauty_catalog;
+REVOKE ALL ON FUNCTION beauty.owner_profile_open_counts(integer) FROM PUBLIC,anon,authenticated,beauty_catalog;
+GRANT EXECUTE ON FUNCTION beauty.record_profile_open(uuid) TO beauty_app;
+GRANT EXECUTE ON FUNCTION beauty.my_profile_open_count(uuid,integer) TO beauty_app;
+GRANT EXECUTE ON FUNCTION beauty.owner_profile_open_counts(integer) TO beauty_app;

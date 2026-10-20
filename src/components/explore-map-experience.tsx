@@ -68,6 +68,7 @@ export function ExploreMapExperience({
   professionals,
   query,
   filters,
+  postcodeCentre,
   taxonomy,
   signedIn = false,
   loadFailed = false,
@@ -76,6 +77,7 @@ export function ExploreMapExperience({
   professionals: PublicProfessional[];
   query: string;
   filters: DiscoveryFilters;
+  postcodeCentre?: Coordinates | null;
   taxonomy?: TaxonomyCatalog;
   signedIn?: boolean;
   loadFailed?: boolean;
@@ -101,6 +103,13 @@ export function ExploreMapExperience({
     [saveNotice, setSaveNotice] = useState("");
   const sequence = useRef(0);
   const refinePanel = useRef<HTMLDetailsElement>(null);
+  const locationSearch = (filters.location ?? "").trim();
+  const londonSearch =
+    !locationSearch ||
+    Boolean(londonBorough(locationSearch)) ||
+    /\blondon\b/i.test(locationSearch) ||
+    /^(?:E|EC|N|NW|SE|SW|W|WC)\d{1,2}[A-Z]?(?:\s*\d[A-Z]{2})?$/i.test(locationSearch);
+  const showLondonOverview = londonSearch && !streetView && !postcodeCentre;
   const nearby = nearbyResults ?? professionals;
   const unavailable = loadFailed && nearbyResults === null;
   const showExamples =
@@ -305,7 +314,7 @@ export function ExploreMapExperience({
           </div>
           <form action="/explore" role="search" className="map-explore-search">
             {Object.entries(hiddenInputs)
-              .filter(([key]) => key !== "q")
+              .filter(([key]) => key !== "q" && key !== "location")
               .map(([key, value]) => (
                 <input type="hidden" name={key} value={value} key={key} />
               ))}
@@ -318,12 +327,21 @@ export function ExploreMapExperience({
               name="q"
               defaultValue={query}
               maxLength={100}
-              placeholder="Try knotless braids, nails or Peckham"
+              placeholder="Search services or professionals"
+            />
+            <label className="sr-only" htmlFor="map-city-search">City, area or postcode</label>
+            <input
+              id="map-city-search"
+              name="location"
+              defaultValue={filters.location ?? ""}
+              maxLength={100}
+              aria-label="City, area or postcode"
+              placeholder="City or postcode (e.g. Manchester, M1)"
             />
             <button type="submit">Search</button>
           </form>
         </div>
-        <nav className="map-area-strip" aria-label="Explore London areas">
+        {londonSearch && <nav className="map-area-strip" aria-label="Explore London areas">
           {["All London", ...areas].map((area) => (
             <Link
               key={area}
@@ -341,7 +359,7 @@ export function ExploreMapExperience({
               </small>
             </Link>
           ))}
-        </nav>
+        </nav>}
       </section>
       <nav
         className="discovery-categories map-service-filters"
@@ -419,12 +437,12 @@ export function ExploreMapExperience({
             />
           )}
           <label>
-            Area or city
+            City, area or postcode
             <input
               name="location"
               defaultValue={filters.location ?? ""}
               maxLength={100}
-              placeholder="e.g. Brixton"
+              placeholder="e.g. Manchester, Bristol or SW9"
             />
           </label>
           <label>
@@ -491,7 +509,7 @@ export function ExploreMapExperience({
             Clear my location
           </button>
         )}
-        <label>
+        {londonSearch && <label>
           London borough
           <select
             value={londonBorough(filters.location) ?? ""}
@@ -504,14 +522,14 @@ export function ExploreMapExperience({
               )
             }
           >
-            <option value="">All London boroughs</option>
+            <option value="">Choose a London borough</option>
             {areas.map((area) => (
               <option key={area} value={area}>
                 {area}
               </option>
             ))}
           </select>
-        </label>
+        </label>}
         <small>Location is used only for this search and isn’t stored.</small>
       </div>
       {locationNotice && (
@@ -736,8 +754,8 @@ export function ExploreMapExperience({
             }}
           >
             {streetView
-              ? "Back to London overview"
-              : "View confirmed business pins"}
+              ? (londonSearch ? "Back to London overview" : "View area results")
+              : (londonSearch ? "View confirmed business pins" : "View map pins")}
           </button>
           {streetView ? (
             <GeographicMap
@@ -757,7 +775,7 @@ export function ExploreMapExperience({
                       latitude: selectedPro.public_latitude!,
                       longitude: selectedPro.public_longitude!,
                     }
-                  : (position ??
+                  : (position ?? postcodeCentre ??
                     (mapped[0]
                       ? {
                           latitude: mapped[0].public_latitude!,
@@ -773,8 +791,31 @@ export function ExploreMapExperience({
               onHighlight={setHighlighted}
               onViewportChange={setViewport}
             />
-          ) : (
+          ) : showLondonOverview ? (
             <LondonMapOverview query={query} filters={filters} />
+          ) : mapped.length ? (
+            <GeographicMap
+              pins={mapped.map((pro) => ({
+                id: pro.id,
+                label: pro.business_name,
+                priceLabel: pro.from_price_pence != null ? money(pro.from_price_pence) : undefined,
+                latitude: pro.public_latitude!,
+                longitude: pro.public_longitude!,
+              }))}
+              focus={postcodeCentre ?? { latitude: mapped[0].public_latitude!, longitude: mapped[0].public_longitude! }}
+              initialZoom={11}
+              selectedId={selected}
+              highlightedId={highlighted}
+              onSelect={selectPin}
+              onHighlight={setHighlighted}
+              onViewportChange={setViewport}
+            />
+          ) : (
+            <div className="map-pro-empty" role="status">
+              <MapPin size={28} />
+              <h3>No confirmed map pins for {locationSearch}</h3>
+              <p>Try another city or postcode, or widen your search.</p>
+            </div>
           )}
           {streetView && selectedPro && (
             <div className="discovery-pin-card">

@@ -28,11 +28,11 @@ export default async function Page({searchParams}:{searchParams:Promise<{period?
        COUNT(DISTINCT customer_id)::integer AS clients,
        COALESCE((SELECT COUNT(*) FROM (SELECT customer_id FROM qualified GROUP BY customer_id HAVING COUNT(*)>1) c),0)::integer AS "repeatClients",
        COALESCE(SUM(net_pence),0)::float8 AS "netPence" FROM qualified`,[id,interval])).rows[0];
-    const referrals=(await db.query<{total:number;qualified:number}>(
-      `SELECT COUNT(*)::integer AS total,
-        COUNT(*) FILTER (WHERE qualified_at IS NOT NULL)::integer AS qualified
-       FROM beauty.professional_referrals WHERE referrer_professional_id=$1`,[id])).rows[0];
-    const code=(await db.query<{code:string}>(`SELECT code FROM beauty.professional_referral_codes WHERE professional_id=$1`,[id])).rows[0]?.code??null;
+    const referral=(await db.query<{data:{code:string;totalReferrals:number;qualifiedReferrals:number}|null}>(
+      "SELECT beauty.my_professional_referral_overview() AS data"
+    )).rows[0]?.data ?? null;
+    const referrals={ total:referral?.totalReferrals??0, qualified:referral?.qualifiedReferrals??0 };
+    const code=referral?.code??null;
     return {row,referrals,code};
   }).catch(()=>null);
   const money=(pence:number)=>new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"}).format(pence/100);

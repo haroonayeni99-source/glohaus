@@ -230,14 +230,19 @@ export function DesktopCustomerHome({
               </Link>
               <Link
                 className="button secondary"
-                href="/sign-up?intent=professional"
+                href="/discover"
               >
-                Join as a professional
+                Explore inspiration
               </Link>
             </div>
             <p className="home-browse-note">
-              Explore freely. Create an account when you’re ready to book.
+              Explore real work, compare professionals and choose the right appointment.
             </p>
+            <div className="glohaus-hero-trust" aria-label="Booking confidence">
+              <span><ShieldCheck size={17} aria-hidden /> See verification details</span>
+              <span><Star size={17} aria-hidden /> Read customer reviews</span>
+              <span><CalendarDays size={17} aria-hidden /> Review services before booking</span>
+            </div>
           </div>
           <Image
             fill

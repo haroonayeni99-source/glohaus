@@ -102,11 +102,11 @@ export function ExploreMapExperience({
   const sequence = useRef(0);
   const refinePanel = useRef<HTMLDetailsElement>(null);
   const locationSearch = (filters.location ?? "").trim();
-  const londonSearch = !locationSearch ||
-    /^(london|greater london|[a-z]{1,2}\d[a-z\d]?\s*\d?[a-z]{0,2})$/i.test(locationSearch) &&
-      !/^[a-z]{1,2}\d/i.test(locationSearch) ||
+  const londonSearch =
+    !locationSearch ||
     Boolean(londonBorough(locationSearch)) ||
-    /\blondon\b/i.test(locationSearch);
+    /\blondon\b/i.test(locationSearch) ||
+    /^(?:E|EC|N|NW|SE|SW|W|WC)\d{1,2}[A-Z]?(?:\s*\d[A-Z]{2})?$/i.test(locationSearch);
   const showLondonOverview = londonSearch && !streetView;
   const nearby = nearbyResults ?? professionals;
   const unavailable = loadFailed && nearbyResults === null;
@@ -753,7 +753,7 @@ export function ExploreMapExperience({
           >
             {streetView
               ? (londonSearch ? "Back to London overview" : "View area results")
-              : "View confirmed business pins"}
+              : (londonSearch ? "View confirmed business pins" : "View map pins")}
           </button>
           {streetView ? (
             <GeographicMap

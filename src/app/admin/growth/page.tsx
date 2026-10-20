@@ -8,16 +8,18 @@ import { growthPeriod, ownerGrowthOverview, ownerReferralPeriod } from "@/module
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Growth & Performance | GLOHAUS" };
 
-export default async function GrowthPage({ searchParams }: { searchParams: Promise<{ period?: string }> }) {
+export default async function GrowthPage({ searchParams }: { searchParams: Promise<{ period?: string; rank?: string }> }) {
   const account = await pageAccount("admin");
   if (!account.account) return <AuthFrame><AccessMessage code={account.error ?? undefined} /></AuthFrame>;
   if (!account.account.roles.includes("owner")) return <main className="admin-workspace"><p role="alert">Owner access required.</p></main>;
-  const period = growthPeriod((await searchParams).period);
+  const params = await searchParams;
+  const period = growthPeriod(params.period);
+  const rank = ["completedBookings","uniqueClients","returningClients","completedValuePence"].includes(params.rank??"") ? params.rank! : "completedBookings";
   const [result, referralRows] = await Promise.all([
     withOwner(db => ownerGrowthOverview(db, period)).catch(() => null),
     withOwner(db => ownerReferralPeriod(db, period)).catch(() => null),
   ]);
-  const rows = result?.rows ?? [];
+  const rows = [...(result?.rows ?? [])].sort((a,b)=>Number(b[rank as keyof typeof b])-Number(a[rank as keyof typeof a]));
   const totalBookings = rows.reduce((sum, row) => sum + row.completedBookings, 0);
   const totalValue = rows.reduce((sum, row) => sum + Number(row.completedValuePence), 0);
   const money = (pence: number) => new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(pence / 100);
@@ -34,7 +36,10 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
         <small>Unique clients are calculated per professional, so the same customer may appear for more than one professional.</small>
       </div>
       <section className="admin-detail-card" style={{ padding: 24 }}><h2>Professional leaderboard</h2>
-        <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Professional</th><th>Completed bookings</th><th>Unique clients</th><th>Repeat clients</th><th>Net captured</th></tr></thead>
+        <nav aria-label="Leaderboard ranking" style={{display:"flex",gap:10,flexWrap:"wrap",margin:"14px 0"}}>
+          {([["completedBookings","Bookings"],["uniqueClients","Clients"],["returningClients","Repeat clients"],["completedValuePence","Net value"]] as const).map(([key,label])=>
+            <Link href={`/admin/growth?period=${period}&rank=${key}`} key={key} aria-current={rank===key?"page":undefined}>{label}{rank===key?" ✓":""}</Link>)}
+        </nav><div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Professional</th><th>Completed bookings</th><th>Unique clients</th><th>Repeat clients</th><th>Net captured</th></tr></thead>
           <tbody>{rows.map(row=><tr key={row.professionalId}><td>{row.businessName}</td><td>{row.completedBookings}</td><td>{row.uniqueClients}</td><td>{row.returningClients}</td><td>{money(Number(row.completedValuePence))}</td></tr>)}
           {!rows.length && <tr><td colSpan={5}>No qualifying completed bookings in this period.</td></tr>}</tbody></table></div>
       </section></>}

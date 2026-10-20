@@ -21,3 +21,16 @@ export async function nominateProfessional(form:FormData) {
  }).catch(()=>false);
  redirect("/admin/growth/review?nomination="+(ok?"saved":"unavailable"));
 }
+
+export async function detectReferralRisks() {
+ const ok=await withOwner(async db=>(await db.query("SELECT beauty.owner_detect_referral_risks()")).rows.length>=0).catch(()=>false);
+ redirect("/admin/growth/review?risks="+(ok?"checked":"unavailable"));
+}
+export async function decideReferralReview(form:FormData) {
+ const id=String(form.get("caseId")??"");
+ const status=String(form.get("decision")??"");
+ const notes=String(form.get("notes")??"").trim();
+ if(!/^[0-9a-f-]{36}$/i.test(id)||!["under_review","cleared","rejected"].includes(status)||notes.length<10||notes.length>1500) redirect("/admin/growth/review?case=invalid");
+ const ok=await withOwner(async db=>(await db.query<{ok:boolean}>("SELECT beauty.owner_decide_referral_review($1,$2,$3) AS ok",[id,status,notes])).rows[0]?.ok===true).catch(()=>false);
+ redirect("/admin/growth/review?case="+(ok?"saved":"unavailable"));
+}

@@ -8,6 +8,7 @@ export type GrowthRow = {
   completedBookings: number;
   uniqueClients: number;
   returningClients: number;
+  professionalReplies: number;
   completedValuePence: number;
 };
 export function growthPeriod(value: string | undefined): GrowthPeriod {
@@ -43,10 +44,18 @@ export async function ownerGrowthOverview(db: SqlClient, period: GrowthPeriod) {
      SELECT pro.id AS "professionalId",pro.business_name AS "businessName",
        t.completed_bookings AS "completedBookings",t.unique_clients AS "uniqueClients",
        COALESCE(rc.returning_clients,0) AS "returningClients",
+       COALESCE(replies.reply_count,0) AS "professionalReplies",
        t.completed_value_pence::float8 AS "completedValuePence"
      FROM totals t
      JOIN beauty.professional_profiles pro ON pro.id=t.professional_id
      LEFT JOIN repeat_customers rc ON rc.professional_id=t.professional_id
+     LEFT JOIN LATERAL (
+       SELECT COUNT(m.id)::integer AS reply_count FROM beauty.messages m
+       JOIN beauty.conversations c ON c.id=m.conversation_id
+       WHERE c.professional_id=pro.id AND m.sender_user_id=pro.user_id
+         AND m.sender_role='professional'
+         AND m.created_at>=NOW()-$1::interval AND m.created_at<=NOW()
+     ) replies ON true
      ORDER BY t.completed_bookings DESC,pro.business_name ASC LIMIT 100`,
     [interval],
   )).rows;

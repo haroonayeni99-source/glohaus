@@ -33,7 +33,13 @@ export default async function Page({searchParams}:{searchParams:Promise<{period?
     )).rows[0]?.data ?? null;
     const referrals={ total:referral?.totalReferrals??0, qualified:referral?.qualifiedReferrals??0 };
     const code=referral?.code??null;
-    return {row,referrals,code};
+    const popularServices = (await db.query<{serviceName:string;bookings:number}>(
+      `SELECT b.service_name AS "serviceName", COUNT(*)::integer AS bookings
+       FROM beauty.bookings b JOIN beauty.payments pay ON pay.booking_id=b.id
+       WHERE b.professional_id=$1 AND b.status='completed' AND b.completed_at>=NOW()-$2::interval
+         AND pay.captured_pence>pay.refunded_pence
+       GROUP BY b.service_name ORDER BY bookings DESC,b.service_name ASC LIMIT 5`,[id,interval])).rows;
+    return {row,referrals,code,popularServices};
   }).catch(()=>null);
   const money=(pence:number)=>new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"}).format(pence/100);
   return <main style={{maxWidth:950,margin:"0 auto",padding:"clamp(20px,4vw,48px)"}}>
@@ -47,6 +53,10 @@ export default async function Page({searchParams}:{searchParams:Promise<{period?
       <section className="admin-detail-card" style={{padding:24}}>
         <h2>My bookings</h2><p><strong>{metrics.row.bookings}</strong> completed bookings · <strong>{metrics.row.clients}</strong> unique clients · <strong>{metrics.row.repeatClients}</strong> repeat clients</p>
         <p>{money(metrics.row.netPence)} captured payments net of refunds on completed bookings.</p>
+      </section>
+      <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
+        <h2>Your most popular services</h2>
+        {metrics.popularServices.length ? <ol>{metrics.popularServices.map(item=><li key={item.serviceName}>{item.serviceName}: {item.bookings} completed bookings</li>)}</ol> : <p>No completed services for this period.</p>}
       </section>
       <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
         <h2>Refer &amp; Grow</h2><p><strong>{metrics.referrals.qualified}</strong> qualified referrals out of {metrics.referrals.total} attributed accounts.</p>

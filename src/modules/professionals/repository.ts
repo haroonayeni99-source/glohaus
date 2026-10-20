@@ -220,9 +220,10 @@ export async function discoveryPage(
   query: string,
   after?: DiscoveryCursor,
   filters: DiscoveryFilters = defaultDiscoveryFilters,
+  near?: NearbySearch,
 ) {
   if(!after)await db.query("SELECT beauty.record_treatment_demand($1,$2,$3,$4)",[query,filters.categoryId??null,filters.specialityId??null,filters.templateId??null]);
-  const rows = await publicProfessionals(db, query, after, filters);
+  const rows = await publicProfessionals(db, query, after, filters, near);
   const professionals = rows.slice(0, 24);
   return {
     professionals,

@@ -88,6 +88,8 @@ export default async function Profile({
         )
       ).rows[0]?.fee ?? 100;
     const id = profile.professional.id;
+    // Aggregate signed-in profile opens; do not store viewer identifiers.
+    if (viewerAuthId) await db.query("SELECT beauty.record_profile_open($1)", [id]).catch(() => null);
     const policies=(await db.query<{id:string;policy:PolicyPreview}>("SELECT id,beauty.public_service_policy(id) AS policy FROM beauty.public_services WHERE professional_id=$1",[id])).rows;
     const access = (
       await db.query<{

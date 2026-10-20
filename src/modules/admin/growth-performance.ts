@@ -52,3 +52,23 @@ export async function ownerGrowthOverview(db: SqlClient, period: GrowthPeriod) {
   )).rows;
   return { period, rows };
 }
+
+export async function ownerReferralPeriod(db: SqlClient, period: GrowthPeriod) {
+  const interval = period === "week" ? "7 days" : period === "year" ? "1 year" : "1 month";
+  return (await db.query<{
+    professionalId: string;
+    businessName: string;
+    referredAccounts: number;
+    qualifiedReferrals: number;
+  }>(
+    `SELECT p.id AS "professionalId", p.business_name AS "businessName",
+      COUNT(r.id)::integer AS "referredAccounts",
+      COUNT(r.id) FILTER (WHERE r.qualified_at IS NOT NULL)::integer AS "qualifiedReferrals"
+     FROM beauty.professional_referrals r
+     JOIN beauty.professional_profiles p ON p.id=r.referrer_professional_id
+     WHERE r.created_at>=NOW()-$1::interval AND r.created_at<=NOW()
+     GROUP BY p.id,p.business_name
+     ORDER BY "qualifiedReferrals" DESC, "referredAccounts" DESC LIMIT 100`,
+    [interval],
+  )).rows;
+}

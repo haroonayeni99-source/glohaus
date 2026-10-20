@@ -361,6 +361,7 @@ export default async function Page() {
           >
             <p className="eyebrow">PROFESSIONAL REFERRALS</p>
             <h2>Referral leaderboard</h2>
+            <p><a href="/admin/growth">Open Growth &amp; Performance Centre →</a></p>
             <p className="lead">
               View every professional referral code and the completed GLOHAUS
               accounts attributed to it. Raw link clicks do not count toward

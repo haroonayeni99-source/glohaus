@@ -16,7 +16,7 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
   const params = await searchParams;
   const period = growthPeriod(params.period);
   const rank = ["completedBookings","uniqueClients","returningClients","completedValuePence"].includes(params.rank??"") ? params.rank! : "completedBookings";
-  const [result, referralRows, activeRows, profileOpenRows, customerReferrals, customerReferralsInPeriod, rewardDraft] = await Promise.all([
+  const [result, referralRows, activeRows, profileOpenRows, customerReferrals, customerReferralsInPeriod, topCustomerReferrers, rewardDraft] = await Promise.all([
     withOwner(db => ownerGrowthOverview(db, period)).catch(() => null),
     withOwner(db => ownerReferralPeriod(db, period)).catch(() => null),
     withOwner(db => ownerMeaningfulActivity(db, period)).catch(() => null),
@@ -34,6 +34,14 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
        WHERE created_at >= NOW()-$1::interval AND created_at <= NOW()`,
       [period==="week"?"7 days":period==="year"?"1 year":"1 month"]
     )).rows[0]).catch(() => null),
+    withOwner(async db => (await db.query<{code:string;attributed:number}>(
+      `SELECT c.code, COUNT(r.id)::integer AS attributed
+       FROM beauty.customer_referral_codes c
+       JOIN beauty.customer_referrals r ON r.referrer_user_id=c.user_id
+       WHERE r.created_at >= NOW()-$1::interval AND r.created_at <= NOW()
+       GROUP BY c.code ORDER BY attributed DESC,c.code ASC LIMIT 25`,
+      [period==="week"?"7 days":period==="year"?"1 year":"1 month"]
+    )).rows).catch(() => null),
     withOwner(async db => (await db.query<{value:{enabled:boolean;customerCreditPence:number;professionalWaiverDays:number;minimumCompletedBookings:number}|null}>(
       "SELECT value FROM beauty.platform_settings WHERE key='referral_rewards_draft'"
     )).rows[0]?.value).catch(() => null),
@@ -86,6 +94,12 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
       <h2>Customer referrals</h2>
       {customerReferrals ? <p>{customerReferrals.total} attributed registrations overall · {customerReferrals.last30Days} in the last 30 days.</p> : <p role="alert">Customer referral statistics unavailable.</p>}
       {customerReferralsInPeriod ? <p><strong>{customerReferralsInPeriod.registrations}</strong> attributed registrations from <strong>{customerReferralsInPeriod.referrers}</strong> distinct referrers during the selected {period==="week"?"7 days":period==="month"?"month":"year"}.</p> : <p role="alert">Period referral statistics unavailable.</p>}
+      <h3>Most successful customer referrers</h3>
+      <p>Referral codes are shown without identifying the people who joined through them.</p>
+      {topCustomerReferrers ? <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Referral code</th><th>Attributed registrations</th></tr></thead><tbody>
+        {topCustomerReferrers.map(row=><tr key={row.code}><td><code>{row.code}</code></td><td>{row.attributed}</td></tr>)}
+        {!topCustomerReferrers.length && <tr><td colSpan={2}>No customer referrals in this period.</td></tr>}
+      </tbody></table></div> : <p role="alert">Customer referrer ranking unavailable.</p>}
       <p>Rewards remain disabled.</p>
     </section>
     <section className="admin-detail-card" style={{padding:24,marginTop:20}}>

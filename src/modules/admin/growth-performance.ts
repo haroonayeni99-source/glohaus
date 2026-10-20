@@ -81,3 +81,18 @@ export async function ownerReferralPeriod(db: SqlClient, period: GrowthPeriod) {
     [interval],
   )).rows;
 }
+
+export async function ownerMeaningfulActivity(db: SqlClient, period: GrowthPeriod) {
+  const interval = period === "week" ? "7 days" : period === "year" ? "1 year" : "1 month";
+  return (await db.query<{professionalId:string;businessName:string;replies:number;conversations:number}>(
+    `SELECT p.id AS "professionalId",p.business_name AS "businessName",
+       COUNT(m.id)::integer AS replies,COUNT(DISTINCT c.id)::integer AS conversations
+     FROM beauty.professional_profiles p
+     JOIN beauty.conversations c ON c.professional_id=p.id
+     JOIN beauty.messages m ON m.conversation_id=c.id
+       AND m.sender_user_id=p.user_id AND m.sender_role='professional'
+     WHERE m.created_at>=NOW()-$1::interval AND m.created_at<=NOW()
+     GROUP BY p.id,p.business_name ORDER BY replies DESC,conversations DESC LIMIT 100`,
+     [interval]
+  )).rows;
+}

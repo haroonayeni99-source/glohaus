@@ -45,7 +45,7 @@ export async function ownerGrowthOverview(db: SqlClient, period: GrowthPeriod) {
        COALESCE(rc.returning_clients,0) AS "returningClients",
        t.completed_value_pence::float8 AS "completedValuePence"
      FROM totals t
-     JOIN beauty.professionals pro ON pro.id=t.professional_id
+     JOIN beauty.professional_profiles pro ON pro.id=t.professional_id
      LEFT JOIN repeat_customers rc ON rc.professional_id=t.professional_id
      ORDER BY t.completed_bookings DESC,pro.business_name ASC LIMIT 100`,
     [interval],

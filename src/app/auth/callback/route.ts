@@ -125,6 +125,13 @@ export async function GET(request: NextRequest) {
     const account = await withIdentity(identity.authId, (db) =>
       ensureCustomerAccount(db, identity),
     );
+    const referralCode=url.searchParams.get("ref");
+    if (plan.audience==="customer" && referralCode && /^GC[A-F0-9]{16}$/.test(referralCode)) {
+      // An invalid, repeated, or unavailable claim never blocks email confirmation.
+      await withIdentity(identity.authId,db=>
+        db.query("SELECT beauty.claim_customer_referral($1)",[referralCode])
+      ).catch(()=>null);
+    }
     if (plan.audience === "customer" && !account.roles.includes("customer")) {
       response.headers.set(
         "Location",

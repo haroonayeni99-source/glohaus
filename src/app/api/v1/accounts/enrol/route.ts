@@ -24,12 +24,6 @@ export async function POST(request: Request) {
       });
     }
     authorize(account, identity);
-    if(referralCode) {
-      // Optional attribution cannot interrupt account creation if the migration is not deployed.
-      await withIdentity(identity.authId,db=>
-        db.query("SELECT beauty.claim_customer_referral($1)",[referralCode])
-      ).catch(()=>null);
-    }
     return json({ redirectTo: workspacePath(account) });
   } catch (error) {
     return apiError(error);
@@ -55,6 +49,12 @@ export async function PUT(request: Request) {
       account = (await supabaseAccount()) ?? (await supabaseEnrolAccount("customer"));
     }
     authorize(account, identity);
+    if(referralCode) {
+      // Optional attribution cannot interrupt account creation if the migration is not deployed.
+      await withIdentity(identity.authId,db=>
+        db.query("SELECT beauty.claim_customer_referral($1)",[referralCode])
+      ).catch(()=>null);
+    }
     return json({ redirectTo: workspacePath(account) });
   } catch (error) {
     return apiError(error);

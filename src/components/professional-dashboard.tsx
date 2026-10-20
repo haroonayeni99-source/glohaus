@@ -344,6 +344,7 @@ export function ProfessionalDashboard({
               <div>
                 <p className="pro-kicker">GROW GLOHAUS</p>
                 <h2>Your referral code</h2>
+                <Link href="/professional/performance">View my performance →</Link>
               </div>
               <Share2 size={22} aria-hidden />
             </div>

@@ -100,6 +100,7 @@ export function ExploreMapExperience({
     [saving, setSaving] = useState<string | null>(null),
     [saveNotice, setSaveNotice] = useState("");
   const sequence = useRef(0);
+  const refinePanel = useRef<HTMLDetailsElement>(null);
   const nearby = nearbyResults ?? professionals;
   const unavailable = loadFailed && nearbyResults === null;
   const showExamples =
@@ -389,12 +390,18 @@ export function ExploreMapExperience({
             {label}
           </Link>
         ))}
-        <a href="#discovery-refine">
+        <a
+          href="#discovery-refine"
+          aria-controls="discovery-refine"
+          onClick={() => {
+            if (refinePanel.current) refinePanel.current.open = true;
+          }}
+        >
           <SlidersHorizontal size={15} />
           More filters
         </a>
       </div>
-      <details id="discovery-refine" className="discovery-refine">
+      <details id="discovery-refine" className="discovery-refine" ref={refinePanel}>
         <summary>Refine area, service, price and rating</summary>
         <form action="/explore" className="discovery-refine-form">
           {query && <input type="hidden" name="q" value={query} />}{" "}

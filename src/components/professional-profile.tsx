@@ -136,7 +136,7 @@ export function ProfessionalProfile({
             {example ? <span className="professional-card-verification">Example profile</span> : <ProfessionalVerificationBadges professional={p} />}
             <span>
               <MapPin size={16} aria-hidden />
-              {p.city}, England
+              {p.city}
             </span>
             <a href="#reviews">
               <Star size={16} aria-hidden />
@@ -194,7 +194,7 @@ export function ProfessionalProfile({
                 <p>
                   <MapPin size={16} aria-hidden />{" "}
                   {d.location_details ? `${d.location_details}, ` : ""}
-                  {p.city}, England
+                  {p.city}
                 </p>
                 {p.public_location_confirmed_at &&
                   p.public_latitude != null &&

@@ -35,6 +35,7 @@ beforeEach(() => {
   fetchMock.mockReset();
 });
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 });
@@ -146,6 +147,8 @@ it("uses the confirmed server destination, predicted driving departure and a tra
   });
 });
 it("aligns transit departure to the first scheduled service including the initial walk", async () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-10-20T12:00:00Z"));
   fetchMock.mockResolvedValue(
     Response.json({
       routes: [

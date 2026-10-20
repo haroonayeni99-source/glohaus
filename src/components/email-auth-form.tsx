@@ -88,7 +88,7 @@ export function EmailAuthForm({
   function confirmationDestination() {
     return audience === "professional"
       ? "/onboarding?intent=professional"
-      : "/account";
+      : redirectTo.startsWith("/account/invite?ref=") ? redirectTo : "/account";
   }
 
   async function submit(formData: FormData) {

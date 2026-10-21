@@ -175,6 +175,7 @@ export default async function Profile({
       stats,
       follow,
       signedIn: Boolean(viewer),
+      canTrackVisit: Boolean(viewer?.roles.includes("customer")),
       bookingFeePence,
       stories,
       lastMinute,
@@ -228,7 +229,7 @@ export default async function Profile({
         }}
       />
       <PublicHeader />
-      {data.signedIn && <section className="admin-detail-card" style={{maxWidth:850,margin:"12px auto",padding:16}}><form action={recordConsentedView}><input type="hidden" name="professionalId" value={data.professional.id}/><input type="hidden" name="slug" value={slug}/><p>Help this professional understand whether GLOHAUS profile visits lead to bookings. Optional; only your account and booking activity are used for attribution, for up to seven days. No reward is triggered.</p><label><input type="checkbox" name="consent" value="yes" required/> I agree to record this profile visit for conversion analytics.</label><button className="button small" type="submit">Count my visit</button>{booking.tracking==="recorded"&&<p role="status">Your consented visit was recorded.</p>}{booking.tracking==="unavailable"&&<p role="alert">Tracking is temporarily unavailable.</p>}</form></section>}
+      {data.canTrackVisit && <details style={{maxWidth:850,margin:"8px auto",padding:"0 16px"}}><summary style={{cursor:"pointer",fontSize:13}}>Optional profile visit analytics</summary><form action={recordConsentedView}><input type="hidden" name="professionalId" value={data.professional.id}/><input type="hidden" name="slug" value={slug}/><p>Help this professional understand whether GLOHAUS profile visits lead to bookings. Optional; only your account and booking activity are used for attribution, for up to seven days. No reward is triggered.</p><label><input type="checkbox" name="consent" value="yes" required/> I agree to record this profile visit for conversion analytics.</label> <button className="button small" type="submit">Count my visit</button>{booking.tracking==="recorded"&&<p role="status">Your consented visit was recorded.</p>}{booking.tracking==="unavailable"&&<p role="alert">Tracking is temporarily unavailable.</p>}</form></details>}
       <ProfessionalProfile
         professional={data.professional}
         policies={<section id="professional-policies" className="professional-section"><h2>Rules & booking policies</h2><p>Choose a service to inspect its applicable general and service-specific terms before booking.</p>{data.policies.map(p=><details key={p.id}><summary>{data.services.find(s=>s.id===p.id)?.name}</summary><ProfessionalPolicySummary policy={p.policy}/></details>)}</section>}

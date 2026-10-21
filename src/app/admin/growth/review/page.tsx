@@ -1,10 +1,10 @@
 import Link from "next/link";
 import {pageAccount} from "@/lib/page-access";
 import {withOwner} from "@/modules/admin/repository";
-import {refreshGrowthAudit,nominateProfessional,detectReferralRisks,decideReferralReview} from "./actions";
+import {refreshGrowthAudit,nominateProfessional,detectReferralRisks,decideReferralReview,transitionAppreciation} from "./actions";
 export const dynamic="force-dynamic";
 export const metadata={title:"Growth Review | GLOHAUS"};
-export default async function Page({searchParams}:{searchParams:Promise<{refresh?:string;nomination?:string;period?:string;risks?:string;case?:string}>}){
+export default async function Page({searchParams}:{searchParams:Promise<{refresh?:string;nomination?:string;period?:string;risks?:string;case?:string;appreciation?:string}>}){
  const access=await pageAccount("admin");
  if(!access.account?.roles.includes("owner"))return <main><p role="alert">Owner access required.</p></main>;
  const params=await searchParams; const days=params.period==="week"?7:params.period==="year"?366:31;
@@ -20,8 +20,8 @@ export default async function Page({searchParams}:{searchParams:Promise<{refresh
   <p>Owner-only insights. Rewards and automatic payments are disabled.</p>
   <nav style={{display:"flex",gap:14}}><Link href="?period=week">7 days</Link><Link href="?period=month">31 days</Link><Link href="?period=year">366 days</Link></nav>
   <section className="admin-detail-card" style={{padding:24,marginTop:20}}><h2>Consented profile-to-booking attribution</h2>
-  {analytics ? <p>{analytics.consentedViews} recorded consented views · {analytics.completedPaidAttributedBookings} attributed completed paid bookings · {analytics.rate===null?"Not enough data":analytics.rate+"% attribution ratio"}</p>:<p role="alert">Attribution unavailable.</p>}
-  <p>Only consented signed-in visits count. No historic profile opens were retroactively attributed. This is a visit-based ratio, not unique-customer conversion.</p></section>
+  {analytics ? <p>{analytics.consentedViews} recorded consented customer–professional journeys · {analytics.completedPaidAttributedBookings} converted journeys · {analytics.rate===null?"Not enough data":analytics.rate+"% cohort conversion"}</p>:<p role="alert">Attribution unavailable.</p>}
+  <p>Distinct consenting customer–professional journeys are the denominator. Bookings must follow a consented visit within seven days; no historical view estimates.</p></section>
   <section className="admin-detail-card" style={{padding:24,marginTop:20}}><h2>Referral qualification audit</h2>
   <form action={refreshGrowthAudit}><button type="submit" className="button small">Refresh qualifying bookings and referrals</button></form>
   {params.refresh==="success"&&<p role="status">Audit refresh completed.</p>}{params.refresh==="unavailable"&&<p role="alert">Audit refresh failed. No approval or rewards issued.</p>}
@@ -57,8 +57,8 @@ export default async function Page({searchParams}:{searchParams:Promise<{refresh
   {params.nomination==="saved"&&<p role="status">Proposal saved; nothing has been sent or paid.</p>}
   {params.nomination==="invalid"&&<p role="alert">Please review the nomination.</p>}
   {params.nomination==="unavailable"&&<p role="alert">Proposal could not be saved.</p>}
-  {gifts?<div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Professional</th><th>Reason</th><th>Gift</th><th>Proposed value</th><th>Status</th></tr></thead><tbody>
-   {gifts.map(g=><tr key={g.id}><td>{g.business_name}</td><td>{g.reason}</td><td>{g.gift_description??"—"}</td><td>£{(g.proposed_value_pence/100).toFixed(2)}</td><td>{g.state}</td></tr>)}
+  {params.appreciation==="saved"&&<p role="status">Recognition record updated. No gift or payment has been sent.</p>}{params.appreciation==="unavailable"&&<p role="alert">Unable to change recognition status.</p>}{gifts?<div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Professional</th><th>Reason</th><th>Gift</th><th>Proposed value</th><th>Status</th></tr></thead><tbody>
+   {gifts.map(g=><tr key={g.id}><td>{g.business_name}</td><td>{g.reason}</td><td>{g.gift_description??"—"}</td><td>£{(g.proposed_value_pence/100).toFixed(2)}</td><td>{g.state}{(g.state==="proposed"||g.state==="approved")&&<form action={transitionAppreciation} style={{display:"flex",gap:8,flexWrap:"wrap"}}><input type="hidden" name="id" value={g.id}/>{g.state==="proposed"&&<button name="state" value="approved" type="submit">Approve proposal</button>}{g.state==="approved"&&<button name="state" value="fulfilled" type="submit">Mark externally fulfilled</button>}<button name="state" value="cancelled" type="submit">Cancel</button></form>}</td></tr>)}
   </tbody></table></div>:<p role="alert">Proposals unavailable.</p>}</section>
  </main>;
 }

@@ -34,3 +34,12 @@ export async function decideReferralReview(form:FormData) {
  const ok=await withOwner(async db=>(await db.query<{ok:boolean}>("SELECT beauty.owner_decide_referral_review($1,$2,$3) AS ok",[id,status,notes])).rows[0]?.ok===true).catch(()=>false);
  redirect("/admin/growth/review?case="+(ok?"saved":"unavailable"));
 }
+
+export async function transitionAppreciation(form:FormData) {
+ const id=String(form.get("id")??"");
+ const state=String(form.get("state")??"");
+ if(!/^[0-9a-f-]{36}$/i.test(id)||!["approved","cancelled","fulfilled"].includes(state))
+  redirect("/admin/growth/review?appreciation=invalid");
+ const success=await withOwner(async db=>(await db.query<{result:boolean}>("SELECT beauty.owner_transition_appreciation($1,$2) AS result",[id,state])).rows[0]?.result===true).catch(()=>false);
+ redirect("/admin/growth/review?appreciation="+(success?"saved":"unavailable"));
+}

@@ -35,6 +35,13 @@ BEGIN
    (SELECT 1 FROM beauty.bookings b JOIN beauty.booking_disputes d ON d.booking_id=b.id
     WHERE b.customer_id=target_customer)
   ON CONFLICT(referral_id,reason_code) DO NOTHING;
+  INSERT INTO beauty.growth_referral_review_cases(referral_id,reason_code)
+  SELECT ref_id,'UNUSUAL_CLAIM_VELOCITY' WHERE EXISTS (
+   SELECT 1 FROM beauty.customer_referrals r WHERE r.id=ref_id AND (
+    SELECT count(*) FROM beauty.customer_referrals n WHERE n.referrer_user_id=r.referrer_user_id
+    AND n.created_at BETWEEN r.created_at-interval '1 hour' AND r.created_at+interval '1 hour'
+   )>=10)
+  ON CONFLICT(referral_id,reason_code) DO NOTHING;
   -- Cases under review and rejected decisions are never auto-cleared/overwritten.
   IF EXISTS (SELECT 1 FROM beauty.growth_referral_review_cases c
              WHERE c.referral_id=ref_id AND c.status IN ('open','under_review','rejected')) THEN CONTINUE; END IF;
@@ -58,7 +65,7 @@ BEGIN
  END LOOP;
  -- Alert owners of newly opened flags; stable unique event_key prevents repeat notices.
  INSERT INTO beauty.in_app_notifications(user_id,kind,title,body,href,event_key)
- SELECT ur.user_id,'general','Referral requires review',
+ SELECT ur.user_id,'promotion','Referral requires review',
         'A referral risk signal needs manual assessment.','/admin/growth/review',
         'referral-risk:'||c.id::text
  FROM beauty.growth_referral_review_cases c
@@ -80,7 +87,12 @@ BEGIN
  ELSIF TG_TABLE_NAME='payments' OR TG_TABLE_NAME='booking_disputes' THEN
  SELECT b.customer_id INTO customer FROM beauty.bookings b WHERE b.id=NEW.booking_id;
  END IF;
- PERFORM beauty.growth_reconcile_customer(customer);
+ BEGIN
+  PERFORM beauty.growth_reconcile_customer(customer);
+ EXCEPTION WHEN OTHERS THEN
+  -- Analytics must NEVER abort Stripe or booking transaction paths.
+  RAISE WARNING 'Growth event reconciliation failed (%): %',SQLSTATE,SQLERRM;
+ END;
  RETURN NEW;
 END $$;
 REVOKE ALL ON FUNCTION beauty.growth_reconcile_event() FROM PUBLIC,anon,authenticated,beauty_app;
@@ -96,3 +108,25 @@ FOR EACH ROW EXECUTE FUNCTION beauty.growth_reconcile_event();
 DROP TRIGGER IF EXISTS growth_dispute_changed ON beauty.booking_disputes;
 CREATE TRIGGER growth_dispute_changed AFTER INSERT OR UPDATE OF status ON beauty.booking_disputes
 FOR EACH ROW EXECUTE FUNCTION beauty.growth_reconcile_event();
+
+-- Periodic catch-up target for authorised database scheduler, with no public execute grant.
+CREATE OR REPLACE FUNCTION beauty.growth_reconcile_all()
+RETURNS integer LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog AS $$
+DECLARE target uuid; processed integer:=0;
+BEGIN
+ FOR target IN
+ SELECT DISTINCT customer_id FROM (
+  SELECT b.customer_id FROM beauty.bookings b WHERE b.created_at>now()-interval '45 days'
+  UNION SELECT r.referred_user_id FROM beauty.customer_referrals r WHERE r.created_at>now()-interval '45 days'
+  UNION SELECT v.customer_id FROM beauty.growth_profile_attribution v WHERE v.viewed_at>now()-interval '45 days'
+ ) candidates
+ LOOP
+  BEGIN
+   PERFORM beauty.growth_reconcile_customer(target);
+   processed:=processed+1;
+  EXCEPTION WHEN OTHERS THEN RAISE WARNING 'Growth catchup skipped a customer (%): %',SQLSTATE,SQLERRM;
+  END;
+ END LOOP;
+ RETURN processed;
+END $$;
+REVOKE ALL ON FUNCTION beauty.growth_reconcile_all() FROM PUBLIC,anon,authenticated,beauty_app;

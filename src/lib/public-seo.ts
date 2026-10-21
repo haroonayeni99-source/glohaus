@@ -8,8 +8,8 @@ export function isIndexablePublicProfile(slug: string) {
 }
 export const publicPages = {
   "/": [
-    "Find beauty professionals near you",
-    "Find independent beauty professionals, compare services and prices, and book your next appointment with GLOHAUS.",
+    "Discover & Book Beauty Professionals",
+    "Find hairstylists, nail technicians, barbers, makeup artists and more on GLOHAUS. Explore services, compare professionals and book with confidence.",
   ],
   "/explore": [
     "Find a beauty professional",

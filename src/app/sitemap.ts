@@ -37,7 +37,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       );
     } catch {
       console.error("Public profile sitemap unavailable");
-      throw new Error("Sitemap directory temporarily unavailable");
+      // Keep the stable public page sitemap available during database outages.
+      // Professional URLs will be included again when the directory recovers.
     }
   }
   return pages;

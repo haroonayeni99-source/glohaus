@@ -287,6 +287,26 @@ export function PortfolioEditor({ assets,specialities=[] }: { assets: PortfolioA
                   ? "Hide media"
                   : "Publish media"}
               </button>
+              <button
+                type="button"
+                className="button small"
+                disabled={busy}
+                onClick={async () => {
+                  if (!window.confirm("Permanently delete this " + asset.media_type + "? This cannot be undone.")) return;
+                  setBusy(true);
+                  setNotice("");
+                  try {
+                    const response = await fetch(`/api/v1/professional/portfolio/${asset.id}`, { method: "DELETE" });
+                    if (!response.ok) throw new Error("Could not delete media. It may still be used by a service or post.");
+                    setNotice("Media permanently removed from your portfolio.");
+                    router.refresh();
+                  } catch (error) {
+                    setNotice(error instanceof Error ? error.message : "Could not delete media.");
+                  } finally { setBusy(false); }
+                }}
+              >
+                Delete permanently
+              </button>
             </div>
           </article>
         ))}

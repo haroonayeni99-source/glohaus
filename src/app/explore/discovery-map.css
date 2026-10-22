@@ -995,3 +995,25 @@
   .discovery-original .discovery-card-photo { aspect-ratio:1; }
   .discovery-original .discovery-card-actions .discovery-book { padding:8px 10px !important; }
 }
+
+
+/* Locator-style sidebar adapted from the supplied StoreList example. */
+.discovery-original .discovery-list-search {
+  display:flex; align-items:center; gap:10px; border:1px solid var(--ui-border);
+  border-radius:13px; padding:0 12px; min-height:48px; background:var(--ui-surface);
+  margin:18px 0 12px; box-shadow:0 2px 8px #25121b08;
+}
+.discovery-original .discovery-list-search input {
+  flex:1; width:100%; min-width:0; border:0; outline:none;
+  background:transparent; color:var(--ui-text); font:inherit; font-size:13px;
+}
+.discovery-original .discovery-list-search:focus-within { outline:2px solid #b93f7155; outline-offset:1px; }
+.discovery-original .discovery-list-search button {
+  background:transparent; color:var(--ui-muted); border:0; cursor:pointer;
+  display:grid; place-items:center; min-width:28px; min-height:28px;
+}
+.discovery-original .discovery-card { cursor:pointer; }
+.discovery-original .discovery-card:focus-within { outline:2px solid #b93f7166; outline-offset:2px; }
+.discovery-original .discovery-card:hover { box-shadow:0 4px 19px #32162415; }
+.discovery-original .discovery-card.is-selected { background:#b93f7109; }
+:root[data-theme="night"] .discovery-original .discovery-card.is-selected { background:#b93f711c; }

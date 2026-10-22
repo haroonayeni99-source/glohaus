@@ -50,6 +50,8 @@ export function GeographicMap({
   const drag = useRef<{ x: number; y: number; center: Coordinates } | null>(
     null,
   );
+  const activePointers = useRef(new Map<number, { x: number; y: number }>());
+  const pinchDistance = useRef<number | null>(null);
   const [lastFocus, setLastFocus] = useState(focus);
   if (
     focus &&
@@ -159,12 +161,39 @@ export function GeographicMap({
         data-center-longitude={center.longitude}
         data-zoom={zoom}
         ref={surface}
+        style={{ touchAction: "none" }}
+        onWheel={(event) => {
+          if (event.ctrlKey || Math.abs(event.deltaY) > 0) {
+            setZoom((z) => Math.max(2, Math.min(19, z + (event.deltaY < 0 ? 1 : -1))));
+          }
+        }}
         onPointerDown={(event) => {
+          activePointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+          if (activePointers.current.size > 1) {
+            drag.current = null;
+            const points = [...activePointers.current.values()];
+            pinchDistance.current = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+            event.currentTarget.setPointerCapture(event.pointerId);
+            return;
+          }
           if (event.button !== 0) return;
           drag.current = { x: event.clientX, y: event.clientY, center };
           event.currentTarget.setPointerCapture(event.pointerId);
         }}
         onPointerMove={(event) => {
+          if (activePointers.current.has(event.pointerId)) activePointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+          if (activePointers.current.size > 1) {
+            const points = [...activePointers.current.values()];
+            const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+            if (pinchDistance.current && distance > pinchDistance.current * 1.35) {
+              setZoom((z) => Math.min(19, z + 1));
+              pinchDistance.current = distance;
+            } else if (pinchDistance.current && distance < pinchDistance.current / 1.35) {
+              setZoom((z) => Math.max(2, z - 1));
+              pinchDistance.current = distance;
+            }
+            return;
+          }
           const start = drag.current;
           if (!start) return;
           const p = project(start.center, zoom);
@@ -177,7 +206,10 @@ export function GeographicMap({
           );
         }}
         onPointerUp={(event) => {
-          const start = drag.current;
+          const pinching = activePointers.current.size > 1;
+          activePointers.current.delete(event.pointerId);
+          if (activePointers.current.size < 2) pinchDistance.current = null;
+          const start = pinching ? null : drag.current;
           drag.current = null;
           if (!start) return;
           const delta = Math.hypot(
@@ -195,7 +227,9 @@ export function GeographicMap({
             );
           }
         }}
-        onPointerCancel={() => {
+        onPointerCancel={(event) => {
+          activePointers.current.delete(event.pointerId);
+          pinchDistance.current = null;
           drag.current = null;
         }}
         onDoubleClick={() => setZoom((z) => Math.min(19, z + 1))}

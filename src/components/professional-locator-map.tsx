@@ -28,6 +28,7 @@ export function ProfessionalLocatorMap({
   const currentFocus = useRef<Coordinates | undefined>(undefined);
   const [consented, setConsented] = useState(false);
   const [error, setError] = useState(false);
+  const [ready, setReady] = useState(false);
   onSelectRef.current = onSelect;
   onHighlightRef.current = onHighlight;
   viewportRef.current = onViewportChange;
@@ -59,6 +60,7 @@ export function ProfessionalLocatorMap({
         pitchWithRotate: false,
       });
       map.current = instance;
+      setReady(true);
       instance.addControl(new NavigationControl({ showCompass: false }), "bottom-right");
       instance.on("moveend", () => {
         if (!instance) return;
@@ -82,6 +84,7 @@ export function ProfessionalLocatorMap({
       markers.current.clear();
       instance?.remove();
       map.current = null;
+      setReady(false);
     };
   // Initial map construction only; updates handled by separate effects.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -99,7 +102,7 @@ export function ProfessionalLocatorMap({
       duration: 800,
       essential: true,
     });
-  }, [focus, selectedId]);
+  }, [focus, selectedId, ready]);
 
   useEffect(() => {
     const instance = map.current;
@@ -127,7 +130,7 @@ export function ProfessionalLocatorMap({
       }
     });
     return () => { removed = true; };
-  }, [pins, selectedId, highlightedId, consented]);
+  }, [pins, selectedId, highlightedId, consented, ready]);
 
   const selected = pins.find((pin) => pin.id === selectedId);
   return (

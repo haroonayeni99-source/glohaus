@@ -29,6 +29,15 @@ export function ProfessionalLocatorMap({
   const [consented, setConsented] = useState(false);
   const [error, setError] = useState(false);
   const [ready, setReady] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  useEffect(() => {
+    const root = document.documentElement;
+    const syncTheme = () => setDarkMode(root.dataset.theme === "night" || root.classList.contains("dark"));
+    syncTheme();
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(root, { attributes: true, attributeFilter: ["data-theme", "class"] });
+    return () => observer.disconnect();
+  }, []);
   onSelectRef.current = onSelect;
   onHighlightRef.current = onHighlight;
   viewportRef.current = onViewportChange;
@@ -45,9 +54,11 @@ export function ProfessionalLocatorMap({
           version: 8,
           sources: { streets: {
             type: "raster",
-            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            tiles: [darkMode
+              ? "https://basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
+              : "https://basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"],
             tileSize: 256,
-            attribution: "© OpenStreetMap contributors",
+            attribution: "© OpenStreetMap contributors © CARTO",
           } },
           layers: [{ id: "streets", type: "raster", source: "streets" }],
         },
@@ -89,7 +100,7 @@ export function ProfessionalLocatorMap({
     };
   // Initial map construction only; updates handled by separate effects.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [consented]);
+  }, [consented, darkMode]);
 
   useEffect(() => {
     const instance = map.current;

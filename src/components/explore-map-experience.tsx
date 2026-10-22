@@ -17,7 +17,6 @@ import { TaxonomyFilters } from "./taxonomy-filters";
 import { ProfessionalVerificationBadges } from "./professional-verification-badges";
 import type { MapViewport } from "./geographic-map";
 import { GeographicMap } from "./geographic-map";
-import { LondonMapOverview } from "./london-map-overview";
 import {
   londonBoroughs,
   londonBorough,
@@ -92,7 +91,7 @@ export function ExploreMapExperience({
     [radius, setRadius] = useState(10);
   const [locating, setLocating] = useState(false),
     [locationNotice, setLocationNotice] = useState("");
-  const [streetView, setStreetView] = useState(true);
+  const [overviewFocus, setOverviewFocus] = useState<Coordinates | null>(null);
   const [mobileView, setMobileView] = useState<"map" | "list">("list");
   const [selected, setSelected] = useState<string | null>(null),
     [highlighted, setHighlighted] = useState<string | null>(null);
@@ -109,7 +108,6 @@ export function ExploreMapExperience({
     Boolean(londonBorough(locationSearch)) ||
     /\blondon\b/i.test(locationSearch) ||
     /^(?:E|EC|N|NW|SE|SW|W|WC)\d{1,2}[A-Z]?(?:\s*\d[A-Z]{2})?$/i.test(locationSearch);
-  const showLondonOverview = londonSearch && !streetView && !postcodeCentre;
   const nearby = nearbyResults ?? professionals;
   const unavailable = loadFailed && nearbyResults === null;
   const showExamples =
@@ -149,6 +147,7 @@ export function ExploreMapExperience({
     return () => controller.abort();
   }, [ids, signedIn]);
   const selectPin = useCallback((id: string) => {
+    setOverviewFocus(null);
     setSelected(id);
     if (window.matchMedia("(min-width: 901px)").matches)
       document
@@ -158,7 +157,7 @@ export function ExploreMapExperience({
   function showOnMap(pro: PublicProfessional) {
     if (!mapped.some((pin) => pin.id === pro.id)) return;
     setSelected(pro.id);
-    setStreetView(true);
+    setOverviewFocus(null);
     setMobileView("map");
     requestAnimationFrame(() =>
       document
@@ -218,7 +217,7 @@ export function ExploreMapExperience({
       const result = await r.json();
       if (current !== sequence.current) return;
       setNearbyResults(result.professionals);
-      setStreetView(true);
+      setOverviewFocus(null);
       setPosition(point);
       setSelected(null);
       setLocationNotice(
@@ -745,79 +744,45 @@ export function ExploreMapExperience({
               Search this area
             </button>
           </div>
-          <button
-            className="discovery-map-switch"
-            type="button"
-            onClick={() => {
-              setStreetView((value) => !value);
-              setSelected(null);
-            }}
-          >
-            {streetView
-              ? (londonSearch ? "Back to London overview" : "View area results")
-              : (londonSearch ? "View confirmed business pins" : "View map pins")}
-          </button>
-          {streetView ? (
-            <GeographicMap
-              pins={mapped.map((pro) => ({
-                id: pro.id,
-                label: pro.business_name,
-                priceLabel:
-                  pro.from_price_pence != null
-                    ? money(pro.from_price_pence)
-                    : undefined,
-                latitude: pro.public_latitude!,
-                longitude: pro.public_longitude!,
-              }))}
-              focus={
-                selectedPro?.public_location_confirmed_at
-                  ? {
-                      latitude: selectedPro.public_latitude!,
-                      longitude: selectedPro.public_longitude!,
-                    }
-                  : (position ?? postcodeCentre ??
-                    (mapped[0]
-                      ? {
-                          latitude: mapped[0].public_latitude!,
-                          longitude: mapped[0].public_longitude!,
-                        }
-                      : undefined))
-              }
-              initialZoom={selectedPro ? 16 : 12}
-              focusZoom={selectedPro ? 16 : undefined}
-              selectedId={selected}
-              highlightedId={highlighted}
-              onSelect={selectPin}
-              onHighlight={setHighlighted}
-              onViewportChange={setViewport}
-            />
-          ) : showLondonOverview ? (
-            <LondonMapOverview query={query} filters={filters} />
-          ) : mapped.length ? (
-            <GeographicMap
-              pins={mapped.map((pro) => ({
-                id: pro.id,
-                label: pro.business_name,
-                priceLabel: pro.from_price_pence != null ? money(pro.from_price_pence) : undefined,
-                latitude: pro.public_latitude!,
-                longitude: pro.public_longitude!,
-              }))}
-              focus={postcodeCentre ?? { latitude: mapped[0].public_latitude!, longitude: mapped[0].public_longitude! }}
-              initialZoom={11}
-              selectedId={selected}
-              highlightedId={highlighted}
-              onSelect={selectPin}
-              onHighlight={setHighlighted}
-              onViewportChange={setViewport}
-            />
-          ) : (
-            <div className="map-pro-empty" role="status">
-              <MapPin size={28} />
-              <h3>No confirmed map pins for {locationSearch}</h3>
-              <p>Try another city or postcode, or widen your search.</p>
-            </div>
+          {londonSearch && (
+            <button
+              className="discovery-map-switch"
+              type="button"
+              onClick={() => {
+                setSelected(null);
+                setOverviewFocus({ latitude: 51.5074, longitude: -0.1278 });
+              }}
+            >
+              View all London
+            </button>
           )}
-          {streetView && selectedPro && (
+          <GeographicMap
+            pins={mapped.map((pro) => ({
+              id: pro.id,
+              label: pro.business_name,
+              priceLabel: pro.from_price_pence != null ? money(pro.from_price_pence) : undefined,
+              latitude: pro.public_latitude!,
+              longitude: pro.public_longitude!,
+            }))}
+            focus={
+              selectedPro?.public_location_confirmed_at
+                ? { latitude: selectedPro.public_latitude!, longitude: selectedPro.public_longitude! }
+                : overviewFocus ?? position ?? postcodeCentre ??
+                  (londonSearch
+                    ? { latitude: 51.5074, longitude: -0.1278 }
+                    : mapped[0]
+                      ? { latitude: mapped[0].public_latitude!, longitude: mapped[0].public_longitude! }
+                      : undefined)
+            }
+            initialZoom={selectedPro ? 16 : londonSearch ? 10 : 12}
+            focusZoom={selectedPro ? 16 : overviewFocus ? 10 : undefined}
+            selectedId={selected}
+            highlightedId={highlighted}
+            onSelect={selectPin}
+            onHighlight={setHighlighted}
+            onViewportChange={setViewport}
+          />
+          {selectedPro && (
             <div className="discovery-pin-card">
               <button
                 type="button"

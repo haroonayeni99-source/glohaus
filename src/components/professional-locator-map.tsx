@@ -37,7 +37,7 @@ export function ProfessionalLocatorMap({
     if (!consented || !mapContainer.current) return;
     let cancelled = false;
     let instance: MapLibreMap | null = null;
-    import("maplibre-gl").then(({ Map, NavigationControl }) => {
+    import("maplibre-gl").then(({ Map, NavigationControl, FullscreenControl }) => {
       if (cancelled || !mapContainer.current) return;
       instance = new Map({
         container: mapContainer.current,
@@ -61,7 +61,8 @@ export function ProfessionalLocatorMap({
       });
       map.current = instance;
       setReady(true);
-      instance.addControl(new NavigationControl({ showCompass: false }), "bottom-right");
+      instance.addControl(new NavigationControl({ showCompass: true }), "bottom-right");
+      instance.addControl(new FullscreenControl(), "bottom-right");
       instance.on("moveend", () => {
         if (!instance) return;
         const center = instance.getCenter();

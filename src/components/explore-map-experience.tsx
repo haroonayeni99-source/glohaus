@@ -92,6 +92,7 @@ export function ExploreMapExperience({
   const [locating, setLocating] = useState(false),
     [locationNotice, setLocationNotice] = useState("");
   const [overviewFocus, setOverviewFocus] = useState<Coordinates | null>(null);
+  const [londonResetSignal, setLondonResetSignal] = useState(0);
   const [listQuery, setListQuery] = useState("");
   const [mobileView, setMobileView] = useState<"map" | "list">("list");
   const [selected, setSelected] = useState<string | null>(null),
@@ -774,12 +775,14 @@ export function ExploreMapExperience({
               onClick={() => {
                 setSelected(null);
                 setOverviewFocus({ latitude: 51.5074, longitude: -0.1278 });
+                setLondonResetSignal((value) => value + 1);
               }}
             >
               View all London
             </button>
           )}
           <ProfessionalLocatorMap
+            resetLondonSignal={londonResetSignal}
             pins={mapped.map((pro) => ({
               id: pro.id,
               label: pro.business_name,

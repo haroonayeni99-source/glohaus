@@ -92,6 +92,7 @@ export function ExploreMapExperience({
   const [locating, setLocating] = useState(false),
     [locationNotice, setLocationNotice] = useState("");
   const [overviewFocus, setOverviewFocus] = useState<Coordinates | null>(null);
+  const [listQuery, setListQuery] = useState("");
   const [mobileView, setMobileView] = useState<"map" | "list">("list");
   const [selected, setSelected] = useState<string | null>(null),
     [highlighted, setHighlighted] = useState<string | null>(null);
@@ -109,10 +110,17 @@ export function ExploreMapExperience({
     /\blondon\b/i.test(locationSearch) ||
     /^(?:E|EC|N|NW|SE|SW|W|WC)\d{1,2}[A-Z]?(?:\s*\d[A-Z]{2})?$/i.test(locationSearch);
   const nearby = nearbyResults ?? professionals;
+  const normalizedListQuery = listQuery.trim().toLocaleLowerCase();
+  const listed = normalizedListQuery
+    ? nearby.filter((pro) =>
+        [pro.business_name, pro.city, pro.category, ...(pro.matching_services?.map((service) => service.name) ?? [])]
+          .some((value) => value?.toLocaleLowerCase().includes(normalizedListQuery)),
+      )
+    : nearby;
   const unavailable = loadFailed && nearbyResults === null;
   const showExamples =
     !position && !locating && examples.length > 0;
-  const mapped = nearby.filter(
+  const mapped = listed.filter(
     (p) =>
       p.public_location_confirmed_at &&
       coordinatesSchema.safeParse({
@@ -120,7 +128,7 @@ export function ExploreMapExperience({
         longitude: p.public_longitude,
       }).success,
   );
-  const selectedPro = nearby.find((p) => p.id === selected);
+  const selectedPro = listed.find((p) => p.id === selected);
   const ids = nearby.map((p) => p.id).join(",");
   useEffect(
     () => () => {
@@ -581,8 +589,8 @@ export function ExploreMapExperience({
             </h2>
             {!unavailable && (!showExamples || nearby.length > 0) && (
               <p>
-                {nearby.length} matching{" "}
-                {nearby.length === 1 ? "professional" : "professionals"} ·{" "}
+                {listed.length} matching{" "}
+                {listed.length === 1 ? "professional" : "professionals"} ·{" "}
                 {position ? "Closest first" : "Recommended"}
               </p>
             )}
@@ -593,12 +601,27 @@ export function ExploreMapExperience({
               </small>
             )}
           </header>
+          <div className="discovery-list-search">
+            <Search size={17} aria-hidden="true" />
+            <input
+              type="search"
+              aria-label="Filter displayed professionals"
+              placeholder="Find a professional, service or area"
+              value={listQuery}
+              onChange={(event) => { setListQuery(event.target.value); setSelected(null); }}
+            />
+            {listQuery && <button type="button" onClick={() => setListQuery("")} aria-label="Clear list search"><X size={16} /></button>}
+          </div>
           <div className="map-pro-list">
-            {nearby.map((pro) => (
+            {listed.map((pro) => (
               <article
                 id={`discovery-${pro.id}`}
                 key={pro.id}
                 className={`discovery-card${selected === pro.id || highlighted === pro.id ? " is-selected" : ""}`}
+                onClick={(event) => {
+                  if ((event.target as HTMLElement).closest("a, button")) return;
+                  showOnMap(pro);
+                }}
                 onMouseEnter={() => setHighlighted(pro.id)}
                 onMouseLeave={() => setHighlighted(null)}
                 onFocus={() => setHighlighted(pro.id)}
@@ -718,11 +741,11 @@ export function ExploreMapExperience({
               </article>
             ))}
           </div>
-          {!unavailable && !nearby.length && !showExamples && (
+          {!unavailable && !listed.length && !showExamples && (
             <div className="map-pro-empty">
               <Search size={28} />
-              <h3>No matching professionals yet.</h3>
-              <p>Try another area, a wider radius or a different service.</p>
+              <h3>{listQuery ? "No professionals match that search." : "No matching professionals yet."}</h3>
+              <p>{listQuery ? "Try another professional name, service or area." : "Try another area, a wider radius or a different service."}</p>
               <Link href="/explore">Clear filters</Link>
             </div>
           )}
@@ -814,7 +837,7 @@ export function ExploreMapExperience({
             {unavailable
               ? "Business locations couldn’t be loaded. Retry the results to check available professionals."
               : mapped.length
-              ? `${mapped.length} confirmed public pins. ${nearby.length - mapped.length ? `${nearby.length - mapped.length} profiles show an area only.` : ""}`
+              ? `${mapped.length} confirmed public pins. ${listed.length - mapped.length ? `${listed.length - mapped.length} profiles show an area only.` : ""}`
               : "No confirmed public pins for this search. Browse the results or search another area."}{" "}
             Private addresses are never inferred.
           </p>

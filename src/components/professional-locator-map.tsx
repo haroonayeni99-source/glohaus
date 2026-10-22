@@ -55,7 +55,7 @@ export function ProfessionalLocatorMap({
         zoom: 10,
         minZoom: 2,
         maxZoom: 19,
-        attributionControl: true,
+        attributionControl: {},
         dragRotate: false,
         pitchWithRotate: false,
       });

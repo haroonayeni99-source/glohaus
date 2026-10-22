@@ -52,6 +52,7 @@ export function GeographicMap({
   );
   const activePointers = useRef(new Map<number, { x: number; y: number }>());
   const pinchDistance = useRef<number | null>(null);
+  const lastTap = useRef<{ time: number; x: number; y: number } | null>(null);
   const [lastFocus, setLastFocus] = useState(focus);
   if (
     focus &&
@@ -112,6 +113,18 @@ export function GeographicMap({
           url: `https://tile.openstreetmap.org/${zoom}/${((x % count) + count) % count}/${y}.png`,
         });
       }
+  function zoomAt(nextZoom: number, clientX?: number, clientY?: number) {
+    const targetZoom = Math.max(2, Math.min(19, nextZoom));
+    if (targetZoom === zoom) return;
+    const box = surface.current?.getBoundingClientRect();
+    const offsetX = box && clientX != null ? clientX - box.left - box.width / 2 : 0;
+    const offsetY = box && clientY != null ? clientY - box.top - box.height / 2 : 0;
+    const projected = project(center, zoom);
+    const anchor = unproject(projected.x + offsetX, projected.y + offsetY, zoom);
+    const nextAnchor = project(anchor, targetZoom);
+    setCenter(unproject(nextAnchor.x - offsetX, nextAnchor.y - offsetY, targetZoom));
+    setZoom(targetZoom);
+  }
   function move(dx: number, dy: number) {
     setCenter(unproject(c.x + dx, c.y + dy, zoom));
   }
@@ -163,8 +176,9 @@ export function GeographicMap({
         ref={surface}
         style={{ touchAction: "none" }}
         onWheel={(event) => {
-          if (event.ctrlKey || Math.abs(event.deltaY) > 0) {
-            setZoom((z) => Math.max(2, Math.min(19, z + (event.deltaY < 0 ? 1 : -1))));
+          if (event.deltaY !== 0) {
+            event.preventDefault();
+            zoomAt(zoom + (event.deltaY < 0 ? 1 : -1), event.clientX, event.clientY);
           }
         }}
         onPointerDown={(event) => {
@@ -186,10 +200,10 @@ export function GeographicMap({
             const points = [...activePointers.current.values()];
             const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
             if (pinchDistance.current && distance > pinchDistance.current * 1.35) {
-              setZoom((z) => Math.min(19, z + 1));
+              zoomAt(zoom + 1, (points[0].x + points[1].x) / 2, (points[0].y + points[1].y) / 2);
               pinchDistance.current = distance;
             } else if (pinchDistance.current && distance < pinchDistance.current / 1.35) {
-              setZoom((z) => Math.max(2, z - 1));
+              zoomAt(zoom - 1, (points[0].x + points[1].x) / 2, (points[0].y + points[1].y) / 2);
               pinchDistance.current = distance;
             }
             return;
@@ -216,6 +230,16 @@ export function GeographicMap({
             event.clientX - start.x,
             event.clientY - start.y,
           );
+          if (delta < 12 && event.pointerType === "touch" && !onChoose) {
+            const previous = lastTap.current;
+            const now = Date.now();
+            if (previous && now - previous.time < 350 && Math.hypot(previous.x - event.clientX, previous.y - event.clientY) < 35) {
+              lastTap.current = null;
+              zoomAt(zoom + 1, event.clientX, event.clientY);
+            } else {
+              lastTap.current = { time: now, x: event.clientX, y: event.clientY };
+            }
+          }
           if (delta < 5 && onChoose && zoom >= 16) {
             const box = event.currentTarget.getBoundingClientRect();
             onChoose(
@@ -232,7 +256,10 @@ export function GeographicMap({
           pinchDistance.current = null;
           drag.current = null;
         }}
-        onDoubleClick={() => setZoom((z) => Math.min(19, z + 1))}
+        onDoubleClick={(event) => {
+          event.preventDefault();
+          if (event.detail > 0) zoomAt(zoom + 1, event.clientX, event.clientY);
+        }}
       >
         {tiles.map((tile) => (
           <Image

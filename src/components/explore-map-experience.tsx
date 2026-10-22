@@ -349,6 +349,28 @@ export function ExploreMapExperience({
             <button type="submit">Search</button>
           </form>
         </div>
+        {londonSearch && (
+          <div className="london-borough-picker">
+            <label htmlFor="explore-london-borough">Explore all 32 London boroughs</label>
+            <select
+              id="explore-london-borough"
+              value={londonBorough(filters.location) ?? ""}
+              onChange={(event) => {
+                setSelected(null);
+                setOverviewFocus(null);
+                setMobileView("map");
+                router.push(discoveryHref(query, {
+                  ...filters,
+                  location: event.target.value || undefined,
+                }));
+              }}
+            >
+              <option value="">All London</option>
+              {areas.map((borough) => <option value={borough} key={borough}>{borough}</option>)}
+            </select>
+            <span>{areas.length} boroughs · select an area to find beauty professionals</span>
+          </div>
+        )}
         {londonSearch && <nav className="map-area-strip" aria-label="Explore London areas">
           {["All London", ...areas].map((area) => (
             <Link

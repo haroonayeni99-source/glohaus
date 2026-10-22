@@ -9,7 +9,7 @@ type Pin = Coordinates & { id: string; label: string; priceLabel?: string };
 export type MapViewport = Coordinates & { radiusMiles: number };
 
 export function ProfessionalLocatorMap({
-  pins, focus, selectedId, highlightedId, onSelect, onHighlight, onViewportChange,
+  pins, focus, selectedId, highlightedId, onSelect, onHighlight, onViewportChange, resetLondonSignal,
 }: {
   pins: Pin[];
   focus?: Coordinates;
@@ -18,6 +18,7 @@ export function ProfessionalLocatorMap({
   onSelect: (id: string) => void;
   onHighlight?: (id: string | null) => void;
   onViewportChange?: (viewport: MapViewport) => void;
+  resetLondonSignal?: number;
 }) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
@@ -106,15 +107,15 @@ export function ProfessionalLocatorMap({
     const instance = map.current;
     if (!instance || !focus) return;
     if (currentFocus.current?.latitude === focus.latitude &&
-        currentFocus.current?.longitude === focus.longitude) return;
+        currentFocus.current?.longitude === focus.longitude && !resetLondonSignal) return;
     currentFocus.current = focus;
     instance.flyTo({
       center: [focus.longitude, focus.latitude],
-      zoom: selectedId ? 14 : 10,
+      zoom: resetLondonSignal ? 10 : selectedId ? 14 : 10,
       duration: 800,
       essential: true,
     });
-  }, [focus, selectedId, ready]);
+  }, [focus, selectedId, ready, resetLondonSignal]);
 
   useEffect(() => {
     const instance = map.current;

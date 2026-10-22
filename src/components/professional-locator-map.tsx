@@ -55,8 +55,8 @@ export function ProfessionalLocatorMap({
           sources: { streets: {
             type: "raster",
             tiles: [darkMode
-              ? "https://basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
-              : "https://basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"],
+              ? "https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              : "https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"],
             tileSize: 256,
             attribution: "© OpenStreetMap contributors © CARTO",
           } },

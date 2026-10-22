@@ -16,7 +16,7 @@ import {
 import { TaxonomyFilters } from "./taxonomy-filters";
 import { ProfessionalVerificationBadges } from "./professional-verification-badges";
 import type { MapViewport } from "./geographic-map";
-import { GeographicMap } from "./geographic-map";
+import { ProfessionalLocatorMap } from "./professional-locator-map";
 import {
   londonBoroughs,
   londonBorough,
@@ -779,7 +779,7 @@ export function ExploreMapExperience({
               View all London
             </button>
           )}
-          <GeographicMap
+          <ProfessionalLocatorMap
             pins={mapped.map((pro) => ({
               id: pro.id,
               label: pro.business_name,
@@ -797,8 +797,6 @@ export function ExploreMapExperience({
                       ? { latitude: mapped[0].public_latitude!, longitude: mapped[0].public_longitude! }
                       : undefined)
             }
-            initialZoom={selectedPro ? 16 : londonSearch ? 10 : 12}
-            focusZoom={selectedPro ? 16 : overviewFocus ? 10 : undefined}
             selectedId={selected}
             highlightedId={highlighted}
             onSelect={selectPin}

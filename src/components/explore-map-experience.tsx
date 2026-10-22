@@ -92,7 +92,7 @@ export function ExploreMapExperience({
     [radius, setRadius] = useState(10);
   const [locating, setLocating] = useState(false),
     [locationNotice, setLocationNotice] = useState("");
-  const [streetView, setStreetView] = useState(false);
+  const [streetView, setStreetView] = useState(true);
   const [mobileView, setMobileView] = useState<"map" | "list">("list");
   const [selected, setSelected] = useState<string | null>(null),
     [highlighted, setHighlighted] = useState<string | null>(null);

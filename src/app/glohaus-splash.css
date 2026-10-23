@@ -79,3 +79,9 @@
 @media (prefers-reduced-motion: reduce) {
   .glohaus-splash-ring, .glohaus-splash-bar::after { animation: none !important; }
 }
+
+
+/* Keep unrelated fixed UI off the brand's full-screen loading experience. */
+body:has(.glohaus-splash-screen) > .theme-toggle,
+body:has(.glohaus-splash-screen) .bottom-navigation,
+body:has(.glohaus-splash-screen) .pwa-notice { visibility: hidden; }

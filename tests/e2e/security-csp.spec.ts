@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("nonced production pages hydrate and preserve themes", async ({
+test("nonced pages hydrate and preserve themes", async ({
   page,
 }) => {
   const violations: string[] = [];
@@ -19,13 +19,18 @@ test("nonced production pages hydrate and preserve themes", async ({
       .locator("#glohaus-theme-bootstrap")
       .evaluate((node) => (node as HTMLScriptElement).nonce),
   ).toBe(nonce);
-  expect(
-    await page
-      .locator("script[src]")
-      .evaluateAll((nodes) =>
-        nodes.every((node) => Boolean((node as HTMLScriptElement).nonce)),
-      ),
-  ).toBe(true);
+  // Development hot reload inserts trusted scripts dynamically. strict-dynamic
+  // permits those without copying the nonce; production must nonce every
+  // framework script and is checked separately by the security CI job.
+  if (process.env.GLOHAUS_TEST_SERVER_MODE === "production") {
+    expect(
+      await page
+        .locator("script[src]")
+        .evaluateAll((nodes) =>
+          nodes.every((node) => Boolean((node as HTMLScriptElement).nonce)),
+        ),
+    ).toBe(true);
+  }
   await expect(page.getByRole("heading").first()).toBeVisible();
   await page
     .getByRole("button", { name: "Switch to night mode", exact: true })

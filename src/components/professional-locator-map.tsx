@@ -27,6 +27,7 @@ export function ProfessionalLocatorMap({
   const onHighlightRef = useRef(onHighlight);
   const viewportRef = useRef(onViewportChange);
   const currentFocus = useRef<Coordinates | undefined>(undefined);
+  const previousLondonReset = useRef(resetLondonSignal ?? 0);
   const [consented, setConsented] = useState(false);
   const [error, setError] = useState(false);
   const [ready, setReady] = useState(false);
@@ -106,12 +107,14 @@ export function ProfessionalLocatorMap({
   useEffect(() => {
     const instance = map.current;
     if (!instance || !focus) return;
+    const forcedReset = (resetLondonSignal ?? 0) !== previousLondonReset.current;
+    previousLondonReset.current = resetLondonSignal ?? 0;
     if (currentFocus.current?.latitude === focus.latitude &&
-        currentFocus.current?.longitude === focus.longitude && resetLondonSignal === 0) return;
+        currentFocus.current?.longitude === focus.longitude && !forcedReset) return;
     currentFocus.current = focus;
     instance.flyTo({
       center: [focus.longitude, focus.latitude],
-      zoom: resetLondonSignal ? 10 : selectedId ? 14 : 10,
+      zoom: forcedReset ? 10 : selectedId ? 14 : 10,
       duration: 800,
       essential: true,
     });

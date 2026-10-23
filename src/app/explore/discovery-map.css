@@ -1114,9 +1114,11 @@
 }
 
 
-/* Sharper city/street labels for the chosen light Positron and dark Dark Matter themes. */
-.discovery-original .glohaus-locator-canvas canvas { filter:contrast(1.16) saturate(1.07); }
+/* Vector-rendered labels use a deliberate GLOHAUS palette, without a colour-distorting canvas filter. */
+.discovery-original .glohaus-locator-canvas canvas { filter:none; }
 :root[data-theme="night"] .discovery-original .glohaus-locator-canvas canvas,
-.dark .discovery-original .glohaus-locator-canvas canvas {
-  filter:brightness(1.20) contrast(1.24);
-}
+.dark .discovery-original .glohaus-locator-canvas canvas { filter:none; }
+.discovery-original .glohaus-locator-selected strong { color:var(--ui-text); font-size:14px; line-height:1.35; }
+.discovery-original .glohaus-locator-selected span { color:var(--ui-muted); font-size:12px; }
+.glohaus-locator .glohaus-locator-pin { background:#b83a79; box-shadow:0 3px 12px #3e233f59; }
+:root[data-theme="night"] .glohaus-locator .glohaus-locator-pin { background:#e179ac; box-shadow:0 3px 12px #0202089e; }

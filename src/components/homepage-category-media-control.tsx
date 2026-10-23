@@ -38,7 +38,7 @@ export function HomepageCategoryMediaControl({
   });
   const [metadata,setMetadata]=useState<HomepageCategoryMetadata>({desktop:{...initialMetadata.desktop},mobile:{...initialMetadata.mobile}});
   function changeMetadata(key:string,patch:Partial<HomepageCategorySlot>){setMetadata(current=>({...current,[device]:{...current[device],[key]:{categoryId:null,specialityId:null,templateId:null,description:"",sortOrder:homepageCategorySlots({categoryMetadata:current,categoryNames:names,categoryImages:images},device,true).findIndex(s=>s.key===key)*10,visible:true,...current[device]?.[key],...patch}}}));}
-  const [device, setDevice] = useState<HomepageImageDevice>("desktop");
+  const [device, setDevice] = useState<HomepageImageDevice>("mobile");
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -113,11 +113,11 @@ export function HomepageCategoryMediaControl({
 
   return (
     <form className="editor-form owner-category-media" onSubmit={save}>
-      <h3>Change category names and images</h3>
+      <h3>Manage homepage category thumbnails</h3>
       <p className="lead">
         Choose a photo, check its circular preview, then save. Close-ups of
         finished nails, hair or the relevant body area work well. Desktop and
-        mobile have separate names and images.
+        mobile have separate names and images. On iPhone, customers can swipe through all visible thumbnails.
       </p>
       <label>
         Category settings for
@@ -242,7 +242,26 @@ export function HomepageCategoryMediaControl({
           );
         })}
       </div>
-      {taxonomy&&<button type="button" disabled={busy||homepageCategorySlots({categoryMetadata:metadata},device,true).length>=30} onClick={()=>{const key=crypto.randomUUID();changeMetadata(key,{sortOrder:100,categoryId:taxonomy.categories[0]?.id??null});setNames(current=>({...current,[device]:{...current[device],[key]:"New category"}}));}}>Add homepage category shortcut</button>}
+      {taxonomy && (
+        <div className="owner-homepage-add-category">
+          <p className="muted">Need another thumbnail? Add it here, choose the category name, image and destination, then save. You can reorder or hide thumbnails at any time. Mobile and desktop can be managed separately.</p>
+          <button
+            type="button"
+            disabled={busy || homepageCategorySlots({categoryMetadata:metadata,categoryNames:names,categoryImages:images},device,true).length >= 30}
+            onClick={() => {
+              const currentSlots = homepageCategorySlots({categoryMetadata:metadata,categoryNames:names,categoryImages:images},device,true);
+              const nextOrder = Math.min(10000, Math.max(0,...currentSlots.map(slot => slot.sortOrder)) + 10);
+              const key = crypto.randomUUID();
+              changeMetadata(key,{sortOrder:nextOrder,categoryId:null});
+              setNames(current=>({...current,[device]:{...current[device],[key]:"New category"}}));
+              setReason(current => current.trim() || `Add ${device} homepage category thumbnail`);
+              setNotice("New category added to your draft. Enter its name, choose an image and save to publish.");
+            }}
+          >
+            + Add another category thumbnail
+          </button>
+        </div>
+      )}
       <small>
         Choose images you have permission to use. Uploads stay private until you
         save.

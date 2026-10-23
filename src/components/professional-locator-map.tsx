@@ -57,7 +57,7 @@ export function ProfessionalLocatorMap({
           sources: { streets: {
             type: "raster",
             tiles: [process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY
-              ? `https://basemaps.cartocdn.com/${darkMode ? "dark_all" : "light_all"}/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY)}`
+              ? `https://basemaps.cartocdn.com/${darkMode ? "dark_all" : "light_all"}/{z}/{x}/{y}@2x.png?key=${encodeURIComponent(process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY)}`
               : "https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
             tileSize: 256,
             attribution: process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY

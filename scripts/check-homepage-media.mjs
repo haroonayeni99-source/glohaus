@@ -123,7 +123,7 @@ try {
       await expect(mobileNails).toHaveAttribute("src", /photo-1604654894610/);
       await expect(page.locator(".mobile-home-hero img")).toHaveAttribute(
         "src",
-        /photo-1488426862026/,
+        "/images/homepage-portrait-mobile.svg",
       );
       // Explicit mobile changes are independent from desktop changes.
       await page.goto(`http://127.0.0.1:3004/?theme=${theme}`);

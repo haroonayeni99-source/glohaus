@@ -961,6 +961,7 @@
   border:0; box-shadow:none; gap:8px; background:transparent;
 }
 .discovery-original .discovery-card-photo { min-height:0; height:auto; aspect-ratio:1.15; border-radius:17px; }
+.discovery-original .discovery-card-photo { min-width:0; width:100%; max-width:100%; }
 .discovery-original .discovery-card-copy { padding:2px 2px; }
 .discovery-original .discovery-card .map-pro-name { font-size:15px; }
 .discovery-original .discovery-card .matching-services { margin:5px 0; }
@@ -1122,3 +1123,7 @@
 .discovery-original .glohaus-locator-selected span { color:var(--ui-muted); font-size:12px; }
 .glohaus-locator .glohaus-locator-pin { background:#b83a79; box-shadow:0 3px 12px #3e233f59; }
 :root[data-theme="night"] .glohaus-locator .glohaus-locator-pin { background:#e179ac; box-shadow:0 3px 12px #0202089e; }
+
+/* Keep the existing London reset control over the map, below its toolbar. */
+.discovery-original .discovery-locator-frame { position:relative; display:flex; flex:1; min-height:400px; }
+.discovery-original .discovery-locator-frame > .discovery-map-switch { top:12px; left:12px; margin:0; }

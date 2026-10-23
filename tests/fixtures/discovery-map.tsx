@@ -129,7 +129,8 @@ window.fetch = async (url, init) => {
         },
       ],
     });
-  if (path === "/api/v1/explore/nearby")
+  if (path === "/api/v1/explore/nearby") {
+    localStorage.setItem("discovery-nearby-request", JSON.stringify({ path, body }));
     return Response.json({
       professionals: pros
         .filter((p) => p.public_location_confirmed_at)
@@ -144,6 +145,7 @@ window.fetch = async (url, init) => {
         .sort((a, b) => a.distance_miles - b.distance_miles),
       truncated: false,
     });
+  }
   if (path === "/api/v1/admin/product-categories") {
     if (params.has("fail")) return Response.json({}, { status: 503 });
     const categories = stored("discovery-categories", [category]);

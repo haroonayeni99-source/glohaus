@@ -8,6 +8,7 @@ import { jsonLd, publicOrigin } from "@/lib/public-seo";
 import { PlatformLabelsProvider } from "@/components/platform-labels";
 import { publicLabels } from "@/modules/platform/repository";
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { PwaShell } from "@/components/pwa-shell";
 import "@/components/pwa.css";
 import { SiteFooter } from "@/components/site-footer";
@@ -66,7 +67,8 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [labels, signedIn] = await Promise.all([publicLabels(), publicViewerSignedIn()]);
+  const [labels, signedIn, requestHeaders] = await Promise.all([publicLabels(), publicViewerSignedIn(), headers()]);
+  const nonce = requestHeaders.get("x-nonce") ?? undefined;
   const content = (
     <>
       <a className="skip-link" href="#main">
@@ -84,12 +86,14 @@ export default async function RootLayout({
       <head>
         <script
           id="glohaus-theme-bootstrap"
+          nonce={nonce}
           dangerouslySetInnerHTML={{ __html: themeBootstrap }}
         />
       </head>
       <body>
         <script
           type="application/ld+json"
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: jsonLd({
               "@context": "https://schema.org",

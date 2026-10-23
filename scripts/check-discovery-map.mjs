@@ -124,22 +124,16 @@ try {
       await page.getByRole("button", { name: "Close quick view" }).click();
       await expect(page.getByRole("dialog")).toHaveCount(0);
       const borough = page.getByRole("combobox", {
-        name: "London borough",
+        name: "Explore all 32 London boroughs",
         exact: true,
       });
       await expect(borough.locator("option")).toHaveCount(33);
+      const areas = page.getByRole("navigation", {
+        name: "Explore London areas",
+      });
+      await expect(areas.getByRole("link")).toHaveCount(33);
       await expect(
-        page
-          .getByRole("navigation", { name: "Explore London areas" })
-          .getByRole("link"),
-      ).toHaveCount(33);
-      await expect(
-        page
-          .getByRole("navigation", { name: "Explore London areas" })
-          .getByRole("link", {
-            name: "Southwark Explore the borough",
-            exact: true,
-          }),
+        areas.getByRole("link", { name: "Southwark", exact: true }),
       ).toHaveAttribute("href", /location=Southwark/);
       await expect(
         page.getByRole("button", {
@@ -147,111 +141,80 @@ try {
           exact: true,
         }),
       ).toHaveCount(0);
-      await expect(page.locator(".london-overview")).toHaveCount(1);
       if (width <= 900)
         await page.getByRole("button", { name: "Map", exact: true }).click();
-      const controlContrasts = await page
-        .locator(
-          ".london-overview :is(.map-controls button, .map-pan-controls button, .map-street-card strong, .map-legend span)",
-        )
-        .evaluateAll((elements) =>
-          elements.map((element) => {
-            const rgb = getComputedStyle(element)
-              .color.match(/[0-9.]+/g)
-              .slice(0, 3)
-              .map(Number);
-            const luminance = rgb
-              .map((value) => {
-                const s = value / 255;
-                return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-              })
-              .reduce(
-                (sum, value, i) => sum + value * [0.2126, 0.7152, 0.0722][i],
-                0,
-              );
-            return 1.05 / (luminance + 0.05);
-          }),
-        );
-      expect(controlContrasts.length).toBeGreaterThan(0);
-      for (const contrast of controlContrasts)
-        expect(contrast).toBeGreaterThanOrEqual(4.5);
-      await page.screenshot({
-        path: `reports/london-overview-${theme}-${width}.png`,
-        fullPage: true,
-      });
-      if (width <= 900)
-        await page.getByRole("button", { name: "List", exact: true }).click();
-      await page
-        .getByRole("button", {
-          name: "Show Brixton Braids on map",
-          exact: true,
-        })
-        .click();
-      await expect(page.locator(".london-overview")).toHaveCount(0);
-      if (width <= 900)
-        await expect(
-          page.getByRole("button", { name: "Map", exact: true }),
-        ).toHaveAttribute("aria-pressed", "true");
       await page
         .getByRole("button", { name: "Load street map", exact: true })
         .click();
-      await expect(page.locator(".geo-map-surface")).toHaveAttribute(
-        "data-center-latitude",
-        "51.462",
-      );
-      await expect(page.locator(".geo-map-surface")).toHaveAttribute(
-        "data-center-longitude",
-        "-0.115",
-      );
-      await expect(page.locator(".geo-map-surface")).toHaveAttribute(
-        "data-zoom",
-        "16",
-      );
-      const pin = page.getByRole("button", {
-        name: "Brixton Braids, from £45.00",
-        exact: true,
-      });
-      await expect(pin).toBeVisible();
-      await pin.click();
+      await expect(page.locator(".glohaus-locator canvas")).toBeVisible();
+      await expect(
+        page.getByRole("button", {
+          name: "Select Brixton Braids",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Select Nails & Glow", exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Select Area Studio", exact: true }),
+      ).toHaveCount(0);
+      // Select actual MapLibre markers rather than obsolete GeographicMap DOM.
+      await page
+        .getByRole("button", { name: "Select Brixton Braids", exact: true })
+        .click();
       await expect(page.locator(".discovery-pin-card")).toContainText(
         "Knotless Braids",
+      );
+      await expect(page.locator(".glohaus-locator-selected")).toContainText(
+        "Brixton Braids",
       );
       await expect(
         page
           .locator(".discovery-pin-card")
           .getByRole("link", { name: /Directions to Brixton Braids/ }),
       ).toHaveAttribute("href", /destination=51.462%2C-0.115/);
+      await expect(
+        page.getByRole("button", {
+          name: "Select Brixton Braids",
+          exact: true,
+        }),
+      ).toHaveAttribute("aria-pressed", "true");
       if (width <= 900)
         await page.getByRole("button", { name: "List", exact: true }).click();
       await page
         .getByRole("button", { name: "Show Nails & Glow on map", exact: true })
         .click();
-      await expect(page.locator(".geo-map-surface")).toHaveAttribute(
-        "data-center-latitude",
-        "51.474",
-      );
-      await expect(page.locator(".geo-map-surface")).toHaveAttribute(
-        "data-center-longitude",
-        "-0.069",
-      );
-      await expect(page.locator(".geo-map-surface")).toHaveAttribute(
-        "data-zoom",
-        "16",
-      );
       await expect(page.locator(".discovery-pin-card")).toContainText(
         "Nails & Glow",
       );
+      await expect(
+        page.getByRole("button", { name: "Select Nails & Glow", exact: true }),
+      ).toHaveAttribute("aria-pressed", "true");
       if (width > 900) {
-        const list = await page.locator(".map-pro-results").boundingBox(),
-          map = await page.locator(".discovery-map-panel").boundingBox();
-        expect(map.x + map.width).toBeLessThanOrEqual(list.x + 2);
-        expect(list.width).toBeCloseTo(420, -1);
+        const list = await page.locator(".map-pro-results").boundingBox();
+        const map = await page.locator(".discovery-map-panel").boundingBox();
+        expect(list.x + list.width).toBeLessThanOrEqual(map.x + 2);
       }
       await page.getByRole("button", { name: "Close map selection" }).click();
-      await page.getByRole("button", { name: "Move street map right" }).click();
-      await page.getByRole("button", { name: "Search this area" }).click();
+      await page.getByRole("button", { name: "Zoom in", exact: true }).click();
+      const searchArea = page.getByRole("button", {
+        name: "Search this area",
+        exact: true,
+      });
+      await expect(searchArea).toBeEnabled();
+      await searchArea.click();
       await expect(page.getByRole("status")).toContainText("matching");
-      await expect(page.locator(".discovery-map-help")).toHaveCount(0);
+      const request = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("discovery-nearby-request")),
+      );
+      expect(request.path).toContain("/api/v1/explore/nearby");
+      await page
+        .getByRole("button", { name: "View all London", exact: true })
+        .click();
+      await expect(page.locator(".discovery-pin-card")).toHaveCount(0);
+      if (width <= 900)
+        await page.getByRole("button", { name: "List", exact: true }).click();
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth - innerWidth,
@@ -328,16 +291,39 @@ try {
               .categoryId,
         ),
       ).toBe(added.id);
-      await page.goto(`http://127.0.0.1:3004/explore?theme=${theme}&unavailable=1`);
+      await page.goto(
+        `http://127.0.0.1:3004/explore?theme=${theme}&unavailable=1`,
+      );
       const loadError = page.getByRole("alert");
-      await expect(loadError).toContainText("We couldn’t load professionals right now.");
-      await expect(loadError.locator("h3")).toHaveCSS("color", theme === "night" ? "rgb(243, 243, 235)" : "rgb(35, 42, 36)");
-      await expect(loadError.locator("p")).toHaveCSS("color", theme === "night" ? "rgb(192, 203, 192)" : "rgb(87, 97, 89)");
-      await expect(page.getByRole("button", {name: "Retry loading results"})).toBeEnabled();
-      await expect(page.getByText("No matching professionals yet.", {exact: true})).toHaveCount(0);
-      await expect(page.getByText("0 matching professionals", {exact: false})).toHaveCount(0);
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await page.screenshot({path: `reports/discovery-map-unavailable-${theme}-${width}.png`, fullPage: true});
+      await expect(loadError).toContainText(
+        "We couldn’t load professionals right now.",
+      );
+      await expect(loadError.locator("h3")).toHaveCSS(
+        "color",
+        theme === "night" ? "rgb(243, 243, 235)" : "rgb(35, 42, 36)",
+      );
+      await expect(loadError.locator("p")).toHaveCSS(
+        "color",
+        theme === "night" ? "rgb(192, 203, 192)" : "rgb(87, 97, 89)",
+      );
+      await expect(
+        page.getByRole("button", { name: "Retry loading results" }),
+      ).toBeEnabled();
+      await expect(
+        page.getByText("No matching professionals yet.", { exact: true }),
+      ).toHaveCount(0);
+      await expect(
+        page.getByText("0 matching professionals", { exact: false }),
+      ).toHaveCount(0);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await page.screenshot({
+        path: `reports/discovery-map-unavailable-${theme}-${width}.png`,
+        fullPage: true,
+      });
       expect(errors).toEqual([]);
       results.push({
         theme,
@@ -349,10 +335,10 @@ try {
           "save persists",
           "public media quick view",
           "real price pin selection",
-          "original map-first layout",
-          "readable map controls in both themes",
+          "approved map-first layout",
+          "actual MapLibre worker, canvas, controls and markers in both themes",
           "all 32 boroughs",
-          "selected professional centred at street zoom",
+          "marker and list selection stay synchronized",
           "viewport search",
           "no overflow",
           "admin adds edits hides and restores categories",

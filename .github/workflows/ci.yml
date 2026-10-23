@@ -18,8 +18,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium webkit
@@ -43,8 +44,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium webkit
@@ -65,9 +67,11 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
+      - run: pnpm security:secrets
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
@@ -163,8 +167,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
@@ -185,8 +190,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: node scripts/check-professional-activity.mjs
@@ -206,8 +212,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: node scripts/check-marketing-preferences.mjs
@@ -227,8 +234,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: node scripts/check-session-consistency.mjs
@@ -248,8 +256,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: node scripts/check-multi-speciality.mjs
@@ -269,8 +278,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - name: Verify professional notification settings on desktop and mobile
@@ -291,8 +301,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: node scripts/check-discovery-map.mjs
@@ -317,8 +328,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - name: Verify deposit, full and required payment choices in light and night mode
@@ -338,8 +350,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium webkit
       - name: Verify professional arrival tools, customer journeys and Owner communications
@@ -349,3 +362,42 @@ jobs:
         with:
           name: smart-arrival-browser-checks
           path: reports/arrival-*
+
+  security-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: pnpm
+      - run: node scripts/check-node-version.mjs
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm security:secrets
+      - run: pnpm audit --prod --audit-level=low
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test --maxWorkers=2
+      - run: pnpm build
+      - name: Prepare Chromium for production-server security checks
+        run: |
+          if [ -x /usr/bin/google-chrome ]; then
+            echo "GLOHAUS_TEST_BROWSER=/usr/bin/google-chrome" >> "$GITHUB_ENV"
+          else
+            pnpm exec playwright install --with-deps chromium
+          fi
+      - name: Verify actual production-server CSP and public journeys
+        run: pnpm test:e2e
+        env:
+          GLOHAUS_TEST_SERVER_MODE: production
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: security-regression-failures
+          path: test-results/

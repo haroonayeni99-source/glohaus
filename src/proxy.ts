@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { authConfigured, publicSupabaseKey } from "@/lib/config";
 import { updateSession } from "@/lib/supabase/proxy";
 import { legacyCheckoutReturn } from "@/modules/payments/return-url";
+import { contentSecurityPolicy } from "@/lib/content-security-policy";
 
 const maintenanceExempt = [
   "/maintenance",
@@ -124,7 +125,7 @@ function maintenanceResponse(request: NextRequest, session: NextResponse) {
   return response;
 }
 
-export default async function proxy(request: NextRequest) {
+async function routeProxy(request: NextRequest) {
   const checkoutReturn = legacyCheckoutReturn(request);
   if (checkoutReturn) return NextResponse.redirect(checkoutReturn, 307);
   // Keep production auth on one hostname. Splitting Supabase session cookies
@@ -157,9 +158,24 @@ export default async function proxy(request: NextRequest) {
   return sessionResponse;
 }
 
+export default async function proxy(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  // Webhooks and API bodies retain their existing processing and signatures.
+  if (path === "/api" || path.startsWith("/api/") || path.startsWith("/_next/") || /\.[a-z0-9]+$/i.test(path))
+    return routeProxy(request);
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const policy = contentSecurityPolicy(nonce, process.env.NODE_ENV === "development", request.nextUrl.protocol === "https:");
+  request.headers.set("x-nonce", nonce);
+  request.headers.set("Content-Security-Policy", policy);
+  const response = await routeProxy(request);
+  response.headers.set("Content-Security-Policy", policy);
+  response.headers.set("Cache-Control", "private, no-store");
+  return response;
+}
+
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/((?!_next|[^?]*\\.(?:html?|css|mjs|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     "/(api|trpc)(.*)",
   ],
 };

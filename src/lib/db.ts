@@ -4,6 +4,7 @@ import { Pool, type PoolClient } from "pg";
 import { attachDatabasePool } from "@vercel/functions";
 import type { SqlClient } from "@/modules/accounts/repository";
 import { AccessError } from "@/modules/accounts/domain";
+import { verifiedDatabaseTls } from "./database-tls";
 
 const globalDb = globalThis as unknown as { beautyPool?: Pool };
 
@@ -62,8 +63,10 @@ function pool(): Pool {
 
   if (!globalDb.beautyPool) {
     const dbPool = new Pool({
-      connectionString,
-      ssl: { rejectUnauthorized: false },
+      ...verifiedDatabaseTls(
+        connectionString,
+        process.env.DATABASE_CA_CERT || process.env.PAYMENT_DATABASE_CA_CERT,
+      ),
       max: 3,
       connectionTimeoutMillis: 5000,
       idleTimeoutMillis: 5000,

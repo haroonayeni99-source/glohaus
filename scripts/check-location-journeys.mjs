@@ -128,12 +128,28 @@ try {
         await page.getByRole("button", { name: "Map", exact: true }).click();
       await page.getByRole("button", { name: "Load street map" }).click();
       await expect(
-        page.getByRole("button", { name: "Nearby Studio", exact: true }),
+        page.getByRole("button", { name: "Select Nearby Studio", exact: true }),
       ).toBeVisible();
-      await page.getByRole("button", { name: "Zoom in street map" }).click();
-      await page.getByRole("button", { name: "Move street map right" }).click();
-      await page.getByRole("button", { name: "Reset map" }).click();
-      await expect(page.getByText("OpenStreetMap contributors")).toBeVisible();
+      await page.getByRole("button", { name: "Select Nearby Studio", exact: true }).click();
+      await expect(page.locator(".discovery-pin-card")).toContainText("Nearby Studio");
+      await page.getByRole("button", { name: "Close map selection", exact: true }).click();
+      await page.getByRole("button", { name: "Zoom in", exact: true }).click();
+      const canvas = page.locator(".glohaus-locator canvas");
+      await expect(canvas).toBeVisible();
+      const box = await canvas.boundingBox();
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width / 2 + 40, box.y + box.height / 2, { steps: 8 });
+      await page.mouse.up();
+      await expect(page.getByRole("button", { name: "Search this area", exact: true })).toBeEnabled();
+      await page.getByRole("button", { name: "View all London", exact: true }).click();
+      await expect(page.locator(".discovery-pin-card")).toHaveCount(0);
+      const attribution = page.locator(".glohaus-locator .maplibregl-ctrl-attrib-inner");
+      // MapLibre 6 uses a native details/summary control on compact screens.
+      if (!(await attribution.isVisible()))
+        await page.locator(".glohaus-locator .maplibregl-ctrl-attrib-button").click();
+      await expect(attribution).toBeVisible();
+      await expect(attribution).toContainText("OpenStreetMap contributors");
       await noOverflow(page);
       await page.getByRole("button", { name: "Clear my location" }).click();
       await expect(page.getByRole("status")).toContainText("Location cleared");

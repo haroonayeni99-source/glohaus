@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { loadMapLibre } from "@/lib/maplibre-client";
 import type { Map as StreetMap, Marker } from "maplibre-gl";
 import { GeographicMap, type MapViewport } from "./geographic-map";
 import {
@@ -51,7 +52,7 @@ export function DiscoveryStreetMap(props: Props) {
     const failed = () => {
       if (active) setFallback(true);
     };
-    void import("maplibre-gl")
+    void loadMapLibre()
       .then((gl) => {
         if (!active || !host.current) return;
         library.current = gl;

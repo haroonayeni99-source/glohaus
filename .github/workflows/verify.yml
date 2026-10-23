@@ -21,11 +21,14 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Use Node 22
+      - name: Use patched Node 24
         uses: actions/setup-node@v4
         with:
-          node-version: "22.14.0"
+          node-version-file: ".nvmrc"
           cache: "pnpm"
+
+      - name: Verify security patch floor
+        run: node scripts/check-node-version.mjs
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

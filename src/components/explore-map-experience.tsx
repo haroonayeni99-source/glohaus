@@ -790,6 +790,7 @@ export function ExploreMapExperience({
               Search this area
             </button>
           </div>
+          <div className="discovery-locator-frame">
           {londonSearch && (
             <button
               className="discovery-map-switch"
@@ -828,6 +829,7 @@ export function ExploreMapExperience({
             onHighlight={setHighlighted}
             onViewportChange={setViewport}
           />
+          </div>
           {selectedPro && (
             <div className="discovery-pin-card">
               <button

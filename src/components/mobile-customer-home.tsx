@@ -1,12 +1,14 @@
 "use client";
 
 import { useSignedIn } from "./auth-session";
+import { useRef } from "react";
+import "@/app/mobile-home-carousel.css";
 
 import { homepageCategorySlots, homepageCategoryHref, categoryImage, categoryName, type HomepageMedia } from "@/modules/platform/homepage-images";
 import { HomeMarketplaceGuide } from "./home-marketplace-guide";
 import Image from "next/image";
 import Link from "next/link";
-import { Bell, Search, ShieldCheck } from "lucide-react";
+import { Bell, ChevronLeft, ChevronRight, Search, ShieldCheck } from "lucide-react";
 import { HomeStory } from "./home-story";
 import { AccountControls } from "./account-controls";
 import { Brand } from "./brand";
@@ -32,6 +34,12 @@ export function MobileCustomerHome({
   homepageMedia?: HomepageMedia;
 }) {
   const signedIn = useSignedIn(initialSignedIn);
+  const categoryStripRef = useRef<HTMLElement>(null);
+  const scrollCategories = (direction: -1 | 1) => {
+    const strip = categoryStripRef.current;
+    if (!strip) return;
+    strip.scrollBy({ left: direction * Math.max(180, strip.clientWidth * 0.75), behavior: "smooth" });
+  };
   const notificationHref = signedIn
     ? "/notifications"
     : "/sign-in?returnTo=%2Fnotifications";
@@ -90,28 +98,31 @@ export function MobileCustomerHome({
           />
         </form>
 
-        <nav className="mobile-home-categories" aria-label="Beauty categories">
-          {homepageCategorySlots(homepageMedia,"mobile").map((slot) => (
-            <Link href={homepageCategoryHref(homepageMedia,"mobile",slot.key,categoryName(homepageMedia.categoryNames,"mobile",slot))} key={slot.key}>
-              <span>
-                <Image fill sizes="64px" src={categoryImage(homepageMedia.categoryImages, "mobile", slot)}
-                  unoptimized={Boolean(homepageMedia.categoryImages?.mobile?.[slot.key])} alt="" />
-              </span>
-              <strong>{categoryName(homepageMedia.categoryNames, "mobile", slot)}</strong>{slot.description&&<small>{slot.description}</small>}
-            </Link>
-          ))}
-        </nav>
-        <nav
-          className="mobile-home-more-services"
-          aria-label="More beauty services"
-        >
-          {["Barber", "Waxing", "Injectables"].map((label) => (
-            <Link key={label} href={`/explore?q=${encodeURIComponent(label)}`}>
-              {label}
-            </Link>
-          ))}
-          <Link href="/explore">View all services</Link>
-        </nav>
+        <section className="mobile-home-category-carousel" aria-label="Browse beauty services">
+          <div className="mobile-home-category-header">
+            <h2>Explore services</h2>
+            <div className="mobile-home-category-actions">
+              <Link href="/explore" className="mobile-home-category-all">View all services</Link>
+              <button type="button" aria-label="Scroll categories left" onClick={() => scrollCategories(-1)}>
+                <ChevronLeft size={19} aria-hidden />
+              </button>
+              <button type="button" aria-label="Scroll categories right" onClick={() => scrollCategories(1)}>
+                <ChevronRight size={19} aria-hidden />
+              </button>
+            </div>
+          </div>
+          <nav ref={categoryStripRef} className="mobile-home-categories" aria-label="Beauty categories">
+            {homepageCategorySlots(homepageMedia,"mobile").map((slot) => (
+              <Link href={homepageCategoryHref(homepageMedia,"mobile",slot.key,categoryName(homepageMedia.categoryNames,"mobile",slot))} key={slot.key}>
+                <span>
+                  <Image fill sizes="80px" src={categoryImage(homepageMedia.categoryImages, "mobile", slot)}
+                    unoptimized={Boolean(homepageMedia.categoryImages?.mobile?.[slot.key])} alt="" />
+                </span>
+                <strong>{categoryName(homepageMedia.categoryNames, "mobile", slot)}</strong>{slot.description&&<small>{slot.description}</small>}
+              </Link>
+            ))}
+          </nav>
+        </section>
 
         <section className="mobile-home-hero">
           <Image

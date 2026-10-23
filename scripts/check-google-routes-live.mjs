@@ -1,12 +1,8 @@
 // Explicit one-off server/build diagnostic. Not part of the default build or
 // recurring worker. Reserve three requests in the deployment runbook first.
 // Public London station coordinates only; no customer or booking data is used.
-import { createRequire } from "node:module";
 import { resolve } from "node:path";
-const require = createRequire(import.meta.url);
-const vr = createRequire(require.resolve("vitest/package.json"));
-const vite = createRequire(vr.resolve("vite"));
-const { build } = await import(vite.resolve("esbuild"));
+const { build } = await import("esbuild");
 
 if (process.env.GLOHAUS_LIVE_ROUTES_PROBE !== "1") {
   console.error("Live route diagnostic requires explicit server-side opt-in.");

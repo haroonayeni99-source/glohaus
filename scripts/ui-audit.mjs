@@ -1,15 +1,11 @@
 // Local development harness; fictional data and mocked mutations only.
-import { createRequire } from "node:module";
 import { readFile, mkdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import { createServer } from "node:http";
-const require = createRequire(import.meta.url);
 const { prepareMapWorker } = await import("./prepare-map-worker.mjs");
 await prepareMapWorker();
-const vr = createRequire(require.resolve("vitest/package.json"));
-const vite = createRequire(vr.resolve("vite"));
-const { build } = await import(vite.resolve("esbuild"));
+const { build } = await import("esbuild");
 await mkdir("reports", { recursive: true });
 const bundlePath = `reports/ui-audit-${createHash("sha256")
   .update(process.env.GLOHAUS_UI_AUDIT_ENTRY || "default")

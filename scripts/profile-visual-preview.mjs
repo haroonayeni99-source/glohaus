@@ -1,15 +1,10 @@
 // Isolated, read-only visual fixture. Never imported by the application or deployed routes.
 import { createRequire } from "node:module";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 import { createServer } from "node:http";
 const require = createRequire(import.meta.url);
-const vitestRequire = createRequire(require.resolve("vitest/package.json"));
-const viteRequire = createRequire(vitestRequire.resolve("vite"));
-const { build } = await import(
-  pathToFileURL(viteRequire.resolve("esbuild")).href
-);
+const { build } = await import("esbuild");
 await mkdir("reports", { recursive: true });
 await build({
   entryPoints: ["tests/fixtures/profile-preview.tsx"],

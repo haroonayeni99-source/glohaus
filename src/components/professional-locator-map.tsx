@@ -114,16 +114,18 @@ export function ProfessionalLocatorMap({
             } else if (Array.isArray(width)) {
               instance.setPaintProperty(layer.id, "line-width", ["*", width, multiplier]);
             }
-            // Casings keep their original colours, so roads retain their edges.
-            if (!casing) {
+          } catch { /* Preserve the CARTO line width for incompatible expressions. */ }
+          // Casings keep their original colours, so roads retain their edges.
+          if (!casing) {
+            try {
               instance.setPaintProperty(
                 layer.id, "line-color",
                 darkMode
                   ? (major ? "#8390a3" : "#657186")
                   : (major ? "#aca6b3" : "#cac4cf"),
               );
-            }
-          } catch { /* Preserve the CARTO layer unchanged if its style is incompatible. */ }
+            } catch { /* Preserve the CARTO road colour if an override is unsupported. */ }
+          }
         }
       });
       instance.addControl(new NavigationControl({ showCompass: true }), "bottom-right");

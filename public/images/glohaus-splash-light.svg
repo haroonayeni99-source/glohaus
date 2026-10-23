@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 783" role="img" aria-label="GLOHAUS light mode luxury loading artwork">
+<defs>
+  <radialGradient id="bg"><stop stop-color="#fffefa"/><stop offset=".72" stop-color="#fffaf4"/><stop offset="1" stop-color="#f4e8de"/></radialGradient>
+  <linearGradient id="metal" x1="0" y1="0" x2="1" y2=".7"><stop stop-color="#78372e"/><stop offset=".13" stop-color="#f5c4ba"/><stop offset=".28" stop-color="#b7554d"/><stop offset=".45" stop-color="#ffe6d6"/><stop offset=".66" stop-color="#c37b69"/><stop offset=".84" stop-color="#f6bcb6"/><stop offset="1" stop-color="#762c30"/></linearGradient>
+  <linearGradient id="letters" x1="0" y1="0" x2=".75" y2="1"><stop stop-color="#201414"/><stop offset=".45" stop-color="#351d1e"/><stop offset=".6" stop-color="#a85850"/><stop offset=".7" stop-color="#170e12"/><stop offset="1" stop-color="#231416"/></linearGradient>
+  <linearGradient id="silk" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f5c2b2" stop-opacity=".02"/><stop offset=".45" stop-color="#eec0b4" stop-opacity=".62"/><stop offset=".7" stop-color="#faf7f4" stop-opacity=".95"/><stop offset="1" stop-color="#b55d50" stop-opacity=".48"/></linearGradient>
+  <radialGradient id="shine"><stop stop-color="#fffaf6" stop-opacity=".95"/><stop offset=".15" stop-color="#ffe5e1" stop-opacity=".63"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="5"/></filter>
+</defs>
+<rect width="440" height="783" fill="url(#bg)"/>
+<path d="M-74 225 C24 93 104 81 177 -45" fill="none" stroke="url(#silk)" stroke-width="62" opacity=".37"/>
+<path d="M-50 198 C22 90 124 73 176 -39" fill="none" stroke="url(#metal)" stroke-width="1.8" opacity=".54"/>
+<path d="M202 850 C248 735 388 756 506 568" fill="none" stroke="url(#silk)" stroke-width="95" opacity=".5"/>
+<path d="M190 844 C254 737 374 749 499 557" fill="none" stroke="url(#metal)" stroke-width="1.8" opacity=".48"/>
+<circle cx="219" cy="229" r="125" fill="url(#shine)" opacity=".25"/>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <g stroke="#a85b4e" opacity=".17" stroke-width="15" filter="url(#glow)">
+    <path d="M220 315 C174 289 168 244 220 188 C270 243 267 290 220 315Z"/>
+    <path d="M220 315 C158 318 117 282 112 235 C171 228 204 266 220 315Z"/>
+    <path d="M220 315 C282 318 323 282 328 235 C269 228 236 266 220 315Z"/>
+  </g>
+  <g stroke="url(#metal)" stroke-width="10">
+    <path d="M220 315 C174 289 168 244 220 188 C270 243 267 290 220 315Z"/>
+    <path d="M220 315 C158 318 117 282 112 235 C171 228 204 266 220 315Z"/>
+    <path d="M220 315 C282 318 323 282 328 235 C269 228 236 266 220 315Z"/>
+  </g>
+  <g stroke="#ffe5db" stroke-width="1.5" opacity=".88">
+    <path d="M220 307 C184 283 185 248 220 202"/>
+    <path d="M209 305 C164 304 131 275 121 243"/>
+    <path d="M232 305 C276 304 307 275 320 243"/>
+  </g>
+</g>
+<ellipse cx="220" cy="189" rx="43" ry="33" fill="url(#shine)" opacity=".75"/>
+<path d="M220 170 L223 187 L239 191 L223 194 L220 210 L217 194 L201 191 L217 187Z" fill="#fffaf5" opacity=".78"/>
+<text x="220" y="406" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="58" textLength="369" lengthAdjust="spacingAndGlyphs" fill="url(#letters)">GLOHAUS</text>
+<text x="220" y="443" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" letter-spacing="2" textLength="340" lengthAdjust="spacing" fill="#3c3337">BEAUTY  •  WELLNESS  •  COMMUNITY</text>
+</svg>

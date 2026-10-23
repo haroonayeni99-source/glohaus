@@ -4,7 +4,10 @@ vi.mock("@/modules/payments/worker", () => ({
   withPaymentWorker: (work: (db: unknown) => unknown) =>
     work({ query: mocks.query }),
 }));
-import { paymentWebhookSecrets } from "@/modules/payments/webhook-secrets";
+import {
+  paymentWebhookSecrets,
+  connectWebhookReady,
+} from "@/modules/payments/webhook-secrets";
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.clearAllMocks();
@@ -37,4 +40,14 @@ it("keeps the restricted database fallback when no environment secret is configu
     rows: [{ secret_value: "fixture-fallback" }],
   });
   expect(await paymentWebhookSecrets()).toEqual(["fixture-fallback"]);
+});
+
+it("keeps Connect readiness during a previous-secret overlap", async () => {
+  vi.stubEnv("STRIPE_CONNECT_WEBHOOK_SECRET", "");
+  vi.stubEnv(
+    "STRIPE_CONNECT_WEBHOOK_SECRET_PREVIOUS",
+    "fixture-connect-previous",
+  );
+  expect(await connectWebhookReady()).toBe(true);
+  expect(mocks.query).not.toHaveBeenCalled();
 });

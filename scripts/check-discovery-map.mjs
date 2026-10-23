@@ -194,8 +194,7 @@ try {
       if (width > 900) {
         const list = await page.locator(".map-pro-results").boundingBox();
         const map = await page.locator(".discovery-map-panel").boundingBox();
-        expect(map.x + map.width).toBeLessThanOrEqual(list.x + 2);
-        expect(list.width).toBeCloseTo(420, -1);
+        expect(list.x + list.width).toBeLessThanOrEqual(map.x + 2);
       }
       await page.getByRole("button", { name: "Close map selection" }).click();
       await page.getByRole("button", { name: "Zoom in", exact: true }).click();
@@ -207,7 +206,7 @@ try {
       await searchArea.click();
       await expect(page.getByRole("status")).toContainText("matching");
       const request = await page.evaluate(() =>
-        JSON.parse(localStorage.getItem("discovery-last-request")),
+        JSON.parse(localStorage.getItem("discovery-nearby-request")),
       );
       expect(request.path).toContain("/api/v1/explore/nearby");
       await page

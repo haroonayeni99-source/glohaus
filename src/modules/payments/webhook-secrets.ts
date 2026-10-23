@@ -29,7 +29,7 @@ export async function paymentWebhookSecrets() {
 }
 
 export async function connectWebhookReady() {
-  if (process.env.STRIPE_CONNECT_WEBHOOK_SECRET) return true;
+  if (process.env.STRIPE_CONNECT_WEBHOOK_SECRET || process.env.STRIPE_CONNECT_WEBHOOK_SECRET_PREVIOUS) return true;
   return withPaymentWorker(async (db) => {
     const result = await db.query<{ ready: boolean }>(
       `SELECT EXISTS(

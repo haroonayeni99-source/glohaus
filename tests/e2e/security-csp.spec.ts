@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("nonced production pages hydrate, preserve themes and reject untrusted inline code", async ({
+test("nonced production pages hydrate and preserve themes", async ({
   page,
 }) => {
   const violations: string[] = [];
@@ -36,11 +36,28 @@ test("nonced production pages hydrate, preserve themes and reject untrusted inli
     .click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   expect(violations).toEqual([]);
-  await page.evaluate(() => {
-    const script = document.createElement("script");
-    script.textContent = "window.__glohausUntrustedScriptRan = true";
-    document.head.appendChild(script);
+});
+
+test("parser-inserted untrusted HTML cannot execute an inline script", async ({
+  page,
+}) => {
+  const violations: string[] = [];
+  page.on("console", (message) => {
+    if (
+      message.type() === "error" &&
+      /Content Security Policy|violates.*directive/i.test(message.text())
+    )
+      violations.push(message.text());
   });
+  await page.route("**/sign-in", async (route) => {
+    const response = await route.fetch();
+    const body = (await response.text()).replace(
+      "</head>",
+      "<script>window.__glohausUntrustedScriptRan = true</script></head>",
+    );
+    await route.fulfill({ response, body });
+  });
+  await page.goto("/sign-in");
   expect(
     await page.evaluate(
       () =>
@@ -48,4 +65,5 @@ test("nonced production pages hydrate, preserve themes and reject untrusted inli
           .__glohausUntrustedScriptRan,
     ),
   ).toBeUndefined();
+  expect(violations.length).toBeGreaterThan(0);
 });

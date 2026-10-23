@@ -1112,3 +1112,11 @@
     left:12px; right:60px; min-width:0; max-width:none; bottom:24px;
   }
 }
+
+
+/* Sharper city/street labels for the chosen light Positron and dark Dark Matter themes. */
+.discovery-original .glohaus-locator-canvas canvas { filter:contrast(1.16) saturate(1.07); }
+:root[data-theme="night"] .discovery-original .glohaus-locator-canvas canvas,
+.dark .discovery-original .glohaus-locator-canvas canvas {
+  filter:brightness(1.20) contrast(1.24);
+}

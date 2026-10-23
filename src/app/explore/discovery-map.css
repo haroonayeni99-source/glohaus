@@ -1060,3 +1060,55 @@
   .discovery-original .london-borough-picker { gap:8px; }
   .discovery-original .london-borough-picker select { width:100%; }
 }
+
+
+/* MapCN-inspired map presentation only; preserve GLOHAUS's preferred professional cards. */
+.discovery-original .glohaus-locator {
+  border:1px solid var(--ui-border);
+  border-radius:18px;
+  box-shadow:0 5px 22px #1f1a2110;
+}
+.discovery-original .glohaus-locator .maplibregl-ctrl-group {
+  border:1px solid #dedee3;
+  border-radius:12px;
+  background:#fff;
+  overflow:hidden;
+  box-shadow:0 4px 16px #11182725;
+}
+.discovery-original .glohaus-locator .maplibregl-ctrl-group button {
+  width:38px; height:38px;
+}
+.discovery-original .glohaus-locator .maplibregl-ctrl-bottom-right {
+  bottom:18px; right:12px;
+}
+.glohaus-locator .glohaus-locator-pin {
+  display:grid; place-items:center;
+  width:36px; height:36px; min-width:36px; min-height:36px;
+  padding:0; border-radius:50%;
+  border:3px solid #fff; background:#ab366d; color:#fff;
+  box-shadow:0 2px 9px #13121a45;
+  transition:background .17s ease,transform .17s ease,box-shadow .17s ease;
+}
+.glohaus-locator .glohaus-locator-pin::after {
+  content:""; display:block; width:10px; height:10px;
+  background:#fff; border-radius:50%;
+}
+.glohaus-locator .glohaus-locator-pin.is-selected,
+.glohaus-locator .glohaus-locator-pin:hover {
+  background:#28202c; transform:scale(1.15);
+  box-shadow:0 4px 15px #13121a50;
+}
+:root[data-theme="night"] .glohaus-locator .glohaus-locator-pin.is-selected {
+  background:#e76da2; border-color:#fff;
+}
+.discovery-original .glohaus-locator-selected {
+  left:18px; bottom:26px; transform:none;
+  min-width:190px; padding:13px 16px;
+  border:1px solid var(--ui-border);
+  box-shadow:0 10px 35px #0003;
+}
+@media(max-width:600px) {
+  .discovery-original .glohaus-locator-selected {
+    left:12px; right:60px; min-width:0; max-width:none; bottom:24px;
+  }
+}

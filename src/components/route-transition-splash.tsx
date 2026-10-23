@@ -8,8 +8,8 @@ function NavigationWatcher() {
   const pathname = usePathname();
   const search = useSearchParams();
   const [show, setShow] = useState(false);
-  const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const stopTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showTimer = useRef<number | null>(null);
+  const stopTimer = useRef<number | null>(null);
 
   useEffect(() => {
     setShow(false);

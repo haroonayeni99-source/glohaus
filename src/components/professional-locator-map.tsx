@@ -56,11 +56,13 @@ export function ProfessionalLocatorMap({
           version: 8,
           sources: { streets: {
             type: "raster",
-            tiles: [darkMode
-              ? "https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              : "https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"],
+            tiles: [process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY
+              ? `https://basemaps.cartocdn.com/${darkMode ? "dark_all" : "light_all"}/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY)}`
+              : "https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
             tileSize: 256,
-            attribution: "© OpenStreetMap contributors © CARTO",
+            attribution: process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY
+              ? "© OpenStreetMap contributors © CARTO"
+              : "© OpenStreetMap contributors",
           } },
           layers: [{ id: "streets", type: "raster", source: "streets" }],
         },

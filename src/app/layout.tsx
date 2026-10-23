@@ -11,7 +11,6 @@ import type { Metadata, Viewport } from "next";
 import { PwaShell } from "@/components/pwa-shell";
 import "@/components/pwa.css";
 import { SiteFooter } from "@/components/site-footer";
-import { RouteTransitionSplash } from "@/components/route-transition-splash";
 import { ThemeToggle } from "@/components/theme-toggle";
 import "./globals.css";
 import "./glohaus-splash.css";
@@ -103,7 +102,6 @@ export default async function RootLayout({
           }}
         />
         {content}
-        <RouteTransitionSplash />
         <PwaShell />
         <SiteFooter />
         <ThemeToggle />

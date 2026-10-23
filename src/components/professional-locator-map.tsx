@@ -52,20 +52,20 @@ export function ProfessionalLocatorMap({
       if (cancelled || !mapContainer.current) return;
       instance = new Map({
         container: mapContainer.current,
-        style: {
-          version: 8,
-          sources: { streets: {
-            type: "raster",
-            tiles: [process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY
-              ? `https://basemaps.cartocdn.com/${darkMode ? "dark_all" : "light_all"}/{z}/{x}/{y}@2x.png?key=${encodeURIComponent(process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY)}`
-              : "https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-            tileSize: 256,
-            attribution: process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY
-              ? "© OpenStreetMap contributors © CARTO"
-              : "© OpenStreetMap contributors",
-          } },
-          layers: [{ id: "streets", type: "raster", source: "streets" }],
-        },
+        // CARTO vector styles keep street and district names as separate, sharp text layers.
+        // On previews without a key, fall back to the existing public OSM raster style.
+        style: process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY
+          ? `https://basemaps.cartocdn.com/gl/${darkMode ? "dark-matter-gl-style" : "positron-gl-style"}/style.json?key=${encodeURIComponent(process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY)}`
+          : {
+              version: 8,
+              sources: { streets: {
+                type: "raster",
+                tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+                tileSize: 256,
+                attribution: "© OpenStreetMap contributors",
+              } },
+              layers: [{ id: "streets", type: "raster", source: "streets" }],
+            },
         center: focus ? [focus.longitude, focus.latitude] : [-0.1278, 51.5074],
         zoom: 10,
         minZoom: 2,
@@ -76,6 +76,21 @@ export function ProfessionalLocatorMap({
       });
       map.current = instance;
       setReady(true);
+      instance.on("style.load", () => {
+        if (!instance || !process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY) return;
+        // GLOHAUS label palette: dark charcoal on light, warm-white on dark.
+        // Symbol text is vector-rendered, so road and borough labels remain crisp.
+        const labels = instance.getStyle().layers.filter((layer) =>
+          layer.type === "symbol" && layer.layout?.["text-field"] !== undefined,
+        );
+        for (const layer of labels) {
+          try {
+            instance.setPaintProperty(layer.id, "text-color", darkMode ? "#f0e8ee" : "#493f4b");
+            instance.setPaintProperty(layer.id, "text-halo-color", darkMode ? "#24252f" : "#fffdfd");
+            instance.setPaintProperty(layer.id, "text-halo-width", 1.25);
+          } catch { /* Some provider layers may not support an override. */ }
+        }
+      });
       instance.addControl(new NavigationControl({ showCompass: true }), "bottom-right");
       instance.addControl(new FullscreenControl(), "bottom-right");
       instance.on("moveend", () => {

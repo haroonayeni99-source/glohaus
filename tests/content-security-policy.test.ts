@@ -47,4 +47,10 @@ it("blocks unapproved scripts, objects and framing without disabling map workers
   expect(policy).toContain("worker-src 'self' blob:");
   expect(policy).toContain("https://checkout.stripe.com");
   expect(contentSecurityPolicy("fixture", true)).toContain("'unsafe-eval'");
+  expect(contentSecurityPolicy("fixture", false, false)).not.toContain(
+    "upgrade-insecure-requests",
+  );
+  expect(contentSecurityPolicy("fixture", false, true)).toContain(
+    "upgrade-insecure-requests",
+  );
 });

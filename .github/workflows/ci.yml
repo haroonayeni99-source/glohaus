@@ -385,7 +385,13 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test --maxWorkers=2
       - run: pnpm build
-      - run: pnpm exec playwright install --with-deps chromium
+      - name: Prepare Chromium for production-server security checks
+        run: |
+          if [ -x /usr/bin/google-chrome ]; then
+            echo "GLOHAUS_TEST_BROWSER=/usr/bin/google-chrome" >> "$GITHUB_ENV"
+          else
+            pnpm exec playwright install --with-deps chromium
+          fi
       - name: Verify actual production-server CSP and public journeys
         run: pnpm test:e2e
         env:

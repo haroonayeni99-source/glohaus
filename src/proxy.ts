@@ -164,7 +164,7 @@ export default async function proxy(request: NextRequest) {
   if (path === "/api" || path.startsWith("/api/") || path.startsWith("/_next/") || /\.[a-z0-9]+$/i.test(path))
     return routeProxy(request);
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
-  const policy = contentSecurityPolicy(nonce, process.env.NODE_ENV === "development");
+  const policy = contentSecurityPolicy(nonce, process.env.NODE_ENV === "development", request.nextUrl.protocol === "https:");
   request.headers.set("x-nonce", nonce);
   request.headers.set("Content-Security-Policy", policy);
   const response = await routeProxy(request);

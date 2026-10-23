@@ -1,4 +1,8 @@
-export function contentSecurityPolicy(nonce: string, development = false) {
+export function contentSecurityPolicy(
+  nonce: string,
+  development = false,
+  secureRequest = true,
+) {
   return [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${development ? " 'unsafe-eval'" : ""}`,
@@ -16,6 +20,6 @@ export function contentSecurityPolicy(nonce: string, development = false) {
     "base-uri 'self'",
     "form-action 'self' https://checkout.stripe.com https://connect.stripe.com https://billing.stripe.com",
     "frame-ancestors 'none'",
-    ...(development ? [] : ["upgrade-insecure-requests"]),
+    ...(!development && secureRequest ? ["upgrade-insecure-requests"] : []),
   ].join("; ");
 }

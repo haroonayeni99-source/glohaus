@@ -8,3 +8,5 @@ overrides:
   vite: 7.3.7
   brace-expansion@1: 1.1.21
   brace-expansion@5: 5.0.12
+  # Patch every affected Zod 4 dependency, including Vercel OIDC tooling.
+  'zod@>=4.0.0 <4.6.6': 4.6.6

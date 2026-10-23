@@ -3,7 +3,7 @@ import { chromium, expect } from "@playwright/test";
 import { readFile, writeFile } from "node:fs/promises";
 process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/homepage-media-entry.tsx";
 const { server } = await import("./ui-audit.mjs");
-const browser = await chromium.launch();
+const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined, args: ["--no-sandbox"] });
 const results = [];
 const image = await readFile("public/images/categories/nails-v2.webp");
 const uploaded = "https://images.example.test/uploaded-nails.webp";

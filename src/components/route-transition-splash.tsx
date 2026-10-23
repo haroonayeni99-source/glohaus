@@ -8,10 +8,12 @@ function NavigationWatcher() {
   const pathname = usePathname();
   const search = useSearchParams();
   const [show, setShow] = useState(false);
+  const routeRevision = useRef(0);
   const showTimer = useRef<number | null>(null);
   const stopTimer = useRef<number | null>(null);
 
   useEffect(() => {
+    routeRevision.current += 1;
     setShow(false);
     if (showTimer.current) clearTimeout(showTimer.current);
     if (stopTimer.current) clearTimeout(stopTimer.current);
@@ -41,12 +43,14 @@ function NavigationWatcher() {
       if (url.origin !== window.location.origin || !/^https?:$/.test(url.protocol)) return;
       const before = window.location;
       if (url.pathname === before.pathname && url.search === before.search) return;
-      // Wait until bubbling handlers can cancel navigation before arming the splash.
+      // Check that route completion has not already occurred before arming the splash.
+      const revisionAtClick = routeRevision.current;
       window.setTimeout(() => {
-        if (event.defaultPrevented) return;
+        if (event.defaultPrevented || routeRevision.current !== revisionAtClick) return;
         clearLoading();
         // No artificial delay: only show the branded screen on slower transitions.
         showTimer.current = window.setTimeout(() => {
+          if (routeRevision.current !== revisionAtClick) return;
           setShow(true);
           // Never trap customers on checkout or a failed navigation.
           stopTimer.current = window.setTimeout(clearLoading, 9000);

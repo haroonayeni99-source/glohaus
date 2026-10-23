@@ -26,12 +26,11 @@
       "feature/discovery-map-categories": false,
       "feature/map-navigation-directions": false,
       "fix/original-map-boroughs": false,
-      "security/node-october-2026": false
+      "security/node-october-2026": false,
+      "security/verified-runtime-release": false
     }
   },
-  "regions": [
-    "lhr1"
-  ],
+  "regions": ["lhr1"],
   "crons": [
     {
       "path": "/api/cron/maintenance",

@@ -61,7 +61,12 @@ try {
   ]) {
     const browser = await launcher.launch({
       headless: true,
-      ...(engine === "chromium" ? { args: ["--no-sandbox"] } : {}),
+      ...(engine === "chromium"
+        ? {
+            executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined,
+            args: ["--no-sandbox"],
+          }
+        : {}),
     });
     browsers.push(browser);
     for (const theme of ["light", "night"])

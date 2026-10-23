@@ -1,3 +1,4 @@
+import { readPublicEnvironment } from "@/lib/public-runtime-config";
 import { customerNameFromMetadata } from "@/modules/accounts/customer-profile-domain";
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
   const response = noStoreRedirect(url.origin, "/account");
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    readPublicEnvironment("NEXT_PUBLIC_SUPABASE_URL")!,
     publicSupabaseKey()!,
     {
       cookies: {

@@ -1,3 +1,4 @@
+import { readPublicEnvironment } from "@/lib/public-runtime-config";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { authConfigured, publicSupabaseKey } from "@/lib/config";
@@ -27,7 +28,7 @@ async function publicSiteEnabled() {
   if (!authConfigured()) return true;
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/glohaus_public_site_enabled`,
+      `${readPublicEnvironment("NEXT_PUBLIC_SUPABASE_URL")}/rest/v1/rpc/glohaus_public_site_enabled`,
       {
         method: "POST",
         headers: {
@@ -53,7 +54,7 @@ async function canBypassMaintenance(request: NextRequest) {
 
   try {
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      readPublicEnvironment("NEXT_PUBLIC_SUPABASE_URL")!,
       publicSupabaseKey()!,
       {
         cookies: {

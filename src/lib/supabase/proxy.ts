@@ -1,3 +1,4 @@
+import { readPublicEnvironment } from "@/lib/public-runtime-config";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { publicSupabaseKey } from "@/lib/config";
@@ -14,7 +15,7 @@ function clearProjectAuthCookies(request: NextRequest) {
   let projectRef = "";
   try {
     projectRef =
-      new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || "").hostname.split(
+      new URL(readPublicEnvironment("NEXT_PUBLIC_SUPABASE_URL") || "").hostname.split(
         ".",
       )[0] || "";
   } catch {}
@@ -39,7 +40,7 @@ export async function updateSession(request: NextRequest) {
   // Protected handlers still verify auth again server-side.
   try {
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      readPublicEnvironment("NEXT_PUBLIC_SUPABASE_URL")!,
       publicSupabaseKey()!,
       {
         cookies: {

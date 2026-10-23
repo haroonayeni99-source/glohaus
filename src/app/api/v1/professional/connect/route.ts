@@ -1,3 +1,4 @@
+import { readPublicEnvironment } from "@/lib/public-runtime-config";
 import { z } from "zod";
 import { withAccount } from "@/lib/api-account";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
@@ -69,9 +70,9 @@ export async function POST(request: Request) {
       });
     }
 
-    if (!process.env.NEXT_PUBLIC_APP_URL)
+    if (!readPublicEnvironment("NEXT_PUBLIC_APP_URL"))
       throw new AccessError("UNAVAILABLE", 503);
-    const origin = new URL(process.env.NEXT_PUBLIC_APP_URL).origin;
+    const origin = new URL(readPublicEnvironment("NEXT_PUBLIC_APP_URL")!).origin;
     const link = await stripe().accountLinks.create({
       account: stripeAccountId,
       type: "account_onboarding",

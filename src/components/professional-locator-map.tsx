@@ -107,7 +107,7 @@ export function ProfessionalLocatorMap({
     const instance = map.current;
     if (!instance || !focus) return;
     if (currentFocus.current?.latitude === focus.latitude &&
-        currentFocus.current?.longitude === focus.longitude && !resetLondonSignal) return;
+        currentFocus.current?.longitude === focus.longitude && resetLondonSignal === 0) return;
     currentFocus.current = focus;
     instance.flyTo({
       center: [focus.longitude, focus.latitude],
@@ -129,8 +129,8 @@ export function ProfessionalLocatorMap({
         const button = document.createElement("button");
         button.type = "button";
         button.className = "glohaus-locator-pin";
-        button.textContent = pin.priceLabel ?? "●";
-        button.title = pin.label;
+        button.textContent = "";
+        button.title = pin.label + (pin.priceLabel ? " · From " + pin.priceLabel : "");
         button.setAttribute("aria-label", "Select " + pin.label);
         button.setAttribute("aria-pressed", String(selectedId === pin.id));
         if (selectedId === pin.id || highlightedId === pin.id) button.classList.add("is-selected");

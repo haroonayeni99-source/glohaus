@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 155 440 260" role="img" aria-label="GLOHAUS">
+<defs><linearGradient id="metal" x1="0" y1="0" x2="1" y2=".8"><stop stop-color="#7e3249"/><stop offset=".13" stop-color="#ffc4c7"/><stop offset=".31" stop-color="#b95369"/><stop offset=".5" stop-color="#fff1ec"/><stop offset=".64" stop-color="#ce7382"/><stop offset=".86" stop-color="#ffb1ba"/><stop offset="1" stop-color="#703047"/></linearGradient><filter id="soft-glow"><feGaussianBlur stdDeviation="2.5"/></filter></defs>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+<g stroke="#f34e81" opacity=".25" stroke-width="15" filter="url(#soft-glow)">
+<path d="M220 315 C174 289 168 244 220 188 C270 243 267 290 220 315Z"/>
+<path d="M220 315 C158 318 117 282 112 235 C171 228 204 266 220 315Z"/>
+<path d="M220 315 C282 318 323 282 328 235 C269 228 236 266 220 315Z"/>
+</g>
+<g stroke="url(#metal)" stroke-width="9">
+<path d="M220 315 C174 289 168 244 220 188 C270 243 267 290 220 315Z"/>
+<path d="M220 315 C158 318 117 282 112 235 C171 228 204 266 220 315Z"/>
+<path d="M220 315 C282 318 323 282 328 235 C269 228 236 266 220 315Z"/>
+</g>
+<g stroke="#ffe6e8" stroke-width="1.6" opacity=".75">
+<path d="M220 307 C184 283 185 248 220 202"/>
+<path d="M209 305 C164 304 131 275 121 243"/>
+<path d="M232 305 C276 304 307 275 320 243"/>
+</g>
+</g>
+<path d="M220 158 L223 182 L244 187 L223 191 L220 214 L217 191 L196 187 L217 182Z" fill="#ffccd9" opacity=".86"/>
+<text x="220" y="401" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="58" textLength="368" lengthAdjust="spacingAndGlyphs" fill="url(#metal)">GLOHAUS</text>
+</svg>

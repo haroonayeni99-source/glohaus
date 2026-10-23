@@ -13,6 +13,7 @@ import "@/components/pwa.css";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 import "./globals.css";
+import "./glohaus-splash.css";
 import "./ui-upgrades.css";
 import "./theme-compat.css";
 import "./customer-polish.css";

@@ -18,8 +18,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium webkit
@@ -43,8 +44,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium webkit
@@ -65,8 +67,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
@@ -163,8 +166,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
@@ -185,8 +189,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: node scripts/check-professional-activity.mjs
@@ -206,8 +211,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: node scripts/check-marketing-preferences.mjs
@@ -227,8 +233,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: node scripts/check-session-consistency.mjs
@@ -248,8 +255,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: node scripts/check-multi-speciality.mjs
@@ -269,8 +277,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - name: Verify professional notification settings on desktop and mobile
@@ -291,8 +300,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: node scripts/check-discovery-map.mjs
@@ -317,8 +327,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - name: Verify deposit, full and required payment choices in light and night mode
@@ -338,8 +349,9 @@ jobs:
           version: 11.19.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".nvmrc"
           cache: pnpm
+      - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium webkit
       - name: Verify professional arrival tools, customer journeys and Owner communications

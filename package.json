@@ -5,15 +5,15 @@
   "type": "module",
   "packageManager": "pnpm@11.19.0",
   "engines": {
-    "node": ">=22.14.0"
+    "node": "24.x"
   },
   "scripts": {
-    "dev": "next dev --hostname 127.0.0.1",
-    "build": "next build",
-    "start": "next start --hostname 127.0.0.1",
+    "dev": "pnpm runtime:check && next dev --hostname 127.0.0.1",
+    "build": "pnpm runtime:check && next build",
+    "start": "pnpm runtime:check && next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "vitest run",
+    "test": "pnpm runtime:test && vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.mjs",
@@ -22,7 +22,9 @@
     "runtime:connection-url": "node --env-file-if-exists=.env.local scripts/runtime-connection-url.mjs",
     "admin:grant": "node --env-file-if-exists=.env.local scripts/grant-admin.mjs",
     "owner:grant": "node --env-file-if-exists=.env.local scripts/grant-owner.mjs",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "runtime:check": "node scripts/check-node-version.mjs",
+    "runtime:test": "node --test scripts/check-node-version.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

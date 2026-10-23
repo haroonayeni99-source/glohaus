@@ -25,7 +25,8 @@
       "feature/professional-notifications": false,
       "feature/discovery-map-categories": false,
       "feature/map-navigation-directions": false,
-      "fix/original-map-boroughs": false
+      "fix/original-map-boroughs": false,
+      "security/node-october-2026": false
     }
   },
   "regions": [

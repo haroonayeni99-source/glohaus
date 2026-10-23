@@ -38,7 +38,7 @@ export function HomepageCategoryMediaControl({
   });
   const [metadata,setMetadata]=useState<HomepageCategoryMetadata>({desktop:{...initialMetadata.desktop},mobile:{...initialMetadata.mobile}});
   function changeMetadata(key:string,patch:Partial<HomepageCategorySlot>){setMetadata(current=>({...current,[device]:{...current[device],[key]:{categoryId:null,specialityId:null,templateId:null,description:"",sortOrder:homepageCategorySlots({categoryMetadata:current,categoryNames:names,categoryImages:images},device,true).findIndex(s=>s.key===key)*10,visible:true,...current[device]?.[key],...patch}}}));}
-  const [device, setDevice] = useState<HomepageImageDevice>("mobile");
+  const [device, setDevice] = useState<HomepageImageDevice>("desktop");
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -117,7 +117,7 @@ export function HomepageCategoryMediaControl({
       <p className="lead">
         Choose a photo, check its circular preview, then save. Close-ups of
         finished nails, hair or the relevant body area work well. Desktop and
-        mobile have separate names and images. On iPhone, customers can swipe through all visible thumbnails.
+        mobile have separate names and images. On iPhone, customers can swipe through all visible thumbnails. Select Mobile homepage to add thumbnails to the iPhone carousel.
       </p>
       <label>
         Category settings for

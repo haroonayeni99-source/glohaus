@@ -131,7 +131,7 @@ export function MobileCustomerHome({
             sizes="(max-width: 760px) calc(100vw - 28px), 100vw"
             src={
               homepageMedia.mobileHero ||
-              "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=1100&q=90"
+              "/images/homepage-portrait-mobile.svg"
             }
             unoptimized
             alt="Beauty inspiration portrait"

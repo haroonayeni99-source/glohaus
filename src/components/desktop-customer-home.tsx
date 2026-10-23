@@ -251,7 +251,7 @@ export function DesktopCustomerHome({
             sizes="60vw"
             src={
               homepageMedia.desktopHero ||
-              "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=1600&q=88"
+              "/images/homepage-portrait-desktop.svg"
             }
             unoptimized
             alt="Beauty inspiration portrait"

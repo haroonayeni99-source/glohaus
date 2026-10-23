@@ -16,8 +16,7 @@ import {
 import { TaxonomyFilters } from "./taxonomy-filters";
 import { ProfessionalVerificationBadges } from "./professional-verification-badges";
 import type { MapViewport } from "./geographic-map";
-import { GeographicMap } from "./geographic-map";
-import { LondonMapOverview } from "./london-map-overview";
+import { ProfessionalLocatorMap } from "./professional-locator-map";
 import {
   londonBoroughs,
   londonBorough,
@@ -92,7 +91,9 @@ export function ExploreMapExperience({
     [radius, setRadius] = useState(10);
   const [locating, setLocating] = useState(false),
     [locationNotice, setLocationNotice] = useState("");
-  const [streetView, setStreetView] = useState(false);
+  const [overviewFocus, setOverviewFocus] = useState<Coordinates | null>(null);
+  const [londonResetSignal, setLondonResetSignal] = useState(0);
+  const [listQuery, setListQuery] = useState("");
   const [mobileView, setMobileView] = useState<"map" | "list">("list");
   const [selected, setSelected] = useState<string | null>(null),
     [highlighted, setHighlighted] = useState<string | null>(null);
@@ -109,12 +110,18 @@ export function ExploreMapExperience({
     Boolean(londonBorough(locationSearch)) ||
     /\blondon\b/i.test(locationSearch) ||
     /^(?:E|EC|N|NW|SE|SW|W|WC)\d{1,2}[A-Z]?(?:\s*\d[A-Z]{2})?$/i.test(locationSearch);
-  const showLondonOverview = londonSearch && !streetView && !postcodeCentre;
   const nearby = nearbyResults ?? professionals;
+  const normalizedListQuery = listQuery.trim().toLocaleLowerCase();
+  const listed = normalizedListQuery
+    ? nearby.filter((pro) =>
+        [pro.business_name, pro.city, pro.category, ...(pro.matching_services?.map((service) => service.name) ?? [])]
+          .some((value) => value?.toLocaleLowerCase().includes(normalizedListQuery)),
+      )
+    : nearby;
   const unavailable = loadFailed && nearbyResults === null;
   const showExamples =
     !position && !locating && examples.length > 0;
-  const mapped = nearby.filter(
+  const mapped = listed.filter(
     (p) =>
       p.public_location_confirmed_at &&
       coordinatesSchema.safeParse({
@@ -122,7 +129,7 @@ export function ExploreMapExperience({
         longitude: p.public_longitude,
       }).success,
   );
-  const selectedPro = nearby.find((p) => p.id === selected);
+  const selectedPro = listed.find((p) => p.id === selected);
   const ids = nearby.map((p) => p.id).join(",");
   useEffect(
     () => () => {
@@ -149,6 +156,7 @@ export function ExploreMapExperience({
     return () => controller.abort();
   }, [ids, signedIn]);
   const selectPin = useCallback((id: string) => {
+    setOverviewFocus(null);
     setSelected(id);
     if (window.matchMedia("(min-width: 901px)").matches)
       document
@@ -158,7 +166,7 @@ export function ExploreMapExperience({
   function showOnMap(pro: PublicProfessional) {
     if (!mapped.some((pin) => pin.id === pro.id)) return;
     setSelected(pro.id);
-    setStreetView(true);
+    setOverviewFocus(null);
     setMobileView("map");
     requestAnimationFrame(() =>
       document
@@ -218,7 +226,7 @@ export function ExploreMapExperience({
       const result = await r.json();
       if (current !== sequence.current) return;
       setNearbyResults(result.professionals);
-      setStreetView(true);
+      setOverviewFocus(null);
       setPosition(point);
       setSelected(null);
       setLocationNotice(
@@ -341,6 +349,28 @@ export function ExploreMapExperience({
             <button type="submit">Search</button>
           </form>
         </div>
+        {londonSearch && (
+          <div className="london-borough-picker">
+            <label htmlFor="explore-london-borough">Explore all 32 London boroughs</label>
+            <select
+              id="explore-london-borough"
+              value={londonBorough(filters.location) ?? ""}
+              onChange={(event) => {
+                setSelected(null);
+                setOverviewFocus(null);
+                setMobileView("map");
+                router.push(discoveryHref(query, {
+                  ...filters,
+                  location: event.target.value || undefined,
+                }));
+              }}
+            >
+              <option value="">All London</option>
+              {areas.map((borough) => <option value={borough} key={borough}>{borough}</option>)}
+            </select>
+            <span>{areas.length} boroughs · select an area to find beauty professionals</span>
+          </div>
+        )}
         {londonSearch && <nav className="map-area-strip" aria-label="Explore London areas">
           {["All London", ...areas].map((area) => (
             <Link
@@ -582,8 +612,8 @@ export function ExploreMapExperience({
             </h2>
             {!unavailable && (!showExamples || nearby.length > 0) && (
               <p>
-                {nearby.length} matching{" "}
-                {nearby.length === 1 ? "professional" : "professionals"} ·{" "}
+                {listed.length} matching{" "}
+                {listed.length === 1 ? "professional" : "professionals"} ·{" "}
                 {position ? "Closest first" : "Recommended"}
               </p>
             )}
@@ -594,12 +624,27 @@ export function ExploreMapExperience({
               </small>
             )}
           </header>
+          <div className="discovery-list-search">
+            <Search size={17} aria-hidden="true" />
+            <input
+              type="search"
+              aria-label="Filter displayed professionals"
+              placeholder="Find a professional, service or area"
+              value={listQuery}
+              onChange={(event) => { setListQuery(event.target.value); setSelected(null); }}
+            />
+            {listQuery && <button type="button" onClick={() => setListQuery("")} aria-label="Clear list search"><X size={16} /></button>}
+          </div>
           <div className="map-pro-list">
-            {nearby.map((pro) => (
+            {listed.map((pro) => (
               <article
                 id={`discovery-${pro.id}`}
                 key={pro.id}
                 className={`discovery-card${selected === pro.id || highlighted === pro.id ? " is-selected" : ""}`}
+                onClick={(event) => {
+                  if ((event.target as HTMLElement).closest("a, button")) return;
+                  showOnMap(pro);
+                }}
                 onMouseEnter={() => setHighlighted(pro.id)}
                 onMouseLeave={() => setHighlighted(null)}
                 onFocus={() => setHighlighted(pro.id)}
@@ -719,11 +764,11 @@ export function ExploreMapExperience({
               </article>
             ))}
           </div>
-          {!unavailable && !nearby.length && !showExamples && (
+          {!unavailable && !listed.length && !showExamples && (
             <div className="map-pro-empty">
               <Search size={28} />
-              <h3>No matching professionals yet.</h3>
-              <p>Try another area, a wider radius or a different service.</p>
+              <h3>{listQuery ? "No professionals match that search." : "No matching professionals yet."}</h3>
+              <p>{listQuery ? "Try another professional name, service or area." : "Try another area, a wider radius or a different service."}</p>
               <Link href="/explore">Clear filters</Link>
             </div>
           )}
@@ -745,79 +790,45 @@ export function ExploreMapExperience({
               Search this area
             </button>
           </div>
-          <button
-            className="discovery-map-switch"
-            type="button"
-            onClick={() => {
-              setStreetView((value) => !value);
-              setSelected(null);
-            }}
-          >
-            {streetView
-              ? (londonSearch ? "Back to London overview" : "View area results")
-              : (londonSearch ? "View confirmed business pins" : "View map pins")}
-          </button>
-          {streetView ? (
-            <GeographicMap
-              pins={mapped.map((pro) => ({
-                id: pro.id,
-                label: pro.business_name,
-                priceLabel:
-                  pro.from_price_pence != null
-                    ? money(pro.from_price_pence)
-                    : undefined,
-                latitude: pro.public_latitude!,
-                longitude: pro.public_longitude!,
-              }))}
-              focus={
-                selectedPro?.public_location_confirmed_at
-                  ? {
-                      latitude: selectedPro.public_latitude!,
-                      longitude: selectedPro.public_longitude!,
-                    }
-                  : (position ?? postcodeCentre ??
-                    (mapped[0]
-                      ? {
-                          latitude: mapped[0].public_latitude!,
-                          longitude: mapped[0].public_longitude!,
-                        }
-                      : undefined))
-              }
-              initialZoom={selectedPro ? 16 : 12}
-              focusZoom={selectedPro ? 16 : undefined}
-              selectedId={selected}
-              highlightedId={highlighted}
-              onSelect={selectPin}
-              onHighlight={setHighlighted}
-              onViewportChange={setViewport}
-            />
-          ) : showLondonOverview ? (
-            <LondonMapOverview query={query} filters={filters} />
-          ) : mapped.length ? (
-            <GeographicMap
-              pins={mapped.map((pro) => ({
-                id: pro.id,
-                label: pro.business_name,
-                priceLabel: pro.from_price_pence != null ? money(pro.from_price_pence) : undefined,
-                latitude: pro.public_latitude!,
-                longitude: pro.public_longitude!,
-              }))}
-              focus={postcodeCentre ?? { latitude: mapped[0].public_latitude!, longitude: mapped[0].public_longitude! }}
-              initialZoom={11}
-              selectedId={selected}
-              highlightedId={highlighted}
-              onSelect={selectPin}
-              onHighlight={setHighlighted}
-              onViewportChange={setViewport}
-            />
-          ) : (
-            <div className="map-pro-empty" role="status">
-              <MapPin size={28} />
-              <h3>No confirmed map pins for {locationSearch}</h3>
-              <p>Try another city or postcode, or widen your search.</p>
-            </div>
+          {londonSearch && (
+            <button
+              className="discovery-map-switch"
+              type="button"
+              onClick={() => {
+                setSelected(null);
+                setOverviewFocus({ latitude: 51.5074, longitude: -0.1278 });
+                setLondonResetSignal((value) => value + 1);
+              }}
+            >
+              View all London
+            </button>
           )}
-          {streetView && selectedPro && (
+          <ProfessionalLocatorMap
+            resetLondonSignal={londonResetSignal}
+            pins={mapped.map((pro) => ({
+              id: pro.id,
+              label: pro.business_name,
+              priceLabel: pro.from_price_pence != null ? money(pro.from_price_pence) : undefined,
+              latitude: pro.public_latitude!,
+              longitude: pro.public_longitude!,
+            }))}
+            focus={
+              selectedPro?.public_location_confirmed_at
+                ? { latitude: selectedPro.public_latitude!, longitude: selectedPro.public_longitude! }
+                : overviewFocus ?? position ?? postcodeCentre ??
+                  (londonSearch
+                    ? { latitude: 51.5074, longitude: -0.1278 }
+                    : mapped[0]
+                      ? { latitude: mapped[0].public_latitude!, longitude: mapped[0].public_longitude! }
+                      : undefined)
+            }
+            selectedId={selected}
+            highlightedId={highlighted}
+            onSelect={selectPin}
+            onHighlight={setHighlighted}
+            onViewportChange={setViewport}
+          />
+          {selectedPro && (
             <div className="discovery-pin-card">
               <button
                 type="button"
@@ -849,7 +860,7 @@ export function ExploreMapExperience({
             {unavailable
               ? "Business locations couldn’t be loaded. Retry the results to check available professionals."
               : mapped.length
-              ? `${mapped.length} confirmed public pins. ${nearby.length - mapped.length ? `${nearby.length - mapped.length} profiles show an area only.` : ""}`
+              ? `${mapped.length} confirmed public pins. ${listed.length - mapped.length ? `${listed.length - mapped.length} profiles show an area only.` : ""}`
               : "No confirmed public pins for this search. Browse the results or search another area."}{" "}
             Private addresses are never inferred.
           </p>

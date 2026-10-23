@@ -821,3 +821,304 @@
   background: #ad3869 !important;
   border-color: #ad3869 !important;
 }
+
+
+/* Map-first visual refinement — scoped to Explore only. */
+.discovery-original .map-explore-hero { padding-bottom: 12px; }
+.discovery-original .map-explore-title-row h1 {
+  font-size: clamp(30px, 3.2vw, 48px);
+  line-height: 1.1; letter-spacing: -.045em;
+}
+.discovery-original .map-explore-title-row p { font-size: 14px; color: var(--ui-muted); }
+.discovery-original .map-explore-search {
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+  border-radius: 18px; padding: 8px; gap: 10px;
+  box-shadow: 0 6px 24px #391c2b10;
+}
+.discovery-original .map-explore-search input {
+  min-height: 43px; background: transparent;
+}
+.discovery-original .map-explore-search input[name="location"] {
+  border-left: 1px solid var(--ui-border); padding-left: 14px;
+}
+.discovery-original .map-explore-search button {
+  border-radius: 12px; min-height: 44px; padding: 10px 20px;
+}
+.discovery-original .map-area-strip {
+  display: flex; gap: 8px; overflow-x: auto;
+  padding-bottom: 12px; scrollbar-width: thin;
+}
+.discovery-original .map-area-strip .map-area-card {
+  flex: 0 0 auto; width: auto; min-height: 38px;
+  padding: 9px 15px; border-radius: 999px;
+  background: var(--ui-surface-muted) !important;
+  color: var(--ui-text) !important; border: 1px solid var(--ui-border);
+  box-shadow: none !important;
+}
+.discovery-original .map-area-strip .map-area-card span {
+  color: var(--ui-text) !important; font-size: 12px;
+}
+.discovery-original .map-area-strip .map-area-card small { display: none; }
+.discovery-original .map-area-strip .map-area-card.active {
+  background: #b93f71 !important; border-color: #b93f71;
+}
+.discovery-original .map-area-strip .map-area-card.active span { color: #fff !important; }
+.discovery-original .discovery-filter-bar a { border-radius: 999px; }
+.discovery-original .map-results-layout,
+.discovery-original.discovery-hybrid .map-results-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 390px);
+  height: min(78dvh, 860px); min-height: 560px;
+  overflow: hidden;
+}
+.discovery-original .discovery-map-panel { grid-column: 1; grid-row: 1; min-height: 0; }
+.discovery-original .map-pro-results { grid-column: 2; grid-row: 1; }
+.discovery-original .discovery-map-panel .geo-map {
+  border-radius: 18px; overflow: hidden; min-height: 0;
+}
+.discovery-original .discovery-map-panel .geo-map-surface {
+  min-height: 360px; border-radius: 16px; overflow: hidden;
+}
+.discovery-original .discovery-map-toolbar { padding: 13px 16px; }
+.discovery-original .discovery-map-switch {
+  border-radius: 999px; font-size: 12px;
+}
+.discovery-original .discovery-card {
+  border-radius: 16px; padding: 12px;
+  border: 1px solid var(--ui-border); gap: 12px;
+  box-shadow: 0 4px 18px #24101b09;
+}
+.discovery-original .discovery-card.is-selected { border-color: #b93f71; box-shadow: 0 0 0 2px #b93f7133; }
+.discovery-original .discovery-card-photo { border-radius: 12px; min-height: 155px; }
+.discovery-original .discovery-pin-card { border-radius: 16px; }
+@media (max-width: 900px) {
+  .discovery-original .map-results-layout,
+  .discovery-original.discovery-hybrid .map-results-layout {
+    grid-template-columns: 1fr; height: auto; min-height: 0; overflow: visible;
+  }
+  .discovery-original .map-pro-results,
+  .discovery-original .discovery-map-panel { grid-column: 1; grid-row: auto; }
+  .discovery-original .mobile-view-map .discovery-map-panel { min-height: 72dvh; }
+  .discovery-original .map-explore-search input[name="location"] {
+    border-left: 0; padding-left: 0;
+  }
+}
+
+
+/* Airbnb-inspired discover layout: GLOHAUS original identity, map-first interactions. */
+.discovery-original.discovery-hybrid { max-width: none; }
+.discovery-original .map-explore-hero { padding: 22px clamp(16px,3vw,44px) 10px; }
+.discovery-original .map-explore-title-row { gap: 20px; }
+.discovery-original .map-explore-title-row h1 { font-size: clamp(29px,2.7vw,42px); }
+.discovery-original .map-explore-title-row h1 em { color:#b93f71; }
+.discovery-original .map-explore-search {
+  max-width: 860px; margin: 18px auto 8px;
+  border-radius: 999px; padding: 7px 7px 7px 19px;
+  box-shadow: 0 6px 25px #2c122218;
+}
+.discovery-original .map-explore-search button { border-radius: 999px; padding: 12px 26px; }
+.discovery-original .discovery-categories { gap: 9px; padding-top: 9px; padding-bottom: 9px; }
+.discovery-original .discovery-categories a {
+  border: 0; border-radius: 999px; padding: 10px 17px;
+  background: var(--ui-surface-muted); color: var(--ui-text);
+  font-size: 13px; white-space: nowrap;
+}
+.discovery-original .discovery-categories a.active { color:#fff !important; background:#ad3869 !important; }
+.discovery-original .discovery-filter-bar { padding-top: 8px; padding-bottom: 8px; }
+.discovery-original .discovery-filter-bar a { font-size: 12px; background: var(--ui-surface); }
+.discovery-original .map-results-layout,
+.discovery-original.discovery-hybrid .map-results-layout {
+  grid-template-columns: minmax(380px,43%) minmax(0,57%);
+  height: min(81dvh,930px); min-height: 540px; border-top: 1px solid var(--ui-border);
+  gap: 0;
+}
+.discovery-original .map-pro-results { grid-column:1; grid-row:1; padding:24px 22px; }
+.discovery-original .discovery-map-panel {
+  grid-column:2; grid-row:1; border-left: 1px solid var(--ui-border);
+  border-right: 0; padding: 12px; background: var(--ui-surface-muted);
+}
+.discovery-original .discovery-map-toolbar { padding: 6px 7px 12px; }
+.discovery-original .discovery-map-toolbar button {
+  color:#fff; background:#ad3869; border:0; border-radius:999px;
+  padding:10px 18px; font-weight:700;
+}
+.discovery-original .discovery-map-switch {
+  position:absolute; top:70px; left:26px; z-index:3;
+  background: var(--ui-surface); box-shadow: 0 6px 18px #0002;
+  border-radius:999px; padding:11px 16px;
+}
+.discovery-original .discovery-map-panel .geo-map { margin:0; border-radius:22px; }
+.discovery-original .discovery-map-panel .geo-map-surface { border-radius:20px; }
+.discovery-original .discovery-map-panel .geo-map-gate { margin:0; border-radius:20px; }
+.discovery-original .discovery-pin-card {
+  position:absolute; bottom:70px; left:50%; transform:translateX(-50%);
+  width:min(375px,calc(100% - 36px)); z-index:5; margin:0;
+  box-shadow:0 15px 45px #2d1b2930;
+}
+.discovery-original .map-pro-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:15px; }
+.discovery-original .discovery-card {
+  display:flex; flex-direction:column; padding:0 0 13px;
+  border:0; box-shadow:none; gap:8px; background:transparent;
+}
+.discovery-original .discovery-card-photo { min-height:0; height:auto; aspect-ratio:1.15; border-radius:17px; }
+.discovery-original .discovery-card-copy { padding:2px 2px; }
+.discovery-original .discovery-card .map-pro-name { font-size:15px; }
+.discovery-original .discovery-card .matching-services { margin:5px 0; }
+.discovery-original .discovery-card-actions { gap:5px; }
+.discovery-original .discovery-card-actions .discovery-book { border-radius:999px !important; }
+.discovery-original .geo-price-pin { border-radius:999px; padding:7px 15px; box-shadow:0 5px 16px #0003; }
+@media (max-width:1150px) and (min-width:901px) {
+  .discovery-original .map-pro-list { grid-template-columns:1fr; }
+  .discovery-original .discovery-card { display:grid; grid-template-columns:130px minmax(0,1fr); }
+  .discovery-original .discovery-card-photo { aspect-ratio:1; }
+}
+@media (max-width:900px) {
+  .discovery-original .map-explore-hero { padding:18px 14px 6px; }
+  .discovery-original .map-explore-search { border-radius:20px; margin:12px 0; padding:8px; }
+  .discovery-original .map-explore-search button { border-radius:13px; }
+  .discovery-original .map-results-layout,
+  .discovery-original.discovery-hybrid .map-results-layout {
+    display:block; height:auto; min-height:0; overflow:visible;
+  }
+  .discovery-original .mobile-view-map .discovery-map-panel {
+    display:flex; min-height:76dvh; height:76dvh; padding:8px;
+  }
+  .discovery-original .discovery-map-switch { top:61px; left:19px; }
+  .discovery-original .map-pro-list { grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px; }
+  .discovery-original .map-pro-results { padding:16px; }
+  .discovery-original .discovery-card-photo { aspect-ratio:1; }
+  .discovery-original .discovery-map-panel { border:0; }
+}
+@media (max-width:520px) {
+  .discovery-original .map-pro-list { grid-template-columns:1fr; }
+  .discovery-original .discovery-card { display:grid; grid-template-columns:125px minmax(0,1fr); }
+  .discovery-original .discovery-card-photo { aspect-ratio:1; }
+  .discovery-original .discovery-card-actions .discovery-book { padding:8px 10px !important; }
+}
+
+
+/* Locator-style sidebar adapted from the supplied StoreList example. */
+.discovery-original .discovery-list-search {
+  display:flex; align-items:center; gap:10px; border:1px solid var(--ui-border);
+  border-radius:13px; padding:0 12px; min-height:48px; background:var(--ui-surface);
+  margin:18px 0 12px; box-shadow:0 2px 8px #25121b08;
+}
+.discovery-original .discovery-list-search input {
+  flex:1; width:100%; min-width:0; border:0; outline:none;
+  background:transparent; color:var(--ui-text); font:inherit; font-size:13px;
+}
+.discovery-original .discovery-list-search:focus-within { outline:2px solid #b93f7155; outline-offset:1px; }
+.discovery-original .discovery-list-search button {
+  background:transparent; color:var(--ui-muted); border:0; cursor:pointer;
+  display:grid; place-items:center; min-width:28px; min-height:28px;
+}
+.discovery-original .discovery-card { cursor:pointer; }
+.discovery-original .discovery-card:focus-within { outline:2px solid #b93f7166; outline-offset:2px; }
+.discovery-original .discovery-card:hover { box-shadow:0 4px 19px #32162415; }
+.discovery-original .discovery-card.is-selected { background:#b93f7109; }
+:root[data-theme="night"] .discovery-original .discovery-card.is-selected { background:#b93f711c; }
+
+
+/* Native MapLibre locator: same selection + flyTo mechanics as MapCN. */
+.discovery-original .glohaus-locator { position:relative; flex:1; display:flex; min-height:400px; height:100%; border-radius:20px; overflow:hidden; }
+.discovery-original .glohaus-locator-canvas { position:absolute; inset:0; width:100%; height:100%; }
+.discovery-original .glohaus-locator .geo-map-gate { flex:1; }
+.glohaus-locator-pin { border:2px solid white; background:#b93f71; color:white; border-radius:999px; padding:8px 12px; min-width:40px; min-height:36px; cursor:pointer; font:700 12px/1.2 inherit; white-space:nowrap; box-shadow:0 3px 12px #0004; }
+.glohaus-locator-pin.is-selected,.glohaus-locator-pin:hover { background:#251923; transform:scale(1.12); }
+.glohaus-locator-pin:focus-visible { outline:3px solid #b93f71; outline-offset:3px; }
+.glohaus-locator-selected { position:absolute; bottom:28px; left:50%; transform:translateX(-50%); z-index:3; display:flex; flex-direction:column; gap:4px; border-radius:14px; background:var(--ui-surface); color:var(--ui-text); padding:12px 18px; box-shadow:0 8px 25px #0003; pointer-events:none; max-width:calc(100% - 48px); }
+.glohaus-locator-selected span { color:var(--ui-muted); font-size:12px; }
+.glohaus-locator-error { position:absolute; top:12px; left:12px; z-index:5; padding:10px; border-radius:10px; background:var(--ui-surface); }
+@media(max-width:900px){.discovery-original .glohaus-locator{ min-height:66dvh; }}
+
+
+/* GLOHAUS curated visual themes: retain the earlier wide professional-card sidebar.
+   Light: minimal city cartography. Dark: premium low-glare city cartography. */
+.discovery-original .glohaus-locator { background: #f4f4f2; }
+:root[data-theme="night"] .discovery-original .glohaus-locator,
+.dark .discovery-original .glohaus-locator { background: #151c23; }
+.glohaus-locator-pin { background:#b93f71; color:#fff; border:2px solid #fff; }
+.glohaus-locator-pin.is-selected,.glohaus-locator-pin:hover { background:#251923; }
+:root[data-theme="night"] .glohaus-locator-pin.is-selected { background:#fff; color:#251923; border-color:#b93f71; }
+
+
+/* Always-visible borough navigation restores discoverability on touch devices. */
+.discovery-original .london-borough-picker {
+  display:flex; flex-wrap:wrap; align-items:center; gap:9px 15px;
+  padding:12px clamp(16px,3vw,44px); border-bottom:1px solid var(--ui-border);
+  background:var(--ui-surface);
+}
+.discovery-original .london-borough-picker label { font-size:13px; font-weight:750; }
+.discovery-original .london-borough-picker select {
+  min-height:42px; min-width:min(270px,100%); border:1px solid var(--ui-border);
+  border-radius:11px; padding:9px 13px; font:inherit; color:var(--ui-text);
+  background:var(--ui-surface-muted); cursor:pointer;
+}
+.discovery-original .london-borough-picker select:focus-visible { outline:2px solid #b93f71; outline-offset:2px; }
+.discovery-original .london-borough-picker span { font-size:12px; color:var(--ui-muted); }
+@media(max-width:600px) {
+  .discovery-original .london-borough-picker { gap:8px; }
+  .discovery-original .london-borough-picker select { width:100%; }
+}
+
+
+/* MapCN-inspired map presentation only; preserve GLOHAUS's preferred professional cards. */
+.discovery-original .glohaus-locator {
+  border:1px solid var(--ui-border);
+  border-radius:18px;
+  box-shadow:0 5px 22px #1f1a2110;
+}
+.discovery-original .glohaus-locator .maplibregl-ctrl-group {
+  border:1px solid #dedee3;
+  border-radius:12px;
+  background:#fff;
+  overflow:hidden;
+  box-shadow:0 4px 16px #11182725;
+}
+.discovery-original .glohaus-locator .maplibregl-ctrl-group button {
+  width:38px; height:38px;
+}
+.discovery-original .glohaus-locator .maplibregl-ctrl-bottom-right {
+  bottom:18px; right:12px;
+}
+.glohaus-locator .glohaus-locator-pin {
+  display:grid; place-items:center;
+  width:36px; height:36px; min-width:36px; min-height:36px;
+  padding:0; border-radius:50%;
+  border:3px solid #fff; background:#ab366d; color:#fff;
+  box-shadow:0 2px 9px #13121a45;
+  transition:background .17s ease,transform .17s ease,box-shadow .17s ease;
+}
+.glohaus-locator .glohaus-locator-pin::after {
+  content:""; display:block; width:10px; height:10px;
+  background:#fff; border-radius:50%;
+}
+.glohaus-locator .glohaus-locator-pin.is-selected,
+.glohaus-locator .glohaus-locator-pin:hover {
+  background:#28202c; transform:scale(1.15);
+  box-shadow:0 4px 15px #13121a50;
+}
+:root[data-theme="night"] .glohaus-locator .glohaus-locator-pin.is-selected {
+  background:#e76da2; border-color:#fff;
+}
+.discovery-original .glohaus-locator-selected {
+  left:18px; bottom:26px; transform:none;
+  min-width:190px; padding:13px 16px;
+  border:1px solid var(--ui-border);
+  box-shadow:0 10px 35px #0003;
+}
+@media(max-width:600px) {
+  .discovery-original .glohaus-locator-selected {
+    left:12px; right:60px; min-width:0; max-width:none; bottom:24px;
+  }
+}
+
+
+/* Vector-rendered labels use a deliberate GLOHAUS palette, without a colour-distorting canvas filter. */
+.discovery-original .glohaus-locator-canvas canvas { filter:none; }
+:root[data-theme="night"] .discovery-original .glohaus-locator-canvas canvas,
+.dark .discovery-original .glohaus-locator-canvas canvas { filter:none; }
+.discovery-original .glohaus-locator-selected strong { color:var(--ui-text); font-size:14px; line-height:1.35; }
+.discovery-original .glohaus-locator-selected span { color:var(--ui-muted); font-size:12px; }
+.glohaus-locator .glohaus-locator-pin { background:#b83a79; box-shadow:0 3px 12px #3e233f59; }
+:root[data-theme="night"] .glohaus-locator .glohaus-locator-pin { background:#e179ac; box-shadow:0 3px 12px #0202089e; }

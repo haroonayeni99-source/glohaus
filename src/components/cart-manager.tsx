@@ -59,9 +59,9 @@ export function CartManager({ initialCart }: { initialCart: CartOverview }) {
       const data = await response.json();
       if (!response.ok || !data.url) {
         setNotice(
-          data.error?.code === "INVALID_REQUEST"
+          cartErrorMessage(data.error?.code) ?? (data.error?.code === "INVALID_REQUEST"
             ? "Checkout is not available for this cart right now."
-            : "Secure checkout is temporarily unavailable.",
+            : "Secure checkout is temporarily unavailable."),
         );
         return;
       }

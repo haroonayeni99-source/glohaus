@@ -290,12 +290,12 @@ export default async function ShopPage({
                       </span>
                       <span
                         className={
-                          product.in_stock
+                          product.in_stock && !product.seller_away
                             ? "marketplace-stock"
                             : "marketplace-stock is-out"
                         }
                       >
-                        {product.in_stock ? "In stock" : "Out of stock"}
+                        {product.seller_away ? "Seller away" : product.in_stock ? "In stock" : "Out of stock"}
                       </span>
                     </div>
                     <div className="marketplace-product-copy">
@@ -334,7 +334,8 @@ export default async function ShopPage({
                         </div>
                         <AddToCartButton
                           productId={product.id}
-                          disabled={!product.in_stock}
+                          disabled={!product.in_stock || product.seller_away}
+                          disabledLabel={product.seller_away ? "Seller away" : "Out of stock"}
                         />
                       </div>
                     </div>

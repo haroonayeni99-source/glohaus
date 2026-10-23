@@ -9,9 +9,11 @@ import { cartErrorMessage } from "@/modules/shop/cart-feedback";
 export function AddToCartButton({
   productId,
   disabled = false,
+  disabledLabel = "Out of stock",
 }: {
   productId: string;
   disabled?: boolean;
+  disabledLabel?: string;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -72,7 +74,7 @@ export function AddToCartButton({
         onClick={add}
       >
         <ShoppingBag size={15} aria-hidden />
-        {disabled ? "Out of stock" : busy ? "Adding…" : "Add to cart"}
+        {disabled ? disabledLabel : busy ? "Adding…" : "Add to cart"}
       </button>
       {notice && (
         <small className="shop-add-notice" role="status">

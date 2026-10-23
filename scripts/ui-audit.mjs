@@ -5,6 +5,8 @@ import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import { createServer } from "node:http";
 const require = createRequire(import.meta.url);
+const { prepareMapWorker } = await import("./prepare-map-worker.mjs");
+await prepareMapWorker();
 const vr = createRequire(require.resolve("vitest/package.json"));
 const vite = createRequire(vr.resolve("vite"));
 const { build } = await import(vite.resolve("esbuild"));
@@ -72,6 +74,13 @@ const css = (await readFile("node_modules/maplibre-gl/dist/maplibre-gl.css", "ut
 export const server = createServer(async (req, res) => {
   if (req.method !== "GET") {
     res.writeHead(405).end();
+    return;
+  }
+  if (req.url?.startsWith("/vendor/maplibre/")) {
+    const name = req.url.slice("/vendor/maplibre/".length);
+    if (!/^[A-Za-z0-9_.-]+\.mjs$/.test(name)) { res.writeHead(404).end(); return; }
+    res.setHeader("Content-Type", "text/javascript");
+    res.end(await readFile(`public/vendor/maplibre/${name}`));
     return;
   }
   if (req.url === "/audit.js") {

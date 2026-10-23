@@ -8,8 +8,8 @@
     "node": "24.x"
   },
   "scripts": {
-    "dev": "pnpm runtime:check && next dev --hostname 127.0.0.1",
-    "build": "pnpm runtime:check && next build",
+    "dev": "pnpm runtime:check && node scripts/prepare-map-worker.mjs && next dev --hostname 127.0.0.1",
+    "build": "pnpm runtime:check && node scripts/prepare-map-worker.mjs && next build",
     "start": "pnpm runtime:check && next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
@@ -24,7 +24,8 @@
     "owner:grant": "node --env-file-if-exists=.env.local scripts/grant-owner.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "runtime:check": "node scripts/check-node-version.mjs",
-    "runtime:test": "node --test scripts/check-node-version.test.mjs"
+    "runtime:test": "node --test scripts/check-node-version.test.mjs",
+    "security:secrets": "node scripts/check-secrets.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -34,14 +35,14 @@
     "livekit-client": "^2.22.3",
     "livekit-server-sdk": "^2.19.1",
     "lucide-react": "^0.577.0",
-    "maplibre-gl": "5.24.0",
-    "next": "^16.0.0",
+    "maplibre-gl": "6.4.1",
+    "next": "^16.4.2",
     "pg": "^8.16.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "resend": "^6.28.0",
     "server-only": "^0.0.1",
-    "sharp": "^0.35.4",
+    "sharp": "^0.35.5",
     "stripe": "^22.6.2",
     "web-push": "3.6.7",
     "zod": "^4.0.0"
@@ -56,7 +57,7 @@
     "@types/react-dom": "^19.0.0",
     "@types/web-push": "3.6.4",
     "eslint": "^9.0.0",
-    "eslint-config-next": "^16.0.0",
+    "eslint-config-next": "^16.4.2",
     "jsdom": "26.1.0",
     "prettier": "^3.9.6",
     "typescript": "^5.9.0",

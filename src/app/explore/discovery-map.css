@@ -961,6 +961,7 @@
   border:0; box-shadow:none; gap:8px; background:transparent;
 }
 .discovery-original .discovery-card-photo { min-height:0; height:auto; aspect-ratio:1.15; border-radius:17px; }
+.discovery-original .discovery-card-photo { min-width:0; width:100%; max-width:100%; }
 .discovery-original .discovery-card-copy { padding:2px 2px; }
 .discovery-original .discovery-card .map-pro-name { font-size:15px; }
 .discovery-original .discovery-card .matching-services { margin:5px 0; }

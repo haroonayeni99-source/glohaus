@@ -8,6 +8,7 @@ export default defineConfig([
     ".next/**",
     "outputs/**",
     "reports/**",
+    "public/vendor/maplibre/**",
     "next-env.d.ts",
     "test-results/**",
     "playwright-report/**",

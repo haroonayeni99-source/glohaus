@@ -5,10 +5,12 @@ import { withPaymentWorker } from "@/modules/payments/worker";
 export async function paymentWebhookSecrets() {
   const configured = [
     process.env.STRIPE_WEBHOOK_SECRET,
+    process.env.STRIPE_WEBHOOK_SECRET_PREVIOUS,
     process.env.STRIPE_CONNECT_WEBHOOK_SECRET,
+    process.env.STRIPE_CONNECT_WEBHOOK_SECRET_PREVIOUS,
   ].filter((value): value is string => Boolean(value));
 
-  if (configured.length) return configured;
+  if (configured.length) return [...new Set(configured)];
 
   return withPaymentWorker(async (db) => {
     const rows = (

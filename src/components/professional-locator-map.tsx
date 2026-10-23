@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { loadMapLibre } from "@/lib/maplibre-client";
 import type { Map as MapLibreMap, Marker as MapLibreMarker } from "maplibre-gl";
 import Link from "next/link";
 import { distanceMiles, type Coordinates } from "@/modules/professionals/location";
@@ -40,15 +41,18 @@ export function ProfessionalLocatorMap({
     observer.observe(root, { attributes: true, attributeFilter: ["data-theme", "class"] });
     return () => observer.disconnect();
   }, []);
-  onSelectRef.current = onSelect;
-  onHighlightRef.current = onHighlight;
-  viewportRef.current = onViewportChange;
+  useEffect(() => {
+    onSelectRef.current = onSelect;
+    onHighlightRef.current = onHighlight;
+    viewportRef.current = onViewportChange;
+  }, [onSelect, onHighlight, onViewportChange]);
 
   useEffect(() => {
     if (!consented || !mapContainer.current) return;
     let cancelled = false;
+    const activeMarkers = markers.current;
     let instance: MapLibreMap | null = null;
-    import("maplibre-gl").then(({ Map, NavigationControl, FullscreenControl }) => {
+    loadMapLibre().then(({ Map, NavigationControl, FullscreenControl }) => {
       if (cancelled || !mapContainer.current) return;
       instance = new Map({
         container: mapContainer.current,
@@ -111,8 +115,8 @@ export function ProfessionalLocatorMap({
     }).catch(() => { if (!cancelled) setError(true); });
     return () => {
       cancelled = true;
-      for (const marker of markers.current.values()) marker.remove();
-      markers.current.clear();
+      for (const marker of activeMarkers.values()) marker.remove();
+      activeMarkers.clear();
       instance?.remove();
       map.current = null;
       setReady(false);
@@ -141,7 +145,7 @@ export function ProfessionalLocatorMap({
     const instance = map.current;
     if (!instance) return;
     let removed = false;
-    import("maplibre-gl").then(({ Marker }) => {
+    loadMapLibre().then(({ Marker }) => {
       if (removed || !map.current) return;
       for (const marker of markers.current.values()) marker.remove();
       markers.current.clear();

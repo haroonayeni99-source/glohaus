@@ -1122,3 +1122,109 @@
 .discovery-original .glohaus-locator-selected span { color:var(--ui-muted); font-size:12px; }
 .glohaus-locator .glohaus-locator-pin { background:#b83a79; box-shadow:0 3px 12px #3e233f59; }
 :root[data-theme="night"] .glohaus-locator .glohaus-locator-pin { background:#e179ac; box-shadow:0 3px 12px #0202089e; }
+
+
+/* iPhone Explore: keep fictional profiles readable and contain every card within the viewport.
+   The previous 125px split and other legacy grid rules competed with example-card image styling. */
+@media (max-width: 600px) {
+  .discovery-original.discovery-hybrid,
+  .discovery-original .map-results-layout,
+  .discovery-original .map-pro-results,
+  .discovery-original .example-listings,
+  .discovery-original .example-listings .map-pro-list {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .discovery-original .example-listings { width: 100%; }
+  .discovery-original .example-listings > h3,
+  .discovery-original .example-listings > p { overflow-wrap: anywhere; }
+  .discovery-original .example-listings .map-pro-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    margin-top: 18px;
+  }
+  .discovery-original .example-listings .example-discovery-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--ui-border);
+    border-radius: 18px;
+    background: var(--ui-surface);
+    box-shadow: 0 4px 18px #24101b0c;
+  }
+  .discovery-original .example-listings .example-discovery-card .discovery-card-photo {
+    display: block;
+    flex: none;
+    align-self: stretch;
+    position: relative;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+    border-radius: 0;
+    overflow: hidden;
+  }
+  .discovery-original .example-listings .example-discovery-card .discovery-card-photo img {
+    object-fit: contain;
+  }
+  .discovery-original .example-listings .example-discovery-card .discovery-card-copy {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding: 16px 18px 20px;
+    overflow-wrap: anywhere;
+  }
+  .discovery-original .example-listings .example-discovery-card .map-pro-name {
+    font-size: 19px;
+    line-height: 1.35;
+  }
+  .discovery-original .example-listings .example-discovery-card .discovery-card-copy p {
+    font-size: 14px;
+    line-height: 1.55;
+    margin: 9px 0;
+  }
+  .discovery-original .example-listings .example-discovery-card .eyebrow {
+    display: block;
+    white-space: normal;
+    font-size: 10px;
+    letter-spacing: .09em;
+    line-height: 1.5;
+    margin-bottom: 7px;
+  }
+  .discovery-original .example-listings .example-discovery-card .text-link {
+    display: inline-block;
+    margin-top: 6px;
+    min-height: 40px;
+  }
+}
+
+/* Keep List / Map within the page rather than covering profile photos or text.
+   The segmented control stays reachable below the site header while scrolling. */
+@media (max-width: 900px) {
+  .discovery-original.discovery-hybrid .map-mobile-view-toggle {
+    position: sticky;
+    top: 82px;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    transform: none;
+    width: max-content;
+    max-width: calc(100% - 28px);
+    margin: 8px auto 14px;
+    padding: 4px;
+    z-index: 18;
+    border-radius: 999px;
+    box-shadow: 0 5px 18px #20172224;
+  }
+  .discovery-original.discovery-hybrid .map-mobile-view-toggle button {
+    min-height: 42px;
+    min-width: 88px;
+  }
+}

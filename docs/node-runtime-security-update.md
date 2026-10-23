@@ -14,12 +14,14 @@ This branch prepares the October Node.js security update. Deployments and creden
 
 On the official Node.js 24.22.1 Linux x64 binary, verified against the publisher's SHA-256 checksum:
 
-- All 144 Vitest files passed: 1,268 application tests.
+- All 147 Vitest files passed: 1,277 application tests, including the final Vitest upgrade.
 - Both runtime-policy tests passed, including rejection of vulnerable versions.
-- Type checking and the production build passed.
-- Lint of the new scripts and instrumentation passed.
-- Repository-wide lint has three existing React ref errors in `professional-locator-map.tsx`, also present in the baseline CI run. They are outside this runtime change.
-- A browser could not be installed locally because browser downloads returned invalid archives. Browser flows and real provider payment operations are not certified by these unit/database results.
+- Type checking, production build and whole-repository lint passed (two existing image warnings).
+- Production dependency audit has no known advisories. The full audit retains one lint-only braces advisory without a published upstream patch; it remains documented and visible.
+- The production-server browser suite passed all 48 checks, including enforced CSP and injected-script rejection. Map/browser results and release limits are recorded in the delivery report.
+- External provider payment/authentication checks require isolated test resources and are not certified by fixture/database results.
+
+See [the application remediation notes](security-remediation-20261023.md) for dependency, TLS, CSP, upload and webhook-overlap changes prepared with this runtime update.
 
 Application tests use isolated fixtures and databases. No live charges, refunds, payouts, credential changes or production database writes were performed.
 

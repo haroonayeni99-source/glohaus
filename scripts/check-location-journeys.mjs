@@ -144,7 +144,12 @@ try {
       await expect(page.getByRole("button", { name: "Search this area", exact: true })).toBeEnabled();
       await page.getByRole("button", { name: "View all London", exact: true }).click();
       await expect(page.locator(".discovery-pin-card")).toHaveCount(0);
-      await expect(page.getByText(/OpenStreetMap contributors/)).toBeVisible();
+      const attribution = page.locator(".glohaus-locator .maplibregl-ctrl-attrib-inner");
+      // MapLibre 6 uses a native details/summary control on compact screens.
+      if (!(await attribution.isVisible()))
+        await page.locator(".glohaus-locator .maplibregl-ctrl-attrib-button").click();
+      await expect(attribution).toBeVisible();
+      await expect(attribution).toContainText("OpenStreetMap contributors");
       await noOverflow(page);
       await page.getByRole("button", { name: "Clear my location" }).click();
       await expect(page.getByRole("status")).toContainText("Location cleared");

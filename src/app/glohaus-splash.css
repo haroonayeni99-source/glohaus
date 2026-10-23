@@ -1,0 +1,37 @@
+/* Theme-aware, zero-layout-shift page loading screen. The chosen artwork is local
+   so loading works in the installed PWA without contacting a third-party image host. */
+.glohaus-splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483600;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #fff9f3;
+  isolation: isolate;
+  touch-action: none;
+}
+.glohaus-splash-art {
+  width: 100%;
+  height: 100%;
+  background-image: url("/images/glohaus-splash-light.webp");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  animation: glohaus-splash-enter 340ms ease-out both;
+}
+:root[data-theme="night"] .glohaus-splash-screen,
+:root.dark .glohaus-splash-screen {
+  background: #030102;
+}
+:root[data-theme="night"] .glohaus-splash-art,
+:root.dark .glohaus-splash-art {
+  background-image: url("/images/glohaus-splash-night.webp");
+}
+@keyframes glohaus-splash-enter {
+  from { opacity: 0.82; transform: scale(1.015); }
+  to { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glohaus-splash-art { animation: none; }
+}

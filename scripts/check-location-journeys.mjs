@@ -132,6 +132,7 @@ try {
       ).toBeVisible();
       await page.getByRole("button", { name: "Select Nearby Studio", exact: true }).click();
       await expect(page.locator(".discovery-pin-card")).toContainText("Nearby Studio");
+      await page.getByRole("button", { name: "Close map selection", exact: true }).click();
       await page.getByRole("button", { name: "Zoom in", exact: true }).click();
       const canvas = page.locator(".glohaus-locator canvas");
       await expect(canvas).toBeVisible();

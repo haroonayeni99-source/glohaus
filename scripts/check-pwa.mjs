@@ -115,7 +115,7 @@ try {
         errors = [];
       page.on("pageerror", (error) => errors.push(error.message));
       await page.addInitScript(
-        (value) => localStorage.setItem("glohaus-theme", value),
+        (value) => { if (!localStorage.getItem("glohaus-theme")) localStorage.setItem("glohaus-theme", value); },
         theme,
       );
       await page.goto(`${base}/install`);
@@ -145,10 +145,19 @@ try {
         start_url: "/",
         scope: "/",
         display: "standalone",
-        theme_color: "#e95f96",
-        background_color: "#e95f96",
+        theme_color: "#fcfbf9",
+        background_color: "#fcfbf9",
       });
       expect(manifest.viewport).toContain("viewport-fit=cover");
+      const themeColor = theme === "night" ? "#171415" : "#fcfbf9";
+      await expect.poll(() => page.locator('meta[name="theme-color"]').evaluateAll(metas => [...new Set(metas.map(meta => meta.content))])).toEqual([themeColor]);
+      await page.locator(".theme-toggle").click();
+      const oppositeColor = theme === "night" ? "#fcfbf9" : "#171415";
+      await expect.poll(() => page.locator('meta[name="theme-color"]').evaluateAll(metas => [...new Set(metas.map(meta => meta.content))])).toEqual([oppositeColor]);
+      await page.reload();
+      await expect.poll(() => page.locator('meta[name="theme-color"]').evaluateAll(metas => [...new Set(metas.map(meta => meta.content))])).toEqual([oppositeColor]);
+      await page.locator(".theme-toggle").click();
+      await expect.poll(() => page.locator('meta[name="theme-color"]').evaluateAll(metas => [...new Set(metas.map(meta => meta.content))])).toEqual([themeColor]);
       expect(manifest.data.icons.map((icon) => icon.src)).toEqual([
         "/icons/glohaus-home-192-v2.png",
         "/icons/glohaus-home-512-v2.png",

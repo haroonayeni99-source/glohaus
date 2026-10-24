@@ -2,6 +2,7 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useSyncExternalStore } from "react";
+import { appThemeColors } from "@/lib/app-theme-colors";
 
 const storageKey = "glohaus-theme";
 const darkPreference = "(prefers-color-scheme: dark)";
@@ -10,6 +11,9 @@ function applyTheme(theme: "light" | "night") {
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.colorScheme =
     theme === "night" ? "dark" : "light";
+  document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((meta) => {
+    meta.content = appThemeColors[theme];
+  });
 }
 
 function readTheme(): "light" | "night" {

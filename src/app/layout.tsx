@@ -14,6 +14,7 @@ import { PwaShell } from "@/components/pwa-shell";
 import "@/components/pwa.css";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { appThemeColors } from "@/lib/app-theme-colors";
 import "./globals.css";
 import "./glohaus-splash.css";
 import "./ui-upgrades.css";
@@ -40,6 +41,11 @@ const themeBootstrap = `(() => {
     document.documentElement.dataset.theme = "light";
     document.documentElement.style.colorScheme = "light";
   }
+  const colors = ${JSON.stringify(appThemeColors)};
+  const color = colors[document.documentElement.dataset.theme] || colors.light;
+  document.querySelectorAll('meta[name="theme-color"]').forEach(meta => {
+    meta.content = color;
+  });
 })();`;
 
 export const metadata: Metadata = {
@@ -59,8 +65,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#e95f96" },
-    { media: "(prefers-color-scheme: dark)", color: "#231d1f" },
+    { media: "(prefers-color-scheme: light)", color: appThemeColors.light },
+    { media: "(prefers-color-scheme: dark)", color: appThemeColors.night },
   ],
 };
 export default async function RootLayout({

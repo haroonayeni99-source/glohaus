@@ -11993,8 +11993,15 @@ body {
     top:0;
     z-index:8;
     display:flex;
+    align-items:center;
+    flex-wrap:nowrap;
+    width:100%;
+    min-width:0;
     gap:8px;
     overflow-x:auto;
+    overflow-y:hidden;
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
     padding:10px 12px;
     border-right:0;
     border-bottom:1px solid var(--market-line);
@@ -12002,18 +12009,31 @@ body {
   }
   .marketplace-sidebar::-webkit-scrollbar { display:none; }
   .marketplace-sidebar-active,
+  .marketplace-sidebar nav,
+  .marketplace-sidebar nav a {
+    flex:0 0 auto;
+  }
+  .marketplace-sidebar-active,
   .marketplace-sidebar nav a {
     min-height:37px;
     white-space:nowrap;
   }
   .marketplace-sidebar nav {
     display:flex;
+    width:max-content;
     gap:5px;
+  }
+  .marketplace-sidebar nav a svg {
+    flex:0 0 auto;
+  }
+  .marketplace-sidebar nav:nth-of-type(2) {
+    margin-left:6px;
+    padding-left:12px;
+    border-left:1px solid var(--market-line);
   }
   .marketplace-side-label,
   .marketplace-side-divider,
-  .marketplace-side-promo,
-  .marketplace-sidebar nav:nth-of-type(2) {
+  .marketplace-side-promo {
     display:none;
   }
   .marketplace-main {

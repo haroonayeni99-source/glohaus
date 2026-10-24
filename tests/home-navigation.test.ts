@@ -23,7 +23,7 @@ describe("public homepage navigation", () => {
       }
     }
   });
-  it("uses the requested professional sign-in motto without changing customer or registration copy", () => {
+  it("uses the approved professional motto across authentication surfaces", () => {
     const signIn = renderToStaticMarkup(
       jsx(AuthFrame, {
         audience: "professional",
@@ -39,11 +39,13 @@ describe("public homepage navigation", () => {
         children: null,
       }),
     );
-    expect(signup).toContain("WORK • GROW • BELONG");
+    expect(signup).toContain("Your Talent. Your Business. Your GLOHAUS.");
+    expect(signup).not.toContain("WORK • GROW • BELONG");
     const customer = renderToStaticMarkup(
       jsx(AuthFrame, { children: null }),
     );
     expect(customer).not.toContain("Your Talent.");
+    expect(customer).toContain("Beauty. Community. Bookings.");
   });
   it("presents an anonymous visitor with join/sign-in, without private account panels or invented recommendations", () => {
     const html = renderToStaticMarkup(React.createElement(DesktopCustomerHome));

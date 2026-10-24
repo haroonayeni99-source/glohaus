@@ -39,7 +39,7 @@ export function HomeStory() {
       </section>
       <section className="home-pro-invite">
         <div>
-          <p className="eyebrow">GLOHAUS PRO · WORK • GROW • BELONG</p>
+          <p className="eyebrow">GLOHAUS PRO · Your Talent. Your Business. Your GLOHAUS.</p>
           <h2>Your talent deserves its own storefront.</h2>
           <p>
             Showcase your work, build your audience and manage your bookings in

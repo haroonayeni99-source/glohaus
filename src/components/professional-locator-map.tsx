@@ -94,7 +94,44 @@ export function ProfessionalLocatorMap({
             instance.setPaintProperty(layer.id, "text-color", darkMode ? "#f0e8ee" : "#493f4b");
             instance.setPaintProperty(layer.id, "text-halo-color", darkMode ? "#24252f" : "#fffdfd");
             instance.setPaintProperty(layer.id, "text-halo-width", 1.25);
+            // Keep road names readable even where they cross a heavier road line.
+            if (/road|street|highway|motorway/i.test(layer.id)) {
+              instance.setPaintProperty(layer.id, "text-halo-width", 1.6);
+            }
           } catch { /* Some provider layers may not support an override. */ }
+        }
+
+        // Increase the prominence of actual road geometry, not parks, water,
+        // rail lines or professional location pins. Retain CARTO's zoom hierarchy.
+        const roadLayers = instance.getStyle().layers.filter((layer) =>
+          layer.type === "line" &&
+          /road|street|highway|motorway/i.test(layer.id) &&
+          !/rail|tram|ferry|water|path|cycle/i.test(layer.id),
+        );
+        for (const layer of roadLayers) {
+          const id = layer.id.toLowerCase();
+          const major = /major|motorway|trunk|primary|secondary/.test(id);
+          const casing = /casing|outline|border/.test(id);
+          const width = instance.getPaintProperty(layer.id, "line-width");
+          const multiplier = major ? 1.42 : 1.32;
+          try {
+            if (typeof width === "number") {
+              instance.setPaintProperty(layer.id, "line-width", width * multiplier);
+            } else if (Array.isArray(width)) {
+              instance.setPaintProperty(layer.id, "line-width", ["*", width, multiplier]);
+            }
+          } catch { /* Preserve the CARTO line width for incompatible expressions. */ }
+          // Casings keep their original colours, so roads retain their edges.
+          if (!casing) {
+            try {
+              instance.setPaintProperty(
+                layer.id, "line-color",
+                darkMode
+                  ? (major ? "#8390a3" : "#657186")
+                  : (major ? "#aca6b3" : "#cac4cf"),
+              );
+            } catch { /* Preserve the CARTO road colour if an override is unsupported. */ }
+          }
         }
       });
       instance.addControl(new NavigationControl({ showCompass: true }), "bottom-right");

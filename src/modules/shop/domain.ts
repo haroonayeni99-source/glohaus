@@ -56,6 +56,7 @@ export type ProfessionalProduct = {
 };
 
 export type PublicProduct = {
+  seller_away?: boolean;
   category_id?: string | null;
   created_at?: Date;
   sold_units?: number | string;

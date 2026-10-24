@@ -1,0 +1,208 @@
+.seller-hub {
+  padding-bottom: 100px;
+}
+.seller-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 28px;
+}
+.seller-stats > div,
+.seller-panel {
+  background: #251f22;
+  border: 1px solid #57444d;
+  border-radius: 18px;
+  padding: 22px;
+  color: #fffafb;
+}
+.seller-stats strong {
+  display: block;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  margin-bottom: 8px;
+}
+.seller-stats span,
+.seller-hub .seller-muted {
+  color: #d9cbd1;
+  line-height: 1.6;
+  font-size: 0.88rem;
+}
+.seller-panel {
+  margin-top: 24px;
+}
+.seller-panel h2 {
+  margin: 0 0 14px;
+  font-size: 1.4rem;
+  color: #fffafb;
+}
+.seller-panel p,
+.seller-panel li {
+  line-height: 1.65;
+  color: #e2d7dc;
+}
+.seller-panel ul {
+  padding-left: 20px;
+}
+.seller-panel li + li {
+  margin-top: 10px;
+}
+.seller-section-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: start;
+  justify-content: space-between;
+}
+.seller-badge {
+  border: 1px solid #946777;
+  border-radius: 20px;
+  padding: 6px 12px;
+  color: #ffd9e7;
+  font-size: 0.8rem;
+}
+.seller-settings-form {
+  display: grid;
+  gap: 14px;
+  max-width: 620px;
+}
+.seller-settings-form label {
+  display: grid;
+  gap: 9px;
+  line-height: 1.5;
+}
+.seller-settings-form .seller-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.seller-settings-form input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #ff8bb6;
+}
+.seller-settings-form input[type="datetime-local"] {
+  width: 100%;
+  min-width: 0;
+  color-scheme: dark;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #8a6d79;
+  background: #191518;
+  color: #fffafb;
+}
+.seller-settings-form button {
+  justify-self: start;
+  padding: 13px 22px;
+  border: 0;
+  border-radius: 10px;
+  background: #ff8bb6;
+  color: #23161c;
+  font-weight: 700;
+  cursor: pointer;
+}
+.seller-settings-form button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.seller-settings-form :focus-visible,
+.seller-description-helper :focus-visible {
+  outline: 3px solid #c75a86;
+  outline-offset: 3px;
+}
+.seller-table-scroll {
+  overflow-x: auto;
+}
+.seller-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.seller-panel caption {
+  text-align: left;
+  padding: 10px 0;
+  color: #d9cbd1;
+}
+.seller-panel th,
+.seller-panel td {
+  padding: 13px 10px;
+  border-bottom: 1px solid #57444d;
+}
+.seller-description-helper {
+  padding: 16px;
+  border: 1px solid #ded4d7;
+  border-radius: 12px;
+  margin: 16px 0;
+}
+.seller-description-helper summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.seller-description-helper label,
+.seller-description-helper small {
+  display: block;
+  margin: 12px 0;
+}
+.seller-description-helper textarea {
+  width: 100%;
+  min-height: 110px;
+  margin-top: 8px;
+}
+@media (max-width: 700px) {
+  .seller-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .seller-panel {
+    padding: 18px;
+  }
+  .seller-stats > div {
+    padding: 16px;
+  }
+}
+.product-order-card .seller-reply-helper {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.seller-reply-helper summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.seller-reply-helper label {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+.seller-reply-helper textarea {
+  min-height: 150px;
+  width: 100%;
+}
+.seller-reply-helper select,
+.seller-reply-helper textarea {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
+}
+.seller-reply-helper button {
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #ff8bb6;
+  color: #23161c;
+  font-weight: 700;
+}
+.pro-app .seller-reply-helper p,
+.pro-app .seller-reply-helper label {
+  color: #e2d7dc;
+}
+.pro-app .seller-reply-helper select,
+.pro-app .seller-reply-helper textarea {
+  background: #191518;
+  color: #fffafb;
+  border-color: #8a6d79;
+}
+.seller-reply-helper a {
+  text-decoration: underline;
+}

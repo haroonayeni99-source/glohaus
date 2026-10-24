@@ -1,4 +1,25 @@
-# GLOHAUS security release — 24 October 2026
+# GLOHAUS security release — production update, 24 October 2026
+
+**FIXED / DEPLOYED:** the approved Node.js security release is serving both https://glohaus.shop and https://www.glohaus.shop. Fresh production startup logs confirm **Node.js v24.22.1**, not merely a 24.x setting.
+
+- PR #160 merged into main: `383f0e819ccfd747f8f2fffea796920c86c7c02f`.
+- Verified main production deployment: `dpl_87UPewUq9piSCYMgGAPF4RsfHvuR` (READY). The initial approved production deployment was `dpl_5yQ77k142KfPUhzaLXnLgPpfZjZL`.
+- Both public aliases were verified on the main deployment at 00:26 UTC. Later documentation-only deployments may have a different deployment ID while preserving the tested application.
+- All 14 application CI jobs passed, including the targeted video-setup retry; 1,288 automated tests, two native runtime tests and 48 production-build browser tests passed. Production/full dependency audits are clean. Zod 4.6.6 and Undici 6.29.1 are included.
+- Homepage, Shop, Explore, registration and both sign-in pages return HTTP 200 with expected security headers and runtime public configuration. The native image optimizer returns HTTP 200. The private runtime endpoint rejects unauthenticated access (401).
+- Live browser checks confirm the sign-in form, GLOHAUS Test Studio's real profile/services and database-backed appointment availability. No booking was submitted.
+- No error/fatal groups were returned for the verified main deployment in the inspected 15-minute window. This is limited observability evidence, not proof of absence of compromise.
+- Existing cron schedules and production environment names are retained. Project framework selection now uses the explicit tested container service. No migration, credential rotation, live charge/refund/payout or wallet-balance change was performed.
+- The unused glohaus-app project has no customer domain. Its pause request was accepted and project metadata reports live=false. Its Hobby cron limitation remains relevant if reactivated; disconnecting its Git target requires signed-in dashboard access.
+- Remaining **NOT VERIFIED / MANUAL** items: isolated provider end-to-end flows; full Stripe API-request/access audit; Supabase leaked-password protection; separate preview storage credentials; obsolete managed-preview retirement; and removal of the harmless preview probe variable. The browser reached Vercel's login screen and these dashboard-only operations were not completed. No credentials were requested or entered.
+- No confirmed Stripe secret leak was found. Precautionary rotation remains optional pending fuller audit; the safe procedure below is retained. No live secret values have been printed or copied.
+
+**Security conclusion:** the October Node.js runtime issue and the identified application dependency advisories are fixed in the verified production release. This does not certify every aspect of GLOHAUS security or every external provider flow.
+
+## Archived pre-release investigation
+
+The following investigation was written before the owner's deployment approval. Statements that production was unpatched describe that earlier state and are superseded by the verified production update above.
+
 
 ## Release decision
 

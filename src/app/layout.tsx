@@ -45,7 +45,6 @@ const themeBootstrap = `(() => {
   const color = colors[document.documentElement.dataset.theme] || colors.light;
   document.querySelectorAll('meta[name="theme-color"]').forEach(meta => {
     meta.content = color;
-    meta.media = "all";
   });
 })();`;
 

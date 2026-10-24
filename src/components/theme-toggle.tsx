@@ -13,7 +13,6 @@ function applyTheme(theme: "light" | "night") {
     theme === "night" ? "dark" : "light";
   document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((meta) => {
     meta.content = appThemeColors[theme];
-    meta.media = "all";
   });
 }
 

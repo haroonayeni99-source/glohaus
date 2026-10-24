@@ -75,7 +75,7 @@ try {
           .locator("#support form")
           .filter({ has: page.getByLabel("Reason / reply", { exact: true }) });
         await supportForm
-          .getByLabel("Status", { exact: true })
+          .locator('select[name="status"]')
           .selectOption("resolved");
         await supportForm
           .getByLabel("Reason / reply", { exact: true })
@@ -95,9 +95,7 @@ try {
             { exact: true },
           ),
         ).toBeVisible();
-        await supportForm
-          .getByLabel("Status", { exact: true })
-          .selectOption("open");
+        await supportForm.locator('select[name="status"]').selectOption("open");
         await supportForm
           .getByLabel("Reason / reply", { exact: true })
           .fill("Customer supplied new evidence, so the case was reopened");

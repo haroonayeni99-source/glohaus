@@ -30,6 +30,7 @@ export async function POST(request: Request) {
   } catch (e) {
     const messages = [
       "CONFIRMATION_REQUIRED",
+      "FOUNDING_ENROLMENT_CLOSED",
       "CONTROL_DISABLED",
       "INVALID_COMMISSION_RULE",
       "PROMOTIONS_STOPPED",

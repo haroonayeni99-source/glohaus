@@ -18,7 +18,7 @@ export function ContentReportButton({
   targetId,
   label = "Report",
 }: {
-  targetType: "post" | "media";
+  targetType: "post" | "media" | "review" | "professional";
   targetId: string;
   label?: string;
 }) {
@@ -51,7 +51,8 @@ export function ContentReportButton({
             aria-label="Report content"
             onSubmit={async (event) => {
               event.preventDefault();
-              const form = new FormData(event.currentTarget);
+              const formElement=event.currentTarget;
+              const form = new FormData(formElement);
               setBusy(true);
               setNotice("");
               try {
@@ -82,7 +83,7 @@ export function ContentReportButton({
                   throw new Error("Your report could not be submitted.");
                 }
                 setNotice("Report submitted for GLOHAUS review.");
-                event.currentTarget.reset();
+                formElement.reset();
               } catch (error) {
                 setNotice(
                   error instanceof Error ? error.message : "Could not submit report.",

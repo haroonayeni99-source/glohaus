@@ -8,6 +8,7 @@ export type ProfessionalReview = {
   public_name: string;
   moderation_status: "visible" | "hidden";
   created_at: Date;
+  response:{body:string;status:string}|null;
   service_name: string;
 };
 export async function professionalReviews(
@@ -16,7 +17,7 @@ export async function professionalReviews(
 ) {
   const reviews = (
     await db.query<ProfessionalReview>(
-      `SELECT r.id,r.booking_id,r.rating,r.body,r.public_name,r.moderation_status,r.created_at,b.service_name FROM beauty.reviews r JOIN beauty.bookings b ON b.id=r.booking_id WHERE b.professional_id=$1 ORDER BY r.created_at DESC,r.id DESC LIMIT 100`,
+      `SELECT r.id,r.booking_id,r.rating,r.body,r.public_name,r.moderation_status,r.created_at,b.service_name,beauty.my_review_response(r.id) AS response FROM beauty.reviews r JOIN beauty.bookings b ON b.id=r.booking_id WHERE b.professional_id=$1 ORDER BY r.created_at DESC,r.id DESC LIMIT 100`,
       [professionalId],
     )
   ).rows;

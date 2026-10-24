@@ -1,3 +1,5 @@
+import { FoundingProgrammeControls } from "@/components/founding-programme-controls";
+import type { ProgrammeOverview } from "@/modules/commission/programme";
 import { AdminArrival, type ArrivalOverview } from "@/components/admin-arrival";
 import { AdminCategoryManager } from "@/components/admin-category-manager";
 import { productCategories } from "@/modules/shop/repository";
@@ -75,6 +77,7 @@ export default async function Page() {
   // The serverless runtime intentionally has a one-connection pool. Avoid
   // starting a dozen transactions at once and timing out while they queue.
   const data = await adminOverview();
+  const programme = isOwner ? await withOwner(async db => (await db.query<{data:ProgrammeOverview}>("SELECT beauty.owner_programme_overview() AS data")).rows[0]?.data ?? null).catch(() => null) : null;
   const support = await withAdmin(supportInbox).catch(() => null);
   const policies = await withAdmin((db) => adminPolicies(db)).catch(() => null);
   const activity = await withAdmin((db) => activityOverview(db)).catch(
@@ -347,6 +350,7 @@ export default async function Page() {
               read-only financial simulations. Every live change requires Owner
               confirmation.
             </p>
+            <FoundingProgrammeControls data={programme} />
             {commissionCentre ? (
               <CommissionControlCentre data={commissionCentre} />
             ) : (

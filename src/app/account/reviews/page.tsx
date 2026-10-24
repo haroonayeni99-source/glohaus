@@ -62,6 +62,7 @@ export default async function ReviewsPage() {
               <h2>{review.service_name}</h2>
               <p>{review.professional_name}</p>
               <blockquote>{review.body}</blockquote>
+              <p><Link href={`/contact?reference=Review%20${review.id}`}>Appeal a review or moderation decision</Link></p>
               <Link
                 className="text-link"
                 href={`/account/bookings/${review.booking_id}`}

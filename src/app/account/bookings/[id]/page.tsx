@@ -1,3 +1,7 @@
+import {
+  CustomerSourceConfirmation,
+  ProfessionalSourceChallenge,
+} from "@/components/customer-source-confirmation";
 export const dynamic = "force-dynamic";
 
 import { RefundForm } from "@/components/refund-form";
@@ -40,82 +44,176 @@ export default async function Booking({
     );
   const account = result.account;
   const data = await withIdentity(account.authId, async (db) => {
-    const booking=await bookingById(db,id);
+    const booking = await bookingById(db, id);
     return {
-    booking,
-    arrival: booking ? await arrivalState(db,id) : null,
-    publicPoint: account.professionalId ? await ownPublicLocation(db,account.professionalId) : null,
-    policies: booking ? await bookingPolicy(db,id) : null,
-    hasReview:
-      (
-        await db.query("SELECT id FROM beauty.reviews WHERE booking_id=$1", [
-          id,
-        ])
-      ).rows.length > 0,
-    professional:
-      (
-        await db.query(
-          "SELECT id FROM beauty.bookings WHERE id=$1 AND professional_id=$2",
-          [id, account.professionalId],
-        )
-      ).rows.length > 0,
-    appeal:
-      (
-        await db.query<{ status: string }>(
-          "SELECT a.status FROM beauty.refund_appeals a JOIN beauty.bookings b ON b.id=a.booking_id WHERE a.booking_id=$1 AND b.customer_id=(SELECT id FROM beauty.users WHERE auth_id=beauty.auth_id())",
-          [id],
-        )
-      ).rows[0] ?? null,
-    noRefundDecision:
-      (
-        await db.query<{ id: string }>(
-          "SELECT r.id FROM beauty.refund_decisions r JOIN beauty.bookings b ON b.id=r.booking_id WHERE r.booking_id=$1 AND b.customer_id=(SELECT id FROM beauty.users WHERE auth_id=beauty.auth_id()) AND r.status='no_refund'",
-          [id],
-        )
-      ).rows[0] ?? null,
-  };});
+      booking,
+      arrival: booking ? await arrivalState(db, id) : null,
+      publicPoint: account.professionalId
+        ? await ownPublicLocation(db, account.professionalId)
+        : null,
+      policies: booking ? await bookingPolicy(db, id) : null,
+      hasReview:
+        (
+          await db.query("SELECT id FROM beauty.reviews WHERE booking_id=$1", [
+            id,
+          ])
+        ).rows.length > 0,
+      professional:
+        (
+          await db.query(
+            "SELECT id FROM beauty.bookings WHERE id=$1 AND professional_id=$2",
+            [id, account.professionalId],
+          )
+        ).rows.length > 0,
+      appeal:
+        (
+          await db.query<{ status: string }>(
+            "SELECT a.status FROM beauty.refund_appeals a JOIN beauty.bookings b ON b.id=a.booking_id WHERE a.booking_id=$1 AND b.customer_id=(SELECT id FROM beauty.users WHERE auth_id=beauty.auth_id())",
+            [id],
+          )
+        ).rows[0] ?? null,
+      noRefundDecision:
+        (
+          await db.query<{ id: string }>(
+            "SELECT r.id FROM beauty.refund_decisions r JOIN beauty.bookings b ON b.id=r.booking_id WHERE r.booking_id=$1 AND b.customer_id=(SELECT id FROM beauty.users WHERE auth_id=beauty.auth_id()) AND r.status='no_refund'",
+            [id],
+          )
+        ).rows[0] ?? null,
+    };
+  });
   if (!data.booking) {
-    if (isCheckoutReturn((await searchParams)?.checkout)) redirect("/account/bookings");
+    if (isCheckoutReturn((await searchParams)?.checkout))
+      redirect("/account/bookings");
     notFound();
   }
   const b = data.booking;
+  const financialDisclosure = data.professional
+    ? await withIdentity(
+        account.authId,
+        async (db) =>
+          (
+            await db.query<{
+              data: {
+                servicePence: number;
+                paidServicePence: number;
+                bookingFeePence: number;
+                commissionPence: number;
+                processingPence: number;
+                quotedProceedsPence: number;
+                quotedServiceNetPence: number;
+                refundedPence: number;
+              } | null;
+            }>("SELECT beauty.my_booking_fee_breakdown($1) AS data", [id])
+          ).rows[0]?.data ?? null,
+      ).catch(() => null)
+    : null;
   const feePence = data.policies?.terms?.snapshot.bookingFeePence ?? 0;
-  const servicePaidPence = Math.max(0, Math.min(b.deposit_pence, b.captured_pence - feePence));
-  const remainingServicePence = Math.min(b.price_pence, Math.max(0, b.price_pence - servicePaidPence + b.refunded_pence));
+  const servicePaidPence = Math.max(
+    0,
+    Math.min(b.deposit_pence, b.captured_pence - feePence),
+  );
+  const remainingServicePence = Math.min(
+    b.price_pence,
+    Math.max(0, b.price_pence - servicePaidPence + b.refunded_pence),
+  );
   const detail = (
     <>
-        <p className="eyebrow">{b.status.replaceAll("_", " ")}</p>
-        <h1>
-          {data.professional
-            ? b.status === "confirmed"
-              ? "Appointment confirmed."
-              : b.status === "payment_pending"
-                ? "Awaiting customer payment."
-                : "Appointment details."
-            : b.status === "confirmed"
-              ? "You’re booked in."
-              : b.status === "payment_pending"
-                ? "Awaiting your payment."
-                : "Your appointment."}
-        </h1>
-        <p className="lead">
-          {data.professional
-            ? `${b.service_name} for ${b.customer_name}`
-            : `${b.service_name} with ${b.professional_name}`}
+      {data.professional ? (
+        <ProfessionalSourceChallenge bookingId={b.id} />
+      ) : (
+        <CustomerSourceConfirmation bookingId={b.id} />
+      )}
+      <p className="eyebrow">{b.status.replaceAll("_", " ")}</p>
+      <h1>
+        {data.professional
+          ? b.status === "confirmed"
+            ? "Appointment confirmed."
+            : b.status === "payment_pending"
+              ? "Awaiting customer payment."
+              : "Appointment details."
+          : b.status === "confirmed"
+            ? "You’re booked in."
+            : b.status === "payment_pending"
+              ? "Awaiting your payment."
+              : "Your appointment."}
+      </h1>
+      <p className="lead">
+        {data.professional
+          ? `${b.service_name} for ${b.customer_name}`
+          : `${b.service_name} with ${b.professional_name}`}
+      </p>
+      {data.professional && (
+        <details className="editor-form">
+          <summary>Professional fee and earnings breakdown</summary>
+          {financialDisclosure ? (
+            <>
+              <p>Original booking quote. Existing agreed fees are preserved.</p>
+              <dl>
+                <dt>Full service value</dt>
+                <dd>{money(financialDisclosure.servicePence)}</dd>
+                <dt>Service payment / deposit quoted</dt>
+                <dd>{money(financialDisclosure.paidServicePence)}</dd>
+                <dt>Customer booking fee (separate)</dt>
+                <dd>{money(financialDisclosure.bookingFeePence)}</dd>
+                <dt>GLOHAUS professional commission</dt>
+                <dd>{money(financialDisclosure.commissionPence)}</dd>
+                <dt>Processing cost allocated to you in this quote</dt>
+                <dd>{money(financialDisclosure.processingPence)}</dd>
+                <dt>Original proceeds from the online service payment</dt>
+                <dd>{money(financialDisclosure.quotedProceedsPence)}</dd>
+                <dt>
+                  Expected service earnings if fully paid, before refunds or
+                  disputes
+                </dt>
+                <dd>{money(financialDisclosure.quotedServiceNetPence)}</dd>
+                <dt>Refunded to the customer so far</dt>
+                <dd>{money(financialDisclosure.refundedPence)}</dd>
+              </dl>
+              <p>
+                This is the booking quote, not a withdrawable balance.
+                Outstanding service balances, refunds, disputes and payout
+                checks can change what you receive. Check the wallet transaction
+                history for current funds and holds.
+              </p>
+              <Link href="/professional/wallet">
+                View wallet, holds and payout history
+              </Link>
+            </>
+          ) : (
+            <p role="status">
+              The original fee quote is not available for this booking. No
+              earnings have been estimated.
+            </p>
+          )}
+        </details>
+      )}
+      {b.taxonomy_snapshot?.specialityName && (
+        <p>{b.taxonomy_snapshot.specialityName}</p>
+      )}
+      {b.service_options_snapshot && (
+        <p>
+          {[
+            b.service_options_snapshot.variationName,
+            ...(b.service_options_snapshot.extraNames ?? []),
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+          {b.service_options_snapshot.durationMinutes
+            ? ` · ${b.service_options_snapshot.durationMinutes} minutes`
+            : ""}
         </p>
-        {b.taxonomy_snapshot?.specialityName&&<p>{b.taxonomy_snapshot.specialityName}</p>}
-        {b.service_options_snapshot&&<p>{[b.service_options_snapshot.variationName,...(b.service_options_snapshot.extraNames??[])].filter(Boolean).join(" · ")}{b.service_options_snapshot.durationMinutes?` · ${b.service_options_snapshot.durationMinutes} minutes`:""}</p>}
-        {b.status === "confirmed" && !data.professional ? (
-          <BookingConfirmation
-            bookingId={b.id}
-            serviceName={b.service_name}
-            professionalName={b.professional_name}
-            startsAt={new Date(b.starts_at).toISOString()}
-            endsAt={new Date(b.ends_at).toISOString()}
-            depositPence={servicePaidPence}
-            remainingPence={remainingServicePence}
-          />
-        ) : (
+      )}
+      {b.status === "confirmed" && !data.professional ? (
+        <BookingConfirmation
+          bookingId={b.id}
+          serviceName={b.service_name}
+          professionalName={b.professional_name}
+          startsAt={new Date(b.starts_at).toISOString()}
+          endsAt={new Date(b.ends_at).toISOString()}
+          depositPence={servicePaidPence}
+          remainingPence={remainingServicePence}
+        />
+      ) : (
         <section className="editor-form">
           <h2>
             {new Intl.DateTimeFormat("en-GB", {
@@ -138,9 +236,7 @@ export default async function Booking({
             {["confirmed", "completed"].includes(b.status) && (
               <span>
                 Service balance
-                <strong>
-                  {money(remainingServicePence)}
-                </strong>
+                <strong>{money(remainingServicePence)}</strong>
               </span>
             )}
           </div>
@@ -157,58 +253,79 @@ export default async function Booking({
             </p>
           )}
         </section>
-        )}
-        {data.arrival && <AppointmentArrival bookingId={id} initial={data.arrival} publicPoint={data.publicPoint} publicKey={process.env.VAPID_PUBLIC_KEY || null} />}
-        <BookingJourneyLocation
+      )}
+      {data.arrival && (
+        <AppointmentArrival
           bookingId={id}
-          professional={data.professional}
-          enabled={b.location_window_open && Boolean(data.arrival?.config.journeySharing)}
+          initial={data.arrival}
+          publicPoint={data.publicPoint}
+          publicKey={process.env.VAPID_PUBLIC_KEY || null}
         />
-        <BookingPoliciesPanel id={id} data={data.policies!} professional={data.professional} status={b.status} professionalName={b.professional_name}/>
-        {!data.professional &&
-          b.status === "completed" &&
-          !data.hasReview &&
-          b.has_ended && <ReviewForm bookingId={id} />}
-        {data.professional &&
-          ["cancelled", "expired", "payment_pending", "no_show"].includes(b.status) &&
-          b.payment_status === "refund_required" && (
-            <RefundForm bookingId={id} noticeHours={data.policies!.assessment.noticeHours} />
-          )}
-        {!data.professional &&
-          data.noRefundDecision &&
-          (data.appeal ? (
-            <section className="editor-form">
-              <h2>Appeal status</h2>
-              <p className="lead">
-                {data.appeal.status === "open"
-                  ? "Your appeal is awaiting admin review."
-                  : `Your appeal was ${data.appeal.status}.`}
-              </p>
-            </section>
-          ) : (
-            <RefundAppealForm bookingId={id} />
-          ))}
-        <BookingActions
-          id={id}
-          status={b.status}
-          professional={data.professional}
-          ended={b.has_ended}
-          cancellable={b.cancellable}
-        />
-        {data.professional &&
-          b.status === "cancelled" &&
-          b.cancellable && (
-            <section className="form-notice">
-              <strong>This appointment time is free again.</strong>
-              <p>
-                If you still want to work this time, promote it as a last-minute
-                slot so customers can find and book it quickly.
-              </p>
-              <Link className="text-link" href="/professional/availability#last-minute">
-                Promote a last-minute slot →
-              </Link>
-            </section>
-          )}
+      )}
+      <BookingJourneyLocation
+        bookingId={id}
+        professional={data.professional}
+        enabled={
+          b.location_window_open && Boolean(data.arrival?.config.journeySharing)
+        }
+      />
+      <BookingPoliciesPanel
+        id={id}
+        data={data.policies!}
+        professional={data.professional}
+        status={b.status}
+        professionalName={b.professional_name}
+      />
+      {!data.professional &&
+        b.status === "completed" &&
+        !data.hasReview &&
+        b.has_ended && <ReviewForm bookingId={id} />}
+      {data.professional &&
+        ["cancelled", "expired", "payment_pending", "no_show"].includes(
+          b.status,
+        ) &&
+        b.payment_status === "refund_required" && (
+          <RefundForm
+            bookingId={id}
+            noticeHours={data.policies!.assessment.noticeHours}
+          />
+        )}
+      {!data.professional &&
+        data.noRefundDecision &&
+        (data.appeal ? (
+          <section className="editor-form">
+            <h2>Appeal status</h2>
+            <p className="lead">
+              {data.appeal.status === "open"
+                ? "Your appeal is awaiting admin review."
+                : `Your appeal was ${data.appeal.status}.`}
+            </p>
+          </section>
+        ) : (
+          <RefundAppealForm bookingId={id} />
+        ))}
+      <BookingActions
+        id={id}
+        status={b.status}
+        professional={data.professional}
+        ended={b.has_ended}
+        cancellable={b.cancellable}
+      />
+      {data.professional && b.status === "cancelled" && b.cancellable && (
+        <section className="form-notice">
+          <strong>This appointment time is free again.</strong>
+          <p>
+            If you still want to work this time, promote it as a last-minute
+            slot so customers can find and book it quickly.
+          </p>
+          <Link
+            className="text-link"
+            href="/professional/availability#last-minute"
+          >
+            Promote a last-minute slot →
+          </Link>
+        </section>
+      )}
     </>
   );
 

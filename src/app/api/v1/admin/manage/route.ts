@@ -13,7 +13,7 @@ const schema = z.discriminatedUnion("type", [
     .strict(),
   z
     .object({
-      type: z.literal("review"),
+      type: z.enum(["review", "reviewResponse"]),
       id: z.uuid(),
       status: z.enum(["visible", "hidden"]),
       reason: z.string().trim().min(5).max(500),
@@ -75,13 +75,15 @@ export async function POST(request: Request) {
           ? "SELECT beauty.admin_set_user_status($1,$2,$3)"
           : input.type === "review"
             ? "SELECT beauty.admin_moderate_review($1,$2,$3)"
-            : input.type === "report"
-              ? "SELECT beauty.admin_resolve_safety_report($1,$2,$3)"
-              : input.type === "professionalTrust"
-                ? input.badges
-                  ? "SELECT beauty.admin_set_professional_trust($1,$2,$3,$4,$5,$6,$7,$8)"
-                  : "SELECT beauty.admin_set_professional_trust($1,$2,$3,$4,$5)"
-                : "SELECT beauty.admin_moderate_post($1,$2,$3)",
+            : input.type === "reviewResponse"
+              ? "SELECT beauty.admin_moderate_review_response($1,$2,$3)"
+              : input.type === "report"
+                ? "SELECT beauty.admin_resolve_safety_report($1,$2,$3)"
+                : input.type === "professionalTrust"
+                  ? input.badges
+                    ? "SELECT beauty.admin_set_professional_trust($1,$2,$3,$4,$5,$6,$7,$8)"
+                    : "SELECT beauty.admin_set_professional_trust($1,$2,$3,$4,$5)"
+                  : "SELECT beauty.admin_moderate_post($1,$2,$3)",
         input.type === "professionalTrust"
           ? input.badges
             ? [

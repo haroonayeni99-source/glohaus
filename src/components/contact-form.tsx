@@ -4,10 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supportInputSchema, supportTopics } from "@/modules/support/domain";
 
-export function ContactForm() {
+export function ContactForm({defaultReference=""}:{defaultReference?:string}) {
   const confirmation = useRef<HTMLHeadingElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [ticketLink,setTicketLink]=useState("");
   const [reference, setReference] = useState("");
   useEffect(() => {
     confirmation.current?.focus();
@@ -37,6 +38,7 @@ export function ContactForm() {
             ? "You’ve sent several requests recently. Please wait an hour before trying again."
             : "Your request could not be sent. Your message is still here—please try again.",
         );
+      setTicketLink(`/contact/tickets/${data.id}#token=${data.token}`);
       setReference(data.id);
     } catch (failure) {
       setError(
@@ -54,7 +56,9 @@ export function ContactForm() {
         <h2 ref={confirmation} tabIndex={-1}>
           Your request has been received.
         </h2>
-        <p>The GLOHAUS team will use the email you provided to follow up.</p>
+        <p>We aim to respond within two weekdays (Monday–Friday), subject to public-holiday delays; this is a target, not a guarantee. Check your private ticket for replies and appeals.</p>
+        <p><Link href={ticketLink} className="button">Open your private support ticket</Link></p>
+        <p>Save this private ticket link. Anyone with it can view your case and evidence. Do not share it publicly.</p>
         <p>
           Keep this reference: <strong>{reference}</strong>
         </p>
@@ -102,7 +106,7 @@ export function ContactForm() {
       </label>
       <label htmlFor="contact-reference">
         Booking or order reference (optional)
-        <input id="contact-reference" name="reference" maxLength={120} />
+        <input id="contact-reference" name="reference" maxLength={120} defaultValue={defaultReference} />
       </label>
       <label htmlFor="contact-message">
         Your message

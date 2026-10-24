@@ -1,3 +1,4 @@
+import { deliverSupportNotifications } from "@/modules/support/notifications";
 import "server-only";
 import { refreshJourneyRoutes } from "@/modules/journey-routing/worker";
 import { deliverPushNotifications } from "@/modules/notifications/push-worker";
@@ -144,6 +145,8 @@ export async function runNotificationWorker() {
         ).rows,
     );
     const resend = new Resend(process.env.RESEND_API_KEY);
+    try { await deliverSupportNotifications(resend,from); }
+    catch { console.error("Support notifications deferred to retry",{stage:"supportEmail"}); }
     let sent = 0;
     for (const job of jobs) {
       try {

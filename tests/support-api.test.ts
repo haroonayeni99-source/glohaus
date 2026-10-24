@@ -1,4 +1,5 @@
 import { beforeEach, expect, it, vi } from "vitest";
+vi.mock("@/modules/notifications/schedule",()=>({scheduleNotificationDelivery:vi.fn()}));
 const mocks = vi.hoisted(() => ({
   create: vi.fn(),
   admin: vi.fn(),

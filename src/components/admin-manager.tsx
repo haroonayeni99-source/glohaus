@@ -60,7 +60,7 @@ export function AdminManager({
     [data.users],
   );
   const [selection, setSelection] = useState<{
-    type: "user" | "post" | "review" | "appeal" | "report";
+    type: "user" | "post" | "review" | "reviewResponse" | "appeal" | "report";
     id: string;
     name: string;
   } | null>(null);
@@ -782,6 +782,7 @@ export function AdminManager({
                   {review.public_name} · {review.rating}/5
                 </h3>
                 <p>{review.body}</p>
+                {review.response_body&&<><p>Professional response ({review.response_status}): {review.response_body}</p><button onClick={()=>setSelection({type:"reviewResponse",id:review.id,name:"Professional response"})}>Moderate response</button></>}
                 <small>{review.moderation_status}</small>
               </div>
               <button

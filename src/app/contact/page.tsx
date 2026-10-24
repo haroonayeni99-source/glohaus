@@ -6,7 +6,12 @@ import { publicMetadata, publicPages } from "@/lib/public-seo";
 
 export const dynamic = "force-dynamic";
 export const metadata = publicMetadata("/contact", ...publicPages["/contact"]);
-export default async function ContactPage() {
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reference?: string }>;
+}) {
+  const reference = (await searchParams).reference?.slice(0, 120) ?? "";
   const signedIn = await publicViewerSignedIn();
   return (
     <>
@@ -21,7 +26,12 @@ export default async function ContactPage() {
           </p>
           <Link href="/faq">Find answers in our help & FAQs</Link>
         </section>
-        <ContactForm />
+        <p>
+          Email: <a href="mailto:glohausuk@gmail.com">glohausuk@gmail.com</a>.
+          We aim to respond within two weekdays (Monday–Friday), subject to
+          public-holiday delays; this is a target, not a guarantee.
+        </p>
+        <ContactForm defaultReference={reference} />
       </main>
     </>
   );

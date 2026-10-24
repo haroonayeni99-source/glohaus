@@ -38,6 +38,8 @@ export type AdminOverview = {
     body: string;
     public_name: string;
     moderation_status: string;
+    response_body?:string|null;
+    response_status?:string|null;
   }[];
   posts: {
     id: string;

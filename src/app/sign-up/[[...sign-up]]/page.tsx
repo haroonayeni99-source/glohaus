@@ -1,3 +1,4 @@
+import {FoundingProgrammeOffer} from "@/components/founding-programme-offer";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { productionAuthUrl } from "@/lib/preview-auth";
@@ -87,6 +88,7 @@ export default async function Page({
 
   return (
     <AuthFrame audience={professional ? "professional" : "customer"}>
+      {professional&&<FoundingProgrammeOffer/>}
       {authConfigured() ? (
         <EmailAuthForm
           mode="sign-up"

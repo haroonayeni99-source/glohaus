@@ -406,6 +406,45 @@ async function ticket(tx: SqlClient) {
   );
   return id;
 }
+describe("source evidence ordering", () => {
+  it("does not allow a later invitation to override an earlier consented profile visit", () =>
+    isolated(async (tx) => {
+      await as(tx, "fair-customer", () =>
+        tx.query("SELECT beauty.record_consented_profile_view($1)", [pro]),
+      );
+      await tx.query(
+        "UPDATE beauty.growth_profile_attribution SET viewed_at=now()-interval '2 days',consented_at=now()-interval '2 days',expires_at=now()+interval '5 days' WHERE professional_id=$1",
+        [pro],
+      );
+      const token = (
+        await as(tx, "fair-pro", () =>
+          tx.query<{ data: { token: string } }>(
+            "SELECT beauty.my_acquisition_invitation() AS data",
+          ),
+        )
+      ).rows[0].data.token;
+      await as(tx, "fair-customer", () =>
+        tx.query("SELECT beauty.accept_acquisition_invitation($1,'link')", [
+          token,
+        ]),
+      );
+      const id = await book(tx, true);
+      await as(tx, "fair-customer", () =>
+        tx.query(
+          "SELECT beauty.confirm_customer_acquisition($1,'new_professional')",
+          [id],
+        ),
+      );
+      const data = (
+        await as(tx, "fair-owner", () =>
+          tx.query<{ data: { rows: { origin: string }[] } }>(
+            "SELECT beauty.acquisition_overview(7,true) AS data",
+          ),
+        )
+      ).rows[0].data;
+      expect(data.rows[0].origin).toBe("disputed");
+    }));
+});
 describe("private support, escalation and email queue", () => {
   it("authorises a ticket with a private token and queues only an operational alert", () =>
     isolated(async (tx) => {

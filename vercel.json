@@ -26,7 +26,9 @@
       "feature/discovery-map-categories": false,
       "feature/map-navigation-directions": false,
       "fix/original-map-boroughs": false,
-      "security/node-october-2026": false
+      "security/node-october-2026": false,
+      "security/verified-runtime-release": false,
+      "security/pinned-container-runtime-20261024": false
     }
   },
   "regions": [
@@ -40,6 +42,21 @@
     {
       "path": "/api/cron/notifications",
       "schedule": "* * * * *"
+    }
+  ],
+  "services": {
+    "web": {
+      "runtime": "container",
+      "root": ".",
+      "entrypoint": "Dockerfile.vercel"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "web"
+      }
     }
   ]
 }

@@ -9,7 +9,7 @@ const { server } = await import("./ui-audit.mjs");
 execFileSync("ffmpeg", ["-y", "-f", "lavfi", "-i", "color=c=pink:s=160x160:d=1", "-an", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "reports/media-fixture.mp4"], { stdio: "ignore" });
 const video = await readFile("reports/media-fixture.mp4");
 const image = await sharp({ create: { width: 2000, height: 1600, channels: 3, background: "#cb728e" } }).png({ compressionLevel: 0 }).toBuffer();
-const browser = await chromium.launch(); const results = [];
+const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined, args: ["--no-sandbox"] }); const results = [];
 try {
   for (const theme of ["light", "night"]) for (const width of [390, 1440]) {
     const page = await browser.newPage({ viewport: { width, height: 1000 } }); const errors = [];

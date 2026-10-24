@@ -1,8 +1,10 @@
+import { readPublicEnvironment } from "@/lib/public-runtime-config";
 import { customerNameFromMetadata } from "@/modules/accounts/customer-profile-domain";
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { publicSupabaseKey } from "@/lib/config";
+import { requestOrigin } from "@/lib/request-origin";
 import { confirmationPlan } from "@/lib/auth-flow";
 import { withIdentity } from "@/lib/db";
 import { ensureCustomerAccount } from "@/modules/accounts/repository";
@@ -18,7 +20,8 @@ function noStoreRedirect(origin: string, path: string) {
 }
 
 export async function GET(request: NextRequest) {
-  const url = new URL(request.url);
+  const incoming = new URL(request.url);
+  const url = new URL(incoming.pathname + incoming.search, requestOrigin(request));
   const next = url.searchParams.get("next");
 
   // Both apex and www are valid production origins. Do not redirect between
@@ -34,7 +37,7 @@ export async function GET(request: NextRequest) {
   const response = noStoreRedirect(url.origin, "/account");
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    readPublicEnvironment("NEXT_PUBLIC_SUPABASE_URL")!,
     publicSupabaseKey()!,
     {
       cookies: {

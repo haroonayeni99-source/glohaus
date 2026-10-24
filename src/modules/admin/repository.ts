@@ -1,3 +1,4 @@
+import { readPublicEnvironment } from "@/lib/public-runtime-config";
 import type { FeatureVoteItem } from "@/lib/feature-voting";
 import "server-only";
 import { withAccount } from "@/lib/api-account";
@@ -347,7 +348,7 @@ export async function paymentLaunchReadiness(): Promise<PaymentLaunchReadiness> 
     { key: "stripe-webhook", label: "Booking payment updates from Stripe", ready: Boolean(process.env.STRIPE_WEBHOOK_SECRET), required: true },
     { key: "connect-webhook", label: "Professional account updates from Stripe", ready: Boolean(process.env.STRIPE_CONNECT_WEBHOOK_SECRET), required: true },
     { key: "payment-db", label: "Secure payment database connection", ready: Boolean(process.env.PAYMENT_DATABASE_URL), required: true },
-    { key: "app-url", label: "GLOHAUS website address", ready: Boolean(process.env.NEXT_PUBLIC_APP_URL), required: true },
+    { key: "app-url", label: "GLOHAUS website address", ready: Boolean(readPublicEnvironment("NEXT_PUBLIC_APP_URL")), required: true },
     { key: "reserve-booking", label: "Booking reservations", ready: Boolean(database?.reserve_booking), required: true },
     { key: "booking-quote", label: "Saved booking prices and fees", ready: Boolean(database?.prepare_quote), required: true },
     { key: "checkout-webhook-db", label: "Checkout payment confirmation", ready: Boolean(database?.apply_checkout), required: true },
@@ -385,7 +386,7 @@ export function emailLaunchReadiness(): EmailLaunchReadiness {
     { key: "email-from", label: "Verified GLOHAUS sender address", ready: Boolean(process.env.EMAIL_FROM), required: true, group: "transactional" },
     { key: "resend-webhook", label: "Email delivery updates from Resend", ready: Boolean(process.env.RESEND_WEBHOOK_SECRET), required: true, group: "transactional" },
     { key: "notification-cron", label: "Secure automated email schedule", ready: Boolean(process.env.CRON_SECRET), required: true, group: "transactional" },
-    { key: "email-app-url", label: "Secure GLOHAUS links in emails", ready: Boolean(process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://")), required: true, group: "transactional" },
+    { key: "email-app-url", label: "Secure GLOHAUS links in emails", ready: Boolean(readPublicEnvironment("NEXT_PUBLIC_APP_URL")?.startsWith("https://")), required: true, group: "transactional" },
     { key: "supabase-smtp", label: "Sign-in email service confirmed", ready: process.env.SUPABASE_CUSTOM_SMTP_CONFIGURED === "true", required: true, group: "auth" },
     { key: "leaked-passwords", label: "Leaked-password protection confirmed", ready: process.env.SUPABASE_LEAKED_PASSWORD_PROTECTION_CONFIGURED === "true", required: true, group: "auth" },
     { key: "auth-captcha", label: "Sign-in CAPTCHA and bot protection confirmed", ready: process.env.SUPABASE_AUTH_CAPTCHA_CONFIGURED === "true", required: false, group: "auth" },

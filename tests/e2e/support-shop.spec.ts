@@ -1,4 +1,19 @@
 import { expect, test } from "@playwright/test";
+test("Shop mobile category rail keeps labels apart and scrolls to the final collection", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile", "Mobile-only layout regression");
+  await page.goto("/shop");
+  const rail=page.locator(".marketplace-sidebar");
+  const links=rail.locator("nav a");
+  await expect(rail.getByRole("link",{name:"Deals & offers",exact:true})).toBeAttached();
+  const geometry=await rail.evaluate(el=>({width:el.clientWidth,scroll:el.scrollWidth,wrap:getComputedStyle(el).flexWrap}));
+  expect(geometry.wrap).toBe("nowrap");
+  expect(geometry.scroll).toBeGreaterThan(geometry.width);
+  const bounds=await links.evaluateAll(els=>els.map(el=>{const r=el.getBoundingClientRect();return{left:r.left,right:r.right,width:r.width};}));
+  for(let i=1;i<bounds.length;i++) expect(bounds[i].left).toBeGreaterThanOrEqual(bounds[i-1].right);
+  await rail.evaluate(el=>{el.scrollLeft=el.scrollWidth;});
+  await rail.getByRole("link",{name:"Deals & offers",exact:true}).click();
+  await expect(page).toHaveURL(/collection=deals/);
+});
 test("Contact is reachable from the shared footer and preserves failed requests", async ({
   page,
 }) => {

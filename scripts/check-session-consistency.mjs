@@ -4,7 +4,7 @@ import { readFile, writeFile } from "node:fs/promises";
 process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/session-entry.tsx";
 process.env.GLOHAUS_UI_AUDIT_AUTH = "tests/fixtures/session-auth-client.ts";
 const { server } = await import("./ui-audit.mjs");
-const browser = await chromium.launch();
+const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined, args: ["--no-sandbox"] });
 const results = [];
 const photo = await readFile("public/images/categories/nails-v2.webp");
 try {

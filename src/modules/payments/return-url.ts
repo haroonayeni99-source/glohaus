@@ -1,3 +1,4 @@
+import { requestOrigin } from "@/lib/request-origin";
 const mainOrigin = "https://www.glohaus.shop";
 const legacyHosts = new Set([
   "glohaus1.vercel.app",
@@ -8,7 +9,7 @@ const legacyHosts = new Set([
 // Keep browser sessions on their initiating host. Known production aliases
 // always return to the public domain; local and isolated previews stay local.
 export function paymentReturnOrigin(request: Request): string {
-  const url = new URL(request.url);
+  const url = new URL(requestOrigin(request));
   if (
     url.hostname === "glohaus.shop" ||
     url.hostname === "www.glohaus.shop" ||
@@ -22,7 +23,7 @@ export function bookingCancelPath(request: Request, bookingId: string): string {
   try {
     const referrer = new URL(request.headers.get("referer") || "");
     if (
-      referrer.origin === new URL(request.url).origin &&
+      referrer.origin === requestOrigin(request) &&
       /^\/p\/[a-z0-9-]+$/.test(referrer.pathname)
     )
       return `${referrer.pathname}${referrer.search}#booking`;

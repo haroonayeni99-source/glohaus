@@ -1,4 +1,5 @@
 import "server-only";
+import { readPublicEnvironment } from "@/lib/public-runtime-config";
 import Stripe from "stripe";
 import { AccessError } from "@/modules/accounts/domain";
 let client: Stripe | undefined;
@@ -13,6 +14,6 @@ export function paymentReady() {
   return Boolean(
     process.env.STRIPE_SECRET_KEY &&
     process.env.PAYMENT_DATABASE_URL &&
-    process.env.NEXT_PUBLIC_APP_URL,
+    readPublicEnvironment("NEXT_PUBLIC_APP_URL"),
   );
 }

@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const config: NextConfig = {
   poweredByHeader: false,
+  output: "standalone",
   images: {
     remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" }],
   },

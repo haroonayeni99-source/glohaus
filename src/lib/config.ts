@@ -1,12 +1,13 @@
+import { readPublicEnvironment } from "@/lib/public-runtime-config";
 export function publicSupabaseKey(): string | undefined {
   return (
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    readPublicEnvironment("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY") ||
+    readPublicEnvironment("NEXT_PUBLIC_SUPABASE_ANON_KEY")
   );
 }
 
 function validSupabaseUrl(): boolean {
-  const value = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const value = readPublicEnvironment("NEXT_PUBLIC_SUPABASE_URL");
   if (!value) return false;
 
   try {

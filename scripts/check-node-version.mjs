@@ -1,12 +1,6 @@
 import { pathToFileURL } from "node:url";
-
-// Vercel selects a major version; this separately enforces the security floor.
-export function isSupportedNodeVersion(version) {
-  const match = /^v?(\d+)\.(\d+)\.(\d+)$/.exec(version);
-  if (!match) return false;
-  const [, major, minor, patch] = match.map(Number);
-  return major === 24 && (minor > 22 || (minor === 22 && patch >= 1));
-}
+import { isSupportedNodeVersion } from "../src/lib/node-runtime-policy.ts";
+export { isSupportedNodeVersion };
 
 if (
   process.argv[1] &&

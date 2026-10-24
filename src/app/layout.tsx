@@ -1,3 +1,4 @@
+import { serializePublicRuntimeConfiguration } from "@/lib/public-runtime-config";
 import "@/components/professional-notifications.css";
 import "@/components/taxonomy.css";
 import "@/components/professional-activity.css";
@@ -84,6 +85,7 @@ export default async function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
+        <script id="glohaus-public-configuration" type="application/json" nonce={nonce} dangerouslySetInnerHTML={{ __html: serializePublicRuntimeConfiguration() }} />
         <script
           id="glohaus-theme-bootstrap"
           nonce={nonce}

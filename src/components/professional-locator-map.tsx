@@ -1,4 +1,5 @@
 "use client";
+import { readPublicEnvironment } from "@/lib/public-runtime-config";
 
 import { useEffect, useRef, useState } from "react";
 import { loadMapLibre } from "@/lib/maplibre-client";
@@ -51,6 +52,7 @@ export function ProfessionalLocatorMap({
     if (!consented || !mapContainer.current) return;
     let cancelled = false;
     const activeMarkers = markers.current;
+    const cartoKey = readPublicEnvironment("NEXT_PUBLIC_CARTO_BASEMAPS_KEY");
     let instance: MapLibreMap | null = null;
     loadMapLibre().then(({ Map, NavigationControl, FullscreenControl }) => {
       if (cancelled || !mapContainer.current) return;
@@ -58,8 +60,8 @@ export function ProfessionalLocatorMap({
         container: mapContainer.current,
         // CARTO vector styles keep street and district names as separate, sharp text layers.
         // On previews without a key, fall back to the existing public OSM raster style.
-        style: process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY
-          ? `https://basemaps.cartocdn.com/gl/${darkMode ? "dark-matter-gl-style" : "positron-gl-style"}/style.json?key=${encodeURIComponent(process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY)}`
+        style: cartoKey
+          ? `https://basemaps.cartocdn.com/gl/${darkMode ? "dark-matter-gl-style" : "positron-gl-style"}/style.json?key=${encodeURIComponent(cartoKey)}`
           : {
               version: 8,
               sources: { streets: {
@@ -81,7 +83,7 @@ export function ProfessionalLocatorMap({
       map.current = instance;
       setReady(true);
       instance.on("style.load", () => {
-        if (!instance || !process.env.NEXT_PUBLIC_CARTO_BASEMAPS_KEY) return;
+        if (!instance || !cartoKey) return;
         // GLOHAUS label palette: dark charcoal on light, warm-white on dark.
         // Symbol text is vector-rendered, so road and borough labels remain crisp.
         const labels = instance.getStyle().layers.filter((layer) =>

@@ -4,7 +4,7 @@ import sharp from "sharp";
 import { writeFile } from "node:fs/promises";
 process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/media-theme-pricing-entry.tsx";
 const { server } = await import("./ui-audit.mjs");
-const browser = await chromium.launch();
+const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined, args: ["--no-sandbox"] });
 const largePhoto = await sharp({ create: { width: 2000, height: 1600, channels: 3, background: "#c86588" } }).png({ compressionLevel: 0 }).toBuffer();
 expect(largePhoto.length).toBeGreaterThan(3 * 1024 * 1024);
 const logo = await sharp(Buffer.from('<svg width="1200" height="200"><rect width="400" height="200" fill="red"/><rect x="400" width="400" height="200" fill="green"/><rect x="800" width="400" height="200" fill="blue"/></svg>')).png().toBuffer();

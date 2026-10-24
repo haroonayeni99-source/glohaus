@@ -1,0 +1,29 @@
+[
+  {
+    "path": "/api/health/runtime",
+    "status": 200,
+    "runtime": {
+      "node": "v24.22.1",
+      "patched": true
+    },
+    "runtime_config_present": null
+  },
+  {
+    "path": "/",
+    "status": 200,
+    "runtime": null,
+    "runtime_config_present": true
+  },
+  {
+    "path": "/sign-in",
+    "status": 200,
+    "runtime": null,
+    "runtime_config_present": true
+  },
+  {
+    "path": "/shop",
+    "status": 200,
+    "runtime": null,
+    "runtime_config_present": true
+  }
+]

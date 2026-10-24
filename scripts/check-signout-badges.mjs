@@ -2,7 +2,7 @@ import { chromium, expect } from "@playwright/test";
 import { writeFile } from "node:fs/promises";
 process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/signout-badges-entry.tsx";
 const { server } = await import("./ui-audit.mjs");
-const browser = await chromium.launch();
+const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined, args: ["--no-sandbox"] });
 const results = [];
 try {
   for (const theme of ["light", "night"]) for (const width of [320, 390, 1440]) {

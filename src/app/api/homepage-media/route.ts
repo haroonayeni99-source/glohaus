@@ -1,6 +1,7 @@
 import { get } from "@vercel/blob";
 import { publicHomepageMedia } from "@/modules/platform/repository";
 import { withOwner } from "@/modules/admin/repository";
+import { requestOrigin } from "@/lib/request-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
       if (!value) return false;
       try {
         const url = new URL(value);
-        return url.origin === new URL(request.url).origin && url.pathname === "/api/homepage-media" && url.searchParams.get("image") === path;
+        return url.origin === requestOrigin(request) && url.pathname === "/api/homepage-media" && url.searchParams.get("image") === path;
       } catch { return false; }
     });
     // Unpublished uploads can be previewed only by an authenticated Owner.

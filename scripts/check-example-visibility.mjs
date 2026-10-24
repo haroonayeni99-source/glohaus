@@ -12,7 +12,14 @@ try {
     ["chromium", chromium],
     ["webkit", webkit],
   ]) {
-    const browser = await launcher.launch();
+    const browser = await launcher.launch(
+      engine === "chromium"
+        ? {
+            executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined,
+            args: ["--no-sandbox"],
+          }
+        : {},
+    );
     try {
       for (const theme of ["light", "night"])
         for (const width of [320, 390, 1440]) {

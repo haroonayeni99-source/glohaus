@@ -1,4 +1,5 @@
 import { AccessError } from "@/modules/accounts/domain";
+import { requestOrigin } from "./request-origin";
 
 export function json(body: unknown, status = 200): Response {
   return Response.json(body, {
@@ -45,8 +46,7 @@ export function apiError(
 }
 
 export function assertSameOrigin(request: Request): void {
-  const requestOrigin = new URL(request.url).origin;
-  if (request.headers.get("origin") !== requestOrigin) {
+  if (request.headers.get("origin") !== requestOrigin(request)) {
     throw new AccessError("FORBIDDEN", 403);
   }
   if (

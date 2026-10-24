@@ -4,7 +4,7 @@ import { writeFile } from "node:fs/promises";
 process.env.GLOHAUS_UI_AUDIT_ENTRY =
   "tests/fixtures/marketing-preferences-entry.tsx";
 const { server } = await import("./ui-audit.mjs");
-const browser = await chromium.launch();
+const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined, args: ["--no-sandbox"] });
 const results = [];
 try {
   for (const role of ["customer", "professional"])

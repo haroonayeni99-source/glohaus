@@ -391,6 +391,8 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test --maxWorkers=2
       - run: pnpm build
+      - name: Verify container request origins, private uploads and callback redirects
+        run: node scripts/check-proxied-origin.mjs
       - uses: ./.github/actions/prepare-test-browsers
       - name: Verify actual production-server CSP and public journeys
         run: pnpm test:e2e

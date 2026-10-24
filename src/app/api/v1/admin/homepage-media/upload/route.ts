@@ -4,6 +4,7 @@ import { withOwner } from "@/modules/admin/repository";
 import { readImageUpload } from "@/modules/media/upload";
 import { AccessError } from "@/modules/accounts/domain";
 import { apiError, assertSameOrigin, json } from "@/lib/http";
+import { requestOrigin } from "@/lib/request-origin";
 
 export async function POST(request: Request) {
   try {
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
     const blob = await put(`homepage/${randomUUID()}.webp`, image, {
       access: "private", contentType: "image/webp", addRandomSuffix: true,
     });
-    const url = new URL("/api/homepage-media", request.url);
+    const url = new URL("/api/homepage-media", requestOrigin(request));
     url.searchParams.set("image", blob.pathname);
     return json({ url: url.toString() }, 201);
   } catch (error) { return apiError(error); }

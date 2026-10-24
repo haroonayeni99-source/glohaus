@@ -1,0 +1,15 @@
+# Homepage thumbnail saves and mobile Shop categories
+
+The Owner's photo selection passes through client image preparation, an authenticated private Blob upload, the Owner category-save routine and public image delivery. A production probe without credentials showed that a legitimate public-origin upload was rejected with 403 before authentication. Next.js in the container receives an internal listener URL; comparing the browser's HTTPS Origin directly with that listener breaks legitimate writes.
+
+The request-origin helper resolves only exact origins from deployment configuration. Host/forwarded-host values can select an explicitly configured origin; they cannot introduce an arbitrary trusted domain. The browser Origin is never used to invent the expected origin. Cross-site and missing-Origin writes remain rejected, and Owner identity, role, MFA, request limits and database authorization remain unchanged.
+
+The same origin is used for private thumbnail preview URLs and published image checks. Authentication callback redirects and payment return navigation use the public origin rather than the internal listener. This changes URL handling, not payment calculations or financial records. The compiled standalone-server check verifies legitimate requests reach authentication (401 without a session), cross-site writes remain 403, callbacks return to the public sign-in page and unpublished images remain private (404). It uses fabricated configuration and no provider credentials or writes.
+
+PR #161's mobile-only rail change is retained: non-shrinking links/groups, one no-wrap row and horizontal scrolling through both categories and collections. Desktop styling is unchanged. The new browser regression checks link geometry, overflow and access to Deals. Existing Owner editor tests retain upload, preview, save/retry, reload, separate desktop/mobile maps and light/night coverage.
+
+The branch incorporates the current patched main release, including Node 24.22.1, Zod 4.6.6 and Undici 6.29.1; it does not restore PR #161's older security baseline. Source and secret scans, dependency audit, type-check, lint, unit tests, compiled proxy checks and browser/deployment checks provide release evidence in the PR.
+
+Production storage credential containment was separately approved: BLOB_READ_WRITE_TOKEN is now production-only for future deployments, with its value unchanged. Historical deployment snapshots still require retirement. Preview storage provisioning, the harmless probe-variable cleanup, full external-provider transaction tests and leaked-password protection remain constrained by unavailable signed-in dashboard/test-service access. DATABASE_URL classification could not be converted through the connector because the API requires a visibility field that the edit tool does not expose; its value and production scope were preserved. No live financial transaction, key rotation or database migration is part of this fix.
+
+See https://github.com/haroonayeni99-source/glohaus/pull/161 for final test and deployment results. A mock or unauthenticated check is not represented as a completed Owner/provider upload.

@@ -1,4 +1,4 @@
-import { beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { GET } from "@/app/api/homepage-media/route";
 import { POST } from "@/app/api/v1/admin/homepage-media/upload/route";
 import { AccessError } from "@/modules/accounts/domain";
@@ -10,6 +10,7 @@ vi.mock("@vercel/blob", () => ({ get: mocks.get, put: mocks.put }));
 vi.mock("@/modules/media/upload", () => ({ readImageUpload: mocks.upload }));
 const path = "homepage/11111111-1111-4111-8111-111111111111-ab123.webp";
 const imageUrl = `https://glohaus.test/api/homepage-media?image=${encodeURIComponent(path)}`;
+afterEach(() => vi.unstubAllEnvs());
 function uploadRequest(origin = "https://glohaus.test") {
   return new Request("https://glohaus.test/api/v1/admin/homepage-media/upload", { method: "POST", headers: { origin, "content-type": "application/json" }, body: "{}" });
 }
@@ -76,5 +77,30 @@ it("rejects invalid images and reports missing storage without touching settings
   expect((await POST(uploadRequest())).status).toBe(400);
   vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
   expect((await POST(uploadRequest())).status).toBe(503);
+  expect(mocks.put).not.toHaveBeenCalled();
+});
+
+it("uploads behind the container proxy and returns the public preview URL, never its internal listener", async () => {
+  vi.stubEnv("VERCEL_ENV", "production");
+  vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://glohaus.test");
+  const request=new Request("http://0.0.0.0:80/api/v1/admin/homepage-media/upload",{method:"POST",headers:{host:"glohaus.test",origin:"https://glohaus.test","content-type":"application/json"},body:"{}"});
+  const response=await POST(request);
+  expect(response.status).toBe(201);
+  expect(await response.json()).toEqual({url:imageUrl});
+});
+it("recognizes a published image at the public origin behind the internal listener without dropping privacy checks", async () => {
+  vi.stubEnv("VERCEL_ENV", "production");
+  vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://glohaus.test");
+  mocks.media.mockResolvedValue({categoryImages:{mobile:{nails:imageUrl}}});
+  const request=new Request(`http://0.0.0.0:80/api/homepage-media?image=${encodeURIComponent(path)}`,{headers:{host:"glohaus.test"}});
+  expect((await GET(request)).status).toBe(200);
+  expect(mocks.owner).not.toHaveBeenCalled();
+});
+it("still requires Owner authorization after a proxied write passes the origin check", async () => {
+  vi.stubEnv("VERCEL_ENV", "production");
+  vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://glohaus.test");
+  mocks.owner.mockRejectedValue(new AccessError("MFA_REQUIRED",403));
+  const response=await POST(new Request("http://0.0.0.0:80/api/v1/admin/homepage-media/upload",{method:"POST",headers:{host:"glohaus.test",origin:"https://glohaus.test","content-type":"application/json"},body:"{}"}));
+  expect(response.status).toBe(403);
   expect(mocks.put).not.toHaveBeenCalled();
 });

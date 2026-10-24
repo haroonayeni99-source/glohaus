@@ -1,0 +1,218 @@
+{
+  "applicationCommit": "794fdd44cc759a508e0a4f5f7c882a1c2fbbcdeb",
+  "deploymentId": "dpl_9mkerfc8df2hGG5nCsiZZYvEpQSe",
+  "environment": "preview",
+  "runtime": "v24.22.1",
+  "tests": {
+    "files": 150,
+    "passed": 1288,
+    "nativeRuntimePolicyTests": 2,
+    "productionBuildBrowserChecks": 48
+  },
+  "audits": {
+    "production": {
+      "critical": 0,
+      "high": 0,
+      "moderate": 0,
+      "low": 0
+    },
+    "all": {
+      "critical": 0,
+      "high": 0,
+      "moderate": 0,
+      "low": 0
+    }
+  },
+  "hostedChecks": [
+    {
+      "path": "/api/health/runtime",
+      "status": 200,
+      "runtime": {
+        "node": "v24.22.1",
+        "patched": true
+      },
+      "noStore": true,
+      "secretPattern": false
+    },
+    {
+      "path": "/",
+      "status": 200,
+      "title": "Discover &amp; Book Beauty Professionals",
+      "csp": true,
+      "noStore": true,
+      "secretPattern": false
+    },
+    {
+      "path": "/shop",
+      "status": 200,
+      "title": "Beauty marketplace · GLOHAUS",
+      "csp": true,
+      "noStore": true,
+      "secretPattern": false
+    },
+    {
+      "path": "/explore",
+      "status": 200,
+      "title": "Find a beauty professional · GLOHAUS",
+      "csp": true,
+      "noStore": true,
+      "secretPattern": false
+    },
+    {
+      "path": "/sign-in",
+      "status": 200,
+      "title": "Customer sign in · GLOHAUS",
+      "csp": true,
+      "noStore": true,
+      "secretPattern": false
+    },
+    {
+      "path": "/professional/sign-in",
+      "status": 200,
+      "title": "Beauty professional sign in · GLOHAUS",
+      "csp": true,
+      "noStore": true,
+      "secretPattern": false
+    },
+    {
+      "path": "/images/glohaus-splash-light.svg",
+      "status": 200,
+      "noStore": false,
+      "secretPattern": false
+    }
+  ],
+  "production": {
+    "changed": false,
+    "observedNode": "v24.21.0",
+    "secureConfirmed": false
+  },
+  "liveFinancialActions": 0,
+  "credentialRotations": 0,
+  "isolatedProviderEndToEnd": "NOT VERIFIED",
+  "githubMainVerification": "PASS",
+  "githubSecurityRegression": "PASS",
+  "githubFoundationJobs": [
+    {
+      "name": "multi-speciality",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "professional-activity",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "verify",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "booking-payments",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "home-screen-pwa",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "marketing-preferences",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "profile-examples",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "auth-session",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "smart-arrival",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "profile-video",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "discovery-map",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "security-regression",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "professional-notifications",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "remainingProviderValidation": "Isolated Supabase/database and Stripe test configuration required; no real financial operations performed.",
+  "latestHostedChecks": [
+    {
+      "path": "/api/health/runtime",
+      "status": 200,
+      "runtime": {
+        "node": "v24.22.1",
+        "patched": true
+      },
+      "noStore": true,
+      "secretPattern": false
+    },
+    {
+      "path": "/",
+      "status": 200,
+      "csp": true,
+      "noStore": true,
+      "secretPattern": false
+    },
+    {
+      "path": "/shop",
+      "status": 200,
+      "csp": true,
+      "noStore": true,
+      "secretPattern": false
+    },
+    {
+      "path": "/sign-in",
+      "status": 200,
+      "csp": true,
+      "noStore": true,
+      "secretPattern": false
+    }
+  ],
+  "webhookConfiguration": [
+    {
+      "status": "enabled",
+      "url": "https://www.glohaus.shop/api/webhooks/stripe",
+      "api_version": "2026-08-26.dahlia",
+      "eventCount": 6,
+      "allEvents": false
+    },
+    {
+      "status": "enabled",
+      "url": "https://www.glohaus.shop/api/webhooks/stripe",
+      "api_version": "2026-08-26.dahlia",
+      "eventCount": 11,
+      "allEvents": false
+    }
+  ],
+  "nativeImageOptimizer": {
+    "status": 200,
+    "contentType": "image/jpeg",
+    "success": true
+  },
+  "allApplicationCiJobsPass": true,
+  "videoSetupRetry": "PASS after initial Azure Ubuntu mirror download timeout"
+}

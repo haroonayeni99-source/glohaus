@@ -84,10 +84,10 @@ jobs:
       - uses: ./.github/actions/prepare-test-browsers
         with:
           webkit: "true"
-      - name: Verify install metadata, private offline fallback and safe worker updates
-        run: node scripts/check-pwa.mjs
       - name: Verify populated marketplace scrolling on Android and iPhone WebKit
         run: node scripts/check-marketplace-mobile.mjs
+      - name: Verify install metadata, private offline fallback and safe worker updates
+        run: node scripts/check-pwa.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

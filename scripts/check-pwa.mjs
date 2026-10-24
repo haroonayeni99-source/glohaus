@@ -115,7 +115,7 @@ try {
         errors = [];
       page.on("pageerror", (error) => errors.push(error.message));
       await page.addInitScript(
-        (value) => localStorage.setItem("glohaus-theme", value),
+        (value) => { if (!localStorage.getItem("glohaus-theme")) localStorage.setItem("glohaus-theme", value); },
         theme,
       );
       await page.goto(`${base}/install`);

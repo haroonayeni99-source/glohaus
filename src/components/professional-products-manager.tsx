@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { ProductDescriptionHelper } from "./product-description-helper";
 import type {
   ProfessionalProduct,
   ProductCategory,
@@ -255,6 +256,7 @@ export function ProfessionalProductsManager({
               }
             />
           </label>
+          <ProductDescriptionHelper name={draft.name} onApply={description => setDraft(current => ({ ...current, description }))} />
           <div className="pro-product-grid-fields">
             <label>
               Price (£)

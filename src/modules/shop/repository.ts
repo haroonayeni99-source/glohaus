@@ -101,7 +101,7 @@ export async function publicProducts(
   return (
     await db.query<PublicProduct>(
       `SELECT p.id,p.professional_id,p.image_asset_id,p.name,p.description,p.price_pence,
-        p.in_stock,p.professional_slug,p.professional_name,p.updated_at,p.created_at,p.compare_at_price_pence,p.category_id,
+        p.in_stock,p.seller_away,p.professional_slug,p.professional_name,p.updated_at,p.created_at,p.compare_at_price_pence,p.category_id,
         coalesce(s.sold_units,0) AS sold_units,coalesce(s.recent_sold_units,0) AS recent_sold_units
        FROM beauty.public_products p
        LEFT JOIN beauty.public_product_sales s ON s.product_id=p.id

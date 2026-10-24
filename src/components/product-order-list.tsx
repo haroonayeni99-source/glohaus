@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PackageCheck, Truck } from "lucide-react";
 import { useState } from "react";
 import type { ProductOrder } from "@/modules/shop/domain";
+import { ProductOrderReplyHelper } from "./product-order-reply-helper";
 
 function money(pence: number) {
   return new Intl.NumberFormat("en-GB", {
@@ -296,6 +297,7 @@ export function ProductOrderList({
             </div>
           )}
 
+          {mode === "professional" && <ProductOrderReplyHelper order={order} />}
           <footer>
             <div>
               <span>Products</span>

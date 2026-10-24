@@ -21,6 +21,8 @@ export function apiError(
     "code" in error &&
     "message" in error
   ) {
+    if (error.code === "22023" && error.message === "SELLER_AWAY")
+      return json({ error: { code: "SELLER_AWAY" } }, 409);
     if (error.code === "22023" && error.message === "INVALID_PRODUCT_CATEGORY")
       return json({ error: { code: "INVALID_REQUEST" } }, 400);
     if (error.code === "42501" && error.message === "FORBIDDEN")

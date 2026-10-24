@@ -145,10 +145,19 @@ try {
         start_url: "/",
         scope: "/",
         display: "standalone",
-        theme_color: "#e95f96",
-        background_color: "#e95f96",
+        theme_color: "#fcfbf9",
+        background_color: "#fcfbf9",
       });
       expect(manifest.viewport).toContain("viewport-fit=cover");
+      const themeColor = theme === "night" ? "#171415" : "#fcfbf9";
+      await expect.poll(() => page.locator('meta[name="theme-color"]').evaluateAll(metas => metas.map(meta => meta.content))).toEqual([themeColor, themeColor]);
+      await page.locator(".theme-toggle").click();
+      const oppositeColor = theme === "night" ? "#fcfbf9" : "#171415";
+      await expect.poll(() => page.locator('meta[name="theme-color"]').evaluateAll(metas => metas.map(meta => meta.content))).toEqual([oppositeColor, oppositeColor]);
+      await page.reload();
+      await expect.poll(() => page.locator('meta[name="theme-color"]').evaluateAll(metas => metas.map(meta => meta.content))).toEqual([oppositeColor, oppositeColor]);
+      await page.locator(".theme-toggle").click();
+      await expect.poll(() => page.locator('meta[name="theme-color"]').evaluateAll(metas => metas.map(meta => meta.content))).toEqual([themeColor, themeColor]);
       expect(manifest.data.icons.map((icon) => icon.src)).toEqual([
         "/icons/glohaus-home-192-v2.png",
         "/icons/glohaus-home-512-v2.png",

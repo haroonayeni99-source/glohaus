@@ -489,9 +489,6 @@
   .admin-workspace .service-edit-row > form { display: grid; gap: 10px; width: 100%; min-width: 0; }
   .admin-workspace .service-edit-row > form :is(input,select,textarea,button) { min-width: 0; max-width: 100%; width: 100%; }
 }
-@media (max-width: 860px) {
-  .marketplace-sidebar nav:nth-of-type(2) { display: flex; }
-}
 
 :root[data-theme="night"] .mobile-home-account a,
 :root[data-theme="night"] .mobile-home-section-title a,

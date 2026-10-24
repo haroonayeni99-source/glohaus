@@ -1,9 +1,9 @@
+import { MarketplaceSidebar, MarketplaceCategoryStrip } from "@/components/marketplace-navigation";
 import { z } from "zod";
 import {
   catalogueProducts,
   shopCollection,
   shopCollections,
-  shopHref,
 } from "@/modules/shop/catalogue";
 import { publicMetadata, publicPages } from "@/lib/public-seo";
 import Image from "next/image";
@@ -14,7 +14,6 @@ import {
   Search,
   ShoppingBag,
   Sparkles,
-  Tag,
   Star,
   PackageCheck,
   ShieldCheck,
@@ -87,55 +86,7 @@ export default async function ShopPage({
     <>
       <PublicHeader signedIn={viewerSignedIn} />
       <main id="main" className="marketplace-shell">
-        <aside
-          className="marketplace-sidebar"
-          aria-label="Marketplace categories"
-        >
-          <Link className="marketplace-sidebar-active" href="/shop">
-            <ShoppingBag size={17} aria-hidden /> Shop all
-          </Link>
-
-          <p className="marketplace-side-label">Categories</p>
-          <nav>
-            {categories.map(({ id, name }) => (
-              <Link
-                key={id}
-                href={shopHref(collection, q, id)}
-                aria-current={categoryId === id ? "page" : undefined}
-              >
-                <Sparkles size={15} aria-hidden /> {name}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="marketplace-side-divider" />
-          <p className="marketplace-side-label">Shop by</p>
-          <nav>
-            {Object.entries(shopCollections).map(([key, { label: name }]) => (
-              <Link
-                key={name}
-                href={shopHref(shopCollection(key), q, categoryId)}
-                aria-current={collection === key ? "page" : undefined}
-              >
-                <Tag size={15} aria-hidden /> {name}
-              </Link>
-            ))}
-            <Link href={shopHref(undefined, "Gift")}>
-              <Tag size={15} aria-hidden /> Gift sets
-            </Link>
-          </nav>
-
-          <article className="marketplace-side-promo">
-            <Sparkles size={22} aria-hidden />
-            <strong>Beauty essentials</strong>
-            <span>
-              Products from GLOHAUS professionals and approved sellers.
-            </span>
-            <a href="#products">
-              Shop products <ArrowRight size={14} />
-            </a>
-          </article>
-        </aside>
+        <MarketplaceSidebar categories={categories} collection={collection} q={q} categoryId={categoryId} />
 
         <section className="marketplace-main">
           <form className="marketplace-search" action="/shop" method="get">
@@ -194,31 +145,7 @@ export default async function ShopPage({
             </div>
           </section>
 
-          <section
-            id="categories"
-            className="marketplace-category-strip"
-            aria-label="Product categories"
-          >
-            {categories.map(({ id, name }, index) => (
-              <Link
-                key={id}
-                href={shopHref(collection, q, id)}
-                aria-current={categoryId === id ? "page" : undefined}
-                className={`marketplace-category marketplace-category-${index + 1}`}
-              >
-                <div className="marketplace-category-art">
-                  <Sparkles size={26} aria-hidden />
-                </div>
-                <span>
-                  <strong>{name}</strong>
-                  <small>Browse {name.toLowerCase()} products</small>
-                </span>
-                <i>
-                  <ArrowRight size={14} />
-                </i>
-              </Link>
-            ))}
-          </section>
+          <MarketplaceCategoryStrip categories={categories} collection={collection} q={q} categoryId={categoryId} />
 
           <section id="products" className="marketplace-products-section">
             <div className="marketplace-section-heading">

@@ -17,6 +17,7 @@ async function harness() {
         "unrelated-cache",
         "glohaus-pwa-static-v1",
         "glohaus-pwa-static-v2",
+        "glohaus-pwa-static-v3",
       ]),
     delete: vi.fn().mockResolvedValue(true),
   };
@@ -93,6 +94,7 @@ it("deletes only its old static caches and activates updates only on a same-orig
   expect(h.caches.delete.mock.calls).toEqual([
     ["glohaus-pwa-static-v0"],
     ["glohaus-pwa-static-v1"],
+    ["glohaus-pwa-static-v2"],
   ]);
   await h.lifecycle("message", {
     data: { type: "GLOHAUS_ACTIVATE_UPDATE" },

@@ -86,11 +86,15 @@ jobs:
           webkit: "true"
       - name: Verify install metadata, private offline fallback and safe worker updates
         run: node scripts/check-pwa.mjs
+      - name: Verify populated marketplace scrolling on Android and iPhone WebKit
+        run: node scripts/check-marketplace-mobile.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: home-screen-pwa-checks
-          path: reports/pwa-*
+          path: |
+            reports/pwa-*
+            reports/marketplace-*
 
   verify:
     runs-on: ubuntu-latest

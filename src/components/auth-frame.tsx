@@ -22,10 +22,10 @@ const stories = {
       { icon: CalendarDays, text: "Book in seconds" },
       { icon: Heart, text: "Save your favourites" },
     ],
-    footer: "Beauty. Community. Belonging.",
+    footer: "Beauty. Community. Bookings.",
   },
   professional: {
-    strapline: "WORK • GROW • BELONG",
+    strapline: "Your Talent. Your Business. Your GLOHAUS.",
     eyebrow: "GLOHAUS PRO",
     title: "Grow Your\nBeauty Business",
     description:
@@ -110,7 +110,7 @@ export function AuthFrame({
           {showProfessionalMotto
             ? professionalMotto
             : audience === "professional"
-              ? "GLOHAUS PRO · WORK • GROW • BELONG"
+              ? "GLOHAUS PRO · Your Talent. Your Business. Your GLOHAUS."
               : "GLOHAUS · LOOK GOOD • FEEL GOOD • STAND OUT"}
         </p>
       </main>

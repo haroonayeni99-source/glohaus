@@ -46,7 +46,7 @@ export function GlohausHeader({
           <Link href="/faq">FAQ</Link>
         </nav>
       ) : (
-        <p className="glohaus-header-tagline">WORK • GROW • BELONG</p>
+        <p className="glohaus-header-tagline">Your Talent. Your Business. Your GLOHAUS.</p>
       )}
       <nav className="glohaus-header-actions" aria-label="Account navigation">
         <Link className="glohaus-search-link" href="/explore" aria-label="Search beauty">

@@ -84,13 +84,17 @@ jobs:
       - uses: ./.github/actions/prepare-test-browsers
         with:
           webkit: "true"
+      - name: Verify populated marketplace scrolling on Android and iPhone WebKit
+        run: node scripts/check-marketplace-mobile.mjs
       - name: Verify install metadata, private offline fallback and safe worker updates
         run: node scripts/check-pwa.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: home-screen-pwa-checks
-          path: reports/pwa-*
+          path: |
+            reports/pwa-*
+            reports/marketplace-*
 
   verify:
     runs-on: ubuntu-latest
@@ -376,7 +380,9 @@ jobs:
           path: reports/booking-payment-*
 
   smart-arrival:
-    runs-on: ubuntu-latest
+    # Keep WebKit's system dependencies on a supported, reproducible image.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -389,6 +395,7 @@ jobs:
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
+        timeout-minutes: 5
         with:
           webkit: "true"
       - name: Verify professional arrival tools, customer journeys and Owner communications

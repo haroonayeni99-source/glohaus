@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { appThemeColors } from "@/lib/app-theme-colors";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
@@ -8,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     scope: "/",
     display: "standalone",
-    background_color: "#e95f96",
-    theme_color: "#e95f96",
+    background_color: appThemeColors.light,
+    theme_color: appThemeColors.light,
     icons: [
       {
         src: "/icons/glohaus-home-192-v2.png",

@@ -97,6 +97,10 @@
 }
 /* The website layout is unchanged; only standalone windows use these insets. */
 @media (display-mode: standalone) {
+  html {
+    background: var(--paper);
+    min-height: 100%;
+  }
   body {
     padding-top: env(safe-area-inset-top);
     padding-left: env(safe-area-inset-left);

@@ -34,6 +34,7 @@ export async function runNotificationWorker() {
   // Each preparation has its own transaction. A failed route/provider or one
   // notification category must not roll back or suppress unrelated deliveries.
   for (const [stage, statement] of [
+    ["payoutStatus", "SELECT beauty.prepare_payout_status_notifications()"],
     ["arrivalReminders", "SELECT beauty.prepare_arrival_reminders()"],
     [
       "professionalNotifications",

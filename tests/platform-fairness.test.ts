@@ -723,3 +723,90 @@ describe("verified reviews and protected professional responses", () => {
       ).toBeNull();
     }));
 });
+
+describe("payout status observability without money movement", () => {
+  it("queues genuine status and delay notices once without modifying a payout or balance", () =>
+    isolated(async (tx) => {
+      const id = (
+        await tx.query<{ id: string }>(
+          "INSERT INTO beauty.financial_payouts(professional_id,kind,requested_pence,withdrawal_fee_pence,bank_amount_pence,status,expected_arrival_at) VALUES($1,'instant',10000,400,9600,'processing',now()-interval '1 hour') RETURNING id",
+          [pro],
+        )
+      ).rows[0].id;
+      const before = (
+        await tx.query("SELECT * FROM beauty.financial_payouts WHERE id=$1", [
+          id,
+        ])
+      ).rows;
+      const ledger = (
+        await tx.query(
+          "SELECT * FROM beauty.financial_ledger_entries ORDER BY id",
+        )
+      ).rows;
+      await as(
+        tx,
+        "",
+        () => tx.query("SELECT beauty.prepare_payout_status_notifications()"),
+        true,
+        "beauty_payment_worker",
+      );
+      expect(
+        (
+          await tx.query(
+            "SELECT * FROM beauty.in_app_notifications WHERE kind='payout_updated'",
+          )
+        ).rows,
+      ).toHaveLength(2);
+      await as(
+        tx,
+        "",
+        () => tx.query("SELECT beauty.prepare_payout_status_notifications()"),
+        true,
+        "beauty_payment_worker",
+      );
+      expect(
+        (
+          await tx.query(
+            "SELECT * FROM beauty.in_app_notifications WHERE kind='payout_updated'",
+          )
+        ).rows,
+      ).toHaveLength(2);
+      expect(
+        (
+          await tx.query("SELECT * FROM beauty.financial_payouts WHERE id=$1", [
+            id,
+          ])
+        ).rows,
+      ).toEqual(before);
+      expect(
+        (
+          await tx.query(
+            "SELECT * FROM beauty.financial_ledger_entries ORDER BY id",
+          )
+        ).rows,
+      ).toEqual(ledger);
+      await tx.query(
+        "UPDATE beauty.financial_payouts SET status='paid',updated_at=now()+interval '1 minute' WHERE id=$1",
+        [id],
+      );
+      await as(
+        tx,
+        "",
+        () => tx.query("SELECT beauty.prepare_payout_status_notifications()"),
+        true,
+        "beauty_payment_worker",
+      );
+      expect(
+        (
+          await tx.query(
+            "SELECT * FROM beauty.in_app_notifications WHERE kind='payout_updated'",
+          )
+        ).rows,
+      ).toHaveLength(3);
+      await expect(
+        as(tx, "fair-pro", () =>
+          tx.query("SELECT beauty.prepare_payout_status_notifications()"),
+        ),
+      ).rejects.toThrow();
+    }));
+});

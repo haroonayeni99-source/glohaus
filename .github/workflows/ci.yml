@@ -23,7 +23,9 @@ jobs:
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm exec playwright install --with-deps chromium webkit
+      - uses: ./.github/actions/prepare-test-browsers
+        with:
+          webkit: "true"
       - name: Verify ten fictional profiles, mobile themes and non-transactional previews
         run: node scripts/check-profile-examples.mjs
       - name: Verify Owner hide, restore, persistence and save failures
@@ -49,7 +51,9 @@ jobs:
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm exec playwright install --with-deps chromium webkit
+      - uses: ./.github/actions/prepare-test-browsers
+        with:
+          webkit: "true"
       - name: Verify install metadata, private offline fallback and safe worker updates
         run: node scripts/check-pwa.mjs
       - uses: actions/upload-artifact@v4
@@ -76,7 +80,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
-      - run: pnpm exec playwright install --with-deps chromium
+      - uses: ./.github/actions/prepare-test-browsers
       - name: Install media test encoder
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Verify desktop homepage and unchanged mobile layouts
@@ -171,7 +175,7 @@ jobs:
           cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - uses: ./.github/actions/prepare-test-browsers
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: node scripts/check-profile-video.mjs
       - uses: actions/upload-artifact@v4
@@ -194,7 +198,7 @@ jobs:
           cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - uses: ./.github/actions/prepare-test-browsers
       - run: node scripts/check-professional-activity.mjs
       - uses: actions/upload-artifact@v4
         if: always()
@@ -216,7 +220,7 @@ jobs:
           cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - uses: ./.github/actions/prepare-test-browsers
       - run: node scripts/check-marketing-preferences.mjs
       - uses: actions/upload-artifact@v4
         if: always()
@@ -238,7 +242,7 @@ jobs:
           cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - uses: ./.github/actions/prepare-test-browsers
       - run: node scripts/check-session-consistency.mjs
       - uses: actions/upload-artifact@v4
         if: always()
@@ -260,7 +264,7 @@ jobs:
           cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - uses: ./.github/actions/prepare-test-browsers
       - run: node scripts/check-multi-speciality.mjs
       - uses: actions/upload-artifact@v4
         if: always()
@@ -282,7 +286,7 @@ jobs:
           cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - uses: ./.github/actions/prepare-test-browsers
       - name: Verify professional notification settings on desktop and mobile
         run: node scripts/check-professional-notifications.mjs
       - uses: actions/upload-artifact@v4
@@ -305,7 +309,7 @@ jobs:
           cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - uses: ./.github/actions/prepare-test-browsers
       - run: node scripts/check-discovery-map.mjs
       - name: Verify public-pin and nearby-search journeys
         run: node scripts/check-location-journeys.mjs
@@ -332,7 +336,7 @@ jobs:
           cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - uses: ./.github/actions/prepare-test-browsers
       - name: Verify deposit, full and required payment choices in light and night mode
         run: node scripts/check-booking-payments.mjs
       - uses: actions/upload-artifact@v4
@@ -354,7 +358,9 @@ jobs:
           cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium webkit
+      - uses: ./.github/actions/prepare-test-browsers
+        with:
+          webkit: "true"
       - name: Verify professional arrival tools, customer journeys and Owner communications
         run: node scripts/check-arrival.mjs
       - uses: actions/upload-artifact@v4
@@ -385,13 +391,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test --maxWorkers=2
       - run: pnpm build
-      - name: Prepare Chromium for production-server security checks
-        run: |
-          if [ -x /usr/bin/google-chrome ]; then
-            echo "GLOHAUS_TEST_BROWSER=/usr/bin/google-chrome" >> "$GITHUB_ENV"
-          else
-            pnpm exec playwright install --with-deps chromium
-          fi
+      - uses: ./.github/actions/prepare-test-browsers
       - name: Verify actual production-server CSP and public journeys
         run: pnpm test:e2e
         env:

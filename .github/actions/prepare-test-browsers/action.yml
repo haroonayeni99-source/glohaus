@@ -1,0 +1,24 @@
+name: Prepare test browsers
+description: Reuse runner Chrome and retain requested WebKit coverage.
+inputs:
+  webkit:
+    description: Install WebKit for Safari engine checks.
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - name: Use runner Chrome or install Chromium
+      shell: bash
+      run: |
+        browser_path="$(command -v google-chrome || command -v chromium || true)"
+        if [ -n "$browser_path" ] && [ -x "$browser_path" ]; then
+          echo "GLOHAUS_TEST_BROWSER=$browser_path" >> "$GITHUB_ENV"
+          echo "GLOHAUS_CHROMIUM_PATH=$browser_path" >> "$GITHUB_ENV"
+          "$browser_path" --version
+        else
+          pnpm exec playwright install --with-deps chromium
+        fi
+    - name: Install WebKit without redownloading Chromium
+      if: inputs.webkit == 'true'
+      shell: bash
+      run: pnpm exec playwright install --with-deps webkit

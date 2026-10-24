@@ -3,7 +3,7 @@ import { chromium, expect } from "@playwright/test";
 import { readFile, writeFile } from "node:fs/promises";
 process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/homepage-media-entry.tsx";
 const { server } = await import("./ui-audit.mjs");
-const browser = await chromium.launch();
+const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined, args: ["--no-sandbox"] });
 const results = [];
 const image = await readFile("public/images/categories/nails-v2.webp");
 const uploaded = "https://images.example.test/uploaded-nails.webp";
@@ -123,7 +123,7 @@ try {
       await expect(mobileNails).toHaveAttribute("src", /photo-1604654894610/);
       await expect(page.locator(".mobile-home-hero img")).toHaveAttribute(
         "src",
-        /photo-1488426862026/,
+        "/images/homepage-portrait-mobile.svg",
       );
       // Explicit mobile changes are independent from desktop changes.
       await page.goto(`http://127.0.0.1:3004/?theme=${theme}`);

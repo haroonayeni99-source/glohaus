@@ -2,7 +2,9 @@
 // real accounts, payments, email or push-provider requests are used.
 import { chromium, webkit, devices, expect } from "@playwright/test";
 import { spawn } from "node:child_process";
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFile, writeFile, mkdir, mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 const port = 3015,
   base = `http://127.0.0.1:${port}`;
 const originalWorker = await readFile("public/sw.js", "utf8");
@@ -58,7 +60,9 @@ async function ready() {
     .toBe(200);
 }
 const results = [],
-  browsers = [];
+  browsers = [],
+  persistentContexts = [],
+  temporaryProfiles = [];
 await mkdir("reports", { recursive: true });
 try {
   await expect
@@ -86,10 +90,27 @@ try {
     ["iphone-webkit", safari, devices["iPhone 13"]],
   ])
     for (const theme of ["light", "night"]) {
-      const context = await browser.newContext({
+      const options = {
         ...profile,
         colorScheme: theme === "night" ? "dark" : "light",
-      });
+      };
+      // Installation is deliberately unavailable in incognito contexts. Check
+      // real desktop installability with a disposable normal profile instead
+      // of ignoring Chrome's in-incognito error or weakening the assertion.
+      let context;
+      if (name === "desktop") {
+        const directory = await mkdtemp(join(tmpdir(), "glohaus-pwa-"));
+        temporaryProfiles.push(directory);
+        context = await chromium.launchPersistentContext(directory, {
+          ...options,
+          executablePath: process.env.GLOHAUS_CHROMIUM_PATH || undefined,
+          headless: true,
+          args: ["--no-sandbox", "--disable-dev-shm-usage"],
+        });
+        persistentContexts.push(context);
+      } else {
+        context = await browser.newContext(options);
+      }
       const page = await context.newPage(),
         errors = [];
       page.on("pageerror", (error) => errors.push(error.message));
@@ -327,19 +348,29 @@ try {
   console.log(JSON.stringify(results, null, 2));
 } catch (error) {
   console.error(serverLog);
-  for (const browser of browsers)
-    for (const [i, context] of browser.contexts().entries())
-      for (const [j, page] of context.pages().entries())
-        await page
-          .screenshot({
-            path: `reports/pwa-failed-${i}-${j}.png`,
-            fullPage: true,
-          })
-          .catch(() => {});
+  for (const [i, context] of [
+    ...browsers.flatMap((browser) => browser.contexts()),
+    ...persistentContexts.filter((context) => context.pages().length),
+  ].entries())
+    for (const [j, page] of context.pages().entries())
+      await page
+        .screenshot({
+          path: `reports/pwa-failed-${i}-${j}.png`,
+          fullPage: true,
+        })
+        .catch(() => {});
   throw error;
 } finally {
   await writeFile("public/sw.js", originalWorker);
+  await Promise.all(
+    persistentContexts.map((context) => context.close().catch(() => {})),
+  );
   await Promise.all(browsers.map((b) => b.close()));
+  await Promise.all(
+    temporaryProfiles.map((directory) =>
+      rm(directory, { recursive: true, force: true }),
+    ),
+  );
   if (server.exitCode === null && server.signalCode === null)
     server.kill("SIGTERM");
 }

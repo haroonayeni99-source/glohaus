@@ -3,7 +3,7 @@ import { chromium, expect } from "@playwright/test";
 import { readFile, writeFile } from "node:fs/promises";
 process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/desktop-home-entry.tsx";
 const { server } = await import("./ui-audit.mjs");
-const browser = await chromium.launch();
+const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined, args: ["--no-sandbox"] });
 const styles = await readFile("src/app/site-improvements.css", "utf8");
 const desktopStart = styles.indexOf("/* Desktop home only:");
 const desktopEnd = styles.indexOf("/* The same sign-out control everywhere", desktopStart);

@@ -5,6 +5,19 @@ const mocks = vi.hoisted(() => ({
   sentGet: vi.fn(),
   send: vi.fn(),
   fetch: vi.fn(),
+  readerKeys: [] as string[],
+}));
+vi.mock("resend", () => ({
+  Resend: class {
+    constructor(key: string) {
+      mocks.readerKeys.push(key);
+    }
+    emails = {
+      receiving: { get: mocks.get },
+      get: mocks.sentGet,
+      send: vi.fn(),
+    };
+  },
 }));
 vi.mock("@/modules/payments/worker", () => ({
   withPaymentWorker: (work: (db: object) => unknown) =>
@@ -50,6 +63,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.stubEnv("RESEND_API_KEY", "fixture-only");
   vi.stubEnv("SUPPORT_EMAIL_FORWARDING_ENABLED", "true");
+  vi.stubEnv("SUPPORT_EMAIL_API_KEY", "");
+  mocks.readerKeys.length = 0;
   vi.stubGlobal("fetch", mocks.fetch);
   mocks.query.mockImplementation(async (sql: string) => ({
     rows: sql.includes("claim_support_mail")
@@ -150,6 +165,13 @@ it("does no provider or database work when disabled", async () => {
     processed: 0,
   });
   expect(mocks.query).not.toHaveBeenCalled();
+});
+it("uses the dedicated reader key while retaining the existing sending client", async () => {
+  vi.stubEnv("SUPPORT_EMAIL_API_KEY", "isolated-reader-fixture");
+  await deliverSupportForwarding(client());
+  expect(mocks.readerKeys).toEqual(["isolated-reader-fixture"]);
+  expect(mocks.get).toHaveBeenCalledOnce();
+  expect(mocks.send).toHaveBeenCalledOnce();
 });
 
 it("records outgoing SMTP replies only against a safely matched ticket", async () => {

@@ -4,9 +4,11 @@ Support receives at `support@glohaus.shop` using the existing Resend inbox and v
 
 ## Gmail reply settings
 
-The Owner has already verified Gmail Send mail as and tested Resend SMTP. Preserve that configuration. In Gmail → Settings → See all settings → Accounts and Import → Send mail as → **Edit info** for support@glohaus.shop, ensure **Reply-to is support@glohaus.shop**. Save it. When replying to a forwarded support message, confirm **From: support@glohaus.shop** and **To: the original customer**. Gmail may otherwise choose its default Gmail From address because the forwarded message is addressed to Gmail. Make the support identity the default only if wanted for all new mail in this Gmail account. Do not enable Gmail automatic forwarding back to support.
+The Owner has already verified Gmail Send mail as and tested Resend SMTP. Preserve that configuration. In Gmail → Settings → See all settings → Accounts and Import → Send mail as → **Edit info** for support@glohaus.shop, ensure **Reply-to is support@glohaus.shop**. Save it. When replying to a forwarded support message, confirm **From: support@glohaus.shop** and **To: the original customer**. Gmail may otherwise choose its default Gmail From address because the forwarded message is addressed to Gmail. Make the support identity the default only if wanted for all new mail in this Gmail account. Do not enable Gmail automatic forwarding back to support. Always include a subject: Resend SMTP rejects messages with a missing subject. Forwarded messages include a safe subject even when the original was blank.
 
 Existing SMTP settings, if repair is needed: smtp.resend.com, username resend, port 465 SSL/TLS (or 587 STARTTLS), password a securely entered domain-scoped Resend sending API key. Never publish the key or replace the website's server key with a sending-only key: receiving needs read access.
+
+Google currently announces that third-party Gmail Send mail as ends in January 2027; Google Workspace aliases are excluded. Plan a supported sending identity before that date without changing the existing MX or purchasing a service as part of this release. Source: https://support.google.com/mail/answer/22370?hl=en
 
 ## What is preserved
 
@@ -34,6 +36,6 @@ Authentication failures, unknown authentication, unsafe/missing originals, overs
 
 ## Deployment and rollback
 
-Apply the additive, checked-in support-mail migration before enabling production forwarding. Configure production-only SUPPORT_EMAIL_WEBHOOK_SECRET from the new webhook's signing secret and SUPPORT_EMAIL_FORWARDING_ENABLED=true. Reuse RESEND_API_KEY with receiving access. Preserve all existing webhook secrets and SMTP credentials. Preview forwarding stays disabled.
+Apply the additive, checked-in support-mail migration before enabling production forwarding. Configure production-only SUPPORT_EMAIL_WEBHOOK_SECRET from the new webhook's signing secret and SUPPORT_EMAIL_FORWARDING_ENABLED=true. Keep the existing RESEND_API_KEY and Gmail SMTP key unchanged. Configure a separate production-only SUPPORT_EMAIL_API_KEY for received/sent-message reads. Resend requires full_access for reads and does not offer a receiving-only API key; store this credential only as a sensitive server environment variable. Forwarding still sends using the existing sending credential. Preserve all existing webhook secrets and SMTP credentials. Preview forwarding stays disabled.
 
 Rollback the app to commit 3078b3202e3ab54e149def0b7a674a37ab585c07 / deployment dpl_EP4fYdec8PmohiPWtv8qTDdmMzAd if needed, disable only the new support webhook/forwarding flag, and retain the inbox, DNS and durable metadata. Never drop email history or modify payments during rollback.

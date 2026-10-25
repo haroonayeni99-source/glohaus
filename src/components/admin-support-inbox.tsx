@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { SupportMailPanel } from "@/components/support-mail-panel";
 import { SupportOperationsPanel } from "@/components/support-operations";
 import type { SupportCase } from "@/modules/support/cases";
 import type { SupportRequest } from "@/modules/support/domain";
@@ -13,33 +14,105 @@ export function AdminSupportInbox({
 }) {
   const [requests, setRequests] = useState(initial);
   const [busy, setBusy] = useState("");
+  const [saving, setSaving] = useState(false);
   const [selected, setSelected] = useState<SupportCase | null>(null);
   const [notice, setNotice] = useState("");
-  async function openCase(id: string) {
+  const [refreshNeeded, setRefreshNeeded] = useState<string | null>(null);
+  const [formVersion, setFormVersion] = useState(0);
+  const loading = useRef<{ sequence: number; controller?: AbortController }>({
+    sequence: 0,
+  });
+  const selectedId = useRef<string | null>(null);
+  const dirty = useRef(false);
+  const savingNow = useRef(false);
+  useEffect(
+    () => () => {
+      loading.current.sequence++;
+      loading.current.controller?.abort();
+    },
+    [],
+  );
+  async function loadCase(id: string): Promise<boolean> {
+    const sequence = ++loading.current.sequence;
+    loading.current.controller?.abort();
+    const controller = new AbortController();
+    loading.current.controller = controller;
     setBusy(id);
-    setNotice("");
     try {
       const response = await fetch(`/api/v1/support/${id}`, {
         cache: "no-store",
+        signal: controller.signal,
       });
       if (!response.ok)
         throw Error("Could not load the case. Check staff sign-in and MFA.");
-      setSelected(await response.json());
+      const data = await response.json();
+      if (sequence !== loading.current.sequence || controller.signal.aborted)
+        return false;
+      selectedId.current = id;
+      setSelected(data);
+      setRefreshNeeded(null);
+      return true;
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Could not load.");
+      if (sequence === loading.current.sequence && !controller.signal.aborted)
+        setNotice(error instanceof Error ? error.message : "Could not load.");
+      return false;
     } finally {
-      setBusy("");
+      if (sequence === loading.current.sequence) setBusy("");
     }
+  }
+  async function openCase(id: string) {
+    if (savingNow.current) return;
+    if (
+      dirty.current &&
+      selectedId.current !== id &&
+      !window.confirm("Discard the unsaved reply and open another case?")
+    )
+      return;
+    setNotice("");
+    const previous = selectedId.current;
+    if (await loadCase(id)) {
+      if (previous !== id) {
+        dirty.current = false;
+        setFormVersion((v) => v + 1);
+      }
+    }
+  }
+  async function refreshCase() {
+    if (!selectedId.current || savingNow.current) return;
+    setNotice("");
+    if (await loadCase(selectedId.current))
+      setNotice(
+        "Case history refreshed. Review the latest replies before sending another response.",
+      );
+  }
+  function closeCase() {
+    if (
+      savingNow.current ||
+      (dirty.current &&
+        !window.confirm("Discard the unsaved reply and close case details?"))
+    )
+      return;
+    loading.current.sequence++;
+    loading.current.controller?.abort();
+    selectedId.current = null;
+    dirty.current = false;
+    setSelected(null);
+    setBusy("");
+    setRefreshNeeded(null);
+    setNotice("");
   }
   async function update(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selected) return;
+    if (!selected || savingNow.current || busy || refreshNeeded) return;
+    const id = selected.id;
     const f = new FormData(event.currentTarget);
     const status = String(f.get("status"));
-    setBusy(selected.id);
+    savingNow.current = true;
+    setSaving(true);
     setNotice("");
+    let confirmed = false;
     try {
-      const response = await fetch(`/api/v1/admin/support/${selected.id}`, {
+      const response = await fetch(`/api/v1/admin/support/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -48,26 +121,44 @@ export function AdminSupportInbox({
           public: f.get("public") === "yes",
         }),
       });
-      if (!response.ok)
-        throw Error(
-          "Could not save. Escalated, appealed and privacy cases require Owner review. Data requests also need a recorded identity review and an outcome visible on the private ticket.",
+      if (!response.ok) {
+        if (response.status >= 500) throw Error("SAVE_UNCONFIRMED");
+        setNotice(
+          "Not saved. Check your reply, staff sign-in and MFA. Privacy cases also require the recorded identity review and a customer-visible outcome.",
         );
+        return;
+      }
+      confirmed = true;
+      dirty.current = false;
       setRequests(
         (current) =>
           current?.map((item) =>
-            item.id === selected.id
+            item.id === id
               ? { ...item, status: status as SupportRequest["status"] }
               : item,
           ) ?? null,
       );
-      await openCase(selected.id);
-      setNotice(
-        "Case history updated. Public replies are visible on the private ticket; Gmail is not synchronised.",
+      setSelected((current) =>
+        current?.id === id ? { ...current, status } : current,
       );
-    } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Could not save.");
+      setFormVersion((v) => v + 1);
+      const refreshed = await loadCase(id);
+      setRefreshNeeded(refreshed ? null : id);
+      setNotice(
+        refreshed
+          ? "Response and status saved. Case history updated. Public replies are visible on the private ticket; Gmail is not synchronised."
+          : "Response and status saved, but case history could not be refreshed. Refresh case history before sending another response.",
+      );
+    } catch {
+      setRefreshNeeded(id);
+      setNotice(
+        confirmed
+          ? "Response and status saved, but case history could not be refreshed."
+          : "Save could not be confirmed. Refresh case history and check for your reply before sending it again.",
+      );
     } finally {
-      setBusy("");
+      savingNow.current = false;
+      setSaving(false);
     }
   }
   if (requests === null)
@@ -86,10 +177,20 @@ export function AdminSupportInbox({
         unresolved cases first.
       </p>
       <p>
-        Future public address: support@glohaus.shop. Keep using
-        glohausuk@gmail.com until mailbox or forwarding setup is verified.
+        Support address: support@glohaus.shop. The Owner email status below
+        shows forwarding readiness and delivery to glohausuk@gmail.com.
       </p>
       {notice && <p role="status">{notice}</p>}
+      {refreshNeeded && (
+        <button
+          type="button"
+          disabled={saving || Boolean(busy)}
+          onClick={() => void refreshCase()}
+        >
+          Refresh case history
+        </button>
+      )}
+      {owner && <SupportMailPanel />}
       {owner && (
         <SupportOperationsPanel onOpenCase={(id) => void openCase(id)} />
       )}
@@ -101,7 +202,13 @@ export function AdminSupportInbox({
           <h3>Case {selected.id}</h3>
           <p>Status: {selected.status.replaceAll("_", " ")}</p>
           {owner && (
-            <SupportOperationsPanel key={selected.id} caseId={selected.id} />
+            <>
+              <SupportOperationsPanel key={selected.id} caseId={selected.id} />
+              <SupportMailPanel
+                key={`mail-${selected.id}`}
+                caseId={selected.id}
+              />
+            </>
           )}
           {selected.events.map((e) => (
             <article key={e.id}>
@@ -126,37 +233,54 @@ export function AdminSupportInbox({
               </a>
             </p>
           ))}
-          <form onSubmit={update} className="editor-form">
-            <label>
-              Status
-              <select name="status" defaultValue={selected.status}>
-                {[
-                  "open",
-                  "under_review",
-                  "awaiting_customer",
-                  "escalated",
-                  "resolved",
-                  "appealed",
-                ].map((status) => (
-                  <option key={status} value={status}>
-                    {status.replaceAll("_", " ")}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Reason / reply
-              <textarea name="note" minLength={5} maxLength={4000} required />
-            </label>
-            <label>
-              <input type="checkbox" name="public" value="yes" /> Show this
-              reply to the customer on their private ticket
-            </label>
-            <button disabled={Boolean(busy)} className="button">
-              Save response and status
-            </button>
+          <form
+            key={`${selected.id}-${formVersion}`}
+            onSubmit={update}
+            onChange={() => {
+              dirty.current = true;
+            }}
+            className="editor-form"
+          >
+            <fieldset
+              disabled={saving || Boolean(busy) || Boolean(refreshNeeded)}
+              style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}
+            >
+              <label>
+                Status
+                <select name="status" defaultValue={selected.status}>
+                  {[
+                    "open",
+                    "under_review",
+                    "awaiting_customer",
+                    "escalated",
+                    "resolved",
+                    "appealed",
+                  ].map((status) => (
+                    <option key={status} value={status}>
+                      {status.replaceAll("_", " ")}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Reason / reply
+                <textarea name="note" minLength={5} maxLength={4000} required />
+              </label>
+              <label>
+                <input type="checkbox" name="public" value="yes" /> Show this
+                reply to the customer on their private ticket
+              </label>
+              <button
+                disabled={saving || Boolean(busy) || Boolean(refreshNeeded)}
+                className="button"
+              >
+                Save response and status
+              </button>
+            </fieldset>
           </form>
-          <button onClick={() => setSelected(null)}>Close case details</button>
+          <button disabled={saving} onClick={closeCase}>
+            Close case details
+          </button>
         </section>
       )}
       <div className="service-edit-list">
@@ -194,10 +318,10 @@ export function AdminSupportInbox({
               )}
               <button
                 type="button"
-                disabled={busy === item.id}
+                disabled={saving || busy === item.id}
                 onClick={() => openCase(item.id)}
               >
-                {busy === item.id ? "Saving…" : "Open case / reply"}
+                {busy === item.id ? "Loading…" : "Open case / reply"}
               </button>
             </div>
           </article>

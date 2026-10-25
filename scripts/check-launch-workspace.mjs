@@ -269,6 +269,7 @@ try {
         await goToSection("overview");
         await page.locator('.admin-quick-actions a[href="#support"]').click();
         await expect(page.locator("#support")).toBeVisible();
+        await goToSection("overview");
         await page
           .getByLabel("Search Owner controls")
           .fill("customer complaint");

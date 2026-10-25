@@ -47,6 +47,7 @@ import { profileExamples } from "@/modules/professionals/examples";
 import { HomepageMediaControl } from "@/components/homepage-media-control";
 import { OwnerMarketingPanel } from "@/components/owner-marketing-panel";
 import { OwnerBackendHealthPanel } from "@/components/owner-backend-health-panel";
+import { OwnerServiceSafeguards } from "@/components/owner-service-safeguards";
 import {
   adminFinanceOverview,
   adminOverview,
@@ -313,6 +314,13 @@ export default async function Page() {
             <AdminTaxonomyManager data={categories} />
           ) : (
             <AdminSectionUnavailable label="Categories" />
+          )}
+          {isOwner && (
+            <OwnerServiceSafeguards
+              professionals={(data.professionalTrust ?? []).map(
+                ({ id, business_name }) => ({ id, business_name }),
+              )}
+            />
           )}
         </section>
         <section

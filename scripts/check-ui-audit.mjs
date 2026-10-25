@@ -31,6 +31,7 @@ try {
       await page.getByRole("button", { name: "Minimise administration menu" }).click();
       await page.screenshot({ path: `reports/${role}-${theme}-${width}-compact.png` });
       await page.getByRole("button", { name: "Expand administration menu" }).click();
+      for (const toggle of await page.locator('.admin-tool-group-toggle[aria-expanded="false"]').all()) await toggle.click();
       const links = await page.locator('.admin-navigation nav a').all();
       for (const link of links) {
         const href = await link.getAttribute("href"); await link.click();

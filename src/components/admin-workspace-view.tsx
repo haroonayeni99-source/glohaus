@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminToolHelp } from "@/components/admin-tool-guide";
 import { useEffect, useRef, useState } from "react";
 
 export function openAdminSection(id: string) {
@@ -96,8 +97,8 @@ export function AdminWorkspaceView({
     >
       <div className="admin-view-toolbar">
         <span>
-          Choose a section. Switching sections keeps your unsaved entries.
-          Save before leaving this page.
+          Choose a section. Switching sections keeps your unsaved entries. Save
+          before leaving this page.
         </span>
         <button
           type="button"
@@ -159,6 +160,7 @@ export function AdminSection({
       ref={root}
     >
       <h2 className="admin-section-title">{title}</h2>
+      <AdminToolHelp id={id} />
       {["live-access", "refund-appeals"].includes(id) && (
         <p className="admin-action-warning">
           {id === "refund-appeals"

@@ -20,6 +20,22 @@ try {
         const page = await browser.newPage({
           viewport: { width, height: 1000 },
         });
+        async function goToSection(id) {
+          if (width <= 880) {
+            await page
+              .getByLabel("Go to section", { exact: true })
+              .selectOption(id);
+          } else {
+            const link = page.locator(`.admin-navigation nav a[href="#${id}"]`);
+            if (!(await link.isVisible()))
+              await page
+                .locator(".admin-tool-group")
+                .filter({ has: link })
+                .getByRole("button")
+                .click();
+            await link.click();
+          }
+        }
         const errors = [];
         page.on("pageerror", (error) => errors.push(error.message));
         await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, (route) =>
@@ -36,15 +52,20 @@ try {
         const sections = await page
           .locator(".admin-section-picker option")
           .evaluateAll((options) => options.map((option) => option.value));
+        if (width > 880) {
+          const group = page.getByRole("button", { name: /^People & access/ });
+          await expect(group).toHaveAttribute("aria-expanded", "false");
+          await group.click();
+          await expect(
+            page.locator('.admin-navigation nav a[href="#users"]'),
+          ).toBeVisible();
+          await group.click();
+          await expect(
+            page.locator('.admin-navigation nav a[href="#users"]'),
+          ).not.toBeVisible();
+        }
         for (const id of sections) {
-          if (width <= 880)
-            await page
-              .getByLabel("Go to section", { exact: true })
-              .selectOption(id);
-          else
-            await page
-              .locator(`.admin-navigation nav a[href="#${id}"]`)
-              .click();
+          await goToSection(id);
           await expect(page.locator(`#${id}`)).toBeVisible();
           expect(
             await page
@@ -57,14 +78,7 @@ try {
             ),
           ).toBeLessThanOrEqual(1);
         }
-        if (width <= 880)
-          await page
-            .getByLabel("Go to section", { exact: true })
-            .selectOption("support");
-        else
-          await page
-            .locator('.admin-navigation nav a[href="#support"]')
-            .click();
+        await goToSection("support");
         await expect(
           page.getByText("Fixture Support Customer", { exact: false }),
         ).toBeVisible();
@@ -111,6 +125,14 @@ try {
             { exact: true },
           ),
         ).toBeVisible();
+        await supportForm
+          .getByLabel("Reason / reply", { exact: true })
+          .fill("Unsaved support draft stays here");
+        await goToSection("bookings");
+        await goToSection("support");
+        await expect(
+          supportForm.getByLabel("Reason / reply", { exact: true }),
+        ).toHaveValue("Unsaved support draft stays here");
         const supportChanges = await page.evaluate(() =>
           JSON.parse(sessionStorage.getItem("audit-requests") || "[]").filter(
             (request) => request.url.includes("/admin/support/"),
@@ -138,12 +160,7 @@ try {
         await page.screenshot({
           path: `reports/launch-support-${role}-${theme}-${width}.png`,
         });
-        if (width <= 880)
-          await page
-            .getByLabel("Go to section", { exact: true })
-            .selectOption("users");
-        else
-          await page.locator('.admin-navigation nav a[href="#users"]').click();
+        await goToSection("users");
         await page.getByLabel("Search users and professionals").fill("Alex");
         await expect(page.getByText("1 of 2 accounts shown")).toBeVisible();
         if (role === "owner") {
@@ -193,14 +210,7 @@ try {
             exact: true,
           }),
         ).toBeVisible();
-        if (width <= 880)
-          await page
-            .getByLabel("Go to section", { exact: true })
-            .selectOption("bookings");
-        else
-          await page
-            .locator('.admin-navigation nav a[href="#bookings"]')
-            .click();
+        await goToSection("bookings");
         await page
           .locator('#bookings input[type="search"]')
           .fill("not-a-booking");
@@ -238,6 +248,30 @@ try {
           await page
             .getByRole("button", { name: "Expand administration menu" })
             .click();
+        }
+        await page
+          .getByLabel("Find a tool", { exact: true })
+          .fill("customer complaint");
+        await expect(
+          page.locator('.admin-navigation nav a[href="#support"]'),
+        ).toBeVisible();
+        await page.locator('.admin-navigation nav a[href="#support"]').click();
+        await expect(page.locator("#support .admin-tool-help")).toContainText(
+          "Gmail replies are not synchronised",
+        );
+        await page
+          .getByLabel("Find a tool", { exact: true })
+          .fill("nothing-matches-this-task");
+        await expect(page.locator(".admin-navigation nav")).toContainText(
+          "No tools match",
+        );
+        await page.getByLabel("Find a tool", { exact: true }).fill("");
+        await goToSection("overview");
+        await page.locator('.admin-quick-actions a[href="#support"]').click();
+        await expect(page.locator("#support")).toBeVisible();
+        if (role === "admin") {
+          expect(sections).not.toContain("professional-commission");
+          expect(sections).not.toContain("staff");
         }
         expect(errors).toEqual([]);
         console.log(

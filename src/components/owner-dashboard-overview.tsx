@@ -20,6 +20,7 @@ import type {
 } from "@/modules/admin/repository";
 import type { Account } from "@/modules/accounts/domain";
 import { OwnerAdminSearch } from "@/components/owner-admin-search";
+import { adminToolGuide } from "@/components/admin-tool-guide";
 
 function money(pence: number) {
   return new Intl.NumberFormat("en-GB", {
@@ -223,27 +224,41 @@ export function OwnerDashboardOverview({
       </header>
 
       <section id="overview" className="owner-dashboard-overview">
+        <div className="admin-task-intro">
+          <h2>What would you like to do?</h2>
+          <p>
+            Choose a task below, search for a tool, or open a menu group. Each
+            section explains what it controls.
+          </p>
+        </div>
         <nav
           className="admin-quick-actions"
           aria-label="Common administration tasks"
         >
           {[
-            ["Users", "users"],
-            ["Professionals", "professionals"],
-            ["Verification", "live-access"],
-            ["Categories", "categories"],
-            ["Disputes", "payment-disputes"],
-            ["Refund appeals", "refund-appeals"],
+            ["Manage accounts", "users"],
+            ["Review professionals", "professionals"],
+            ["Check verification", "live-access"],
+            ["Handle support enquiries", "support"],
+            ["Check bookings", "bookings"],
+            ["Check payments & payouts", "payments"],
             ...(account.roles.includes("owner")
               ? [
-                  ["Website ON / OFF", "website-status"],
-                  ["Homepage images", "homepage-media"],
-                  ["Audit log", "audit"],
+                  ["Change homepage photos", "homepage-media"],
+                  [
+                    "Manage commission & draft rates",
+                    "professional-commission",
+                  ],
+                  ["Manage founding offer", "founding-programme"],
+                  ["Check customer acquisition", "referrals"],
+                  ["Check platform health", "backend-health"],
+                  ["Review change history", "audit"],
                 ]
               : []),
           ].map(([label, id]) => (
             <a key={id} href={`#${id}`}>
-              {label}
+              <strong>{label}</strong>
+              <small>{adminToolGuide[id]?.purpose}</small>
             </a>
           ))}
         </nav>

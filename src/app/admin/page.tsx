@@ -1,3 +1,4 @@
+import { AdminToolHelp } from "@/components/admin-tool-guide";
 import { FoundingProgrammeControls } from "@/components/founding-programme-controls";
 import type { ProgrammeOverview } from "@/modules/commission/programme";
 import { AdminArrival, type ArrivalOverview } from "@/components/admin-arrival";
@@ -77,13 +78,29 @@ export default async function Page() {
   // The serverless runtime intentionally has a one-connection pool. Avoid
   // starting a dozen transactions at once and timing out while they queue.
   const data = await adminOverview();
-  const programme = isOwner ? await withOwner(async db => (await db.query<{data:ProgrammeOverview}>("SELECT beauty.owner_programme_overview() AS data")).rows[0]?.data ?? null).catch(() => null) : null;
+  const programme = isOwner
+    ? await withOwner(
+        async (db) =>
+          (
+            await db.query<{ data: ProgrammeOverview }>(
+              "SELECT beauty.owner_programme_overview() AS data",
+            )
+          ).rows[0]?.data ?? null,
+      ).catch(() => null)
+    : null;
   const support = await withAdmin(supportInbox).catch(() => null);
   const policies = await withAdmin((db) => adminPolicies(db)).catch(() => null);
   const activity = await withAdmin((db) => activityOverview(db)).catch(
     () => null,
   );
-  const arrivals = await withAdmin(async db => (await db.query<{data:ArrivalOverview}>("SELECT beauty.admin_arrival_overview(NULL) AS data")).rows[0].data).catch(() => null);
+  const arrivals = await withAdmin(
+    async (db) =>
+      (
+        await db.query<{ data: ArrivalOverview }>(
+          "SELECT beauty.admin_arrival_overview(NULL) AS data",
+        )
+      ).rows[0].data,
+  ).catch(() => null);
   const labels = await publicLabels();
   const shopCategories = await withAdmin((db) =>
     productCategories(db, true),
@@ -127,7 +144,9 @@ export default async function Page() {
   const publicSiteEnabled = isOwner
     ? await ownerPublicSiteStatus().catch(() => null)
     : true;
-  const exampleVisibility = isOwner ? await withOwner(readExampleVisibility).catch(() => null) : null;
+  const exampleVisibility = isOwner
+    ? await withOwner(readExampleVisibility).catch(() => null)
+    : null;
   const homepageMedia = isOwner
     ? await ownerHomepageMedia().catch(() => null)
     : null;
@@ -151,13 +170,27 @@ export default async function Page() {
           referrals={referrals}
           owner={owner}
         />
-        <section id="arrival-management" className="admin-workspace-section admin-detail-card"><h2>Arrival & customer communications</h2>{arrivals ? <AdminArrival initial={arrivals} owner={isOwner}/> : <p role="alert">Arrival management could not be loaded. Reload to try again.</p>}</section>
+        <section
+          id="arrival-management"
+          className="admin-workspace-section admin-detail-card"
+        >
+          <h2>Arrival &amp; communications</h2>
+          <AdminToolHelp id="arrival-management" />
+          {arrivals ? (
+            <AdminArrival initial={arrivals} owner={isOwner} />
+          ) : (
+            <p role="alert">
+              Arrival management could not be loaded. Reload to try again.
+            </p>
+          )}
+        </section>
         <section
           id="professional-policies"
           className="admin-workspace-section admin-detail-card"
         >
           <p className="eyebrow">PROFESSIONAL BOOKING TERMS</p>
           <h2>Professional Policies</h2>
+          <AdminToolHelp id="professional-policies" />
           {policies ? (
             <AdminProfessionalPolicies initial={policies} />
           ) : (
@@ -170,6 +203,7 @@ export default async function Page() {
         >
           <p className="eyebrow">PROFESSIONAL PARTICIPATION</p>
           <h2>Inactive Professionals</h2>
+          <AdminToolHelp id="professional-activity" />
           {activity ? (
             <AdminProfessionalActivity initial={activity} owner={isOwner} />
           ) : (
@@ -184,21 +218,43 @@ export default async function Page() {
             {publicSiteEnabled === null ? (
               <AdminSectionUnavailable label="Website status" />
             ) : (
-              <WebsiteStatusControl initialEnabled={publicSiteEnabled} />
+              <>
+                <AdminToolHelp id="website-status" />
+                <WebsiteStatusControl initialEnabled={publicSiteEnabled} />
+              </>
             )}
           </section>
         )}
-        {isOwner && <section id="profile-examples" className="admin-workspace-section admin-detail-card">
-          <p className="eyebrow">EXAMPLE CONTENT</p><h2>Example profiles</h2>
-          {exampleVisibility ? <OwnerExampleProfiles initial={exampleVisibility} profiles={profileExamples.map(({ slug, name, category }) => ({ slug, name, category }))} /> : <AdminSectionUnavailable label="Example profile controls" />}
-        </section>}
+        {isOwner && (
+          <section
+            id="profile-examples"
+            className="admin-workspace-section admin-detail-card"
+          >
+            <p className="eyebrow">EXAMPLE CONTENT</p>
+            <h2>Example profiles</h2>
+            <AdminToolHelp id="profile-examples" />
+            {exampleVisibility ? (
+              <OwnerExampleProfiles
+                initial={exampleVisibility}
+                profiles={profileExamples.map(({ slug, name, category }) => ({
+                  slug,
+                  name,
+                  category,
+                }))}
+              />
+            ) : (
+              <AdminSectionUnavailable label="Example profile controls" />
+            )}
+          </section>
+        )}
         {isOwner && marketing && (
           <section
             id="marketing"
             className="admin-workspace-section admin-detail-card"
           >
             <p className="eyebrow">MARKETING & FEEDBACK</p>
-            <h2>Preset campaigns and private feature votes</h2>
+            <h2>Marketing</h2>
+            <AdminToolHelp id="marketing" />
             <p className="lead">
               Launch optional marketing only to users who selected the matching
               preference. Transactional booking, order and security emails stay
@@ -213,7 +269,8 @@ export default async function Page() {
             className="admin-workspace-section admin-detail-card"
           >
             <p className="eyebrow">HOMEPAGE CONTENT</p>
-            <h2>Homepage images and categories</h2>
+            <h2>Homepage Images</h2>
+            <AdminToolHelp id="homepage-media" />
             <p className="lead">
               Change the homepage photos and category names without changing
               code. Desktop and mobile can use different names and images.
@@ -233,7 +290,8 @@ export default async function Page() {
           className="admin-workspace-section admin-detail-card"
         >
           <p className="eyebrow">PLATFORM LANGUAGE</p>
-          <h2>Platform labels</h2>
+          <h2>Website wording</h2>
+          <AdminToolHelp id="settings" />
           <p className="lead">
             Set the professional title and the category language that customers
             see across GLOHAUS.
@@ -245,7 +303,8 @@ export default async function Page() {
           className="admin-workspace-section admin-detail-card"
         >
           <p className="eyebrow">DISCOVERY & SERVICES</p>
-          <h2>Categories</h2>
+          <h2>Service Categories</h2>
+          <AdminToolHelp id="categories" />
           <p className="lead">
             Add new beauty categories, rename them, control their order, or hide
             them without deleting existing data.
@@ -261,7 +320,8 @@ export default async function Page() {
           className="admin-workspace-section admin-detail-card"
         >
           <p className="eyebrow">MARKETPLACE CATALOGUE</p>
-          <h2>Product categories</h2>
+          <h2>Product Categories</h2>
+          <AdminToolHelp id="product-categories" />
           <p>
             Add, edit or remove categories from Shop browsing. Hide removes a
             category from browsing and new product choices, while retaining
@@ -280,7 +340,8 @@ export default async function Page() {
             className="admin-workspace-section admin-detail-card"
           >
             <p className="eyebrow">CUSTOMER BOOKING FEE</p>
-            <h2>Booking fee control</h2>
+            <h2>Booking Fee</h2>
+            <AdminToolHelp id="booking-fee" />
             <p className="admin-action-warning">
               Financial setting · affects future booking quotes
             </p>
@@ -299,7 +360,8 @@ export default async function Page() {
             className="admin-workspace-section admin-detail-card"
           >
             <p className="eyebrow">MARKETPLACE MONEY</p>
-            <h2>Shop commission</h2>
+            <h2>Shop Fees</h2>
+            <AdminToolHelp id="shop-fees" />
             <p className="admin-action-warning">
               Financial setting · affects future Shop checkouts
             </p>
@@ -321,7 +383,8 @@ export default async function Page() {
             className="admin-workspace-section admin-detail-card"
           >
             <p className="eyebrow">SIGN-UPS & SIGN-INS</p>
-            <h2>All sign-ups and sign-ins</h2>
+            <h2>Sign-ups &amp; sign-ins</h2>
+            <AdminToolHelp id="auth-accounts" />
             <p className="lead">
               See every sign-up, including accounts whose GLOHAUS setup is not
               complete. Check their email confirmation, account status, roles
@@ -336,21 +399,31 @@ export default async function Page() {
         )}
         {isOwner && (
           <section
+            id="founding-programme"
+            className="admin-workspace-section admin-detail-card"
+          >
+            <h2>Founding Programme Controls</h2>
+            <FoundingProgrammeControls data={programme} view="programme" />
+          </section>
+        )}
+        {isOwner && (
+          <section
             id="professional-commission"
             className="admin-workspace-section admin-detail-card"
           >
             <p className="eyebrow">PROFESSIONAL COMMISSION</p>
-            <h2>Commission Control Centre</h2>
+            <h2>Commission &amp; Pricing</h2>
+            <AdminToolHelp id="professional-commission" />
             <p className="admin-action-warning">
               Financial setting · affects future quotes for the selected
               professional
             </p>
             <p className="lead">
-              Manage scheduled service commission, founding rewards and
-              read-only financial simulations. Every live change requires Owner
-              confirmation.
+              Use the draft section to plan customer-source percentages. Use the
+              live commission controls below to manage current service rates,
+              professional overrides and scheduled changes.
             </p>
-            <FoundingProgrammeControls data={programme} />
+            <FoundingProgrammeControls data={programme} view="pricing" />
             {commissionCentre ? (
               <CommissionControlCentre data={commissionCentre} />
             ) : (
@@ -364,8 +437,11 @@ export default async function Page() {
             className="admin-workspace-section admin-detail-card"
           >
             <p className="eyebrow">PROFESSIONAL REFERRALS</p>
-            <h2>Referral leaderboard</h2>
-            <p><a href="/admin/growth">Open Growth &amp; Performance Centre →</a></p>
+            <h2>Customer Acquisition &amp; Growth</h2>
+            <AdminToolHelp id="referrals" />
+            <p>
+              <a href="/admin/growth">Open Growth &amp; Performance Centre →</a>
+            </p>
             <p className="lead">
               View every professional referral code and the completed GLOHAUS
               accounts attributed to it. Raw link clicks do not count toward
@@ -383,7 +459,8 @@ export default async function Page() {
             id="staff"
             className="admin-workspace-section admin-detail-card"
           >
-            <h2>Staff & admins</h2>
+            <h2>Admins &amp; Access</h2>
+            <AdminToolHelp id="staff" />
             <p className="admin-action-warning">
               Privileged access · review the user and role before confirming
             </p>
@@ -400,7 +477,8 @@ export default async function Page() {
             className="admin-workspace-section admin-detail-card"
           >
             <p className="eyebrow">SYSTEM HEALTH</p>
-            <h2>Background tasks, emails and payments</h2>
+            <h2>Platform Health</h2>
+            <AdminToolHelp id="backend-health" />
             <p className="lead">
               Check whether scheduled tasks, automated emails and payment setup
               are working. These checks do not change settings or move money.
@@ -417,7 +495,8 @@ export default async function Page() {
             className="admin-workspace-section admin-detail-card"
           >
             <p className="eyebrow">LAUNCH READINESS</p>
-            <h2>Booking → payment → payout</h2>
+            <h2>Payment setup</h2>
+            <AdminToolHelp id="payment-readiness" />
             <p className="lead">
               {paymentReadiness.ready
                 ? "All required setup checks for booking payments and payouts are passing."
@@ -456,7 +535,8 @@ export default async function Page() {
             className="admin-workspace-section admin-detail-card"
           >
             <p className="eyebrow">EMAIL & SIGN-IN SETUP</p>
-            <h2>Booking emails and sign-in security</h2>
+            <h2>Email setup</h2>
+            <AdminToolHelp id="email-readiness" />
             <div className="admin-readiness-summary">
               <p className="lead">
                 <strong>Booking and order emails:</strong>{" "}
@@ -508,7 +588,8 @@ export default async function Page() {
             className="admin-workspace-section admin-detail-card"
           >
             <p className="eyebrow">PROFESSIONAL NOTIFICATION HEALTH</p>
-            <h2>Push delivery</h2>
+            <h2>Notification delivery</h2>
+            <AdminToolHelp id="push-delivery-health" />
             <p className="lead">
               Push provider acceptance confirms receipt by the push service.
               Device display depends on permission, connectivity and browser
@@ -549,7 +630,8 @@ export default async function Page() {
             className="admin-workspace-section admin-detail-card"
           >
             <p className="eyebrow">TRANSACTIONAL EMAIL HEALTH</p>
-            <h2>Delivery outcomes</h2>
+            <h2>Email Delivery</h2>
+            <AdminToolHelp id="email-delivery-health" />
             <p className="lead">
               Track booking and order emails. Accepted means Resend received the
               email; delivered means delivery was confirmed. Sending and
@@ -602,7 +684,7 @@ export default async function Page() {
                 <AdminSectionUnavailable label={String(label)} />
               </section>
             ))}
-        <AdminSection id="support" title="Support inbox">
+        <AdminSection id="support" title="Support & Disputes">
           <AdminSupportInbox initial={support} />
         </AdminSection>
         <AdminFinancePanel data={finance} />

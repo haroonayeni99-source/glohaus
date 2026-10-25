@@ -2,7 +2,7 @@
 
 import { openAdminSection } from "@/components/admin-workspace-view";
 import Link from "next/link";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BadgeCheck,
   BarChart3,
@@ -21,6 +21,11 @@ import {
   ShieldCheck,
   UsersRound,
 } from "lucide-react";
+import {
+  adminTaskGroups,
+  adminToolGuide,
+  matchesAdminTool,
+} from "@/components/admin-tool-guide";
 import { AccountControls } from "@/components/account-controls";
 import type { Account } from "@/modules/accounts/domain";
 
@@ -42,7 +47,7 @@ function sectionOffset() {
 
 const coreSections = [
   ["Overview", "overview", LayoutDashboard],
-  ["Settings", "settings", Settings],
+  ["Website wording", "settings", Settings],
   ["Service Categories", "categories", BookOpenCheck],
   ["Product Categories", "product-categories", PackageCheck],
   ["Users", "users", UsersRound],
@@ -53,10 +58,10 @@ const coreSections = [
   ["Bookings", "bookings", CalendarDays],
   ["Orders", "orders", PackageCheck],
   ["Reviews", "reviews", MessageSquareWarning],
-  ["Reports", "reports", FileWarning],
+  ["Safety reports", "reports", FileWarning],
   ["Support & Disputes", "support", MessageSquareWarning],
-  ["Content", "content", BookOpenCheck],
-  ["Disputes", "payment-disputes", CreditCard],
+  ["Posts & Stories", "content", BookOpenCheck],
+  ["Payment disputes", "payment-disputes", CreditCard],
   ["Refund appeals", "refund-appeals", CreditCard],
   ["Payments & Payouts", "payments", CreditCard],
   ["Analytics", "analytics", BarChart3],
@@ -83,62 +88,7 @@ const ownerSections = [
   ["Audit Log", "audit", BarChart3],
 ] as const;
 
-const adminGroups = [
-  { label: "Workspace", ids: ["overview", "website-status", "settings"] },
-  {
-    label: "People & access",
-    ids: [
-      "users",
-      "auth-accounts",
-      "professionals",
-      "professional-policies",
-      "professional-activity",
-      "live-access",
-      "staff",
-    ],
-  },
-  {
-    label: "Marketplace & support",
-    ids: [
-      "categories",
-      "product-categories",
-      "bookings",
-      "orders",
-      "reviews",
-      "reports",
-      "support",
-      "payment-disputes",
-      "refund-appeals",
-    ],
-  },
-  {
-    label: "Money & analytics",
-    ids: [
-      "payments",
-      "booking-fee",
-      "shop-fees",
-      "professional-commission",
-      "founding-programme",
-      "analytics",
-    ],
-  },
-  {
-    label: "Content & growth",
-    ids: ["homepage-media", "profile-examples", "content", "marketing", "referrals"],
-  },
-  {
-    label: "Operations",
-    ids: [
-      "arrival-management",
-      "push-delivery-health",
-      "audit",
-      "backend-health",
-      "payment-readiness",
-      "email-readiness",
-      "email-delivery-health",
-    ],
-  },
-];
+const adminGroups = adminTaskGroups;
 
 export function AdminNavigation({ account }: { account: Account }) {
   const owner = account.roles.includes("owner");
@@ -155,6 +105,16 @@ export function AdminNavigation({ account }: { account: Account }) {
   const [activeId, setActiveId] = useState("overview");
   const [compact, setCompact] = useState(false);
   const [menuSearch, setMenuSearch] = useState("");
+  const [expandedGroups, setExpandedGroups] = useState<string[]>([
+    "Start here",
+  ]);
+  function expandGroup(id: string) {
+    const label = adminGroups.find((group) => group.ids.includes(id))?.label;
+    if (label)
+      setExpandedGroups((groups) =>
+        groups.includes(label) ? groups : [...groups, label],
+      );
+  }
   const activated = useRef<{ id: string; y: number } | null>(null);
 
   useEffect(() => {
@@ -208,6 +168,7 @@ export function AdminNavigation({ account }: { account: Account }) {
           window.scrollTo({ top: Math.max(0, top), behavior: "instant" });
           activated.current = { id: initial, y: window.scrollY };
           setActiveId(initial);
+          expandGroup(initial);
         }
       });
     } else {
@@ -223,8 +184,11 @@ export function AdminNavigation({ account }: { account: Account }) {
       });
     };
 
-    const onSelection = (event: Event) =>
-      setActiveId((event as CustomEvent<string>).detail);
+    const onSelection = (event: Event) => {
+      const id = (event as CustomEvent<string>).detail;
+      setActiveId(id);
+      expandGroup(id);
+    };
     window.addEventListener("glohaus:admin-section", onSelection);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
@@ -240,8 +204,8 @@ export function AdminNavigation({ account }: { account: Account }) {
     };
   }, [sections]);
 
-  const visibleSections = sections.filter(([label]) =>
-    label.toLowerCase().includes(menuSearch.trim().toLowerCase()),
+  const visibleSections = sections.filter(([label, id]) =>
+    matchesAdminTool(id, label, menuSearch),
   );
 
   function activate(id: string) {
@@ -250,6 +214,7 @@ export function AdminNavigation({ account }: { account: Account }) {
     if (!target) return;
 
     setActiveId(id);
+    expandGroup(id);
     const top =
       window.scrollY + target.getBoundingClientRect().top - sectionOffset();
     window.scrollTo({ top: Math.max(0, top), behavior: "instant" });
@@ -259,7 +224,7 @@ export function AdminNavigation({ account }: { account: Account }) {
 
   return (
     <aside
-      className={`admin-navigation${compact ? " is-compact" : ""}`}
+      className={`admin-navigation${compact ? " is-compact" : ""}${menuSearch.trim() ? " has-tool-search" : ""}`}
       aria-label="Administration navigation"
     >
       <button
@@ -302,11 +267,21 @@ export function AdminNavigation({ account }: { account: Account }) {
           value={activeId}
           onChange={(event) => activate(event.target.value)}
         >
-          {sections.map(([label, id]) => (
-            <option key={id} value={id}>
-              {label}
-            </option>
-          ))}
+          {adminGroups
+            .filter((group) =>
+              sections.some(([, id]) => group.ids.includes(id)),
+            )
+            .map((group) => (
+              <optgroup key={group.label} label={group.label}>
+                {sections
+                  .filter(([, id]) => group.ids.includes(id))
+                  .map(([label, id]) => (
+                    <option key={id} value={id}>
+                      {label}
+                    </option>
+                  ))}
+              </optgroup>
+            ))}
         </select>
       </label>
       <label className="admin-menu-search">
@@ -316,48 +291,67 @@ export function AdminNavigation({ account }: { account: Account }) {
           type="search"
           value={menuSearch}
           onChange={(event) => setMenuSearch(event.target.value)}
-          placeholder="Users, images, verification…"
+          placeholder="Try fees, complaints or photos"
         />
       </label>
-      <nav id="admin-section-menu">
-        {visibleSections.map(([label, id, Icon], index) => {
-          const group = adminGroups.find((group) =>
+      <nav id="admin-section-menu" aria-label="Management tools">
+        {adminGroups.map((group, index) => {
+          const tools = visibleSections.filter(([, id]) =>
             group.ids.includes(id),
-          )?.label;
-          const previousGroup = index
-            ? adminGroups.find((group) =>
-                group.ids.includes(visibleSections[index - 1][1]),
-              )?.label
-            : null;
-          const active = id === activeId;
+          );
+          if (!tools.length) return null;
+          const expanded =
+            compact ||
+            !!menuSearch.trim() ||
+            expandedGroups.includes(group.label);
           return (
-            <Fragment key={id}>
-              {group !== previousGroup && (
-                <p className="admin-menu-group">{group}</p>
-              )}
-              <a
-                key={id}
-                title={label}
-                aria-label={label}
-                href={`#${id}`}
-                className={active ? "is-active" : undefined}
-                aria-current={active ? "location" : undefined}
-                onClick={(event) => {
-                  event.preventDefault();
-                  activate(id);
-                }}
+            <div className="admin-tool-group" key={group.label}>
+              <button
+                type="button"
+                className="admin-tool-group-toggle"
+                aria-expanded={expanded}
+                aria-controls={`admin-tools-${index}`}
+                onClick={() =>
+                  setExpandedGroups((groups) =>
+                    groups.includes(group.label)
+                      ? groups.filter((label) => label !== group.label)
+                      : [...groups, group.label],
+                  )
+                }
               >
-                <Icon size={16} aria-hidden />
-                <span>{label}</span>
-              </a>
-            </Fragment>
+                <span>{group.label}</span>
+                <span aria-hidden>{expanded ? "−" : "+"}</span>
+              </button>
+              <div
+                id={`admin-tools-${index}`}
+                className="admin-tool-group-links"
+                hidden={!expanded}
+              >
+                {tools.map(([label, id, Icon]) => (
+                  <a
+                    key={id}
+                    title={`${label}: ${adminToolGuide[id]?.purpose ?? ""}`}
+                    aria-label={label}
+                    href={`#${id}`}
+                    className={id === activeId ? "is-active" : undefined}
+                    aria-current={id === activeId ? "location" : undefined}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      activate(id);
+                    }}
+                  >
+                    <Icon size={16} aria-hidden />
+                    <span>{label}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
           );
         })}
-        {!sections.some(([label]) =>
-          label.toLowerCase().includes(menuSearch.trim().toLowerCase()),
-        ) && (
+        {!visibleSections.length && (
           <p role="status">
-            No tools match. Clear the search to see all sections.
+            No tools match. Try a shorter search or clear it to see all
+            sections.
           </p>
         )}
       </nav>

@@ -22,6 +22,7 @@ export function MfaManager() {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [verifyAgain, setVerifyAgain] = useState(false);
 
   const load = useCallback(async () => {
     const [factorResult, aalResult] = await Promise.all([
@@ -121,14 +122,31 @@ export function MfaManager() {
     <section className="editor-form" aria-labelledby="mfa-title">
       <h2 id="mfa-title">Two-step verification</h2>
       <p className="lead">
-        Owner and admin access requires a recent authenticator-app check. GLOHAUS
-        uses Supabase TOTP MFA.
+        Owner and admin access requires a recent authenticator-app check.
+        GLOHAUS uses Supabase TOTP MFA.
       </p>
 
-      {currentLevel === "aal2" && (
-        <p className="form-notice" role="status">
-          Your current session has passed two-step verification.
-        </p>
+      {currentLevel === "aal2" && !verifyAgain && (
+        <>
+          <p className="form-notice" role="status">
+            This session has completed two-step verification. Owner and Admin
+            access may require a fresh authenticator check.
+          </p>
+          {verifiedFactor && (
+            <button
+              className="button"
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                setCode("");
+                setMessage("");
+                setVerifyAgain(true);
+              }}
+            >
+              Verify again for Admin
+            </button>
+          )}
+        </>
       )}
 
       {!verifiedFactor && !qrCode && (
@@ -161,7 +179,7 @@ export function MfaManager() {
       )}
 
       {(qrCode || verifiedFactor || needsChallenge) &&
-        currentLevel !== "aal2" && (
+        (currentLevel !== "aal2" || verifyAgain) && (
           <>
             <label>
               Authenticator code

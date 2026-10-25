@@ -127,8 +127,6 @@ jobs:
         run: node scripts/check-signout-badges.mjs
       - name: Verify profile logos, large images, theme and actual plan prices
         run: node scripts/check-media-theme-pricing.mjs
-      - name: Verify support inbox and Owner/Admin navigation
-        run: node scripts/check-launch-workspace.mjs
       - name: Verify commission Centre and professional feedback
         run: node scripts/check-commission-centre.mjs
       - name: Save commission Centre browser evidence
@@ -186,6 +184,23 @@ jobs:
           name: browser-test-results
           path: test-results/
 
+
+  admin-workspace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/prepare-test-browsers
+      - name: Verify support inbox and Owner/Admin navigation
+        run: node scripts/check-launch-workspace.mjs
       - name: Save support and Owner/Admin navigation checks
         uses: actions/upload-artifact@v4
         if: always()

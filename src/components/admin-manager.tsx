@@ -246,7 +246,9 @@ export function AdminManager({
                   <td>
                     {user.display_name}
                     {user.business_name && (
-                      <small style={{ display: "block" }}>{user.business_name}</small>
+                      <small style={{ display: "block" }}>
+                        {user.business_name}
+                      </small>
                     )}
                   </td>
                   <td>{user.email}</td>
@@ -259,7 +261,9 @@ export function AdminManager({
                         ? `restricted until ${new Date(user.restricted_until).toLocaleString("en-GB", { timeZone: "Europe/London" })}`
                         : user.status}
                     {!user.deleted_at && user.public_hidden_at && (
-                      <small style={{ display: "block" }}>Public content hidden</small>
+                      <small style={{ display: "block" }}>
+                        Public content hidden
+                      </small>
                     )}
                   </td>
                   <td>
@@ -309,11 +313,7 @@ export function AdminManager({
           </table>
         </div>
       </AdminSection>
-      <AdminSection
-        id="professionals"
-        title="Professional management"
-        search={true}
-      >
+      <AdminSection id="professionals" title="Professionals" search={true}>
         <p className="admin-section-intro">
           These are the accounts currently authorised to manage a GLOHAUS PRO
           business. Status changes use the same audited server-side action as
@@ -369,11 +369,7 @@ export function AdminManager({
           </table>
         </div>
       </AdminSection>
-      <AdminSection
-        id="live-access"
-        title="Professional verification & LIVE access"
-        search={true}
-      >
+      <AdminSection id="live-access" title="Verification & LIVE" search={true}>
         <p className="admin-section-intro">
           Verification and LIVE restrictions are server-controlled and every
           change requires a reason for the audit log.
@@ -539,7 +535,7 @@ export function AdminManager({
           )}
         </div>
       </AdminSection>
-      <AdminSection id="bookings" title="Booking overview" search={true}>
+      <AdminSection id="bookings" title="Bookings" search={true}>
         <div className="service-edit-list">
           {data.bookings?.map((booking) => (
             <article
@@ -571,7 +567,7 @@ export function AdminManager({
       </AdminSection>
       <AdminSection
         id="payment-disputes"
-        title="Booking payment disputes"
+        title="Payment disputes"
         search={true}
       >
         <p className="admin-section-intro">
@@ -655,7 +651,7 @@ export function AdminManager({
           )}
         </div>
       </AdminSection>
-      <AdminSection id="orders" title="Shop order oversight" search={true}>
+      <AdminSection id="orders" title="Orders" search={true}>
         <p className="admin-section-intro">
           Read-only marketplace oversight for support and operational review.
           Sellers manage fulfilment; payment and refund states remain protected.
@@ -773,7 +769,7 @@ export function AdminManager({
           )}
         </div>
       </AdminSection>
-      <AdminSection id="reviews" title="Review moderation" search={true}>
+      <AdminSection id="reviews" title="Reviews" search={true}>
         <div className="service-edit-list">
           {data.reviews?.map((review) => (
             <article className="service-edit-row" key={review.id}>
@@ -782,7 +778,25 @@ export function AdminManager({
                   {review.public_name} · {review.rating}/5
                 </h3>
                 <p>{review.body}</p>
-                {review.response_body&&<><p>Professional response ({review.response_status}): {review.response_body}</p><button onClick={()=>setSelection({type:"reviewResponse",id:review.id,name:"Professional response"})}>Moderate response</button></>}
+                {review.response_body && (
+                  <>
+                    <p>
+                      Professional response ({review.response_status}):{" "}
+                      {review.response_body}
+                    </p>
+                    <button
+                      onClick={() =>
+                        setSelection({
+                          type: "reviewResponse",
+                          id: review.id,
+                          name: "Professional response",
+                        })
+                      }
+                    >
+                      Moderate response
+                    </button>
+                  </>
+                )}
                 <small>{review.moderation_status}</small>
               </div>
               <button
@@ -859,7 +873,7 @@ export function AdminManager({
           <AdminSectionUnavailable label="Safety reports" />
         )}
       </AdminSection>
-      <AdminSection id="content" title="Content moderation" search={true}>
+      <AdminSection id="content" title="Posts & Stories" search={true}>
         <div className="service-edit-list">
           {data.posts.map((post) => (
             <article className="service-edit-row" key={post.id}>

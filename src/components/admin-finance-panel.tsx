@@ -32,7 +32,7 @@ export function AdminFinancePanel({
   const m = data.metrics;
   return (
     <>
-      <AdminSection id="payments" title="Money moving through GLOHAUS">
+      <AdminSection id="payments" title="Payments & Payouts">
         <p className="eyebrow">PLATFORM PAYMENTS · READ ONLY</p>
         <p className="lead">
           View totals for booking payments, professional subscriptions and
@@ -113,7 +113,7 @@ export function AdminFinancePanel({
         </div>
       </AdminSection>
 
-      <AdminSection id="analytics" title="Platform analytics">
+      <AdminSection id="analytics" title="Analytics">
         <p className="eyebrow">BUSINESS ANALYTICS</p>
         <h2>Revenue and platform obligations</h2>
         <p className="lead">
@@ -170,8 +170,8 @@ export function AdminFinancePanel({
           ))}
           {!data.revenueBySource30d.length && (
             <p className="lead">
-              No platform fees recorded in the last 30 days. New fee revenue will
-              appear here once it is recorded.
+              No platform fees recorded in the last 30 days. New fee revenue
+              will appear here once it is recorded.
             </p>
           )}
         </div>

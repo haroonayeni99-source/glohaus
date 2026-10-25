@@ -111,7 +111,12 @@ export default async function Page({
       style={{ padding: "clamp(18px,4vw,48px)" }}
     >
       <Link href="/admin/growth">← Growth & Performance</Link>
-      <h1>Growth review & recognition</h1>
+      <h1>Customer sources, referrals & recognition</h1>
+      <p>
+        Use this page to resolve customer-source disagreements, check referral
+        eligibility, review suspicious activity and manage private recognition
+        proposals.
+      </p>
       <p>Owner-only insights. Rewards and automatic payments are disabled.</p>
       <nav style={{ display: "flex", gap: 14 }}>
         <Link href="?period=week">7 days</Link>
@@ -206,7 +211,7 @@ export default async function Page({
         className="admin-detail-card"
         style={{ padding: 24, marginTop: 20 }}
       >
-        <h2>Consented profile-to-booking attribution</h2>
+        <h2>Profile views that led to bookings</h2>
         {analytics ? (
           <p>
             {analytics.consentedViews} recorded consented customer–professional
@@ -229,7 +234,12 @@ export default async function Page({
         className="admin-detail-card"
         style={{ padding: 24, marginTop: 20 }}
       >
-        <h2>Referral qualification audit</h2>
+        <h2>Referral eligibility checks</h2>
+        <p>
+          Check which bookings and referrals qualify under the existing rules.
+          Rechecking updates the report; it does not issue rewards or move
+          money.
+        </p>
         <form action={refreshGrowthAudit}>
           <button type="submit" className="button small">
             Refresh qualifying bookings and referrals
@@ -264,7 +274,7 @@ export default async function Page({
         className="admin-detail-card"
         style={{ padding: 24, marginTop: 20 }}
       >
-        <h2>Fraud warning and manual case review</h2>
+        <h2>Suspicious referrals & case decisions</h2>
         <p>
           Warnings are not proof of fraud. Shared devices, households or
           addresses do not automatically disqualify anyone. No payments are made
@@ -347,7 +357,7 @@ export default async function Page({
         className="admin-detail-card"
         style={{ padding: 24, marginTop: 20 }}
       >
-        <h2>Professional appreciation nominations</h2>
+        <h2>Professional recognition & gifts</h2>
         <p>
           Only you decide. A nomination is a private proposal and never sends a
           gift or money.

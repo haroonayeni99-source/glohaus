@@ -417,3 +417,75 @@
 .admin-navigation.is-compact .admin-menu-group {
   display: none;
 }
+
+/* Owner/Admin clarity: scoped to the existing workspace, no public UI changes. */
+.admin-workspace .admin-tool-help {
+  margin: 12px 0 22px;
+  padding: 14px 16px;
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  overflow-wrap: anywhere;
+}
+.admin-tool-help p { margin: 0; line-height: 1.6; }
+.admin-tool-help .admin-tool-note { margin-top: 8px; color: var(--ui-muted); font-size: .88rem; }
+.admin-navigation .admin-tool-group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.admin-tool-group-toggle:hover { background: var(--ui-surface); }
+.admin-tool-group-links { display: grid; gap: 2px; padding-left: 6px; }
+.admin-navigation .admin-menu-search input { width: 100%; min-width: 0; }
+.admin-workspace .commission-centre label:has(> input[type="checkbox"]) {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.admin-workspace .commission-centre label > input[type="checkbox"] {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  margin: 2px 0 0;
+  padding: 0;
+}
+.admin-navigation.is-compact .admin-tool-group-toggle { display: none; }
+.admin-navigation.is-compact .admin-tool-group-links { padding-left: 0; }
+.admin-task-intro { grid-column: 1 / -1; }
+.admin-task-intro h2 { margin: 0 0 8px; }
+.admin-task-intro p { margin: 0 0 18px; color: var(--ui-muted); }
+.admin-workspace .admin-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.admin-workspace .admin-quick-actions a { display: grid; gap: 6px; text-align: left; padding: 16px; }
+.admin-quick-actions small { color: var(--ui-muted); line-height: 1.5; font-weight: 400; }
+@media (max-width: 1180px) {
+  .admin-workspace .admin-quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 880px) {
+  .admin-navigation .admin-menu-search { display: grid; margin: 0; padding: 0; }
+  .admin-navigation .admin-menu-search input { min-height: 40px; }
+  .admin-navigation nav#admin-section-menu { display: none; }
+  .admin-navigation.has-tool-search nav#admin-section-menu { display: flex !important; }
+  .admin-navigation .admin-tool-group,
+  .admin-navigation .admin-tool-group-links { display: contents; }
+  .admin-navigation .admin-tool-group-toggle { display: none; }
+}
+@media (max-width: 480px) {
+  .admin-workspace .admin-quick-actions { grid-template-columns: 1fr; }
+}

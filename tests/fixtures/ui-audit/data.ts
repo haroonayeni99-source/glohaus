@@ -54,7 +54,7 @@ export const featureVotes: FeatureVoteItem[] = [
 
 // Private support data for the local fixture only; no production requests are sent.
 export async function withAdmin<T>(work: (db: import("@/modules/accounts/repository").SqlClient) => Promise<T>) {
-  return work({ query: async <Row extends Record<string, unknown>>(sql:string) => sql.includes("admin_taxonomy_overview")?{rows:[{data:{...taxonomy,coverage:[],services:[]}}] as unknown as Row[]}:({ rows: [{ requests: [{
+  return work({ query: async <Row extends Record<string, unknown>>(sql:string) => sql.includes("owner_programme_overview")?{rows:[{data:{programme:{state:"open",updated_at:date,retired_at:null},pricingDraft:{status:"draft",professional_basis_points:200,platform_first_basis_points:800,returning_basis_points:200}}}] as unknown as Row[]}:sql.includes("admin_taxonomy_overview")?{rows:[{data:{...taxonomy,coverage:[],services:[]}}] as unknown as Row[]}:({ rows: [{ requests: [{
     id: "55555555-5555-4555-8555-555555555555", name: "Fixture Support Customer",
     email: "support-fixture@example.test", topic: "Account & sign-in", reference: "FIXTURE-" + "X".repeat(100),
     message: "A fictional customer needs help with their account. " + "x".repeat(300),

@@ -1,3 +1,5 @@
+import { AcquisitionReport } from "@/components/acquisition-report";
+import type { AcquisitionOverview } from "@/modules/admin/acquisition";
 import Link from "next/link";
 import { saveRewardDraft } from "./reward-action";
 import { pageAccount } from "@/lib/page-access";
@@ -46,6 +48,7 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
       "SELECT value FROM beauty.platform_settings WHERE key='referral_rewards_draft'"
     )).rows[0]?.value).catch(() => null),
   ]);
+  const acquisition = await withOwner(async db => (await db.query<{data:AcquisitionOverview}>("SELECT beauty.acquisition_overview($1,true) AS data",[period==="week"?7:period==="year"?366:31])).rows[0]?.data ?? null).catch(()=>null);
   const rows = [...(result?.rows ?? [])].sort((a,b)=>Number(b[rank as keyof typeof b])-Number(a[rank as keyof typeof a]));
   const totalBookings = rows.reduce((sum, row) => sum + row.completedBookings, 0);
   const totalValue = rows.reduce((sum, row) => sum + Number(row.completedValuePence), 0);
@@ -57,6 +60,7 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
     <nav aria-label="Reporting period" style={{ display: "flex", gap: 14, marginBottom: 24, flexWrap: "wrap" }}>
       {(["week","month","year"] as const).map(p => <Link key={p} href={`/admin/growth?period=${p}`} aria-current={p===period?"page":undefined} className="button small" style={{ opacity:p===period?1:0.65 }}>{p==="week"?"Last 7 days":p==="month"?"Last month":"Last year"}</Link>)}
     </nav>
+    <AcquisitionReport data={acquisition} />
     {!result ? <p role="alert">Performance statistics are currently unavailable. No figures have been estimated.</p> : <>
       <div className="admin-detail-card" style={{ padding: 24, marginBottom: 20 }}>
         <p><strong>{totalBookings.toLocaleString("en-GB")}</strong> completed bookings · <strong>{money(totalValue)}</strong> net captured value attributable to completed bookings</p>

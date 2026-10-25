@@ -58,17 +58,86 @@ try {
           ).toBeLessThanOrEqual(1);
         }
         if (width <= 880)
-          await page.getByLabel("Go to section", { exact: true }).selectOption("support");
-        else await page.locator('.admin-navigation nav a[href="#support"]').click();
-        await expect(page.getByText("Fixture Support Customer", { exact: false })).toBeVisible();
-        await page.getByRole("button", { name: "Mark resolved", exact: true }).click();
-        await expect(page.getByRole("button", { name: "Reopen", exact: true })).toBeVisible();
-        await page.getByRole("button", { name: "Reopen", exact: true }).click();
-        await expect(page.getByRole("button", { name: "Mark resolved", exact: true })).toBeVisible();
-        const supportChanges = await page.evaluate(() => JSON.parse(sessionStorage.getItem("audit-requests") || "[]").filter(request => request.url.includes("/admin/support/")));
-        expect(supportChanges.map(request => ({ method: request.method, status: JSON.parse(request.body).status }))).toEqual([{ method: "PATCH", status: "resolved" }, { method: "PATCH", status: "open" }]);
-        expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
-        await page.screenshot({ path: `reports/launch-support-${role}-${theme}-${width}.png` });
+          await page
+            .getByLabel("Go to section", { exact: true })
+            .selectOption("support");
+        else
+          await page
+            .locator('.admin-navigation nav a[href="#support"]')
+            .click();
+        await expect(
+          page.getByText("Fixture Support Customer", { exact: false }),
+        ).toBeVisible();
+        await page
+          .getByRole("button", { name: "Open case / reply", exact: true })
+          .click();
+        const supportForm = page
+          .locator("#support form")
+          .filter({ has: page.getByLabel("Reason / reply", { exact: true }) });
+        await supportForm
+          .locator('select[name="status"]')
+          .selectOption("resolved");
+        await supportForm
+          .getByLabel("Reason / reply", { exact: true })
+          .fill("Reviewed the evidence and explained the support decision");
+        await supportForm
+          .getByRole("button", {
+            name: "Save response and status",
+            exact: true,
+          })
+          .click();
+        await expect(
+          page.getByRole("status").filter({ hasText: "Case history updated" }),
+        ).toBeVisible();
+        await expect(
+          page.getByText(
+            "Reviewed the evidence and explained the support decision",
+            { exact: true },
+          ),
+        ).toBeVisible();
+        await supportForm.locator('select[name="status"]').selectOption("open");
+        await supportForm
+          .getByLabel("Reason / reply", { exact: true })
+          .fill("Customer supplied new evidence, so the case was reopened");
+        await supportForm
+          .getByRole("button", {
+            name: "Save response and status",
+            exact: true,
+          })
+          .click();
+        await expect(
+          page.getByText(
+            "Customer supplied new evidence, so the case was reopened",
+            { exact: true },
+          ),
+        ).toBeVisible();
+        const supportChanges = await page.evaluate(() =>
+          JSON.parse(sessionStorage.getItem("audit-requests") || "[]").filter(
+            (request) => request.url.includes("/admin/support/"),
+          ),
+        );
+        expect(
+          supportChanges.map((request) => ({
+            method: request.method,
+            status: JSON.parse(request.body).status,
+          })),
+        ).toEqual([
+          { method: "PATCH", status: "resolved" },
+          { method: "PATCH", status: "open" },
+        ]);
+        expect(
+          supportChanges.every(
+            (request) => JSON.parse(request.body).note.length >= 5,
+          ),
+        ).toBe(true);
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth - innerWidth,
+          ),
+        ).toBeLessThanOrEqual(1);
+        await page.screenshot({
+          path: `reports/launch-support-${role}-${theme}-${width}.png`,
+        });
         if (width <= 880)
           await page
             .getByLabel("Go to section", { exact: true })
@@ -83,7 +152,9 @@ try {
           await page.locator(".owner-search-results button").first().click();
           // Search reveals the selected record after two animation frames.
           // Wait for navigation before filtering that record out again.
-          await expect(page).toHaveURL(/#user-11111111-1111-4111-8111-111111111111$/);
+          await expect(page).toHaveURL(
+            /#user-11111111-1111-4111-8111-111111111111$/,
+          );
           await expect(
             page.getByLabel("Search users and professionals"),
           ).toHaveValue("");
@@ -154,8 +225,12 @@ try {
             .getByLabel("Find a tool", { exact: true })
             .fill("categories");
           await expect(page.locator(".admin-navigation nav a")).toHaveCount(2);
-          await expect(page.locator('.admin-navigation nav a[href="#categories"]')).toBeVisible();
-          await expect(page.locator('.admin-navigation nav a[href="#product-categories"]')).toBeVisible();
+          await expect(
+            page.locator('.admin-navigation nav a[href="#categories"]'),
+          ).toBeVisible();
+          await expect(
+            page.locator('.admin-navigation nav a[href="#product-categories"]'),
+          ).toBeVisible();
           await page.getByLabel("Find a tool", { exact: true }).fill("");
           await page
             .getByRole("button", { name: "Minimise administration menu" })

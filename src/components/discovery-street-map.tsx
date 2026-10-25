@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { loadMapLibre } from "@/lib/maplibre-client";
+import { loadMapLibre, supportsMapGraphics } from "@/lib/maplibre-client";
 import type { Map as StreetMap, Marker } from "maplibre-gl";
 import { GeographicMap, type MapViewport } from "./geographic-map";
 import {
@@ -52,6 +52,12 @@ export function DiscoveryStreetMap(props: Props) {
     const failed = () => {
       if (active) setFallback(true);
     };
+    if (!supportsMapGraphics()) {
+      queueMicrotask(failed);
+      return () => {
+        active = false;
+      };
+    }
     void loadMapLibre()
       .then((gl) => {
         if (!active || !host.current) return;
@@ -128,7 +134,9 @@ export function DiscoveryStreetMap(props: Props) {
             }
           });
           instance.on("moveend", report);
-        instance.on("load", () => { if (active) setPainted(true); });
+          instance.on("load", () => {
+            if (active) setPainted(true);
+          });
           instance.on("error", () => {
             if (active) setTileError(true);
           });
@@ -146,8 +154,12 @@ export function DiscoveryStreetMap(props: Props) {
       window.clearTimeout(readinessTimer);
       pool.forEach(({ marker }) => marker.remove());
       pool.clear();
-      instance?.getCanvas().removeEventListener("webglcontextlost", failed);
-      instance?.remove();
+      try {
+        instance?.getCanvas().removeEventListener("webglcontextlost", failed);
+        instance?.remove();
+      } catch {
+        /* A failed graphics context may not have a painter to destroy. */
+      }
       map.current = null;
     };
   }, [loaded, fallback]);

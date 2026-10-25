@@ -31,6 +31,7 @@ const errors: Record<string, string> = {
   CONTRACTUAL_REWARD_PROTECTED:
     "An earned founding trial or reward cannot be cancelled.",
   FORBIDDEN: "Only the verified Owner may change commission.",
+  FOUNDING_ENROLMENT_CLOSED: "Founding enrolments are closed or permanently retired. Existing rewards are protected.",
   CONFIRMATION_REQUIRED: "Review and confirm this financial change.",
 };
 async function post(path: string, body: unknown) {

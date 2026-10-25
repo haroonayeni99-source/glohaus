@@ -9,11 +9,19 @@ import { ids, featureVotes } from "./data";
 const params = new URLSearchParams(location.search);
 document.documentElement.dataset.theme = params.get("theme") ?? "light";
 localStorage.setItem("glohaus-theme", document.documentElement.dataset.theme);
+let supportStatus="open";
+const supportEvents:{id:string;status:string;body:string;public:boolean;fromStaff:boolean;created_at:string}[]=[];
 // Every mutation is recorded and answered locally; there are no production credentials.
 window.fetch = async (url, init) => {
   const requests = JSON.parse(sessionStorage.getItem("audit-requests") || "[]");
   requests.push({ url: String(url), method: init?.method || "GET", body: init?.body });
   sessionStorage.setItem("audit-requests", JSON.stringify(requests));
+  if(String(url).includes("/api/v1/support/")&&(!init?.method||init.method==="GET"))return Response.json({id:"55555555-5555-4555-8555-555555555555",topic:"Account & sign-in",message:"A fictional customer needs help with their account.",status:supportStatus,created_at:"2026-10-10T12:00:00Z",response_due_at:"2026-10-13T12:00:00Z",first_response_at:null,events:supportEvents,evidence:[]});
+  if(String(url).includes("/admin/support/")&&init?.method==="PATCH"){
+    const body=JSON.parse(String(init.body));supportStatus=body.status;
+    supportEvents.push({id:String(supportEvents.length),status:body.status,body:body.note,public:body.public,fromStaff:true,created_at:"2026-10-10T13:00:00Z"});
+    return Response.json({saved:true});
+  }
   if (String(url).includes("/features/vote")) {
     if (params.get("response") === "expired") return Response.json({ error: { code: "VOTING_CLOSED" } }, { status: 409 });
     const body = JSON.parse(String(init?.body));

@@ -1,4 +1,5 @@
-import { createHmac } from "node:crypto";
+import { scheduleNotificationDelivery } from "@/modules/notifications/schedule";
+import { createHash, randomBytes, createHmac } from "node:crypto";
 import { withIdentity } from "@/lib/db";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
@@ -21,10 +22,13 @@ export async function POST(request: Request) {
     )
       .update(ip)
       .digest("hex");
+    const token = randomBytes(32).toString("hex");
+    const tokenHash = createHash("sha256").update(token).digest("hex");
     const id = await withIdentity("", (db) =>
-      createSupportRequest(db, parsed.data, rateKey),
+      createSupportRequest(db, parsed.data, rateKey, tokenHash),
     );
-    return json({ id }, 201);
+    scheduleNotificationDelivery();
+    return json({ id, token }, 201);
   } catch (error) {
     if (
       typeof error === "object" &&

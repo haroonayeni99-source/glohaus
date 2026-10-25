@@ -3,6 +3,7 @@
   "git": {
     "deploymentEnabled": {
       "main": true,
+      "feature/platform-fairness-20261024": false,
       "feature/example-listings": false,
       "feature/profile-examples": false,
       "feature/home-screen-logo": false,

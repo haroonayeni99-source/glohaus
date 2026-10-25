@@ -440,3 +440,27 @@ jobs:
         with:
           name: security-regression-failures
           path: test-results/
+
+  platform-fairness:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/prepare-test-browsers
+        with:
+          webkit: "true"
+      - name: Verify programme controls, acquisition, support and review responses on phone browsers
+        run: node scripts/check-platform-fairness.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: platform-fairness-browser-evidence
+          path: reports/*fairness*

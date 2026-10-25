@@ -118,9 +118,9 @@ export default async function Profile({
         id: string;
         rating: number;
         body: string;
-        public_name: string;service_id:string|null;service_name:string|null;speciality_id:string|null;speciality_name:string|null;
+        public_name: string;response_body?:string|null;service_id:string|null;service_name:string|null;speciality_id:string|null;speciality_name:string|null;
       }>(
-        "SELECT id,rating,body,public_name,service_id,service_name,speciality_id,speciality_name FROM beauty.public_reviews WHERE professional_id=$1 ORDER BY created_at DESC LIMIT 50",
+        "SELECT r.id,r.rating,r.body,r.public_name,r.service_id,r.service_name,r.speciality_id,r.speciality_name,rr.body AS response_body FROM beauty.public_reviews r LEFT JOIN beauty.public_review_responses rr ON rr.review_id=r.id WHERE r.professional_id=$1 ORDER BY r.created_at DESC LIMIT 50",
         [id],
       )
     ).rows;

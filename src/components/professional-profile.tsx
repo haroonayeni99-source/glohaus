@@ -1,3 +1,4 @@
+import {ContentReportButton} from "@/components/content-report-button";
 import { PlatformLabel } from "./platform-labels";
 import { ProfessionalDirections } from "./professional-directions";
 import Link from "next/link";
@@ -30,7 +31,7 @@ export type ProfilePresentation = {
   services: Service[];
   specialities?:{speciality_id:string;name:string;category_name:string;is_primary:boolean}[];selectedSpeciality?:string|null;selectedService?:string;reviewService?:string;
   assets: { id: string; alt_text: string; media_type?: "image" | "video";speciality_ids?:string[];speciality_names?:string[] }[];
-  reviews: { id: string; rating: number; body: string; public_name: string;service_id?:string|null;service_name?:string|null;speciality_id?:string|null;speciality_name?:string|null }[];
+  reviews: { id: string; rating: number; body: string; public_name: string;response_body?:string|null;service_id?:string|null;service_name?:string|null;speciality_id?:string|null;speciality_name?:string|null }[];
   hours: Rule[];
   rating: number | null;
   reviewCount: number;
@@ -365,6 +366,8 @@ export function ProfessionalProfile({
                     {review.public_name} · {review.rating}/5
                   </strong>
                   <p>{review.body}</p>
+                  {review.response_body&&<div><strong>Professional response</strong><p>{review.response_body}</p></div>}
+                  {!example&&<ContentReportButton targetType="review" targetId={review.id} label="Report review or response"/>}
                   <small>Verified completed appointment{review.service_name?` · ${review.service_name}`:""}{review.speciality_name?` · ${review.speciality_name}`:""}</small>
                 </article>
               ))

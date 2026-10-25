@@ -1,3 +1,5 @@
+import { ReviewResponseForm } from "@/components/review-response-form";
+import { ContentReportButton } from "@/components/content-report-button";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
@@ -23,7 +25,9 @@ export default async function Reviews() {
     <div className="pro-app">
       <ProfessionalNavigation active="more" displayName={account.displayName} />
       <main id="main" className="pro-main pro-list-page">
-        <Link className="pro-back-link" href="/professional">← Dashboard</Link>
+        <Link className="pro-back-link" href="/professional">
+          ← Dashboard
+        </Link>
         <p className="pro-kicker">FEEDBACK FROM REAL APPOINTMENTS</p>
         <h1>Your work, in their words.</h1>
         <div className="pro-stat-grid pro-review-summary">
@@ -48,29 +52,51 @@ export default async function Reviews() {
           <section className="pro-review-list">
             {reviews.map((review) => (
               <article key={review.id}>
-              <div className="pro-panel-title">
-                <strong>
-                  <Star size={16} aria-hidden /> {review.rating}/5 ·{" "}
-                  {review.public_name}
-                </strong>
-                <span className="pro-status pro-status-confirmed">
-                  {review.moderation_status === "visible"
-                    ? "Visible"
-                    : "Hidden by moderation"}
-                </span>
-              </div>
-              <p>{review.body}</p>
-              <p>
-                <small>
-                  {review.service_name} ·{" "}
-                  {new Intl.DateTimeFormat("en-GB", {
-                    timeZone: "Europe/London",
-                    dateStyle: "medium",
-                  }).format(new Date(review.created_at))}
-                </small>
-              </p>
-              <Link href={`/account/bookings/${review.booking_id}`}>View appointment →</Link>
-            </article>
+                <div className="pro-panel-title">
+                  <strong>
+                    <Star size={16} aria-hidden /> {review.rating}/5 ·{" "}
+                    {review.public_name}
+                  </strong>
+                  <span className="pro-status pro-status-confirmed">
+                    {review.moderation_status === "visible"
+                      ? "Visible"
+                      : "Hidden by moderation"}
+                  </span>
+                </div>
+                <p>{review.body}</p>
+                {review.response && (
+                  <p>
+                    Professional response ({review.response.status}):{" "}
+                    {review.response.body}
+                  </p>
+                )}
+                <ReviewResponseForm
+                  reviewId={review.id}
+                  body={review.response?.body ?? ""}
+                />
+                <ContentReportButton
+                  targetType="review"
+                  targetId={review.id}
+                  label="Report review or response"
+                />
+                <p>
+                  <Link href={`/contact?reference=Review%20${review.id}`}>
+                    Appeal a review or moderation decision
+                  </Link>
+                </p>
+                <p>
+                  <small>
+                    {review.service_name} ·{" "}
+                    {new Intl.DateTimeFormat("en-GB", {
+                      timeZone: "Europe/London",
+                      dateStyle: "medium",
+                    }).format(new Date(review.created_at))}
+                  </small>
+                </p>
+                <Link href={`/account/bookings/${review.booking_id}`}>
+                  View appointment →
+                </Link>
+              </article>
             ))}
           </section>
         ) : (
@@ -81,9 +107,7 @@ export default async function Reviews() {
               After a completed visit, your customer can share their experience.
               Their feedback will appear here.
             </p>
-            <Link href="/professional/bookings">
-              View appointments →
-            </Link>
+            <Link href="/professional/bookings">View appointments →</Link>
           </section>
         )}
       </main>

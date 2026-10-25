@@ -352,6 +352,49 @@ try {
       browser = await chromium.launch(browserOptions);
       console.log(`Verified ${theme} ${width}px`);
     }
+  // A graphics-denied browser must retain discovery instead of hitting the page error boundary.
+  const unsupported = await browser.newContext({
+    viewport: { width: 1440, height: 1000 },
+  });
+  await unsupported.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+      if (
+        type === "webgl" ||
+        type === "webgl2" ||
+        type === "experimental-webgl"
+      )
+        return null;
+      return original.call(this, type, ...args);
+    };
+  });
+  const fallbackPage = await unsupported.newPage();
+  const fallbackErrors = [];
+  fallbackPage.on("pageerror", (error) => fallbackErrors.push(error.message));
+  await fallbackPage.goto("http://127.0.0.1:3004/?theme=light");
+  await fallbackPage
+    .getByRole("button", { name: "Load street map", exact: true })
+    .click();
+  await expect(fallbackPage.getByRole("alert")).toContainText(
+    "You can still search and browse professional listings",
+  );
+  await expect(
+    fallbackPage.getByRole("heading", {
+      name: "Something interrupted your visit.",
+    }),
+  ).toHaveCount(0);
+  await expect(
+    fallbackPage.getByRole("link", { name: "Brixton Braids", exact: true }),
+  ).toBeVisible();
+  expect(fallbackErrors).toEqual([]);
+  results.push({
+    theme: "light",
+    width: 1440,
+    checks: [
+      "WebGL unavailable keeps professional listings and search usable without page errors",
+    ],
+  });
+  await unsupported.close();
   await writeFile(
     "reports/discovery-map-results.json",
     JSON.stringify(results, null, 2),

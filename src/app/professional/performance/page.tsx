@@ -1,3 +1,5 @@
+import { AcquisitionReport } from "@/components/acquisition-report";
+import type { AcquisitionOverview } from "@/modules/admin/acquisition";
 import Link from "next/link";
 import { ReferralShareActions } from "@/components/referral-share-actions";
 import { pageAccount } from "@/lib/page-access";
@@ -13,6 +15,8 @@ export default async function Page({searchParams}:{searchParams:Promise<{period?
   if(!access.account) return <AuthFrame><AccessMessage code={access.error??undefined}/></AuthFrame>;
   const period = growthPeriod((await searchParams).period);
   const interval = period==="week"?"7 days":period==="year"?"1 year":"1 month";
+  const acquisition = await withAccount("professional",async db=>(await db.query<{data:AcquisitionOverview}>("SELECT beauty.acquisition_overview($1,false) AS data",[period==="week"?7:period==="year"?366:31])).rows[0]?.data??null).catch(()=>null);
+  const invitation = await withAccount("professional",async db=>(await db.query<{data:{token:string}}>("SELECT beauty.my_acquisition_invitation() AS data")).rows[0]?.data??null).catch(()=>null);
   const metrics = await withAccount("professional",async (db,account)=>{
     const id=account.professionalId;
     if(!id) return null;
@@ -48,7 +52,9 @@ export default async function Page({searchParams}:{searchParams:Promise<{period?
     return {row,referrals,code,popularServices,profileOpens:Number(profileOpens)};
   }).catch(()=>null);
   const money=(pence:number)=>new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"}).format(pence/100);
-  return <main style={{maxWidth:950,margin:"0 auto",padding:"clamp(20px,4vw,48px)"}}>
+  return <main style={{maxWidth:950,margin:"0 auto",padding:"clamp(20px,4vw,48px)"}}><AcquisitionReport data={acquisition}/>
+    {invitation&&<section className="admin-detail-card" style={{padding:24,marginTop:20}}><h2>Your customer invitation</h2><p>Share this link or QR code with your clients. They choose whether to record the invitation. It never proves customer ownership or changes fees.</p><p><a href={`/i/${invitation.token}`}>{`https://glohaus.shop/i/${invitation.token}`}</a></p><a className="button" href="/api/v1/professional/invitation-qr">Download invitation QR code</a></section>}
+
     <Link href="/professional">← Professional dashboard</Link>
     <header style={{margin:"22px 0"}}><p className="eyebrow">PRIVATE PROFESSIONAL INSIGHTS</p><h1>My Performance</h1>
       <p>Your completed bookings, customers, aggregate profile opens and referrals. Only you can access these figures.</p></header>

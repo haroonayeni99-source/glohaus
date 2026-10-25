@@ -25,6 +25,14 @@ export type SupportRequest = {
   topic: string;
   reference: string;
   message: string;
-  status: "open" | "resolved";
+  status:
+    | "open"
+    | "under_review"
+    | "awaiting_customer"
+    | "escalated"
+    | "resolved"
+    | "appealed";
+  response_due_at?: string;
+  first_response_at?: string | null;
   created_at: string;
 };

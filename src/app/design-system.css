@@ -467,7 +467,7 @@
   .admin-navigation .admin-menu-search { display: grid; margin: 0; padding: 0; }
   .admin-navigation .admin-menu-search input { min-height: 40px; }
   .admin-navigation nav#admin-section-menu { display: none; }
-  .admin-navigation.has-tool-search nav#admin-section-menu { display: flex; }
+  .admin-navigation.has-tool-search nav#admin-section-menu { display: flex !important; }
   .admin-navigation .admin-tool-group,
   .admin-navigation .admin-tool-group-links { display: contents; }
   .admin-navigation .admin-tool-group-toggle { display: none; }

@@ -145,6 +145,18 @@ it("includes newly added mobile thumbnail categories in the selected order and h
   expect(categories[0].key).toBe("hair");
   expect(categories[1].key).toBe(first);
 });
+it("replaces the default desktop Waxing shortcut with MUA and opens Makeup discovery", () => {
+  const media = { desktopHero: null, mobileHero: null, categoryImages: {} };
+  const slots = homepageCategorySlots(media, "desktop");
+  expect(slots.map(slot => slot.key)).toEqual(["hair", "nails", "barber", "mua", "injectables"]);
+  expect(slots.find(slot => slot.key === "mua")?.label).toBe("MUA");
+  expect(homepageCategoryHref(media, "desktop", "mua", "MUA")).toBe("/explore?category=Makeup");
+  const categoryId = "44444444-4444-4444-8444-444444444444";
+  expect(homepageCategoryHref({ ...media, categoryMetadata: { desktop: { mua: {
+    categoryId, specialityId: null, templateId: null, description: "", sortOrder: 30, visible: true,
+  } } } }, "desktop", "mua", "MUA")).toBe(`/explore?categoryId=${categoryId}`);
+  expect(homepageCategorySlots(media, "mobile").map(slot => slot.key)).toEqual(["hair", "nails", "lashes", "skin", "makeup"]);
+});
 it("uses an Owner-selected catalogue category for new mobile homepage thumbnails", () => {
   const key = "33333333-3333-4333-8333-333333333333";
   const categoryId = "44444444-4444-4444-8444-444444444444";

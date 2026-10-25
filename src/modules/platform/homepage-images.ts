@@ -9,9 +9,9 @@ export const homepageCategories = {
       image: "/images/categories/barber-v2.webp",
     },
     {
-      key: "waxing",
-      label: "Waxing",
-      image: "/images/categories/waxing-v2.webp",
+      key: "mua",
+      label: "MUA",
+      image: "https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=400&q=85",
     },
     {
       key: "injectables",
@@ -95,4 +95,4 @@ export function homepageCategorySlots(media:Pick<HomepageMedia,"categoryMetadata
  for(const key of Object.keys(media.categoryMetadata?.[device]??{}))if(!defaults.some(s=>s.key===key))defaults.push({key,label:media.categoryNames?.[device]?.[key]||"Category",image:media.categoryImages?.[device]?.[key]||"/images/categories/hair-v2.webp"});
  return defaults.map((slot,i)=>({...slot,...media.categoryMetadata?.[device]?.[slot.key],sortOrder:media.categoryMetadata?.[device]?.[slot.key]?.sortOrder??i*10})).filter(slot=>includeHidden||slot.visible!==false).sort((a,b)=>a.sortOrder-b.sortOrder);
 }
-export function homepageCategoryHref(media:HomepageMedia,device:HomepageImageDevice,key:string,label:string){const m=media.categoryMetadata?.[device]?.[key];const q=new URLSearchParams();if(m?.categoryId)q.set("categoryId",m.categoryId);if(m?.specialityId)q.set("specialityId",m.specialityId);if(m?.templateId)q.set("templateId",m.templateId);if(!q.size)return `/explore?q=${encodeURIComponent(label)}`;return `/explore?${q}`;}
+export function homepageCategoryHref(media:HomepageMedia,device:HomepageImageDevice,key:string,label:string){const m=media.categoryMetadata?.[device]?.[key];const q=new URLSearchParams();if(m?.categoryId)q.set("categoryId",m.categoryId);if(m?.specialityId)q.set("specialityId",m.specialityId);if(m?.templateId)q.set("templateId",m.templateId);if(!q.size)return key==="mua"?"/explore?category=Makeup":`/explore?q=${encodeURIComponent(label)}`;return `/explore?${q}`;}

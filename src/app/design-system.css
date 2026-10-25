@@ -448,6 +448,20 @@
 }
 .admin-tool-group-toggle:hover { background: var(--ui-surface); }
 .admin-tool-group-links { display: grid; gap: 2px; padding-left: 6px; }
+.admin-navigation .admin-menu-search input { width: 100%; min-width: 0; }
+.admin-workspace .commission-centre label:has(> input[type="checkbox"]) {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.admin-workspace .commission-centre label > input[type="checkbox"] {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  margin: 2px 0 0;
+  padding: 0;
+}
 .admin-navigation.is-compact .admin-tool-group-toggle { display: none; }
 .admin-navigation.is-compact .admin-tool-group-links { padding-left: 0; }
 .admin-task-intro { grid-column: 1 / -1; }

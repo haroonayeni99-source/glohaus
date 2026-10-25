@@ -414,16 +414,16 @@ export default async function Page() {
             <p className="eyebrow">PROFESSIONAL COMMISSION</p>
             <h2>Commission &amp; Pricing</h2>
             <AdminToolHelp id="professional-commission" />
+            <FoundingProgrammeControls data={programme} view="pricing" />
+            <h3>Live service commission</h3>
             <p className="admin-action-warning">
               Financial setting · affects future quotes for the selected
               professional
             </p>
             <p className="lead">
-              Use the draft section to plan customer-source percentages. Use the
-              live commission controls below to manage current service rates,
-              professional overrides and scheduled changes.
+              Manage current service rates, professional overrides and
+              scheduled changes below. Live changes require Owner confirmation.
             </p>
-            <FoundingProgrammeControls data={programme} view="pricing" />
             {commissionCentre ? (
               <CommissionControlCentre data={commissionCentre} />
             ) : (

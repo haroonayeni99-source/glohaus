@@ -201,6 +201,8 @@ jobs:
       - uses: ./.github/actions/prepare-test-browsers
       - name: Verify support inbox and Owner/Admin navigation
         run: node scripts/check-launch-workspace.mjs
+      - name: Verify Owner future-service approvals and mobile forms
+        run: node scripts/check-service-safeguards.mjs
       - name: Save support and Owner/Admin navigation checks
         uses: actions/upload-artifact@v4
         if: always()
@@ -209,6 +211,7 @@ jobs:
           path: |
             reports/launch-*.png
             reports/launch-workspace-results.json
+            reports/service-safeguards-*
 
   profile-video:
     runs-on: ubuntu-latest

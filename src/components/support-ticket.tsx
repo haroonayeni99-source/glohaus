@@ -125,7 +125,7 @@ export function SupportTicket({ id }: { id: string }) {
       {!token && (
         <p>
           Open the private ticket link saved when you submitted your request. If
-          you lost it, contact glohausuk@gmail.com with your ticket ID.
+          you lost it, contact support@glohaus.shop with your ticket ID.
         </p>
       )}
       {notice && <p role="status">{notice}</p>}
@@ -214,7 +214,7 @@ export function SupportTicket({ id }: { id: string }) {
           )}
           <p>
             Gmail replies do not automatically appear here. For progress,
-            refresh this ticket or contact glohausuk@gmail.com with your ticket
+            refresh this ticket or contact support@glohaus.shop with your ticket
             ID.
           </p>
         </>

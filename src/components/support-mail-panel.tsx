@@ -71,7 +71,7 @@ export function SupportMailPanel({ caseId }: { caseId?: string }) {
           "Not queued. Check the receiving email ID, Owner MFA, sender authentication and forwarding readiness in Resend.",
         );
       setError(
-        "Existing message queued for safe forwarding. Refresh email status to check acceptance and delivery.",
+        "Forwarding request recorded. Existing messages are not forwarded twice. Refresh email status to check acceptance and delivery.",
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not queue.");

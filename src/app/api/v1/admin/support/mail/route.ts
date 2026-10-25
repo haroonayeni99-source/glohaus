@@ -23,7 +23,10 @@ export async function GET(request: Request) {
     return json({
       ...data,
       enabled: process.env.SUPPORT_EMAIL_FORWARDING_ENABLED === "true",
-      configured: Boolean(process.env.SUPPORT_EMAIL_WEBHOOK_SECRET),
+      configured: Boolean(
+        process.env.SUPPORT_EMAIL_WEBHOOK_SECRET &&
+        process.env.SUPPORT_EMAIL_API_KEY,
+      ),
     });
   } catch (e) {
     return apiError(e);
@@ -45,7 +48,7 @@ export async function POST(request: Request) {
     )
       throw new AccessError("UNAVAILABLE", 503);
     const result = await new Resend(
-      process.env.RESEND_API_KEY,
+      process.env.SUPPORT_EMAIL_API_KEY ?? process.env.RESEND_API_KEY,
     ).emails.receiving.get(input.data.emailId, { html_format: "cid" });
     if (result.error || !result.data)
       throw new AccessError("INVALID_REQUEST", 400);

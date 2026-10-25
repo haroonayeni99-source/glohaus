@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   query: vi.fn(),
   get: vi.fn(),
   after: vi.fn(),
+  readerKeys: [] as string[],
 }));
 vi.mock("@/modules/admin/repository", () => ({ withOwner: mocks.owner }));
 vi.mock("next/server", () => ({ after: mocks.after }));
@@ -12,6 +13,9 @@ vi.mock("@/modules/support-mail/worker", () => ({
 }));
 vi.mock("resend", () => ({
   Resend: class {
+    constructor(key: string) {
+      mocks.readerKeys.push(key);
+    }
     emails = { receiving: { get: mocks.get } };
   },
 }));
@@ -29,6 +33,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.stubEnv("RESEND_API_KEY", "fixture-only");
   vi.stubEnv("SUPPORT_EMAIL_FORWARDING_ENABLED", "true");
+  vi.stubEnv("SUPPORT_EMAIL_API_KEY", "dedicated-reader-fixture");
+  mocks.readerKeys.length = 0;
   mocks.owner.mockImplementation((work) => work({ query: mocks.query }));
   mocks.query.mockResolvedValue({
     rows: [{ data: { counts: {}, items: [] } }],
@@ -68,6 +74,7 @@ it("reports queued, not delivered, and leaves duplicates to the durable queue", 
     [id],
   );
   expect(mocks.after).toHaveBeenCalledOnce();
+  expect(mocks.readerKeys).toEqual(["dedicated-reader-fixture"]);
 });
 it("holds unsafe senders for private review without queueing", async () => {
   mocks.get.mockResolvedValue({

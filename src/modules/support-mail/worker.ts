@@ -65,6 +65,11 @@ export async function deliverSupportForwarding(client?: Resend) {
   )
     return { enabled: false, processed: 0 };
   const resend = client ?? new Resend(process.env.RESEND_API_KEY);
+  // Resend sending-only keys cannot read received or sent messages. Keep the
+  // existing sender/SMTP credential separate from the server-only reader.
+  const reader = process.env.SUPPORT_EMAIL_API_KEY
+    ? new Resend(process.env.SUPPORT_EMAIL_API_KEY)
+    : resend;
   const jobs = await withPaymentWorker(
     async (db) =>
       (await db.query<Job>("SELECT * FROM beauty.claim_support_mail()")).rows,
@@ -87,7 +92,7 @@ export async function deliverSupportForwarding(client?: Resend) {
   for (const job of jobs) {
     try {
       if (job.kind === "sent") {
-        const { data: email, error } = await resend.emails.get(
+        const { data: email, error } = await reader.emails.get(
           job.provider_email_id,
         );
         if (error || !email) throw Error("PROVIDER_UNAVAILABLE");
@@ -122,7 +127,7 @@ export async function deliverSupportForwarding(client?: Resend) {
         );
         continue;
       }
-      const result = await resend.emails.receiving.get(job.provider_email_id, {
+      const result = await reader.emails.receiving.get(job.provider_email_id, {
         html_format: "cid",
       });
       if (result.error || !result.data) throw Error("PROVIDER_UNAVAILABLE");

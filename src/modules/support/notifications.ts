@@ -49,8 +49,8 @@ Customer messages and evidence are available after staff sign-in. Gmail replies 
       (
         await db.query<{ queued: number; retrying: number; exhausted: number }>(
           `SELECT count(*)::integer AS queued,
-       count(*) FILTER(WHERE attempts BETWEEN 1 AND 7)::integer AS retrying,
-       count(*) FILTER(WHERE attempts>=8)::integer AS exhausted
+       count(*) FILTER(WHERE attempts BETWEEN 1 AND 7 AND (locked_at IS NULL OR locked_at<now()-interval '5 minutes'))::integer AS retrying,
+       count(*) FILTER(WHERE attempts>=8 AND (locked_at IS NULL OR locked_at<now()-interval '5 minutes'))::integer AS exhausted
        FROM beauty.support_email_jobs WHERE accepted_at IS NULL`,
         )
       ).rows[0] ?? { queued: 0, retrying: 0, exhausted: 0 },

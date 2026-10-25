@@ -150,6 +150,31 @@ const supportJob = {
   kind: "new",
 };
 
+it("counts failed and abandoned attempts without flagging another worker's active claim", async () => {
+  const { PGlite } = await import("@electric-sql/pglite");
+  const db = new PGlite();
+  try {
+    await db.exec(`CREATE SCHEMA beauty;
+      CREATE TABLE beauty.support_email_jobs(accepted_at timestamptz,attempts integer,locked_at timestamptz);
+      INSERT INTO beauty.support_email_jobs VALUES
+       (NULL,1,now()),(NULL,8,now()),(NULL,2,NULL),(NULL,8,NULL),
+       (NULL,3,now()-interval '6 minutes'),(now(),8,NULL),(NULL,0,NULL);`);
+    mocks.query.mockImplementation(async (sql: string) =>
+      sql.includes("FROM beauty.support_email_jobs")
+        ? db.query(sql)
+        : { rows: [] },
+    );
+    const response = await runNotificationWorker();
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({
+      supportEmail: { queued: 6, retrying: 2, exhausted: 1 },
+    });
+    expect(mocks.send).not.toHaveBeenCalled();
+  } finally {
+    await db.close();
+  }
+});
+
 it("records support provider acceptance separately from delivery", async () => {
   mocks.query.mockImplementation(async (sql: string) => ({
     rows: sql.includes("claim_support_emails()") ? [supportJob] : [],

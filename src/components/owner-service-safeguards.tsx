@@ -126,6 +126,7 @@ export function OwnerServiceSafeguards({
               <select
                 disabled={busy}
                 value={categoryId}
+                aria-label="Future category"
                 onChange={(event) => {
                   setCategoryId(event.target.value);
                   setNotice("");
@@ -143,6 +144,7 @@ export function OwnerServiceSafeguards({
               <select
                 disabled={busy}
                 value={professionalId}
+                aria-label="Professional"
                 onChange={(event) => {
                   setProfessionalId(event.target.value);
                   setNotice("");

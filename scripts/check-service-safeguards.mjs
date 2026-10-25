@@ -12,10 +12,12 @@ const pro = "11111111-1111-4111-8111-111111111111",
   teeth = "22222222-2222-4222-8222-222222222222",
   tattoo = "33333333-3333-4333-8333-333333333333";
 const results = [];
+let currentPage;
 try {
   for (const theme of ["light", "night"])
     for (const width of [320, 390, 820, 1440]) {
       const page = await browser.newPage({ viewport: { width, height: 1000 } });
+      currentPage = page;
       let reads = 0,
         failRefresh = false;
       const writes = [];
@@ -196,6 +198,22 @@ try {
     JSON.stringify(results, null, 2),
   );
   console.log(JSON.stringify(results));
+} catch (error) {
+  if (currentPage && !currentPage.isClosed()) {
+    await currentPage
+      .screenshot({
+        path: "reports/service-safeguards-failed.png",
+        fullPage: true,
+      })
+      .catch(() => {});
+    console.error(
+      await currentPage
+        .locator("main")
+        .innerText()
+        .catch(() => "Fixture state unavailable"),
+    );
+  }
+  throw error;
 } finally {
   await browser.close();
   await new Promise((resolve) => server.close(resolve));

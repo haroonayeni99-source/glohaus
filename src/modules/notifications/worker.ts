@@ -1,3 +1,4 @@
+import { deliverSupportForwarding } from "@/modules/support-mail/worker";
 import { deliverSupportNotifications } from "@/modules/support/notifications";
 import "server-only";
 import { refreshJourneyRoutes } from "@/modules/journey-routing/worker";
@@ -146,7 +147,9 @@ export async function runNotificationWorker() {
         ).rows,
     );
     const resend = new Resend(process.env.RESEND_API_KEY);
-    let supportEmail: Awaited<ReturnType<typeof deliverSupportNotifications>> | { error: string };
+    let supportEmail:
+      | Awaited<ReturnType<typeof deliverSupportNotifications>>
+      | { error: string };
     try {
       supportEmail = await deliverSupportNotifications(resend, from);
       if (supportEmail.retrying || supportEmail.exhausted)
@@ -154,7 +157,20 @@ export async function runNotificationWorker() {
     } catch {
       supportEmail = { error: "SUPPORT_EMAIL_CHECK_FAILED" };
       preparationFailures.push("supportEmail");
-      console.error("Support notifications deferred to retry", { stage: "supportEmail" });
+      console.error("Support notifications deferred to retry", {
+        stage: "supportEmail",
+      });
+    }
+    // Incoming support transport is isolated from all existing notification and financial work.
+    if (process.env.SUPPORT_EMAIL_FORWARDING_ENABLED === "true") {
+      try {
+        await deliverSupportForwarding(resend);
+      } catch {
+        preparationFailures.push("supportForwarding");
+        console.error("Support mail deferred to retry", {
+          stage: "supportForwarding",
+        });
+      }
     }
     let sent = 0;
     for (const job of jobs) {

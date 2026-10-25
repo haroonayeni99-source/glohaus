@@ -25,7 +25,7 @@ export async function PATCH(
         public: z.boolean().default(false),
       })
       .strict()
-      .safeParse(await smallJson(request));
+      .safeParse(await smallJson(request, 32768));
     if (!z.uuid().safeParse(id).success || !parsed.success)
       throw new AccessError("INVALID_REQUEST", 400);
     await withAdmin(async (db) => {

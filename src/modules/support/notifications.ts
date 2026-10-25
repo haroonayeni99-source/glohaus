@@ -14,6 +14,7 @@ export async function deliverSupportNotifications(
         )
       ).rows,
   );
+  let accepted = 0;
   for (const job of jobs) {
     let provider: string | null = null;
     try {
@@ -41,5 +42,19 @@ Customer messages and evidence are available after staff sign-in. Gmail replies 
     await withPaymentWorker((db) =>
       db.query("SELECT beauty.finish_support_email($1,$2)", [job.id, provider]),
     );
+    if (provider) accepted++;
   }
+  const backlog = await withPaymentWorker(
+    async (db) =>
+      (
+        await db.query<{ queued: number; retrying: number; exhausted: number }>(
+          `SELECT count(*)::integer AS queued,
+       count(*) FILTER(WHERE attempts BETWEEN 1 AND 7)::integer AS retrying,
+       count(*) FILTER(WHERE attempts>=8)::integer AS exhausted
+       FROM beauty.support_email_jobs WHERE accepted_at IS NULL`,
+        )
+      ).rows[0] ?? { queued: 0, retrying: 0, exhausted: 0 },
+  );
+  // Provider acceptance is not delivery. Counts contain no ticket/customer data.
+  return { processed: jobs.length, accepted, ...backlog };
 }

@@ -17,6 +17,7 @@ export type InAppNotification = {
     | "push_test"
     | "professional_activity"
     | "commission_changed"
+    | "payout_updated"
     | "booking_policy_update"
     | "professional_policy_review"
     | "booking_created"

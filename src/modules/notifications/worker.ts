@@ -146,8 +146,16 @@ export async function runNotificationWorker() {
         ).rows,
     );
     const resend = new Resend(process.env.RESEND_API_KEY);
-    try { await deliverSupportNotifications(resend,from); }
-    catch { console.error("Support notifications deferred to retry",{stage:"supportEmail"}); }
+    let supportEmail: Awaited<ReturnType<typeof deliverSupportNotifications>> | { error: string };
+    try {
+      supportEmail = await deliverSupportNotifications(resend, from);
+      if (supportEmail.retrying || supportEmail.exhausted)
+        preparationFailures.push("supportEmail");
+    } catch {
+      supportEmail = { error: "SUPPORT_EMAIL_CHECK_FAILED" };
+      preparationFailures.push("supportEmail");
+      console.error("Support notifications deferred to retry", { stage: "supportEmail" });
+    }
     let sent = 0;
     for (const job of jobs) {
       try {
@@ -315,6 +323,7 @@ export async function runNotificationWorker() {
       }
     }
     const summary = {
+      supportEmail,
       push,
       journeyRouting,
       preparationFailures,

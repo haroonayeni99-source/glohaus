@@ -92,6 +92,7 @@ it("continues reminders, push and email after route refresh fails, and records a
 });
 
 it.each([
+  ["payoutStatus", "prepare_payout_status_notifications"],
   ["arrivalReminders", "prepare_arrival_reminders"],
   ["professionalNotifications", "prepare_professional_notifications"],
   ["professionalPromotions", "prepare_professional_promotions"],
@@ -141,4 +142,117 @@ it("still processes push when email credentials are absent", async () => {
     emailConfigured: false,
     push: { accepted: 1 },
   });
+});
+
+const supportJob = {
+  id: "support-job",
+  request_id: "private-case",
+  kind: "new",
+};
+
+it("records support provider acceptance separately from delivery", async () => {
+  mocks.query.mockImplementation(async (sql: string) => ({
+    rows: sql.includes("claim_support_emails()") ? [supportJob] : [],
+  }));
+  const response = await runNotificationWorker();
+  expect(response.status).toBe(200);
+  const result = await response.json();
+  expect(result.supportEmail).toEqual({
+    processed: 1,
+    accepted: 1,
+    queued: 0,
+    retrying: 0,
+    exhausted: 0,
+  });
+  expect(result.supportEmail).not.toHaveProperty("delivered");
+  expect(mocks.query).toHaveBeenCalledWith(
+    "SELECT beauty.finish_support_email($1,$2)",
+    ["support-job", "email-fixture"],
+  );
+});
+
+it("reports failed support delivery as degraded while still sending other transactional email", async () => {
+  mocks.query.mockImplementation(async (sql: string) => ({
+    rows: sql.includes("claim_support_emails()")
+      ? [supportJob]
+      : sql.includes("FROM beauty.support_email_jobs")
+        ? [{ queued: 1, retrying: 1, exhausted: 0 }]
+        : sql.includes("claim_notifications()")
+          ? [
+              {
+                id: "notice",
+                booking_id: "booking",
+                kind: "confirmation",
+                email: "fixture@example.test",
+                service_name: "Fixture",
+                professional_name: "Fixture Studio",
+                starts_at: "2026-11-01T12:00:00Z",
+              },
+            ]
+          : [],
+  }));
+  mocks.send.mockRejectedValueOnce(new Error("private provider credential"));
+  const response = await runNotificationWorker();
+  expect(response.status).toBe(503);
+  expect(await response.json()).toMatchObject({
+    supportEmail: { accepted: 0, retrying: 1 },
+    preparationFailures: ["supportEmail"],
+    sent: 1,
+  });
+  expect(mocks.query).toHaveBeenCalledWith(
+    "SELECT beauty.finish_support_email($1,$2)",
+    ["support-job", null],
+  );
+  expect(mocks.query).toHaveBeenCalledWith(
+    "SELECT beauty.record_backend_job_run($1,$2,$3::jsonb)",
+    ["notifications", false, expect.stringContaining('"retrying":1')],
+  );
+  expect(JSON.stringify(vi.mocked(console.error).mock.calls)).not.toContain(
+    "private provider credential",
+  );
+});
+
+it("keeps exhausted support alerts visible even when no job is claimable, then recovers after resolution", async () => {
+  let exhausted = 1;
+  mocks.query.mockImplementation(async (sql: string) => ({
+    rows: sql.includes("FROM beauty.support_email_jobs")
+      ? [{ queued: exhausted, retrying: 0, exhausted }]
+      : [],
+  }));
+  const failed = await runNotificationWorker();
+  expect(failed.status).toBe(503);
+  expect(await failed.json()).toMatchObject({
+    supportEmail: { processed: 0, exhausted: 1 },
+    preparationFailures: ["supportEmail"],
+  });
+  expect(mocks.send).not.toHaveBeenCalled();
+  exhausted = 0;
+  const recovered = await runNotificationWorker();
+  expect(recovered.status).toBe(200);
+  expect(await recovered.json()).toMatchObject({
+    supportEmail: { exhausted: 0 },
+    preparationFailures: [],
+  });
+});
+
+it("isolates an unavailable support queue and exposes only a safe diagnostic code", async () => {
+  mocks.query.mockImplementation(async (sql: string) => {
+    if (sql.includes("claim_support_emails()"))
+      throw new Error("private database connection");
+    return { rows: [] };
+  });
+  const response = await runNotificationWorker();
+  expect(response.status).toBe(503);
+  expect(await response.json()).toMatchObject({
+    supportEmail: { error: "SUPPORT_EMAIL_CHECK_FAILED" },
+    preparationFailures: ["supportEmail"],
+  });
+  expect(
+    mocks.query.mock.calls.some(([sql]) =>
+      sql.includes("claim_professional_alert_emails()"),
+    ),
+  ).toBe(true);
+  expect(JSON.stringify(vi.mocked(console.error).mock.calls)).not.toContain(
+    "private database connection",
+  );
 });

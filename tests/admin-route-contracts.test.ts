@@ -13,7 +13,8 @@ import { POST as commission } from "@/app/api/v1/admin/professional-commission/r
 import { POST as appeal } from "@/app/api/v1/admin/refund-appeals/route";
 import { AccessError } from "@/modules/accounts/domain";
 import { defaultLabels } from "@/modules/platform/domain";
-const mocks = vi.hoisted(() => ({ roles: ["owner", "admin"], configured: false, deleteUser: vi.fn(), denial: null as null | "UNAUTHENTICATED" | "MFA_REQUIRED", query: vi.fn(), stripe: vi.fn() }));
+const mocks = vi.hoisted(() => ({ roles: ["owner", "admin"], configured: false, deleteUser: vi.fn(), invalidate: vi.fn(), denial: null as null | "UNAUTHENTICATED" | "MFA_REQUIRED", query: vi.fn(), stripe: vi.fn() }));
+vi.mock("next/cache", () => ({ unstable_cache: (load: unknown) => load, revalidateTag: mocks.invalidate }));
 vi.mock("@/lib/api-account", () => ({ withAccount: async (_: string, work: (db: object, account: object) => unknown) => {
   if (mocks.denial) throw new AccessError(mocks.denial, mocks.denial === "UNAUTHENTICATED" ? 401 : 403);
   if (!mocks.roles.includes("admin")) throw new AccessError("FORBIDDEN", 403);
@@ -119,20 +120,24 @@ it.each(cases)("accepts the $name UI payload through its existing protected rout
     expect((await item.handler(request(item))).status).toBe(200);
     expect(mocks.query.mock.calls.some(([sql]) => sql.includes(item.sql))).toBe(true);
   }
+  if(item.name === "categories") expect(mocks.invalidate).toHaveBeenCalledExactlyOnceWith("public-taxonomy-catalog", {expire:0});
   expect(mocks.stripe).not.toHaveBeenCalled();
 });
 it.each(cases)("rejects malformed $name payloads before writes", async item => {
   expect((await item.handler(request(item, {}))).status).toBe(400);
   expect(mocks.query).not.toHaveBeenCalled();
+  expect(mocks.invalidate).not.toHaveBeenCalled();
 });
 it.each(cases)("blocks cross-origin $name changes", async item => {
   expect((await item.handler(request(item, item.payload, "https://untrusted.test"))).status).toBe(403);
   expect(mocks.query).not.toHaveBeenCalled();
+  expect(mocks.invalidate).not.toHaveBeenCalled();
 });
 it.each(cases)("fails closed on expired verification for $name", async item => {
   mocks.denial = "MFA_REQUIRED";
   expect((await item.handler(request(item))).status).toBe(403);
   expect(mocks.query).not.toHaveBeenCalled();
+  expect(mocks.invalidate).not.toHaveBeenCalled();
 });
 it.each(cases.filter(item => item.owner))("keeps $name Owner-only for a verified Admin", async item => {
   mocks.roles = ["admin"];

@@ -10,8 +10,8 @@ vi.mock("@/lib/db", () => ({ withIdentity: mocks.withIdentity }));
 vi.mock("@/modules/professionals/repository", () => ({
   discoveryPage: mocks.discovery,
 }));
-vi.mock("@/modules/taxonomy/repository", () => ({
-  taxonomyCatalog: mocks.taxonomy,
+vi.mock("@/modules/taxonomy/public-catalog", () => ({
+  publicTaxonomyCatalog: mocks.taxonomy,
 }));
 vi.mock("@/lib/public-viewer", () => ({
   publicViewerSignedIn: async () => false,
@@ -59,9 +59,10 @@ async function html() {
     }),
   );
 }
-it("loads results and taxonomy with one connection and distinguishes successful zero results", async () => {
+it("reuses the public catalogue and one listing connection while distinguishing successful zero results", async () => {
   expect(await html()).toContain('data-failed="false"');
   expect(mocks.withIdentity).toHaveBeenCalledOnce();
+  expect(mocks.taxonomy).toHaveBeenCalledOnce();
   expect(mocks.discovery).toHaveBeenCalledWith(
     {},
     "nails",

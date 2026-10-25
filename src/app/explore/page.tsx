@@ -1,7 +1,7 @@
 import "./discovery-map.css";
 import "@/components/profile-examples.css";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { taxonomyCatalog } from "@/modules/taxonomy/repository";
+import { publicTaxonomyCatalog } from "@/modules/taxonomy/public-catalog";
 import { emptyTaxonomy } from "@/modules/taxonomy/domain";
 import { publicMetadata, publicPages } from "@/lib/public-seo";
 import Link from "next/link";
@@ -55,6 +55,7 @@ export default async function Explore({
 
   if (process.env.DATABASE_URL) {
     try {
+      const catalog = await publicTaxonomyCatalog();
       const result = await withIdentity("", async (db) => ({
         ...(await (postcodeCentre
           ? discoveryPage(db, q, undefined, { ...filters, location: undefined }, {
@@ -64,7 +65,7 @@ export default async function Explore({
               filters: { ...filters, location: undefined },
             })
           : discoveryPage(db, q, after, filters))),
-        taxonomy: await taxonomyCatalog(db),
+        taxonomy: catalog,
         exampleVisibility: await readExampleVisibility(db).catch(() => ({ enabled: false, hiddenSlugs: [] })),
       }));
       professionals = result.professionals;
@@ -118,12 +119,12 @@ export default async function Explore({
             aria-label="Professional search pages"
           >
             {after && (
-              <Link href={discoveryHref(q, filters)}>
+              <Link prefetch={false} href={discoveryHref(q, filters)}>
                 ← Back to first results
               </Link>
             )}
             {next && (
-              <Link href={discoveryHref(q, filters, next)}>
+              <Link prefetch={false} href={discoveryHref(q, filters, next)}>
                 More professionals →
               </Link>
             )}

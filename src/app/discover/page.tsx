@@ -1,4 +1,4 @@
-import { taxonomyCatalog } from "@/modules/taxonomy/repository";
+import { publicTaxonomyCatalog } from "@/modules/taxonomy/public-catalog";
 import { emptyTaxonomy,type TaxonomyCatalog } from "@/modules/taxonomy/domain";
 import { publicMetadata, publicPages } from "@/lib/public-seo";
 import { DiscoveryFeed } from "@/components/discovery-feed";
@@ -86,6 +86,7 @@ export async function FeedPage({
     } catch {}
 
     try {
+      const catalog = await publicTaxonomyCatalog();
       data = await withIdentity(authId, async (db) => {
         const account = authId ? await findAccount(db, authId) : null;
         const accountMode = account?.status === "active";
@@ -124,7 +125,7 @@ export async function FeedPage({
             : [];
 
         return {
-          catalog:await taxonomyCatalog(db),
+          catalog,
           posts,
           initialEngagement: accountMode
             ? await viewerEngagement(

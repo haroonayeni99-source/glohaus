@@ -29,7 +29,8 @@
       "fix/original-map-boroughs": false,
       "security/node-october-2026": false,
       "security/verified-runtime-release": false,
-      "security/pinned-container-runtime-20261024": false
+      "security/pinned-container-runtime-20261024": false,
+      "perf/public-discovery-bandwidth": false
     }
   },
   "regions": [

@@ -31,6 +31,11 @@ import { POST as category } from "@/app/api/v1/admin/categories/route";
 import { POST as manage } from "@/app/api/v1/admin/manage/route";
 import { POST as webhook } from "@/app/api/webhooks/stripe/route";
 
+vi.mock("next/cache", () => ({
+  unstable_cache: (load: unknown) => load,
+  revalidateTag: vi.fn(),
+}));
+
 const db = await createTestDatabase();
 let actor = "pro";
 let mfa: number | null = 0;

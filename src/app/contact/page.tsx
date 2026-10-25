@@ -31,9 +31,13 @@ export default async function ContactPage({
           <Link href="/faq">Find answers in our help & FAQs</Link>
         </section>
         <p>
-          Email: <a href="mailto:glohausuk@gmail.com">glohausuk@gmail.com</a>.
+          Email: <a href="mailto:support@glohaus.shop">support@glohaus.shop</a>.
           We aim to respond within two weekdays (Monday–Friday), subject to
           public-holiday delays; this is a target, not a guarantee.
+        </p>
+        <p>
+          If you cannot reach our support address, email{" "}
+          <a href="mailto:glohausuk@gmail.com">glohausuk@gmail.com</a> instead.
         </p>
         <p>
           For a copy, correction or eligible deletion of your information,

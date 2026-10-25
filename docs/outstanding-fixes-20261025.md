@@ -8,6 +8,8 @@ The MUA homepage update, Makeup discovery link, loaded image and preserved Waxin
 
 Resend read-only checks confirm one existing Support inbox, verified receiving MX and sending records, sending/receiving enabled, and the existing support webhook enabled. Earlier initial and follow-up support forwards are marked delivered to the business Gmail. No duplicate inbox, DNS record, webhook or new test email was created. The connected Gmail account is personal, so business-inbox actions and a complete Gmail reply round trip are not represented as independently tested. Existing ticket linking is based on validated sender/recipient and references; this is not full Gmail dashboard synchronisation.
 
+The public Contact page now uses the verified support address, retaining business Gmail as a fallback. Private ticket help uses the same support identity. This changes contact copy only, not DNS, SMTP, notification routing or ticket permissions.
+
 Existing grouped Owner/Admin navigation, task search, explanations and dangerous-action confirmations are retained. The new provider review sits inside Service Categories and loads only when opened; it does not add dashboard polling or a duplicate dashboard.
 
 ## New catalogue and provider controls

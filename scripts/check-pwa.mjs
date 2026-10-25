@@ -59,6 +59,14 @@ async function ready() {
     )
     .toBe(200);
 }
+async function workerControlsPage(page) {
+  // Wait before theme reloads can interrupt initial worker installation. A
+  // missing worker must fail with a bounded assertion, not hang on ready.
+  await expect.poll(() => page.evaluate(async () => {
+    const registration = await navigator.serviceWorker.getRegistration("/");
+    return Boolean(registration?.active && navigator.serviceWorker.controller);
+  }), { timeout: 15000, message: "Installed worker must control the isolated test page" }).toBe(true);
+}
 const results = [],
   browsers = [],
   persistentContexts = [],
@@ -119,6 +127,7 @@ try {
         theme,
       );
       await page.goto(`${base}/install`);
+      await workerControlsPage(page);
       await expect(
         page.getByRole("heading", { name: "GLOHAUS on your Home Screen." }),
       ).toBeVisible();
@@ -188,17 +197,7 @@ try {
         [512, 512],
       ]);
       expect(manifest.apple).toContain("/icons/glohaus-home-apple-180-v2.png");
-      await page.evaluate(async () => {
-        await navigator.serviceWorker.ready;
-        if (!navigator.serviceWorker.controller)
-          await new Promise((resolve) =>
-            navigator.serviceWorker.addEventListener(
-              "controllerchange",
-              resolve,
-              { once: true },
-            ),
-          );
-      });
+      await workerControlsPage(page);
       expect(
         await page.evaluate(
           async () => (await navigator.serviceWorker.getRegistrations()).length,
@@ -307,14 +306,8 @@ try {
   const context = await chrome.newContext(),
     page = await context.newPage();
   await page.goto(base);
+  await workerControlsPage(page);
   await page.evaluate(async () => {
-    await navigator.serviceWorker.ready;
-    if (!navigator.serviceWorker.controller)
-      await new Promise((resolve) =>
-        navigator.serviceWorker.addEventListener("controllerchange", resolve, {
-          once: true,
-        }),
-      );
     window.pwaUnsavedProbe = "unsaved";
   });
   await writeFile(

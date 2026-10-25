@@ -11,7 +11,7 @@ if (desktopStart < 0 || desktopEnd < 0) throw new Error("Desktop CSS boundary no
 // Shared sign-out/badge rules apply in both comparison states. Remove only the
 // desktop homepage block when checking that its media query leaves mobile intact.
 const desktopCss = styles.slice(desktopStart, desktopEnd);
-const categories = ["hair", "nails", "barber", "waxing", "injectables"];
+const categories = ["hair", "nails", "barber", "injectables"];
 const placeholder = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a3ioAAAAASUVORK5CYII=", "base64");
 const results = [];
 // The invariant is that desktop CSS cannot change mobile layout or styling.
@@ -59,6 +59,14 @@ try {
           await expect(image).toBeVisible();
           await expect.poll(() => image.evaluate(img => img.complete && img.naturalWidth === 360)).toBe(true);
         }
+        const services = page.locator(".desktop-service-row");
+        const mua = services.getByRole("link", { name: "MUA", exact: true });
+        await expect(mua).toBeVisible();
+        await expect(mua).toHaveAttribute("href", "/explore?category=Makeup");
+        await expect(services.getByRole("link", { name: "Waxing", exact: true })).toHaveCount(0);
+        await expect(mua.locator("img")).toBeVisible();
+        await expect(mua.locator("img")).toHaveAttribute("src", /photo-1487412912498-0447578fcca8/);
+        await expect.poll(() => mua.locator("img").evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
         if (!guest) {
           const button = page.locator(".customer-desktop-topbar button");
           await expect(button).toHaveText("Sign out");

@@ -421,8 +421,8 @@ export default async function Page() {
               professional
             </p>
             <p className="lead">
-              Manage current service rates, professional overrides and
-              scheduled changes below. Live changes require Owner confirmation.
+              Manage current service rates, professional overrides and scheduled
+              changes below. Live changes require Owner confirmation.
             </p>
             {commissionCentre ? (
               <CommissionControlCentre data={commissionCentre} />
@@ -479,6 +479,11 @@ export default async function Page() {
             <p className="eyebrow">SYSTEM HEALTH</p>
             <h2>Platform Health</h2>
             <AdminToolHelp id="backend-health" />
+            <p>
+              <a href="/admin/verification">
+                Open phone and account release checks →
+              </a>
+            </p>
             <p className="lead">
               Check whether scheduled tasks, automated emails and payment setup
               are working. These checks do not change settings or move money.
@@ -685,7 +690,7 @@ export default async function Page() {
               </section>
             ))}
         <AdminSection id="support" title="Support & Disputes">
-          <AdminSupportInbox initial={support} />
+          <AdminSupportInbox initial={support} owner={isOwner} />
         </AdminSection>
         <AdminFinancePanel data={finance} />
         <AdminManager

@@ -474,8 +474,12 @@ jobs:
           webkit: "true"
       - name: Verify programme controls, acquisition, support and review responses on phone browsers
         run: node scripts/check-platform-fairness.mjs
+      - name: Verify private privacy reviews, save failures and phone checklist on browser engines
+        run: node scripts/check-privacy-operations.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: platform-fairness-browser-evidence
-          path: reports/*fairness*
+          path: |
+            reports/*fairness*
+            reports/privacy-operations-browser.json

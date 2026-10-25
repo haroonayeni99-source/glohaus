@@ -1,12 +1,15 @@
 "use client";
 import { useState } from "react";
+import { SupportOperationsPanel } from "@/components/support-operations";
 import type { SupportCase } from "@/modules/support/cases";
 import type { SupportRequest } from "@/modules/support/domain";
 
 export function AdminSupportInbox({
   initial,
+  owner = false,
 }: {
   initial: SupportRequest[] | null;
+  owner?: boolean;
 }) {
   const [requests, setRequests] = useState(initial);
   const [busy, setBusy] = useState("");
@@ -47,7 +50,7 @@ export function AdminSupportInbox({
       });
       if (!response.ok)
         throw Error(
-          "Could not save. Resolving an escalated case or appeal requires the Owner.",
+          "Could not save. Escalated, appealed and privacy cases require Owner review. Data requests also need a recorded identity review and an outcome visible on the private ticket.",
         );
       setRequests(
         (current) =>
@@ -87,6 +90,9 @@ export function AdminSupportInbox({
         glohausuk@gmail.com until mailbox or forwarding setup is verified.
       </p>
       {notice && <p role="status">{notice}</p>}
+      {owner && (
+        <SupportOperationsPanel onOpenCase={(id) => void openCase(id)} />
+      )}
       {selected && (
         <section
           className="admin-detail-card"
@@ -94,6 +100,9 @@ export function AdminSupportInbox({
         >
           <h3>Case {selected.id}</h3>
           <p>Status: {selected.status.replaceAll("_", " ")}</p>
+          {owner && (
+            <SupportOperationsPanel key={selected.id} caseId={selected.id} />
+          )}
           {selected.events.map((e) => (
             <article key={e.id}>
               <p>

@@ -30,7 +30,7 @@ try {
             if (!(await link.isVisible()))
               await page
                 .locator(".admin-tool-group")
-                .filter({ has: link })
+                .filter({ has: page.locator(`a[href="#${id}"]`) })
                 .getByRole("button")
                 .click();
             await link.click();

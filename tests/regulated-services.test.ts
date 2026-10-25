@@ -341,3 +341,21 @@ it("blocks publishing and direct booking/quote bypasses until approved and hides
       ),
     ).rejects.toThrow("UNAVAILABLE_SERVICE");
   }));
+
+it("blocks an appointment extending beyond the recorded evidence expiry", () =>
+  isolated(async () => {
+    await approve();
+    await open();
+    const service = (
+      await db.query<{ id: string }>(
+        "INSERT INTO beauty.services(professional_id,name,duration_minutes,price_pence,deposit_pence,category_id) VALUES($1,'Whitening consultation',30,5000,1500,$2) RETURNING id",
+        [professional, teeth],
+      )
+    ).rows[0].id;
+    await expect(
+      db.query(
+        "INSERT INTO beauty.bookings(service_id,professional_id,starts_at,ends_at) VALUES($1,$2,now()+interval '90 days',now()+interval '90 days 30 minutes')",
+        [service, professional],
+      ),
+    ).rejects.toThrow("UNAVAILABLE_SERVICE");
+  }));

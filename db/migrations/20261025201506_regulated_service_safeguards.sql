@@ -31,7 +31,7 @@ CREATE TABLE beauty.regulatory_categories(
 INSERT INTO beauty.regulatory_categories SELECT id,CASE slug WHEN 'teeth-whitening' THEN 'dentistry' ELSE 'tattoo' END
 FROM beauty.platform_categories WHERE slug IN('teeth-whitening','tattoos');
 CREATE TABLE beauty.professional_regulatory_clearances(
- professional_id uuid NOT NULL REFERENCES beauty.professional_profiles(id),
+ professional_id uuid NOT NULL REFERENCES beauty.professional_profiles(id) ON DELETE CASCADE,
  category_id uuid NOT NULL REFERENCES beauty.regulatory_categories(category_id),
  status text NOT NULL CHECK(status IN('approved','revoked')),
  registration_reference text NOT NULL CHECK(length(registration_reference) BETWEEN 2 AND 120),
@@ -84,11 +84,14 @@ DECLARE svc beauty.services; BEGIN
  SELECT * INTO svc FROM beauty.services WHERE id=NEW.service_id;
  IF EXISTS(SELECT 1 FROM beauty.regulatory_categories WHERE category_id=svc.category_id) THEN
   PERFORM pg_advisory_xact_lock(hashtextextended('regulatory:'||svc.professional_id::text||':'||svc.category_id::text,0));
+  IF NOT EXISTS(SELECT 1 FROM beauty.professional_regulatory_clearances r WHERE r.professional_id=svc.professional_id AND r.category_id=svc.category_id
+    AND r.status='approved' AND r.valid_until>=coalesce(NEW.ends_at,NEW.starts_at+make_interval(mins=>svc.duration_minutes)))
+  THEN RAISE EXCEPTION 'UNAVAILABLE_SERVICE' USING ERRCODE='22023'; END IF;
  END IF;
  IF NOT beauty.regulatory_service_allowed(svc.professional_id,svc.category_id) THEN RAISE EXCEPTION 'UNAVAILABLE_SERVICE' USING ERRCODE='22023'; END IF;
  RETURN NEW;
 END $$;
-CREATE TRIGGER aaa_check_regulatory_booking BEFORE INSERT ON beauty.bookings FOR EACH ROW EXECUTE FUNCTION beauty.check_regulatory_booking();
+CREATE TRIGGER aaa_check_regulatory_booking BEFORE INSERT OR UPDATE OF starts_at,ends_at,service_id ON beauty.bookings FOR EACH ROW EXECUTE FUNCTION beauty.check_regulatory_booking();
 REVOKE ALL ON FUNCTION beauty.protect_regulatory_category(),beauty.check_regulatory_service(),beauty.check_regulatory_booking() FROM PUBLIC,anon,authenticated,beauty_app;
 
 -- Wrap the current view, retaining every existing visibility/safety predicate and column.

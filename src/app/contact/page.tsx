@@ -3,15 +3,19 @@ import { PublicHeader } from "@/components/public-header";
 import { ContactForm } from "@/components/contact-form";
 import { publicViewerSignedIn } from "@/lib/public-viewer";
 import { publicMetadata, publicPages } from "@/lib/public-seo";
+import { supportTopics } from "@/modules/support/domain";
 
 export const dynamic = "force-dynamic";
 export const metadata = publicMetadata("/contact", ...publicPages["/contact"]);
 export default async function ContactPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reference?: string }>;
+  searchParams: Promise<{ reference?: string; topic?: string }>;
 }) {
-  const reference = (await searchParams).reference?.slice(0, 120) ?? "";
+  const params = await searchParams;
+  const reference = params.reference?.slice(0, 120) ?? "";
+  const topic =
+    supportTopics.find((topic) => topic === params.topic) ?? supportTopics[0];
   const signedIn = await publicViewerSignedIn();
   return (
     <>
@@ -31,7 +35,14 @@ export default async function ContactPage({
           We aim to respond within two weekdays (Monday–Friday), subject to
           public-holiday delays; this is a target, not a guarantee.
         </p>
-        <ContactForm defaultReference={reference} />
+        <p>
+          For a copy, correction or eligible deletion of your information,
+          choose “Privacy &amp; data request”. Choose “Privacy complaint” to
+          raise a data-protection concern. Use “Complaint / appeal” for other
+          complaints; include the original ticket reference where possible. You
+          can also contact us by email.
+        </p>
+        <ContactForm defaultReference={reference} defaultTopic={topic} />
       </main>
     </>
   );

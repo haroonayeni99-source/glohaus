@@ -4,11 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supportInputSchema, supportTopics } from "@/modules/support/domain";
 
-export function ContactForm({defaultReference=""}:{defaultReference?:string}) {
+export function ContactForm({
+  defaultReference = "",
+  defaultTopic = supportTopics[0],
+}: {
+  defaultReference?: string;
+  defaultTopic?: (typeof supportTopics)[number];
+}) {
   const confirmation = useRef<HTMLHeadingElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [ticketLink,setTicketLink]=useState("");
+  const [ticketLink, setTicketLink] = useState("");
   const [reference, setReference] = useState("");
   useEffect(() => {
     confirmation.current?.focus();
@@ -56,9 +62,20 @@ export function ContactForm({defaultReference=""}:{defaultReference?:string}) {
         <h2 ref={confirmation} tabIndex={-1}>
           Your request has been received.
         </h2>
-        <p>We aim to respond within two weekdays (Monday–Friday), subject to public-holiday delays; this is a target, not a guarantee. Check your private ticket for replies and appeals.</p>
-        <p><Link href={ticketLink} className="button">Open your private support ticket</Link></p>
-        <p>Save this private ticket link. Anyone with it can view your case and evidence. Do not share it publicly.</p>
+        <p>
+          We aim to respond within two weekdays (Monday–Friday), subject to
+          public-holiday delays; this is a target, not a guarantee. Check your
+          private ticket for replies and appeals.
+        </p>
+        <p>
+          <Link href={ticketLink} className="button">
+            Open your private support ticket
+          </Link>
+        </p>
+        <p>
+          Save this private ticket link. Anyone with it can view your case and
+          evidence. Do not share it publicly.
+        </p>
         <p>
           Keep this reference: <strong>{reference}</strong>
         </p>
@@ -98,7 +115,7 @@ export function ContactForm({defaultReference=""}:{defaultReference?:string}) {
       </label>
       <label htmlFor="contact-topic">
         What do you need help with?
-        <select id="contact-topic" name="topic">
+        <select id="contact-topic" name="topic" defaultValue={defaultTopic}>
           {supportTopics.map((topic) => (
             <option key={topic}>{topic}</option>
           ))}
@@ -106,7 +123,12 @@ export function ContactForm({defaultReference=""}:{defaultReference?:string}) {
       </label>
       <label htmlFor="contact-reference">
         Booking or order reference (optional)
-        <input id="contact-reference" name="reference" maxLength={120} defaultValue={defaultReference} />
+        <input
+          id="contact-reference"
+          name="reference"
+          maxLength={120}
+          defaultValue={defaultReference}
+        />
       </label>
       <label htmlFor="contact-message">
         Your message

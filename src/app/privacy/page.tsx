@@ -1,4 +1,6 @@
 import { PolicyPage } from "@/components/policy-page";
+import { retentionSchedule } from "@/modules/support/operations";
+import Link from "next/link";
 
 export const metadata = { title: "Privacy Policy" };
 
@@ -6,18 +8,240 @@ export default function PrivacyPage() {
   return (
     <PolicyPage
       title="Privacy Policy"
-      updated="18 October 2026"
+      updated="25 October 2026"
       summary="How GLOHAUS expects to handle account, booking, marketplace and safety information."
     >
-      <section><h2>Information GLOHAUS uses</h2><p>This may include account details, profile information, booking and order records, payment references, messages, reviews, professional business information, support or refund evidence, device/security information and other information users choose to provide.</p></section>
-      <section><h2>Payments</h2><p>Card and payout details are handled by payment providers such as Stripe rather than being stored as raw card or bank credentials by GLOHAUS. GLOHAUS may retain payment references, transaction status, fees, refunds and payout records needed to operate the marketplace.</p></section>
-      <section><h2>Location sharing and arrival</h2><p>Booking-related journey location sharing is optional and consent-based. When a customer chooses to share while travelling to a confirmed appointment, the linked professional can see the latest shared location, its approximate accuracy and update time. Only the latest position is stored; GLOHAUS does not create a movement history. Positions older than 90 seconds are hidden from the professional and cleared by scheduled cleanup. Stopping sharing, cancellation, rescheduling or expiry revokes access and clears the position.</p><p>Where Smart Arrival is enabled, customers separately choose whether to allow location-based proximity detection after acknowledging the current appointment instructions. Detection records an arrival event and accuracy, without storing the detection coordinates. Sharing a live position and enabling Smart Arrival are separate choices. Permission can be withdrawn, and manual check-in remains available. Location detection does not prove attendance or automatically create a charge, penalty or cancellation. Tracking pauses when the booking page is hidden; a closed or suspended browser may prevent detection.</p></section>
-      <section><h2>Customer journey planning</h2><p>Where the planner is enabled, GLOHAUS saves the selected transport mode, chosen journey allowance, buffer and departure time to support optional reminders. Manual directions keep your starting point in the browser until you open Google Maps. Where automatic estimates are configured, choosing to calculate sends your selected origin and the confirmed appointment destination to Google Maps through GLOHAUS. Driving estimates may include traffic forecasts; public-transport estimates use available timetables and do not guarantee live disruption coverage.</p><p>Automatic rechecks are a separate optional choice that requires departure reminders. If selected, the chosen starting point is stored encrypted for that appointment and used for scheduled route calculations in the three hours before departure. It is removed at departure, on stopping rechecks, cancellation, rescheduling, location changes or disabling the feature. It is never shown to your professional or the Owner/Admin arrival console. Rechecks use the saved origin and do not track your movement or whether you have left. Google’s <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> applies to information sent to Google Maps.</p></section>
-      <section><h2>Appointment communications and records</h2><p>The linked professional and customer can review their appointment instructions and arrival events. Authorised Owner/Admin staff can review instruction versions, recipients, delivery outcomes, browser-reported display events and explicit acknowledgements, and handle disputes or append corrections. An email being sent or delivered does not mean it was read. Push provider acceptance, a device-reported display and a notification click are recorded separately; none proves understanding. The Owner/Admin arrival console does not show a customer’s live coordinates, starting address or private journey plan.</p><p>Saved journey plans and route-job metadata are removed by scheduled cleanup one day after the appointment ends; encrypted origins are cleared earlier as described above. Daily routing request/failure totals contain no origins and are kept for up to 100 days for usage monitoring. Private appointment pins and entrance instructions are redacted after 30 days. Arrival event details are retained for up to 180 days, with a hold while an arrival dispute remains unresolved. Booking, payment and accepted-policy records follow their separate retention requirements.</p></section>
-      <section><h2>Why information is used</h2><p>Information may be used to provide accounts and bookings, process supported payments, operate the Shop, communicate between users, prevent abuse, resolve disputes, provide customer support, maintain records and improve platform reliability.</p></section>
-      <section><h2>Customer acquisition and support</h2><p>You can optionally confirm how you first found a professional. Recorded invitations, QR links, existing referral records and consented profile history may support that answer. A link alone does not establish a source or ownership of a customer. Unknown and conflicting information stays labelled for review. Source reporting does not change fees. Professionals receive their aggregate acquisition results; authorised Owner staff can review disputed records and retain decision history. Do not put sensitive information in source explanations.</p><p>Support tickets and screenshots are private to authorised staff and anyone holding the private ticket link. Keep that link safe. Screenshots are re-encoded to remove embedded metadata; do not include passwords, card information or identity documents. Operational support alerts go to glohausuk@gmail.com. Inbound Gmail messages are not synchronised with the dashboard. Support history and source decisions are retained as needed for open cases, dispute handling, accountability and applicable record-keeping obligations. Contact us to request access, correction, restriction, objection or eligible deletion; we verify identity and explain any retention that remains necessary.</p></section>
-      <section><h2>Notification choices</h2><p>Optional marketing follows your recorded consent and opt-out settings. Essential account, booking, support and security communications are handled separately. You can manage available channel preferences in your account.</p></section>
-      <section><h2>Retention and rights</h2><p>For access, correction, deletion, restriction, objection or other privacy requests, use <a href="/contact">Contact Us</a> or email <a href="mailto:glohausuk@gmail.com">glohausuk@gmail.com</a>. We may need proportionate identity verification. Eligible requests are assessed against the applicable requirements; legal, financial and unresolved-dispute records may need to be retained.</p></section>
+      <section>
+        <h2>Information GLOHAUS uses</h2>
+        <p>
+          This may include account details, profile information, booking and
+          order records, payment references, messages, reviews, professional
+          business information, support or refund evidence, device/security
+          information and other information users choose to provide.
+        </p>
+      </section>
+      <section>
+        <h2>Payments</h2>
+        <p>
+          Card and payout details are handled by payment providers such as
+          Stripe rather than being stored as raw card or bank credentials by
+          GLOHAUS. GLOHAUS may retain payment references, transaction status,
+          fees, refunds and payout records needed to operate the marketplace.
+        </p>
+      </section>
+      <section>
+        <h2>Location sharing and arrival</h2>
+        <p>
+          Booking-related journey location sharing is optional and
+          consent-based. When a customer chooses to share while travelling to a
+          confirmed appointment, the linked professional can see the latest
+          shared location, its approximate accuracy and update time. Only the
+          latest position is stored; GLOHAUS does not create a movement history.
+          Positions older than 90 seconds are hidden from the professional and
+          cleared by scheduled cleanup. Stopping sharing, cancellation,
+          rescheduling or expiry revokes access and clears the position.
+        </p>
+        <p>
+          Where Smart Arrival is enabled, customers separately choose whether to
+          allow location-based proximity detection after acknowledging the
+          current appointment instructions. Detection records an arrival event
+          and accuracy, without storing the detection coordinates. Sharing a
+          live position and enabling Smart Arrival are separate choices.
+          Permission can be withdrawn, and manual check-in remains available.
+          Location detection does not prove attendance or automatically create a
+          charge, penalty or cancellation. Tracking pauses when the booking page
+          is hidden; a closed or suspended browser may prevent detection.
+        </p>
+      </section>
+      <section>
+        <h2>Customer journey planning</h2>
+        <p>
+          Where the planner is enabled, GLOHAUS saves the selected transport
+          mode, chosen journey allowance, buffer and departure time to support
+          optional reminders. Manual directions keep your starting point in the
+          browser until you open Google Maps. Where automatic estimates are
+          configured, choosing to calculate sends your selected origin and the
+          confirmed appointment destination to Google Maps through GLOHAUS.
+          Driving estimates may include traffic forecasts; public-transport
+          estimates use available timetables and do not guarantee live
+          disruption coverage.
+        </p>
+        <p>
+          Automatic rechecks are a separate optional choice that requires
+          departure reminders. If selected, the chosen starting point is stored
+          encrypted for that appointment and used for scheduled route
+          calculations in the three hours before departure. It is removed at
+          departure, on stopping rechecks, cancellation, rescheduling, location
+          changes or disabling the feature. It is never shown to your
+          professional or the Owner/Admin arrival console. Rechecks use the
+          saved origin and do not track your movement or whether you have left.
+          Google’s{" "}
+          <a
+            href="https://policies.google.com/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Privacy Policy
+          </a>{" "}
+          applies to information sent to Google Maps.
+        </p>
+      </section>
+      <section>
+        <h2>Appointment communications and records</h2>
+        <p>
+          The linked professional and customer can review their appointment
+          instructions and arrival events. Authorised Owner/Admin staff can
+          review instruction versions, recipients, delivery outcomes,
+          browser-reported display events and explicit acknowledgements, and
+          handle disputes or append corrections. An email being sent or
+          delivered does not mean it was read. Push provider acceptance, a
+          device-reported display and a notification click are recorded
+          separately; none proves understanding. The Owner/Admin arrival console
+          does not show a customer’s live coordinates, starting address or
+          private journey plan.
+        </p>
+        <p>
+          Saved journey plans and route-job metadata are removed by scheduled
+          cleanup one day after the appointment ends; encrypted origins are
+          cleared earlier as described above. Daily routing request/failure
+          totals contain no origins and are kept for up to 100 days for usage
+          monitoring. Private appointment pins and entrance instructions are
+          redacted after 30 days. Arrival event details are retained for up to
+          180 days, with a hold while an arrival dispute remains unresolved.
+          Booking, payment and accepted-policy records follow their separate
+          retention requirements.
+        </p>
+      </section>
+      <section>
+        <h2>Why information is used</h2>
+        <p>
+          Information may be used to provide accounts and bookings, process
+          supported payments, operate the Shop, communicate between users,
+          prevent abuse, resolve disputes, provide customer support, maintain
+          records and improve platform reliability.
+        </p>
+      </section>
+      <section>
+        <h2>Customer acquisition and support</h2>
+        <p>
+          You can optionally confirm how you first found a professional.
+          Recorded invitations, QR links, existing referral records and
+          consented profile history may support that answer. A link alone does
+          not establish a source or ownership of a customer. Unknown and
+          conflicting information stays labelled for review. Source reporting
+          does not change fees. Professionals receive their aggregate
+          acquisition results; authorised Owner staff can review disputed
+          records and retain decision history. Do not put sensitive information
+          in source explanations.
+        </p>
+        <p>
+          Support tickets and screenshots are private to authorised staff and
+          anyone holding the private ticket link. Keep that link safe.
+          Screenshots are re-encoded to remove embedded metadata; do not include
+          passwords, card information or identity documents. Operational support
+          alerts go to glohausuk@gmail.com. Inbound Gmail messages are not
+          synchronised with the dashboard. Support history and source decisions
+          are retained as needed for open cases, dispute handling,
+          accountability and applicable record-keeping obligations. Contact us
+          to request access, correction, restriction, objection or eligible
+          deletion; we verify identity and explain any retention that remains
+          necessary.
+        </p>
+      </section>
+      <section>
+        <h2>Notification choices</h2>
+        <p>
+          Optional marketing follows your recorded consent and opt-out settings.
+          Essential account, booking, support and security communications are
+          handled separately. You can manage available channel preferences in
+          your account.
+        </p>
+      </section>
+      <section>
+        <h2>Retention and rights</h2>
+        <p>
+          For access, correction, deletion, restriction, objection or other
+          privacy requests, use <a href="/contact">Contact Us</a> or email{" "}
+          <a href="mailto:glohausuk@gmail.com">glohausuk@gmail.com</a>. We may
+          need proportionate identity verification. Eligible requests are
+          assessed against the applicable requirements; legal, financial and
+          unresolved-dispute records may need to be retained.
+        </p>
+      </section>
+      <section>
+        <h2>How privacy requests and complaints are handled</h2>
+        <p>
+          <Link href="/contact?topic=Privacy%20%26%20data%20request">
+            Make a privacy or data-rights request
+          </Link>{" "}
+          without creating an account. Tell us what information or action you
+          need and how to identify the relevant account or booking. We use
+          proportionate checks and do not routinely ask for identity documents
+          where existing account checks are sufficient. A private ticket link
+          alone does not prove identity.
+        </p>
+        <p>
+          We normally respond to rights requests without undue delay and within
+          one calendar month. Where necessary identity information, a justified
+          clarification or a permitted extension affects the deadline, we
+          explain what is needed and why. Extensions for complex or numerous
+          requests are explained within the applicable initial period. Our
+          two-weekday support target is an initial-response target, not a
+          replacement for these rights.
+        </p>
+        <p>
+          <Link href="/contact?topic=Privacy%20complaint">
+            Raise a privacy complaint
+          </Link>{" "}
+          if you are concerned about our handling of your information. We
+          acknowledge complaints within 30 days, investigate without undue
+          delay, keep you informed and provide a reasoned outcome. You can ask
+          for Owner review through the ticket appeal route. You can also{" "}
+          <a
+            href="https://ico.org.uk/make-a-complaint/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            complain to the Information Commissioner’s Office
+          </a>
+          .
+        </p>
+        <p>
+          We record the request, review and outcome; protect information about
+          other people; and explain any lawful restriction or continued
+          retention. Requests are normally free. Eligible deletion does not
+          automatically remove records we must retain for an unresolved dispute,
+          accounting or legal obligation.
+        </p>
+      </section>
+      <section>
+        <h2>Retention schedule</h2>
+        <p>
+          We review operational retention monthly and the schedule annually.
+          These are review periods: information is erased or anonymised when no
+          longer needed, with earlier review on a valid request. A justified
+          hold needs a recorded purpose and recheck date. A review entry does
+          not itself delete records; authorised staff must complete and record
+          the appropriate disposal, including relevant provider and backup
+          follow-up.
+        </p>
+        <dl>
+          {retentionSchedule.map(([record, period]) => (
+            <div key={record}>
+              <dt>
+                <strong>{record}</strong>
+              </dt>
+              <dd>{period}</dd>
+            </div>
+          ))}
+        </dl>
+        <p>
+          The shorter location and journey periods described above continue to
+          apply. We retain only the minimum evidence needed for a justified
+          exception; a general possibility that information might be useful is
+          not a reason to keep it indefinitely.
+        </p>
+      </section>
     </PolicyPage>
   );
 }

@@ -5,6 +5,9 @@ export const supportTopics = [
   "Booking",
   "Shop order",
   "Professional account",
+  "Privacy & data request",
+  "Privacy complaint",
+  "Complaint / appeal",
   "Other",
 ] as const;
 export const supportInputSchema = z

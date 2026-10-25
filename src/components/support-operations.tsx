@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useId, useState } from "react";
 import {
   caseKinds,
   identityReviews,
@@ -20,6 +20,7 @@ export function SupportOperationsPanel({
   caseId?: string;
   onOpenCase?: (id: string) => void;
 }) {
+  const formId = useId();
   const [data, setData] = useState<
     SupportOperations | SupportOperationsQueue | null
   >(null);
@@ -161,26 +162,26 @@ export function SupportOperationsPanel({
               the day staff logged this ticket. A later date cannot move the
               deadline beyond ticket creation.
             </p>
-            <label>
-              Case purpose
-              <select name="kind" defaultValue={item.kind}>
-                {caseKinds.map((k) => (
-                  <option key={k} value={k}>
-                    {k.replaceAll("_", " ")}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Identity review
-              <select name="identity" defaultValue={item.identity}>
-                {identityReviews.map((k) => (
-                  <option key={k} value={k}>
-                    {k.replaceAll("_", " ")}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <label htmlFor={`${formId}-kind`}>Case purpose</label>
+            <select id={`${formId}-kind`} name="kind" defaultValue={item.kind}>
+              {caseKinds.map((k) => (
+                <option key={k} value={k}>
+                  {k.replaceAll("_", " ")}
+                </option>
+              ))}
+            </select>
+            <label htmlFor={`${formId}-identity`}>Identity review</label>
+            <select
+              id={`${formId}-identity`}
+              name="identity"
+              defaultValue={item.identity}
+            >
+              {identityReviews.map((k) => (
+                <option key={k} value={k}>
+                  {k.replaceAll("_", " ")}
+                </option>
+              ))}
+            </select>
             <p>
               Use existing account/booking checks where sufficient. Record why
               verification is complete or unnecessary; do not upload identity

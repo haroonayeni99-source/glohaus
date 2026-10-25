@@ -121,14 +121,12 @@ try {
       await page
         .getByRole("button", { name: "Open case for review", exact: true })
         .click();
-      const selected = page
-        .locator(".support-operations")
-        .filter({
-          has: page.getByRole("heading", {
-            name: "Privacy, identity & retention review",
-            exact: true,
-          }),
-        });
+      const selected = page.locator(".support-operations").filter({
+        has: page.getByRole("heading", {
+          name: "Privacy, identity & retention review",
+          exact: true,
+        }),
+      });
       await selected
         .getByRole("button", { name: "Open review", exact: true })
         .click();
@@ -176,9 +174,9 @@ try {
         ),
       ).toBeLessThanOrEqual(1);
       await go("view=contact");
-      await expect(page.getByLabel("Topic", { exact: true })).toHaveValue(
-        "Privacy & data request",
-      );
+      await expect(
+        page.getByLabel("What do you need help with?", { exact: false }),
+      ).toHaveValue("Privacy & data request");
       await go("view=phone");
       await expect(
         page.getByText("This device reports:", { exact: false }),

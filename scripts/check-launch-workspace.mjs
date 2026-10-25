@@ -269,6 +269,32 @@ try {
         await goToSection("overview");
         await page.locator('.admin-quick-actions a[href="#support"]').click();
         await expect(page.locator("#support")).toBeVisible();
+        await page
+          .getByLabel("Search Owner controls")
+          .fill("customer complaint");
+        await page
+          .locator(".owner-search-results button")
+          .filter({ hasText: "Support & Disputes" })
+          .click();
+        await expect(page.locator("#support")).toBeVisible();
+        if (role === "owner") {
+          await goToSection("professional-commission");
+          const draft = page.locator(
+            '#professional-commission input[name="professionalBasisPoints"]',
+          );
+          await expect(draft).toHaveValue("2");
+          await draft.fill("3.25");
+          await goToSection("founding-programme");
+          await expect(page.locator("#founding-programme")).toContainText(
+            "Status: open",
+          );
+          await expect(draft).not.toBeVisible();
+          await goToSection("professional-commission");
+          await expect(draft).toHaveValue("3.25");
+          await expect(page.locator("#professional-commission")).toContainText(
+            "Draft only — inactive",
+          );
+        }
         if (role === "admin") {
           expect(sections).not.toContain("professional-commission");
           expect(sections).not.toContain("staff");

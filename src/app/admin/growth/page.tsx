@@ -54,8 +54,9 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
   const totalValue = rows.reduce((sum, row) => sum + Number(row.completedValuePence), 0);
   const money = (pence: number) => new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(pence / 100);
   return <main id="main" className="admin-workspace" style={{ padding: "clamp(18px,4vw,48px)" }}>
-    <Link href="/admin">← Owner Control Centre</Link><p><Link href="/admin/growth/review">Open Growth Review, Referral Audit & Professional Appreciation →</Link></p>
+    <Link href="/admin">← Owner Control Centre</Link><p><Link href="/admin/growth/review">Review customer sources, referrals & recognition →</Link></p>
     <header style={{ margin: "24px 0" }}><p className="eyebrow">OWNER ONLY · LIVE BOOKING DATA</p><h1>Growth & Performance Centre</h1>
+    <p>Use this page to compare customer acquisition, completed bookings, returning clients and professional performance. Choose a reporting period below.</p>
     <p>Completed, paid appointments only. Refunded, pending and cancelled appointments are excluded. Rewards remain off.</p></header>
     <nav aria-label="Reporting period" style={{ display: "flex", gap: 14, marginBottom: 24, flexWrap: "wrap" }}>
       {(["week","month","year"] as const).map(p => <Link key={p} href={`/admin/growth?period=${p}`} aria-current={p===period?"page":undefined} className="button small" style={{ opacity:p===period?1:0.65 }}>{p==="week"?"Last 7 days":p==="month"?"Last month":"Last year"}</Link>)}

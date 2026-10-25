@@ -3,6 +3,10 @@
 import { openAdminSection } from "@/components/admin-workspace-view";
 import { Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import {
+  adminToolGuide,
+  matchesAdminTool,
+} from "@/components/admin-tool-guide";
 
 type SearchItem = {
   key: string;
@@ -12,7 +16,12 @@ type SearchItem = {
 };
 
 const staticItems: SearchItem[] = [
-  ["examples", "Example profiles", "Show, hide or restore fictional profiles", "profile-examples"],
+  [
+    "examples",
+    "Example profiles",
+    "Show, hide or restore fictional profiles",
+    "profile-examples",
+  ],
   [
     "website",
     "Website ON / OFF",
@@ -26,7 +35,7 @@ const staticItems: SearchItem[] = [
     "homepage-media",
   ],
   ["marketing", "Marketing", "Campaigns and feature feedback", "marketing"],
-  ["settings", "Platform labels", "Community names", "settings"],
+  ["settings", "Website wording", "Community names", "settings"],
   [
     "categories",
     "Service Categories",
@@ -40,7 +49,12 @@ const staticItems: SearchItem[] = [
     "product-categories",
   ],
   ["shop-fees", "Shop Fees", "Marketplace commission", "shop-fees"],
-  ["backend", "System health", "Background tasks and emails", "backend-health"],
+  [
+    "backend",
+    "Platform Health",
+    "Background tasks and emails",
+    "backend-health",
+  ],
   [
     "notifications",
     "Notification delivery",
@@ -87,11 +101,16 @@ const staticItems: SearchItem[] = [
   ],
   ["bookings", "Bookings", "Booking overview", "bookings"],
   ["orders", "Orders", "Shop order oversight", "orders"],
-  ["payments", "Payments", "Finance and payouts", "payments"],
+  ["payments", "Payments & Payouts", "Finance and payouts", "payments"],
   ["analytics", "Analytics", "Platform analytics", "analytics"],
-  ["live", "LIVE", "Verification and LIVE access", "live-access"],
-  ["content", "Content", "Content moderation", "content"],
-  ["reports", "Reports", "Safety reports", "reports"],
+  [
+    "live",
+    "Verification & LIVE",
+    "Verification and LIVE access",
+    "live-access",
+  ],
+  ["content", "Posts & Stories", "Content moderation", "content"],
+  ["reports", "Safety reports", "Safety reports", "reports"],
   ["reviews", "Reviews", "Review moderation", "reviews"],
   [
     "auth",
@@ -101,15 +120,55 @@ const staticItems: SearchItem[] = [
   ],
   [
     "commission",
-    "Professional commission",
+    "Commission & Pricing",
     "Professional commission controls",
     "professional-commission",
   ],
   ["fee", "Booking Fee", "Customer booking fee", "booking-fee"],
-  ["referrals", "Referrals", "Professional referral leaderboard", "referrals"],
-  ["staff", "Staff & Admins", "Staff roles and permissions", "staff"],
+  [
+    "referrals",
+    "Customer Acquisition & Growth",
+    "Professional referral leaderboard",
+    "referrals",
+  ],
+  ["staff", "Admins & Access", "Staff roles and permissions", "staff"],
   ["audit", "Audit Log", "Owner action history", "audit"],
-].map(([key, label, detail, targetId]) => ({ key, label, detail, targetId }));
+  [
+    "support",
+    "Support & Disputes",
+    "Handle enquiries and complaints",
+    "support",
+  ],
+  [
+    "founding",
+    "Founding Programme Controls",
+    "Manage launch enrolment",
+    "founding-programme",
+  ],
+  [
+    "policies",
+    "Professional Policies",
+    "Review booking terms",
+    "professional-policies",
+  ],
+  [
+    "activity",
+    "Inactive Professionals",
+    "Review activity reminders",
+    "professional-activity",
+  ],
+  [
+    "arrival",
+    "Arrival & communications",
+    "Review journey settings",
+    "arrival-management",
+  ],
+].map(([key, label, detail, targetId]) => ({
+  key,
+  label,
+  detail: adminToolGuide[targetId]?.purpose ?? detail,
+  targetId,
+}));
 
 export function OwnerAdminSearch({
   users,
@@ -155,7 +214,9 @@ export function OwnerAdminSearch({
 
     return [...staticItems, ...dynamic]
       .filter((item) =>
-        `${item.label} ${item.detail}`.toLowerCase().includes(q),
+        staticItems.includes(item)
+          ? matchesAdminTool(item.targetId, item.label, q)
+          : `${item.label} ${item.detail}`.toLowerCase().includes(q),
       )
       .filter(
         (item) =>

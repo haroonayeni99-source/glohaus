@@ -77,6 +77,7 @@ export async function publicProfessionals(
   after?: DiscoveryCursor,
   filters: DiscoveryFilters = defaultDiscoveryFilters,
   near?: NearbySearch,
+  resultLimit?: 25 | 101,
 ) {
   const escaped = `%${search.replace(/[\\%_]/g, "\\$&")}%`;
   return (
@@ -178,7 +179,7 @@ export async function publicProfessionals(
         near?.latitude ?? null,
         near?.longitude ?? null,
         near?.radiusMiles ?? null,
-        near ? 101 : 25,
+        resultLimit ?? (near ? 101 : 25),
         after?.score ?? null,
         search,filters.categoryId??null,filters.specialityId??null,filters.templateId??null,filters.date??null,
         boroughPolygon(filters.location),
@@ -223,7 +224,9 @@ export async function discoveryPage(
   near?: NearbySearch,
 ) {
   if(!after)await db.query("SELECT beauty.record_treatment_demand($1,$2,$3,$4)",[query,filters.categoryId??null,filters.specialityId??null,filters.templateId??null]);
-  const rows = await publicProfessionals(db, query, after, filters, near);
+  // A page displays 24 results plus one lookahead, including postcode pages.
+  // The explicit nearby-map endpoint retains its independent 100-pin cap.
+  const rows = await publicProfessionals(db, query, after, filters, near, 25);
   const professionals = rows.slice(0, 24);
   return {
     professionals,

@@ -103,6 +103,7 @@ export function ExploreMapExperience({
     [saving, setSaving] = useState<string | null>(null),
     [saveNotice, setSaveNotice] = useState("");
   const sequence = useRef(0);
+  const nearbyRequest = useRef<{ key: string; controller: AbortController } | null>(null);
   const refinePanel = useRef<HTMLDetailsElement>(null);
   const locationSearch = (filters.location ?? "").trim();
   const londonSearch =
@@ -134,6 +135,7 @@ export function ExploreMapExperience({
   useEffect(
     () => () => {
       sequence.current++;
+      nearbyRequest.current?.controller.abort();
     },
     [],
   );
@@ -212,6 +214,12 @@ export function ExploreMapExperience({
     }
   }
   async function findNearby(point: Coordinates, radiusMiles = radius) {
+    const key = JSON.stringify({ ...point, radiusMiles, query, filters });
+    if (nearbyRequest.current?.key === key) return;
+    nearbyRequest.current?.controller.abort();
+    const controller = new AbortController();
+    nearbyRequest.current = { key, controller };
+    const timeout = window.setTimeout(() => controller.abort(), 12000);
     const current = ++sequence.current;
     setLocating(true);
     setLocationNotice("Finding professionals with confirmed public pins…");
@@ -220,7 +228,7 @@ export function ExploreMapExperience({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...point, radiusMiles, query, filters }),
-        signal: AbortSignal.timeout(12000),
+        signal: controller.signal,
       });
       if (!r.ok) throw Error();
       const result = await r.json();
@@ -240,11 +248,15 @@ export function ExploreMapExperience({
           : "Nearby search is unavailable. Your previous results remain available; please try again.",
       );
     } finally {
+      window.clearTimeout(timeout);
+      if (nearbyRequest.current?.controller === controller) nearbyRequest.current = null;
       if (current === sequence.current) setLocating(false);
     }
   }
   function clearLocation() {
     sequence.current++;
+    nearbyRequest.current?.controller.abort();
+    nearbyRequest.current = null;
     setNearbyResults(null);
     setPosition(null);
     setLocating(false);
@@ -374,6 +386,7 @@ export function ExploreMapExperience({
         {londonSearch && <nav className="map-area-strip" aria-label="Explore London areas">
           {["All London", ...areas].map((area) => (
             <Link
+              prefetch={false}
               key={area}
               className={`map-area-card ${area.toLowerCase().replaceAll(" ", "-")}${(area === "All London" ? !filters.location : filters.location === area) ? " active" : ""}`}
               href={discoveryHref(query, {
@@ -396,6 +409,7 @@ export function ExploreMapExperience({
         aria-label="Beauty categories"
       >
         <Link
+          prefetch={false}
           className={!filters.categoryId && !filters.category ? "active" : ""}
           href={discoveryHref(query, {
             ...filters,
@@ -411,6 +425,7 @@ export function ExploreMapExperience({
           .filter((c) => c.active && !c.legacy_only)
           .map((c) => (
             <Link
+              prefetch={false}
               key={c.id}
               className={filters.categoryId === c.id ? "active" : ""}
               href={discoveryHref(query, {
@@ -428,6 +443,7 @@ export function ExploreMapExperience({
       <div className="discovery-filter-bar">
         {toggles.map(([key, label]) => (
           <Link
+            prefetch={false}
             key={key}
             className={filters[keys[key]] ? "active" : ""}
             href={discoveryHref(query, {
@@ -503,7 +519,7 @@ export function ExploreMapExperience({
           <button type="submit" className="button">
             Apply filters
           </button>
-          <Link href="/explore">Clear all filters</Link>
+          <Link prefetch={false} href="/explore">Clear all filters</Link>
         </form>
       </details>
       <div className="discovery-location-row">
@@ -652,6 +668,7 @@ export function ExploreMapExperience({
               >
                 <div className="discovery-card-photo">
                   <Link
+                    prefetch={false}
                     href={`/p/${pro.slug}`}
                     aria-label={`View ${pro.business_name}`}
                   >
@@ -716,6 +733,7 @@ export function ExploreMapExperience({
                   <div className="matching-services">
                     {pro.matching_services?.slice(0, 2).map((s) => (
                       <Link
+                        prefetch={false}
                         key={s.id}
                         href={serviceDeepLink(pro.slug, s.id, s.speciality_id)}
                       >
@@ -769,7 +787,7 @@ export function ExploreMapExperience({
               <Search size={28} />
               <h3>{listQuery ? "No professionals match that search." : "No matching professionals yet."}</h3>
               <p>{listQuery ? "Try another professional name, service or area." : "Try another area, a wider radius or a different service."}</p>
-              <Link href="/explore">Clear filters</Link>
+              <Link prefetch={false} href="/explore">Clear filters</Link>
             </div>
           )}
           {showExamples && <ExampleProfessionalListings examples={examples} />}

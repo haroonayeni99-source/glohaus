@@ -1,3 +1,5 @@
+import { revalidateTag } from "next/cache";
+import { publicTaxonomyTag } from "@/modules/taxonomy/public-catalog";
 import { categorySchema } from "@/modules/platform/category";
 import { withAdmin } from "@/modules/admin/repository";
 import { AccessError } from "@/modules/accounts/domain";
@@ -17,6 +19,7 @@ export async function POST(request: Request) {
           )
         ).rows[0].id,
     );
+    revalidateTag(publicTaxonomyTag, { expire: 0 });
     return json({ saved: true, id });
   } catch (error) {
     return apiError(error);

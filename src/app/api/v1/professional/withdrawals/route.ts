@@ -67,6 +67,7 @@ export async function POST(request: Request) {
   let transferId: string | undefined;
   let providerPayoutCreated = false;
   let outcomeUnknown = false;
+  let mutationInFlight = false;
   let ownsClaim = false;
   const leaseKey = randomUUID();
 
@@ -150,6 +151,7 @@ export async function POST(request: Request) {
       // Unknown responses must retain the wallet reservation. Retrying the same
       // durable request uses these same Stripe keys, within the 23-hour guard.
       outcomeUnknown = true;
+      mutationInFlight = true;
 
       const transfer = await stripe().transfers.create(
         {
@@ -164,6 +166,7 @@ export async function POST(request: Request) {
         { idempotencyKey: `withdrawal-transfer-${account.payout.id}` },
       );
       transferId = transfer.id;
+      mutationInFlight = false;
       outcomeUnknown = false;
       await withPaymentWorker(async (db) => {
         const saved = await db.query(
@@ -214,6 +217,7 @@ export async function POST(request: Request) {
     }
 
     outcomeUnknown = true;
+    mutationInFlight = true;
     const providerPayout = (await stripe().payouts.create(
       {
         amount: account.payout.bankAmountPence,
@@ -233,6 +237,7 @@ export async function POST(request: Request) {
     )) as InstantPayout;
 
     providerPayoutCreated = true;
+    mutationInFlight = false;
     outcomeUnknown = false;
     const applicationFeeId =
       typeof providerPayout.application_fee === "string"
@@ -296,7 +301,7 @@ export async function POST(request: Request) {
         },
         503,
       );
-    if (confirmedRejection(error)) outcomeUnknown = false;
+    if (mutationInFlight && confirmedRejection(error)) outcomeUnknown = false;
     let canRestore = !outcomeUnknown && !providerPayoutCreated;
     if (transferId && requestRecord && canRestore) {
       try {

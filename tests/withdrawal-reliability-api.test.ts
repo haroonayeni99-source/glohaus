@@ -44,7 +44,7 @@ const payout = {
   claimed: true,
   createdAt: new Date().toISOString(),
   stripeAccountId: "acct_pro",
-  providerTransferId: null,
+  providerTransferId: null as string | null,
   providerPayoutId: null,
   expectedArrivalAt: null,
 };
@@ -196,6 +196,21 @@ it("does not release funds after an uncertain reservation commit", async () => {
   });
   expect((await POST(request())).status).toBe(503);
   expect(mock.transfer).not.toHaveBeenCalled();
+  expect(
+    mock.query.mock.calls.some(([sql]) =>
+      sql.includes("cancel_requested_payout"),
+    ),
+  ).toBe(false);
+});
+it("does not reverse a resumed withdrawal when a provider read fails", async () => {
+  record.providerTransferId = "tr_local";
+  mock.retrieveTransfer.mockRejectedValue({
+    type: "StripeInvalidRequestError",
+    statusCode: 400,
+  });
+  expect((await POST(request())).status).toBe(503);
+  expect(mock.transfer).not.toHaveBeenCalled();
+  expect(mock.reverse).not.toHaveBeenCalled();
   expect(
     mock.query.mock.calls.some(([sql]) =>
       sql.includes("cancel_requested_payout"),

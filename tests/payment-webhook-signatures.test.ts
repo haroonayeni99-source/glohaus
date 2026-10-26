@@ -6,10 +6,16 @@ const mocks = vi.hoisted(() => ({
   query: vi.fn(),
   schedule: vi.fn(),
   reconcile: vi.fn(),
+  payout: vi.fn(),
+  transfer: vi.fn(),
+  reverse: vi.fn(),
 }));
 vi.mock("@/modules/payments/stripe", async () => {
   const { default: SDK } = await import("stripe");
   const client = new SDK("sk_test_local_fixture_only");
+  client.payouts.retrieve = mocks.payout;
+  client.transfers.retrieve = mocks.transfer;
+  client.transfers.createReversal = mocks.reverse;
   return { stripe: () => client };
 });
 vi.mock("@/modules/payments/worker", () => ({
@@ -39,12 +45,17 @@ const session = {
   currency: "gbp",
   metadata: { booking_id: "11111111-1111-4111-8111-111111111111" },
 };
-function event(type = "checkout.session.completed", object: object = session) {
+function event(
+  type = "checkout.session.completed",
+  object: object = session,
+  account?: string,
+) {
   return JSON.stringify({
     id: "evt_local_fixture",
     object: "event",
     livemode: false,
     type,
+    account,
     data: { object },
   });
 }
@@ -186,4 +197,147 @@ it("returns a retryable failure when authenticated booking finance cannot commit
   mocks.query.mockRejectedValue(new Error("isolated transaction failure"));
   expect((await POST(request(event()))).status).toBe(503);
   expect(mocks.schedule).not.toHaveBeenCalled();
+});
+
+const localPayout = {
+  id: "po_local",
+  amount: 500,
+  currency: "gbp",
+  method: "standard",
+  status: "paid",
+  arrival_date: 1900000000,
+  metadata: {
+    glohaus_payout_id: "payout-local",
+    glohaus_transfer_id: "tr_local",
+  },
+};
+function payoutSetup(status = "processing") {
+  mocks.query.mockImplementation(async (sql: string) => ({
+    rows: sql.includes("coalesce(r.stripe_account_id")
+      ? [
+          {
+            stripe_account_id: "acct_pro",
+            requested_pence: 500,
+            bank_amount_pence: 500,
+            kind: "standard",
+            provider_payout_id: "po_local",
+            provider_transfer_id: "tr_local",
+          },
+        ]
+      : sql.includes("payout_reversal_details")
+        ? [{ data: { transferId: "tr_local", status } }]
+        : [],
+  }));
+  mocks.payout.mockResolvedValue(localPayout);
+  mocks.transfer.mockResolvedValue({
+    id: "tr_local",
+    amount: 500,
+    currency: "gbp",
+    amount_reversed: 0,
+    destination: "acct_pro",
+    metadata: { glohaus_payout_id: "payout-local" },
+  });
+  mocks.reverse.mockResolvedValue({ id: "trr_local" });
+}
+it("checks the signed Connect account and current provider amount before recording paid", async () => {
+  payoutSetup();
+  expect(
+    (await POST(request(event("payout.paid", localPayout, "acct_pro")))).status,
+  ).toBe(200);
+  expect(mocks.payout).toHaveBeenCalledWith(
+    "po_local",
+    {},
+    { stripeAccount: "acct_pro" },
+  );
+  expect(mocks.query).toHaveBeenCalledWith(
+    "SELECT beauty.apply_payout_result($1,$2)",
+    ["po_local", "paid"],
+  );
+  expect(mocks.reverse).not.toHaveBeenCalled();
+});
+it.each([undefined, "acct_other"])(
+  "refuses a payout event from the wrong or absent Connect account",
+  async (account) => {
+    payoutSetup();
+    expect(
+      (await POST(request(event("payout.paid", localPayout, account)))).status,
+    ).toBe(503);
+    expect(mocks.payout).not.toHaveBeenCalled();
+    expect(
+      mocks.query.mock.calls.some(([sql]) =>
+        sql.includes("record_payout_provider"),
+      ),
+    ).toBe(false);
+  },
+);
+it.each(["amount", "transfer"])(
+  "refuses mismatched payout %s without moving money",
+  async (field) => {
+    payoutSetup();
+    if (field === "amount")
+      mocks.payout.mockResolvedValue({ ...localPayout, amount: 1000 });
+    else
+      mocks.transfer.mockResolvedValue({
+        destination: "acct_other",
+        amount: 500,
+        currency: "gbp",
+      });
+    expect(
+      (await POST(request(event("payout.paid", localPayout, "acct_pro"))))
+        .status,
+    ).toBe(503);
+    expect(mocks.reverse).not.toHaveBeenCalled();
+    expect(
+      mocks.query.mock.calls.some(([sql]) =>
+        sql.includes("record_payout_provider"),
+      ),
+    ).toBe(false);
+  },
+);
+it("uses current failed bank status instead of an old paid event, reversing only unrecovered transfer funds", async () => {
+  payoutSetup("paid");
+  mocks.payout.mockResolvedValue({ ...localPayout, status: "failed" });
+  mocks.transfer.mockResolvedValue({
+    amount: 500,
+    amount_reversed: 100,
+    currency: "gbp",
+    destination: "acct_pro",
+    metadata: { glohaus_payout_id: "payout-local" },
+  });
+  expect(
+    (await POST(request(event("payout.paid", localPayout, "acct_pro")))).status,
+  ).toBe(200);
+  expect(mocks.reverse).toHaveBeenCalledWith(
+    "tr_local",
+    { amount: 400 },
+    { idempotencyKey: "payout-transfer-reversal-po_local" },
+  );
+  expect(mocks.query).toHaveBeenCalledWith(
+    "SELECT beauty.apply_payout_result($1,$2)",
+    ["po_local", "failed"],
+  );
+});
+it("keeps the wallet reserved when a failed payout's transfer recovery fails", async () => {
+  payoutSetup();
+  mocks.payout.mockResolvedValue({ ...localPayout, status: "failed" });
+  mocks.reverse.mockRejectedValue(new Error("network"));
+  expect(
+    (await POST(request(event("payout.failed", localPayout, "acct_pro"))))
+      .status,
+  ).toBe(503);
+  expect(
+    mocks.query.mock.calls.some(([sql]) => sql.includes("apply_payout_result")),
+  ).toBe(false);
+});
+it("does not reverse or post a repeated completed failure twice", async () => {
+  payoutSetup("failed");
+  mocks.payout.mockResolvedValue({ ...localPayout, status: "failed" });
+  expect(
+    (await POST(request(event("payout.failed", localPayout, "acct_pro"))))
+      .status,
+  ).toBe(200);
+  expect(mocks.reverse).not.toHaveBeenCalled();
+  expect(
+    mocks.query.mock.calls.some(([sql]) => sql.includes("apply_payout_result")),
+  ).toBe(false);
 });

@@ -142,11 +142,69 @@ type ConnectPayout = Stripe.Payout & {
 async function applyPayoutEvent(
   rawPayout: Stripe.Payout,
   nextStatus: "paid" | "failed" | "cancelled",
+  eventAccount?: string,
 ) {
-  const payout = rawPayout as ConnectPayout;
-  const targetId = payout.metadata?.glohaus_payout_id;
-  const transferId = payout.metadata?.glohaus_transfer_id;
+  const targetId = rawPayout.metadata?.glohaus_payout_id;
   if (!targetId) return;
+  if (!eventAccount) throw new Error("PAYOUT_ACCOUNT_MISSING");
+  const expected = await withPaymentWorker(
+    async (db) =>
+      (
+        await db.query<{
+          stripe_account_id: string;
+          bank_amount_pence: number;
+          requested_pence: number;
+          kind: string;
+          provider_payout_id: string | null;
+          provider_transfer_id: string | null;
+        }>(
+          `SELECT coalesce(r.stripe_account_id,a.stripe_account_id) AS stripe_account_id,
+       p.bank_amount_pence,p.requested_pence,p.kind,p.provider_payout_id,p.provider_transfer_id
+       FROM beauty.financial_payouts p JOIN beauty.professional_payment_accounts a ON a.professional_id=p.professional_id
+       LEFT JOIN beauty.financial_payout_requests r ON r.payout_id=p.id WHERE p.id::text=$1`,
+          [targetId],
+        )
+      ).rows[0],
+  );
+  if (!expected || expected.stripe_account_id !== eventAccount)
+    throw new Error("PAYOUT_ACCOUNT_MISMATCH");
+  // Retrieve current state to prevent an older delayed event overwriting a
+  // later bank failure or cancellation. No payout is created by this read.
+  const payout = (await stripe().payouts.retrieve(
+    rawPayout.id,
+    {},
+    { stripeAccount: eventAccount },
+  )) as ConnectPayout;
+  const transferId = payout.metadata?.glohaus_transfer_id;
+  if (
+    payout.metadata?.glohaus_payout_id !== targetId ||
+    payout.currency !== "gbp" ||
+    payout.amount !== expected.bank_amount_pence ||
+    payout.method !== expected.kind ||
+    !transferId ||
+    (expected.provider_payout_id &&
+      expected.provider_payout_id !== payout.id) ||
+    (expected.provider_transfer_id &&
+      expected.provider_transfer_id !== transferId)
+  )
+    throw new Error("PAYOUT_DETAILS_MISMATCH");
+  if (!["paid", "failed", "canceled"].includes(payout.status)) return;
+  nextStatus =
+    payout.status === "canceled"
+      ? "cancelled"
+      : (payout.status as "paid" | "failed");
+  const transfer = await stripe().transfers.retrieve(transferId);
+  const destination =
+    typeof transfer.destination === "string"
+      ? transfer.destination
+      : transfer.destination?.id;
+  if (
+    destination !== eventAccount ||
+    transfer.currency !== "gbp" ||
+    transfer.amount !== expected.requested_pence ||
+    transfer.metadata?.glohaus_payout_id !== targetId
+  )
+    throw new Error("PAYOUT_TRANSFER_MISMATCH");
 
   const applicationFeeId =
     typeof payout.application_fee === "string"
@@ -180,10 +238,14 @@ async function applyPayoutEvent(
 
     // Stripe automatically refunds Instant Payout application fees when the
     // payout fails. Only reverse the GLOHAUS transfer back to the platform.
-    if (details.transferId)
-      await stripe().transfers.createReversal(details.transferId, undefined, {
-        idempotencyKey: `payout-transfer-reversal-${payout.id}`,
-      });
+    if (details.transferId && transfer.amount_reversed < transfer.amount)
+      await stripe().transfers.createReversal(
+        details.transferId,
+        { amount: transfer.amount - transfer.amount_reversed },
+        {
+          idempotencyKey: `payout-transfer-reversal-${payout.id}`,
+        },
+      );
   }
 
   await withPaymentWorker((db) =>
@@ -191,6 +253,12 @@ async function applyPayoutEvent(
       payout.id,
       nextStatus,
     ]),
+  );
+  await withPaymentWorker((db) =>
+    db.query(
+      "UPDATE beauty.financial_payout_requests SET issue_code=NULL WHERE payout_id::text=$1",
+      [targetId],
+    ),
   );
 }
 
@@ -318,7 +386,11 @@ export async function POST(request: Request) {
               dispute.evidence_details?.due_by ?? null,
             ],
           );
-          await db.query("SELECT beauty.notify_product_dispute($1,$2,$3)",[intentId,dispute.id,dispute.status]);
+          await db.query("SELECT beauty.notify_product_dispute($1,$2,$3)", [
+            intentId,
+            dispute.id,
+            dispute.status,
+          ]);
         });
     } else if (
       event.type === "customer.subscription.updated" ||
@@ -326,11 +398,11 @@ export async function POST(request: Request) {
     ) {
       await syncProfessionalSubscription(event.data.object);
     } else if (event.type === "payout.paid") {
-      await applyPayoutEvent(event.data.object, "paid");
+      await applyPayoutEvent(event.data.object, "paid", event.account);
     } else if (event.type === "payout.failed") {
-      await applyPayoutEvent(event.data.object, "failed");
+      await applyPayoutEvent(event.data.object, "failed", event.account);
     } else if (event.type === "payout.canceled") {
-      await applyPayoutEvent(event.data.object, "cancelled");
+      await applyPayoutEvent(event.data.object, "cancelled", event.account);
     } else if (event.type === "account.updated") {
       const account = event.data.object;
       const ready = Boolean(

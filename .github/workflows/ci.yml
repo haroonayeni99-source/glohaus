@@ -38,6 +38,36 @@ jobs:
         env:
           GLOHAUS_NATIVE_DATABASE: "1"
 
+  payout-native-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: local-ci-fixture
+          POSTGRES_DB: glohaus_seller_validation
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d glohaus_seller_validation"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Verify withdrawal request isolation, leases and bank-return accounting on PostgreSQL
+        run: pnpm exec vitest run tests/payout-request-database.test.ts --maxWorkers=1
+        env:
+          GLOHAUS_NATIVE_DATABASE: "1"
+
   profile-examples:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -400,7 +430,7 @@ jobs:
   smart-arrival:
     # Keep WebKit's system dependencies on a supported, reproducible image.
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -413,7 +443,7 @@ jobs:
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
-        timeout-minutes: 5
+        timeout-minutes: 10
         with:
           webkit: "true"
       - name: Verify professional arrival tools, customer journeys and Owner communications

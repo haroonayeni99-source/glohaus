@@ -2,6 +2,7 @@ import { AdminSection } from "@/components/admin-workspace-view";
 import { AdminSectionUnavailable } from "@/components/admin-section-unavailable";
 import { money } from "@/modules/professionals/domain";
 import type { AdminFinanceOverview } from "@/modules/admin/repository";
+import { PayoutReconciliationPanel } from "@/components/payout-reconciliation-panel";
 
 function sourceLabel(source: string) {
   if (source === "booking") return "Bookings";
@@ -40,6 +41,14 @@ export function AdminFinancePanel({
         </p>
 
         <div className="analytics-grid">
+          <article>
+            <strong>{money(m.professionalPendingPence)}</strong>
+            <span>Professional earnings pending</span>
+          </article>
+          <article>
+            <strong>{money(m.professionalAvailablePence)}</strong>
+            <span>Professional earnings available</span>
+          </article>
           <article>
             <strong>{money(m.bookingCapturedPence)}</strong>
             <span>Booking payments captured</span>
@@ -90,6 +99,7 @@ export function AdminFinancePanel({
                 <th>GLOHAUS fee</th>
                 <th>Bank amount</th>
                 <th>Status</th>
+                <th>Expected bank arrival</th>
               </tr>
             </thead>
             <tbody>
@@ -101,16 +111,25 @@ export function AdminFinancePanel({
                   <td>{money(payout.withdrawal_fee_pence)}</td>
                   <td>{money(payout.bank_amount_pence)}</td>
                   <td>{payout.status}</td>
+                  <td>
+                    {payout.expected_arrival_at
+                      ? new Date(payout.expected_arrival_at).toLocaleDateString(
+                          "en-GB",
+                          { timeZone: "Europe/London" },
+                        )
+                      : "Awaiting confirmation"}
+                  </td>
                 </tr>
               ))}
               {!data.recentPayouts.length && (
                 <tr>
-                  <td colSpan={6}>No payout requests yet.</td>
+                  <td colSpan={7}>No payout requests yet.</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
+        <PayoutReconciliationPanel />
       </AdminSection>
 
       <AdminSection id="analytics" title="Analytics">

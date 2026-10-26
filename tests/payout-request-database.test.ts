@@ -83,6 +83,13 @@ it("reserves once, returns the same payout, and gives only one request a process
   expect(first.stripeAccountId).toBe("acct_payout_fixture");
   expect(
     (
+      await db.query<{ protected: boolean }>(
+        "SELECT leased_until>now()+interval '14 minutes' AS protected FROM beauty.financial_payout_requests LIMIT 1",
+      )
+    ).rows[0].protected,
+  ).toBe(true);
+  expect(
+    (
       await db.query<{ count: number }>(
         "SELECT count(*)::int AS count FROM beauty.financial_payouts",
       )

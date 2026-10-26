@@ -10,6 +10,7 @@ import { withIdentity } from "@/lib/db";
 import { AccessMessage } from "@/components/access-message";
 import {
   professionalWallet,
+  professionalPayoutSummary,
   professionalDisputeOverview,
   releaseMatureBookingProceeds,
   releaseMatureProductProceeds,
@@ -40,6 +41,7 @@ export default async function ProfessionalWalletPage() {
     await releaseMatureBookingProceeds(db);
     await db.query("SELECT beauty.recover_my_outstanding_obligation()");
     const wallet = await professionalWallet(db);
+    const payouts = await professionalPayoutSummary(db);
     const disputes = await professionalDisputeOverview(db);
     const pricing = (
       await db.query<{
@@ -64,13 +66,15 @@ export default async function ProfessionalWalletPage() {
     ).rows[0];
     return {
       wallet,
+      payouts,
       disputes,
       pricing,
       access,
       hasStripeAccount: Boolean(paymentAccount?.stripe_account_id),
     };
   });
-  const { wallet, disputes, pricing, access, hasStripeAccount } = finance;
+  const { wallet, payouts, disputes, pricing, access, hasStripeAccount } =
+    finance;
   const openDisputes = disputes.disputes.filter((dispute) =>
     [
       "warning_needs_response",
@@ -132,6 +136,10 @@ export default async function ProfessionalWalletPage() {
           <article>
             <strong>{money(wallet.processingPence)}</strong>
             <span>Withdrawal processing</span>
+          </article>
+          <article>
+            <strong>{money(payouts.totalPaidPence)}</strong>
+            <span>Total paid out</span>
           </article>
           <article>
             <strong>{money(wallet.disputedPence)}</strong>
@@ -248,6 +256,55 @@ export default async function ProfessionalWalletPage() {
             </span>
           </section>
         )}
+
+        <section className="pro-panel" aria-label="Withdrawal history">
+          <h2>Withdrawal history</h2>
+          <p>
+            Eligible service earnings release 24 hours after confirmed
+            completion, subject to available funds, disputes and account checks.
+            Standard bank withdrawals usually take 3–5 working days. Estimated
+            arrival dates can change.
+          </p>
+          <div className="service-edit-list">
+            {payouts.history.map((payout) => (
+              <article key={payout.id} className="service-edit-row">
+                <div>
+                  <h3>
+                    {money(payout.bankAmountPence)} · {payout.kind}
+                  </h3>
+                  <p>
+                    {payout.status === "requested"
+                      ? "Awaiting Stripe confirmation — funds remain reserved"
+                      : payout.status}{" "}
+                    ·{" "}
+                    {new Date(payout.createdAt).toLocaleDateString("en-GB", {
+                      timeZone: "Europe/London",
+                    })}
+                  </p>
+                  <p>
+                    Requested: {money(payout.requestedPence)} · GLOHAUS
+                    withdrawal fee: {money(payout.withdrawalFeePence)}
+                  </p>
+                  {payout.expectedArrivalAt && (
+                    <p>
+                      Estimated bank arrival:{" "}
+                      {new Date(payout.expectedArrivalAt).toLocaleDateString(
+                        "en-GB",
+                        { timeZone: "Europe/London" },
+                      )}
+                    </p>
+                  )}
+                </div>
+              </article>
+            ))}
+            {!payouts.history.length && (
+              <p>
+                No withdrawals yet. Your pending and available earnings are
+                shown above.
+              </p>
+            )}
+          </div>
+        </section>
 
         <section className="pro-panel">
           <div className="pro-panel-title">

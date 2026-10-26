@@ -12,6 +12,30 @@ export type WalletOverview = {
   instantPayoutBlocked: boolean;
 };
 
+export type PayoutSummary = {
+  totalPaidPence: number;
+  history: {
+    id: string;
+    kind: string;
+    requestedPence: number;
+    withdrawalFeePence: number;
+    bankAmountPence: number;
+    status: string;
+    expectedArrivalAt: string | null;
+    createdAt: string;
+  }[];
+};
+
+export async function professionalPayoutSummary(
+  db: SqlClient,
+): Promise<PayoutSummary> {
+  return (
+    await db.query<{ data: PayoutSummary }>(
+      "SELECT beauty.my_payout_summary() AS data",
+    )
+  ).rows[0].data;
+}
+
 export async function professionalWallet(
   db: SqlClient,
 ): Promise<WalletOverview> {
@@ -20,7 +44,6 @@ export async function professionalWallet(
   );
   return result.rows[0]?.data;
 }
-
 
 export type CustomerPaymentRecord = {
   bookingId: string;
@@ -124,7 +147,6 @@ export async function customerPaymentOverview(
   };
 }
 
-
 export async function releaseMatureProductProceeds(db: SqlClient) {
   const result = await db.query<{ released: number }>(
     "SELECT beauty.release_my_mature_product_proceeds() AS released",
@@ -132,14 +154,12 @@ export async function releaseMatureProductProceeds(db: SqlClient) {
   return result.rows[0]?.released ?? 0;
 }
 
-
 export async function releaseMatureBookingProceeds(db: SqlClient) {
   const result = await db.query<{ released: number }>(
     "SELECT beauty.release_my_mature_booking_proceeds() AS released",
   );
   return result.rows[0]?.released ?? 0;
 }
-
 
 export type ProfessionalDisputeOverview = {
   counts: { open: number; won: number; lost: number };

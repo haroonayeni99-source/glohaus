@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 function money(pence: number) {
   return new Intl.NumberFormat("en-GB", {
@@ -23,42 +23,90 @@ export function WithdrawalForm({
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState<"standard" | "instant" | null>(null);
   const [message, setMessage] = useState("");
-  const pence = useMemo(
-    () => Math.round(Number(amount || 0) * 100),
-    [amount],
-  );
+  const submitting = useRef(false);
+  const attempt = useRef<{ signature: string; key: string } | null>(null);
+  const pence = useMemo(() => Math.round(Number(amount || 0) * 100), [amount]);
   const instantFee = Math.round(pence * 0.04);
   const instantBank = Math.max(0, pence - instantFee);
   const valid = pence >= 100 && pence <= availablePence;
 
   async function withdraw(kind: "standard" | "instant") {
+    if (submitting.current) return;
+    submitting.current = true;
+    const signature = `${kind}:${pence}`;
+    if (attempt.current?.signature !== signature) {
+      let saved: { signature: string; key: string } | null = null;
+      try {
+        saved = JSON.parse(
+          sessionStorage.getItem("glohaus-withdrawal-attempt") || "null",
+        );
+      } catch {}
+      attempt.current =
+        saved?.signature === signature
+          ? saved
+          : { signature, key: crypto.randomUUID() };
+      try {
+        sessionStorage.setItem(
+          "glohaus-withdrawal-attempt",
+          JSON.stringify(attempt.current),
+        );
+      } catch {}
+    }
     setBusy(kind);
     setMessage("");
     try {
       const response = await fetch("/api/v1/professional/withdrawals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind, amountPence: pence }),
+        body: JSON.stringify({
+          kind,
+          amountPence: pence,
+          requestKey: attempt.current.key,
+        }),
       });
       const data = await response.json();
       if (!response.ok) {
         const code = data.error?.code;
         throw new Error(
-          code === "PAYOUT_RESTRICTED"
-            ? "Withdrawals are temporarily frozen because there are multiple open disputes, an uncovered dispute reserve, or another account review restriction."
-            : code === "PAYOUT_DISPUTE_BUFFER"
-              ? "A dispute is open, so GLOHAUS must leave a 50% safety buffer in your wallet. Try a smaller withdrawal amount."
-              : code === "OUTSTANDING_OBLIGATION"
-              ? "You have an outstanding GLOHAUS balance that must be cleared before withdrawing."
-              : code === "INSUFFICIENT_AVAILABLE_BALANCE"
-                ? "That amount is no longer available to withdraw."
-                : code === "PAYOUT_TOO_SMALL"
-                  ? "The withdrawal amount is too small after applicable fees."
-                  : code === "UNAVAILABLE"
-                    ? "GLOHAUS payout processing is not fully connected right now. Your wallet balance is unchanged."
-                    : "We could not start this withdrawal. Your available balance has not been lost.",
+          code === "PAYOUT_REVIEW_REQUIRED"
+            ? "Stripe has not confirmed the final outcome yet. Your withdrawal is reserved for checking. Check your Wallet history before trying again; retrying this request will not create another withdrawal."
+            : code === "ONBOARDING_REQUIRED"
+              ? "Complete the missing verification or payout details in Stripe before withdrawing."
+              : code === "PAYOUT_RESTRICTED"
+                ? "Withdrawals are temporarily frozen because there are multiple open disputes, an uncovered dispute reserve, or another account review restriction."
+                : code === "PAYOUT_DISPUTE_BUFFER"
+                  ? "A dispute is open, so GLOHAUS must leave a 50% safety buffer in your wallet. Try a smaller withdrawal amount."
+                  : code === "OUTSTANDING_OBLIGATION"
+                    ? "You have an outstanding GLOHAUS balance that must be cleared before withdrawing."
+                    : code === "INSUFFICIENT_AVAILABLE_BALANCE"
+                      ? "That amount is no longer available to withdraw."
+                      : code === "PAYOUT_TOO_SMALL"
+                        ? "The withdrawal amount is too small after applicable fees."
+                        : code === "UNAVAILABLE"
+                          ? "Payout processing is unavailable right now. Check your Wallet history before retrying."
+                          : "We could not start this withdrawal. Your available balance has not been lost.",
         );
       }
+      if (data.payout.status === "requested") {
+        setMessage(
+          "This withdrawal is already being checked. Keep this page open or check your Wallet history. Do not start another request for the same withdrawal.",
+        );
+        return;
+      }
+      if (["cancelled", "failed"].includes(data.payout.status)) {
+        attempt.current = null;
+        try {
+          sessionStorage.removeItem("glohaus-withdrawal-attempt");
+        } catch {}
+        setMessage(
+          "This withdrawal did not complete. Check your updated Wallet balance before making a new request.",
+        );
+        return;
+      }
+      attempt.current = null;
+      try {
+        sessionStorage.removeItem("glohaus-withdrawal-attempt");
+      } catch {}
       setMessage(
         kind === "instant"
           ? `Instant withdrawal started. ${money(data.payout.bankAmountPence)} is being sent after the 4% fee.`
@@ -71,6 +119,7 @@ export function WithdrawalForm({
         error instanceof Error ? error.message : "Could not start withdrawal.",
       );
     } finally {
+      submitting.current = false;
       setBusy(null);
     }
   }
@@ -140,7 +189,8 @@ export function WithdrawalForm({
 
       {withdrawalsBlocked && (
         <p className="form-help">
-          All withdrawals are frozen because your current dispute or financial risk level requires a full hold.
+          All withdrawals are frozen because your current dispute or financial
+          risk level requires a full hold.
         </p>
       )}
       {!instantConfigured && (

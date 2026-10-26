@@ -1,6 +1,8 @@
 import type Stripe from "stripe";
+import { randomUUID } from "node:crypto";
+import { z } from "zod";
 import { withAccount } from "@/lib/api-account";
-import { apiError, assertSameOrigin, json } from "@/lib/http";
+import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
 import { paymentReady, stripe } from "@/modules/payments/stripe";
 import { withPaymentWorker } from "@/modules/payments/worker";
@@ -17,7 +19,43 @@ type PayoutRequest = {
   withdrawalFeePence: number;
   bankAmountPence: number;
   status: string;
+  claimed: boolean;
+  createdAt: string;
+  stripeAccountId: string;
+  providerTransferId: string | null;
+  providerPayoutId: string | null;
+  expectedArrivalAt: string | null;
 };
+
+const inputSchema = z
+  .object({
+    kind: z.enum(["standard", "instant"]),
+    amountPence: z.number().int().min(100).max(2147483647),
+    requestKey: z.uuid().optional(),
+  })
+  .strict();
+
+function confirmedRejection(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+  const value = error as { type?: string; statusCode?: number; code?: string };
+  return (
+    value.type === "StripeInvalidRequestError" &&
+    value.statusCode === 400 &&
+    value.code !== "idempotency_key_in_use"
+  );
+}
+
+function publicPayout(payout: PayoutRequest) {
+  return {
+    id: payout.id,
+    kind: payout.kind,
+    requestedPence: payout.requestedPence,
+    withdrawalFeePence: payout.withdrawalFeePence,
+    bankAmountPence: payout.bankAmountPence,
+    status: payout.status,
+    expectedArrivalAt: payout.expectedArrivalAt,
+  };
+}
 
 type InstantPayout = Stripe.Payout & {
   application_fee?: string | Stripe.ApplicationFee | null;
@@ -28,22 +66,18 @@ export async function POST(request: Request) {
   let requestRecord: PayoutRequest | undefined;
   let transferId: string | undefined;
   let providerPayoutCreated = false;
+  let outcomeUnknown = false;
+  let ownsClaim = false;
+  const leaseKey = randomUUID();
 
   try {
     assertSameOrigin(request);
     if (!paymentReady() || !(await connectWebhookReady()))
       throw new AccessError("UNAVAILABLE", 503);
 
-    const body = (await request.json()) as {
-      kind?: "standard" | "instant";
-      amountPence?: number;
-    };
-    if (
-      !["standard", "instant"].includes(body.kind || "") ||
-      !Number.isInteger(body.amountPence) ||
-      (body.amountPence || 0) < 100
-    )
-      throw new AccessError("INVALID_REQUEST", 400);
+    const parsed = inputSchema.safeParse(await smallJson(request, 2048));
+    if (!parsed.success) throw new AccessError("INVALID_REQUEST", 400);
+    const body = parsed.data;
 
     if (
       body.kind === "instant" &&
@@ -71,34 +105,92 @@ export async function POST(request: Request) {
       if (!paymentAccount.charges_enabled)
         throw new AccessError("UNAVAILABLE", 409);
 
+      const provider = await stripe().accounts.retrieve(
+        paymentAccount.stripe_account_id,
+      );
+      if (
+        provider.deleted ||
+        !provider.payouts_enabled ||
+        provider.capabilities?.transfers !== "active"
+      )
+        throw new AccessError("ONBOARDING_REQUIRED", 409);
+
       await db.query("SELECT beauty.recover_my_outstanding_obligation()");
 
       requestRecord = (
         await db.query<{ data: PayoutRequest }>(
-          "SELECT beauty.request_my_payout($1,$2) AS data",
-          [body.kind, body.amountPence],
+          "SELECT beauty.request_my_payout_once($1,$2,$3,$4) AS data",
+          [
+            body.kind,
+            body.amountPence,
+            body.requestKey ?? randomUUID(),
+            leaseKey,
+          ],
         )
       ).rows[0].data;
 
       return {
-        stripeAccountId: paymentAccount.stripe_account_id,
+        stripeAccountId: requestRecord.stripeAccountId,
         payout: requestRecord,
       };
     });
 
-    const transfer = await stripe().transfers.create(
-      {
-        amount: account.payout.requestedPence,
-        currency: "gbp",
-        destination: account.stripeAccountId,
-        transfer_group: `withdrawal_${account.payout.id}`,
-        metadata: {
-          glohaus_payout_id: account.payout.id,
+    if (!account.payout.claimed || account.payout.status !== "requested")
+      return json(
+        { payout: publicPayout(account.payout) },
+        account.payout.status === "requested" ? 202 : 200,
+      );
+    ownsClaim = true;
+
+    transferId = account.payout.providerTransferId ?? undefined;
+    // A resumed transfer may already have an unconfirmed bank payout. A read
+    // failure must not compensate it before replaying the original payout key.
+    outcomeUnknown = Boolean(transferId);
+    if (!transferId) {
+      // Unknown responses must retain the wallet reservation. Retrying the same
+      // durable request uses these same Stripe keys, within the 23-hour guard.
+      outcomeUnknown = true;
+
+      const transfer = await stripe().transfers.create(
+        {
+          amount: account.payout.requestedPence,
+          currency: "gbp",
+          destination: account.stripeAccountId,
+          transfer_group: `withdrawal_${account.payout.id}`,
+          metadata: {
+            glohaus_payout_id: account.payout.id,
+          },
         },
-      },
-      { idempotencyKey: `withdrawal-transfer-${account.payout.id}` },
-    );
-    transferId = transfer.id;
+        { idempotencyKey: `withdrawal-transfer-${account.payout.id}` },
+      );
+      transferId = transfer.id;
+      outcomeUnknown = false;
+      await withPaymentWorker(async (db) => {
+        const saved = await db.query(
+          `UPDATE beauty.financial_payouts SET provider_transfer_id=$2,updated_at=now()
+         WHERE id=$1 AND status='requested' AND provider_payout_id IS NULL
+         AND (provider_transfer_id IS NULL OR provider_transfer_id=$2) RETURNING id`,
+          [account.payout.id, transfer.id],
+        );
+        if (!saved.rows.length) throw new AccessError("UNAVAILABLE", 503);
+      });
+    }
+
+    const checkedTransfer = await stripe().transfers.retrieve(transferId!);
+    const checkedDestination =
+      typeof checkedTransfer.destination === "string"
+        ? checkedTransfer.destination
+        : checkedTransfer.destination?.id;
+    if (
+      checkedDestination !== account.stripeAccountId ||
+      checkedTransfer.amount !== account.payout.requestedPence ||
+      checkedTransfer.currency !== "gbp" ||
+      checkedTransfer.amount_reversed !== 0 ||
+      checkedTransfer.metadata?.glohaus_payout_id !== account.payout.id
+    ) {
+      outcomeUnknown = true;
+      throw new AccessError("UNAVAILABLE", 503);
+    }
 
     let destination: string | undefined;
     if (account.payout.kind === "instant") {
@@ -117,11 +209,11 @@ export async function POST(request: Request) {
         ?.net_available?.find(
           (entry) => entry.amount >= account.payout.bankAmountPence,
         );
-      if (!eligible)
-        throw new AccessError("INVALID_REQUEST", 409);
+      if (!eligible) throw new AccessError("INVALID_REQUEST", 409);
       destination = eligible.destination;
     }
 
+    outcomeUnknown = true;
     const providerPayout = (await stripe().payouts.create(
       {
         amount: account.payout.bankAmountPence,
@@ -131,7 +223,7 @@ export async function POST(request: Request) {
         description: "GLOHAUS professional withdrawal",
         metadata: {
           glohaus_payout_id: account.payout.id,
-          glohaus_transfer_id: transfer.id,
+          glohaus_transfer_id: transferId!,
         },
       },
       {
@@ -141,6 +233,7 @@ export async function POST(request: Request) {
     )) as InstantPayout;
 
     providerPayoutCreated = true;
+    outcomeUnknown = false;
     const applicationFeeId =
       typeof providerPayout.application_fee === "string"
         ? providerPayout.application_fee
@@ -155,19 +248,23 @@ export async function POST(request: Request) {
       throw new AccessError("UNAVAILABLE", 503);
 
     try {
-      await withPaymentWorker((db) =>
-        db.query(
+      await withPaymentWorker(async (db) => {
+        await db.query(
           "SELECT beauty.record_payout_provider($1,$2,$3,$4,$5,$6)",
           [
             account.payout.id,
-            transfer.id,
+            transferId!,
             providerPayout.id,
             applicationFeeId ?? null,
             providerFeePence,
             new Date(providerPayout.arrival_date * 1000),
           ],
-        ),
-      );
+        );
+        await db.query(
+          "UPDATE beauty.financial_payout_requests SET issue_code=NULL WHERE payout_id=$1 AND lease_id=$2",
+          [account.payout.id, leaseKey],
+        );
+      });
     } catch {
       // The Stripe payout already exists. Keep the wallet reserved rather than
       // reversing live money; the signed payout webhook can recover the record
@@ -189,16 +286,29 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    if (transferId && requestRecord && !providerPayoutCreated) {
+    // A failed reservation commit or replay must never release another active
+    // request's funds. Only the holder of this processing lease can compensate.
+    if (requestRecord && !ownsClaim)
+      return json(
+        {
+          error: { code: "PAYOUT_REVIEW_REQUIRED" },
+          payout: { id: requestRecord.id },
+        },
+        503,
+      );
+    if (confirmedRejection(error)) outcomeUnknown = false;
+    let canRestore = !outcomeUnknown && !providerPayoutCreated;
+    if (transferId && requestRecord && canRestore) {
       try {
         await stripe().transfers.createReversal(transferId, undefined, {
           idempotencyKey: `withdrawal-transfer-reversal-${requestRecord.id}`,
         });
       } catch {
         console.error("Stripe withdrawal transfer reversal failed");
+        canRestore = false;
       }
     }
-    if (requestRecord && !providerPayoutCreated) {
+    if (requestRecord && canRestore) {
       try {
         await withPaymentWorker((db) =>
           db.query("SELECT beauty.cancel_requested_payout($1)", [
@@ -207,7 +317,32 @@ export async function POST(request: Request) {
         );
       } catch {
         console.error("GLOHAUS payout request rollback failed");
+        canRestore = false;
       }
+    }
+    if (requestRecord && (!canRestore || providerPayoutCreated)) {
+      await withPaymentWorker((db) =>
+        db.query(
+          `UPDATE beauty.financial_payout_requests SET issue_code=$3
+         WHERE payout_id=$1 AND lease_id=$2`,
+          [
+            requestRecord!.id,
+            leaseKey,
+            providerPayoutCreated
+              ? "PROVIDER_CONFIRMATION_PENDING"
+              : outcomeUnknown
+                ? "PROVIDER_OUTCOME_UNKNOWN"
+                : "REVERSAL_PENDING",
+          ],
+        ),
+      ).catch(() => console.error("Payout review marker deferred"));
+      return json(
+        {
+          error: { code: "PAYOUT_REVIEW_REQUIRED" },
+          payout: { id: requestRecord.id },
+        },
+        503,
+      );
     }
     if (
       error &&

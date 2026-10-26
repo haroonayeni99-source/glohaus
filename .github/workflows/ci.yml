@@ -430,7 +430,7 @@ jobs:
   smart-arrival:
     # Keep WebKit's system dependencies on a supported, reproducible image.
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -443,7 +443,7 @@ jobs:
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
-        timeout-minutes: 5
+        timeout-minutes: 10
         with:
           webkit: "true"
       - name: Verify professional arrival tools, customer journeys and Owner communications

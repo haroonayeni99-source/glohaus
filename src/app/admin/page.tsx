@@ -103,6 +103,9 @@ export default async function Page() {
       ).rows[0].data,
   ).catch(() => null);
   const labels = await publicLabels();
+  const integrationHealth = await withAdmin(async db =>
+    (await db.query<{data:{connections:{provider:string;status:string;accounts:number;successes:number;failures:number;oldest_success:string|null}[]}}>("SELECT beauty.admin_business_tools_health() AS data")).rows[0]?.data,
+  ).catch(() => null);
   const shopCategories = await withAdmin((db) =>
     productCategories(db, true),
   ).catch(() => null);
@@ -500,6 +503,8 @@ export default async function Page() {
               health={backendHealth}
               payment={paymentReadiness}
             />
+            <h3>Calendar &amp; social connections</h3>
+            {integrationHealth ? integrationHealth.connections.length ? <div className="admin-table-scroll"><table><thead><tr><th>Provider</th><th>Status</th><th>Accounts</th><th>Successful syncs</th><th>Failed syncs</th></tr></thead><tbody>{integrationHealth.connections.map(c=><tr key={`${c.provider}:${c.status}`}><td>{c.provider}</td><td>{c.status}</td><td>{c.accounts}</td><td>{c.successes}</td><td>{c.failures}</td></tr>)}</tbody></table></div> : <p>No external calendar or social accounts connected yet.</p> : <p>Connection health is temporarily unavailable.</p>}
           </section>
         )}
         {isOwner && paymentReadiness && (

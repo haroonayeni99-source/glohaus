@@ -1,4 +1,5 @@
 import { publicTaxonomyCatalog } from "@/modules/taxonomy/public-catalog";
+import { publicSocialPosts } from "@/modules/business-tools/repository";
 import { emptyTaxonomy,type TaxonomyCatalog } from "@/modules/taxonomy/domain";
 import { publicMetadata, publicPages } from "@/lib/public-seo";
 import { DiscoveryFeed } from "@/components/discovery-feed";
@@ -163,8 +164,11 @@ export async function FeedPage({
     }
   }
 
+  const socialPosts = process.env.DATABASE_URL && !savedView && !followingView && !postId.success && !taxonomy.specialityId && !taxonomy.templateId
+    ? await withIdentity("", db => publicSocialPosts(db,undefined,taxonomy.categoryId)).catch(() => []) : [];
   return (
     <DiscoveryFeed
+      socialPosts={socialPosts}
       taxonomy={data.catalog} taxonomySelection={taxonomy}
       key={`${JSON.stringify(taxonomy)}:${data.posts[0]?.id || ""}:${data.next || ""}:${data.viewer}:${savedView}:${followingView}:${page}:${postId.success ? postId.data : ""}:${mode}`}
       publishedPosts={data.posts}

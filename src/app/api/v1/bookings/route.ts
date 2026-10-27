@@ -1,4 +1,5 @@
 import { bookingOptionsSchema } from "@/modules/taxonomy/domain";
+import { refreshServiceCalendars } from "@/modules/business-tools/worker";
 import { serviceQuote } from "@/modules/taxonomy/repository";
 import { z } from "zod";
 import { policyError } from "@/modules/policies/http";
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
     const parsed = schema.safeParse(await smallJson(request));
     if (!parsed.success) throw new AccessError("INVALID_REQUEST", 400);
     stage = "reserve";
+    await refreshServiceCalendars(parsed.data.serviceId,true);
     const booking = await withAccount("customer", async (db) => {
       const service = (
         await db.query<{

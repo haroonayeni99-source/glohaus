@@ -7,6 +7,7 @@ import { withIdentity } from "@/lib/db";
 import { AccessMessage } from "@/components/access-message";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { professionalReviews } from "@/modules/reviews/repository";
+import { reviewQuestions, answerLabel } from "@/modules/reviews/domain";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your reviews" };
 export default async function Reviews() {
@@ -64,6 +65,10 @@ export default async function Reviews() {
                   </span>
                 </div>
                 <p>{review.body}</p>
+                {review.feedback && <details><summary>Private feedback for your business</summary>
+                  <dl>{reviewQuestions.map(([key,question]) => review.feedback?.answers[key] ? <div key={key}><dt>{question}</dt><dd>{answerLabel(review.feedback.answers[key]!)}</dd></div> : null)}</dl>
+                  {review.feedback.privateSuggestion && <p>{review.feedback.privateSuggestion}</p>}
+                </details>}
                 {review.response && (
                   <p>
                     Professional response ({review.response.status}):{" "}

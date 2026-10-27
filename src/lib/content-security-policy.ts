@@ -15,7 +15,7 @@ export function contentSecurityPolicy(
     `connect-src 'self' https: wss:${development ? " ws://localhost:* ws://127.0.0.1:*" : ""}`,
     "media-src 'self' https: blob: data:",
     "worker-src 'self' blob:",
-    "frame-src 'self' https://*.stripe.com https://*.link.com https://vercel.live",
+    "frame-src 'self' https://*.stripe.com https://*.link.com https://vercel.live https://www.instagram.com https://www.tiktok.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self' https://checkout.stripe.com https://connect.stripe.com https://billing.stripe.com",

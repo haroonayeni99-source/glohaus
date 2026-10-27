@@ -54,6 +54,8 @@ const tools = [
     "/professional/availability",
     CalendarDays,
   ],
+  ["Connected calendars", "Sync external busy times and set appointment buffers", "/professional/connections#calendar", CalendarDays],
+  ["Social media connections", "Choose Instagram and TikTok work for your portfolio", "/professional/connections#social", ImagePlus],
   [
     "Portfolio",
     "Showcase your work and transformations",

@@ -37,6 +37,7 @@ export default async function Portfolio() {
         <Link href="/professional" className="pro-back-link">← Dashboard</Link>
         <p className="pro-kicker">A LITTLE OF WHAT YOU DO BEST</p>
         <h1>Your portfolio, your signature.</h1>
+        <p><Link href="/professional/connections#social">Connect social media or add post links →</Link></p>
         <p className="pro-page-lead">
           Uploaded images and videos stay private until you publish them. Your professional
           profile must also be published.

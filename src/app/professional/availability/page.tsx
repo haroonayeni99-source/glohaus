@@ -73,6 +73,7 @@ export default async function Availability() {
         <Link href="/professional" className="pro-back-link">← Dashboard</Link>
         <p className="pro-kicker">MAKE SPACE FOR YOUR CLIENTS</p>
         <h1>Your week, your way.</h1>
+        <p><Link href="/professional/connections#calendar">Connected calendars &amp; appointment buffers →</Link></p>
         <section className="pro-editor-surface">
           <AvailabilityCalendar rules={rules} today={calendarDate(new Date())}
             blocks={blocks.map((block) => ({

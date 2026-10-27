@@ -1,4 +1,6 @@
 import { recordConsentedView } from "./growth-action";
+import { publicSocialPosts } from "@/modules/business-tools/repository";
+import { SocialPortfolio } from "@/components/social-portfolio";
 import { publicMetadata, publicOrigin, jsonLd } from "@/lib/public-seo";
 import { notFound } from "next/navigation";
 import { PublicHeader } from "@/components/public-header";
@@ -118,9 +120,9 @@ export default async function Profile({
         id: string;
         rating: number;
         body: string;
-        public_name: string;response_body?:string|null;service_id:string|null;service_name:string|null;speciality_id:string|null;speciality_name:string|null;
+        public_name: string;photo_id?:string;photo_alt?:string;response_body?:string|null;service_id:string|null;service_name:string|null;speciality_id:string|null;speciality_name:string|null;
       }>(
-        "SELECT r.id,r.rating,r.body,r.public_name,r.service_id,r.service_name,r.speciality_id,r.speciality_name,rr.body AS response_body FROM beauty.public_reviews r LEFT JOIN beauty.public_review_responses rr ON rr.review_id=r.id WHERE r.professional_id=$1 ORDER BY r.created_at DESC LIMIT 50",
+        "SELECT r.id,r.rating,r.body,r.public_name,r.service_id,r.service_name,r.speciality_id,r.speciality_name,rr.body AS response_body,photo.id AS photo_id,photo.alt_text AS photo_alt FROM beauty.public_reviews r LEFT JOIN beauty.public_review_responses rr ON rr.review_id=r.id LEFT JOIN beauty.public_review_photos photo ON photo.review_id=r.id WHERE r.professional_id=$1 ORDER BY r.created_at DESC LIMIT 50",
         [id],
       )
     ).rows;
@@ -189,6 +191,7 @@ export default async function Profile({
     };
   });
   if (!data) notFound();
+  const socialPosts = await withIdentity("", db => publicSocialPosts(db,data.professional.id)).catch(() => []);
   const focusService=data.services.find(s=>s.id===(booking.service||booking.bookService));
   const selectedSpeciality=focusService?.speciality_id??(data.specialities.some(s=>s.speciality_id===booking.speciality)?booking.speciality:null);
   return (
@@ -231,6 +234,7 @@ export default async function Profile({
       <PublicHeader />
       {data.canTrackVisit && <details style={{maxWidth:850,margin:"8px auto",padding:"0 16px"}}><summary style={{cursor:"pointer",fontSize:13}}>Optional profile visit analytics</summary><form action={recordConsentedView}><input type="hidden" name="professionalId" value={data.professional.id}/><input type="hidden" name="slug" value={slug}/><p>Help this professional understand whether GLOHAUS profile visits lead to bookings. Optional; only your account and booking activity are used for attribution, for up to seven days. No reward is triggered.</p><label><input type="checkbox" name="consent" value="yes" required/> I agree to record this profile visit for conversion analytics.</label> <button className="button small" type="submit">Count my visit</button>{booking.tracking==="recorded"&&<p role="status">Your consented visit was recorded.</p>}{booking.tracking==="unavailable"&&<p role="alert">Tracking is temporarily unavailable.</p>}</form></details>}
       <ProfessionalProfile
+        socialPortfolio={<SocialPortfolio posts={socialPosts}/>}
         professional={data.professional}
         policies={<section id="professional-policies" className="professional-section"><h2>Rules & booking policies</h2><p>Choose a service to inspect its applicable general and service-specific terms before booking.</p>{data.policies.map(p=><details key={p.id}><summary>{data.services.find(s=>s.id===p.id)?.name}</summary><ProfessionalPolicySummary policy={p.policy}/></details>)}</section>}
         details={data.details}

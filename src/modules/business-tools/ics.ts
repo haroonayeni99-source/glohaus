@@ -39,7 +39,7 @@ export function feedUrl(value: string) {
     (url.port && url.port !== "443") ||
     url.hash ||
     value.length > 2048 ||
-    isIP(url.hostname)
+    isIP(url.hostname.replace(/^\[|\]$/g, ""))
   )
     throw Error("FEED_UNSUPPORTED");
   return url;
@@ -52,19 +52,33 @@ export async function fetchFeed(value: string) {
   const address = addresses[0];
   // Pin the validated DNS result for the TLS connection; never follow redirects.
   return new Promise<string>((resolve, reject) => {
+    // A private agent avoids global environment proxies or pooled connections
+    // bypassing the validated DNS address. TLS still verifies the original host.
+    const agent = new https.Agent({ keepAlive: false });
+    let settled = false;
+    const finish = (error?: Error, body?: string) => {
+      if (settled) return;
+      settled = true;
+      agent.destroy();
+      if (error) reject(error);
+      else resolve(body!);
+    };
     const request = https.get(
       url,
       {
         family: address.family,
+        agent,
         lookup: (_host, _options, callback) =>
           callback(null, address.address, address.family),
         signal: AbortSignal.timeout(8000),
         headers: { Accept: "text/calendar" },
       },
       (response) => {
+        response.on("error", () => finish(Error("SYNC_FAILED")));
+        response.on("aborted", () => finish(Error("SYNC_FAILED")));
         if (response.statusCode !== 200) {
           response.resume();
-          reject(Error("SYNC_FAILED"));
+          finish(Error("SYNC_FAILED"));
           return;
         }
         const chunks: Buffer[] = [];
@@ -72,18 +86,18 @@ export async function fetchFeed(value: string) {
         response.on("data", (chunk: Buffer) => {
           bytes += chunk.length;
           if (bytes > 2 * 1024 * 1024) {
+            finish(Error("FEED_UNSUPPORTED"));
             response.destroy(Error("FEED_UNSUPPORTED"));
             return;
           }
           chunks.push(chunk);
         });
-        response.on("error", () => reject(Error("SYNC_FAILED")));
         response.on("end", () =>
-          resolve(Buffer.concat(chunks).toString("utf8")),
+          finish(undefined, Buffer.concat(chunks).toString("utf8")),
         );
       },
     );
-    request.on("error", () => reject(Error("SYNC_FAILED")));
+    request.on("error", () => finish(Error("SYNC_FAILED")));
   });
 }
 function instant(time: ICAL.Time, end = false) {

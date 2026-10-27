@@ -20,7 +20,7 @@ GLOHAUS_PUBLIC_FEED_SMOKE=1 pnpm exec vitest run tests/calendar-sync-database.te
 
 Only the opt-in case makes a real network request. It uses the fixed, public GOV.UK England-and-Wales bank-holiday feed, never a professional's private link. It imports that response into the isolated fixture database through the real synchronisation path. No production users, bookings, reviews, payments, OAuth accounts or email are created. This is not a signed-in professional's personal-calendar test.
 
-The workspace's direct DNS cannot resolve the GOV.UK host (`EAI_AGAIN`). Retrieving the public file through the permitted proxy succeeds, but that does not exercise the DNS-pinned application downloader. Do not weaken the downloader or substitute proxy-based fetching to claim that the application's network path passed. Run the opt-in check in the deployment environment and record its actual result.
+The workspace's direct DNS cannot resolve the GOV.UK host (`EAI_AGAIN`). Retrieving the public file through the permitted proxy succeeds, but that does not exercise the DNS-pinned application downloader. Do not weaken the downloader or substitute proxy-based fetching to claim that the application's network path passed. The Vercel preview uses the existing Dockerfile, so a top-level build-command override does not run this check. The dedicated `Verify calendar subscriptions` CI workflow runs it on a clean Node 24 runner with public network access and no production credentials. Record its actual result; a READY preview alone is not proof that it ran.
 
 ## Activation
 

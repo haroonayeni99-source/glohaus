@@ -158,22 +158,20 @@ describe("official account connections and safe fallbacks", () => {
   it("filters free/cancelled Google events and existing exported GLOHAUS events", async () => {
     vi.stubGlobal(
       "fetch",
-      vi
-        .fn()
-        .mockResolvedValue(
-          Response.json({
-            items: [
-              {
-                id: "external",
-                start: { dateTime: "2026-10-27T12:00Z" },
-                end: { dateTime: "2026-10-27T13:00Z" },
-              },
-              { id: "own-export" },
-              { id: "cancelled", status: "cancelled" },
-              { id: "free", transparency: "transparent" },
-            ],
-          }),
-        ),
+      vi.fn().mockResolvedValue(
+        Response.json({
+          items: [
+            {
+              id: "external",
+              start: { dateTime: "2026-10-27T12:00Z" },
+              end: { dateTime: "2026-10-27T13:00Z" },
+            },
+            { id: "own-export" },
+            { id: "cancelled", status: "cancelled" },
+            { id: "free", transparency: "transparent" },
+          ],
+        }),
+      ),
     );
     expect(
       await calendarBusy("google", token, from, to, new Set(["own-export"])),
@@ -186,23 +184,21 @@ describe("official account connections and safe fallbacks", () => {
     ]);
   });
   it("supports personal Outlook calendarView and rejects pagination to another origin", async () => {
-    const fetcher = vi
-      .fn()
-      .mockResolvedValueOnce(
-        Response.json({
-          value: [
-            {
-              id: "outlook-event",
-              showAs: "busy",
-              start: {
-                dateTime: "2026-10-27T12:00:00.0000000",
-                timeZone: "UTC",
-              },
-              end: { dateTime: "2026-10-27T13:00:00.0000000", timeZone: "UTC" },
+    const fetcher = vi.fn().mockResolvedValueOnce(
+      Response.json({
+        value: [
+          {
+            id: "outlook-event",
+            showAs: "busy",
+            start: {
+              dateTime: "2026-10-27T12:00:00.0000000",
+              timeZone: "UTC",
             },
-          ],
-        }),
-      );
+            end: { dateTime: "2026-10-27T13:00:00.0000000", timeZone: "UTC" },
+          },
+        ],
+      }),
+    );
     vi.stubGlobal("fetch", fetcher);
     expect(
       await calendarBusy("outlook", token, from, to, new Set()),
@@ -238,24 +234,22 @@ describe("official account connections and safe fallbacks", () => {
   it("imports genuine social creation dates and original links", async () => {
     vi.stubGlobal(
       "fetch",
-      vi
-        .fn()
-        .mockResolvedValue(
-          Response.json({
-            error: { code: "ok" },
-            data: {
-              videos: [
-                {
-                  id: "12345678",
-                  share_url: "https://www.tiktok.com/@studio/video/12345678",
-                  create_time: 1793102400,
-                  title: "My nail work",
-                },
-              ],
-              has_more: false,
-            },
-          }),
-        ),
+      vi.fn().mockResolvedValue(
+        Response.json({
+          error: { code: "ok" },
+          data: {
+            videos: [
+              {
+                id: "12345678",
+                share_url: "https://www.tiktok.com/@studio/video/12345678",
+                create_time: 1793102400,
+                title: "My nail work",
+              },
+            ],
+            has_more: false,
+          },
+        }),
+      ),
     );
     const posts = await socialPosts("tiktok", token);
     expect(posts[0].url).toContain("tiktok.com/@studio");
@@ -281,4 +275,76 @@ describe("official account connections and safe fallbacks", () => {
       }).success,
     ).toBe(false);
   });
+});
+
+it("imports a bounded recent TikTok window rather than failing accounts with more history", async () => {
+  const fetcher = vi.fn(async () =>
+    Response.json({
+      error: { code: "ok" },
+      data: {
+        videos: [
+          {
+            share_url: "https://www.tiktok.com/@fixture/video/12345678",
+            create_time: 1793016000,
+            title: "Fixture",
+          },
+        ],
+        has_more: true,
+        cursor: fetcher.mock.calls.length + 1,
+      },
+    }),
+  );
+  vi.stubGlobal("fetch", fetcher);
+  expect(await socialPosts("tiktok", token)).toHaveLength(10);
+  expect(fetcher).toHaveBeenCalledTimes(10);
+  expect(
+    fetcher.mock.calls.every(
+      (call) =>
+        (call as unknown as [string, RequestInit])[1].signal instanceof
+        AbortSignal,
+    ),
+  ).toBe(true);
+});
+it("imports a bounded recent Instagram window without following provider-supplied next URLs", async () => {
+  vi.stubEnv("INSTAGRAM_API_VERSION", "v25.0");
+  const fetcher = vi.fn(async () =>
+    Response.json({
+      data: [
+        {
+          permalink: "https://www.instagram.com/p/ABC123/",
+          timestamp: "2026-10-26T12:00:00Z",
+          media_type: "IMAGE",
+        },
+      ],
+      paging: {
+        next: "https://untrusted.example.test/page",
+        cursors: { after: String(fetcher.mock.calls.length + 1) },
+      },
+    }),
+  );
+  vi.stubGlobal("fetch", fetcher);
+  expect(await socialPosts("instagram", token)).toHaveLength(10);
+  expect(fetcher).toHaveBeenCalledTimes(10);
+  expect(
+    fetcher.mock.calls.every((call) =>
+      String((call as unknown as [string])[0]).startsWith(
+        "https://graph.instagram.com/",
+      ),
+    ),
+  ).toBe(true);
+});
+it("honours an aborted pagination budget before an external request can complete", async () => {
+  const { providerJson } = await import("@/modules/business-tools/oauth");
+  const controller = new AbortController();
+  controller.abort();
+  const fetcher = vi.fn(async (_url: string, init: RequestInit) => {
+    if (init.signal?.aborted) throw Error("aborted fixture");
+    return Response.json({});
+  });
+  vi.stubGlobal("fetch", fetcher);
+  await expect(
+    providerJson("https://open.tiktokapis.com/v2/video/list/", {
+      signal: controller.signal,
+    }),
+  ).rejects.toThrow("aborted fixture");
 });

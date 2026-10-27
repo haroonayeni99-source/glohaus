@@ -15,6 +15,9 @@ export async function socialPosts(
   tokens: Tokens,
 ): Promise<ImportedPost[]> {
   const results: ImportedPost[] = [];
+  // A recent-source window bounds API work. Anything outside it is conservatively
+  // removed from the public imported collection by the repository reconciliation.
+  const signal = AbortSignal.timeout(25000);
   if (provider === "instagram") {
     const version = process.env.INSTAGRAM_API_VERSION || "";
     if (!/^v\d+\.\d+$/.test(version)) throw Error("NOT_CONFIGURED");
@@ -26,6 +29,7 @@ export async function socialPosts(
     }).toString();
     for (let i = 0; i < 10; i++) {
       const data = await providerJson(url.toString(), {
+        signal,
         headers: { Authorization: `Bearer ${tokens.accessToken}` },
       });
       if (!Array.isArray(data.data)) throw Error("SYNC_FAILED");
@@ -60,12 +64,14 @@ export async function socialPosts(
       if (!after) throw Error("SYNC_FAILED");
       url.searchParams.set("after", after);
     }
+    return results;
   } else if (provider === "tiktok") {
     let cursor: number | undefined;
     for (let i = 0; i < 10; i++) {
       const data = await providerJson(
         "https://open.tiktokapis.com/v2/video/list/?fields=id,title,video_description,share_url,create_time,cover_image_url",
         {
+          signal,
           method: "POST",
           headers: {
             Authorization: `Bearer ${tokens.accessToken}`,
@@ -97,6 +103,7 @@ export async function socialPosts(
       cursor = data.data.cursor;
       if (!cursor) throw Error("SYNC_FAILED");
     }
+    return results;
   }
   throw Error("SYNC_FAILED");
 }

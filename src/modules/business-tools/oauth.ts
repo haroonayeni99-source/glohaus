@@ -133,7 +133,9 @@ export async function providerJson(url: string, init: RequestInit = {}) {
     ...init,
     cache: "no-store",
     redirect: "error",
-    signal: AbortSignal.timeout(8000),
+    signal: init.signal
+      ? AbortSignal.any([init.signal, AbortSignal.timeout(8000)])
+      : AbortSignal.timeout(8000),
   });
   if (!response.ok)
     throw Error(

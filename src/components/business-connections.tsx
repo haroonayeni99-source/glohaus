@@ -506,7 +506,10 @@ export function BusinessConnections({
                       Approval Mode is the default. Manual Mode does not fetch
                       in the background. Scheduled checks are normally hourly,
                       subject to provider limits and retries. Existing hidden
-                      posts stay hidden.
+                      posts stay hidden. Imports cover up to the latest 1,000
+                      Instagram posts or 200 TikTok videos. Imported work
+                      outside that recent window stops appearing publicly;
+                      original posts are not deleted.
                     </small>
                     <button className="button" disabled={busy}>
                       Save connection settings
@@ -590,7 +593,8 @@ export function BusinessConnections({
             {p.publication_status === "unavailable" ||
             p.source_available === false ? (
               <p>
-                This post is no longer available through the connected account.
+                This post was not returned in the connected account’s recent
+                import window. It may be older, deleted or restricted.
               </p>
             ) : (
               <>

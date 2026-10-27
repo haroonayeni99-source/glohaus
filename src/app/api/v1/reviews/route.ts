@@ -6,6 +6,7 @@ import { AccessError } from "@/modules/accounts/domain";
 import {
   prepareReviewPhoto,
   discardReviewPhoto,
+  ReviewPhotoInputError,
 } from "@/modules/reviews/photos";
 export async function POST(request: Request) {
   let photo: Awaited<ReturnType<typeof prepareReviewPhoto>> | undefined;
@@ -27,8 +28,10 @@ export async function POST(request: Request) {
       });
       try {
         photo = await prepareReviewPhoto(input.photo);
-      } catch {
-        throw new AccessError("INVALID_REQUEST", 400);
+      } catch (error) {
+        if (error instanceof ReviewPhotoInputError)
+          throw new AccessError("INVALID_REQUEST", 400);
+        throw error;
       }
     }
     const saved = await withAccount("customer", async (db, account) => {

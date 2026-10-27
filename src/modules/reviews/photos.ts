@@ -2,12 +2,18 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { put, del } from "@vercel/blob";
 import { sanitizeImage } from "@/modules/media/image";
+export class ReviewPhotoInputError extends Error {}
 export async function prepareReviewPhoto(photo: {
   base64: string;
   altText: string;
   consent: true;
 }) {
-  const image = await sanitizeImage(Buffer.from(photo.base64, "base64"));
+  let image: Buffer;
+  try {
+    image = await sanitizeImage(Buffer.from(photo.base64, "base64"));
+  } catch {
+    throw new ReviewPhotoInputError("INVALID_REVIEW_PHOTO");
+  }
   const id = randomUUID();
   const blob = await put(`reviews/${id}.webp`, image, {
     access: "private",

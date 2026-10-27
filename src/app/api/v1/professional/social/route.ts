@@ -6,6 +6,8 @@ import {
   socialInputSchema,
   socialUpdateSchema,
   socialPostLink,
+  portfolioPreferencesSchema,
+  socialProfileLink,
 } from "@/modules/business-tools/domain";
 export async function POST(request: Request) {
   try {
@@ -51,7 +53,26 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     assertSameOrigin(request);
-    const input = socialUpdateSchema.safeParse(await smallJson(request, 1500));
+    const body = await smallJson(request, 2000);
+    const preferences = portfolioPreferencesSchema.safeParse(body);
+    if (preferences.success) {
+      await withAccount("professional", async (db, a) => {
+        await db.query(
+          "INSERT INTO beauty.social_portfolio_preferences(professional_id,max_visible_posts) VALUES($1,$2) ON CONFLICT(professional_id) DO UPDATE SET max_visible_posts=EXCLUDED.max_visible_posts",
+          [a.professionalId, preferences.data.maxVisiblePosts],
+        );
+        await db.query(
+          "UPDATE beauty.professional_profiles SET instagram_url=$2,tiktok_url=$3 WHERE id=$1",
+          [
+            a.professionalId,
+            socialProfileLink(preferences.data.instagramUrl, "instagram"),
+            socialProfileLink(preferences.data.tiktokUrl, "tiktok"),
+          ],
+        );
+      });
+      return json({ saved: true });
+    }
+    const input = socialUpdateSchema.safeParse(body);
     if (!input.success) throw new AccessError("INVALID_REQUEST", 400);
     await withAccount("professional", async (db, a) => {
       if (
@@ -65,13 +86,14 @@ export async function PUT(request: Request) {
       )
         throw new AccessError("FORBIDDEN", 403);
       const changed = await db.query(
-        "UPDATE beauty.social_portfolio SET publication_status=$3,service_id=$4,sort_order=$5 WHERE id=$1 AND professional_id=$2 AND publication_status<>'unavailable' RETURNING id",
+        "UPDATE beauty.social_portfolio SET publication_status=$3,service_id=$4,sort_order=$5,featured=$6 WHERE id=$1 AND professional_id=$2 AND source_available AND publication_status<>'unavailable' RETURNING id",
         [
           input.data.id,
           a.professionalId,
           input.data.publicationStatus,
           input.data.serviceId,
           input.data.sortOrder,
+          input.data.featured,
         ],
       );
       if (!changed.rows.length) throw new AccessError("FORBIDDEN", 403);

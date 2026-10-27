@@ -1,5 +1,5 @@
 import "server-only";
-import { socialPostLink, type Provider } from "./domain";
+import { socialPostLink, socialThumbnailUrl, type Provider } from "./domain";
 import { providerJson, type Tokens } from "./oauth";
 export type ImportedPost = {
   platform: "instagram" | "tiktok";
@@ -7,6 +7,8 @@ export type ImportedPost = {
   url: string;
   caption: string;
   createdAt: string;
+  mediaType: "image" | "carousel" | "video";
+  thumbnailUrl: string;
 };
 export async function socialPosts(
   provider: Provider,
@@ -18,7 +20,8 @@ export async function socialPosts(
     if (!/^v\d+\.\d+$/.test(version)) throw Error("NOT_CONFIGURED");
     const url = new URL(`https://graph.instagram.com/${version}/me/media`);
     url.search = new URLSearchParams({
-      fields: "id,caption,media_type,permalink,timestamp",
+      fields:
+        "id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,children{media_type,media_url,thumbnail_url}",
       limit: "100",
     }).toString();
     for (let i = 0; i < 10; i++) {
@@ -34,6 +37,22 @@ export async function socialPosts(
           ...link,
           caption: String(post.caption || "").slice(0, 1800),
           createdAt: new Date(post.timestamp).toISOString(),
+          mediaType:
+            post.media_type === "CAROUSEL_ALBUM"
+              ? "carousel"
+              : post.media_type === "VIDEO"
+                ? "video"
+                : "image",
+          thumbnailUrl: socialThumbnailUrl(
+            post.media_type === "VIDEO"
+              ? post.thumbnail_url
+              : post.media_type === "CAROUSEL_ALBUM"
+                ? post.children?.data?.[0]?.thumbnail_url ||
+                  post.children?.data?.[0]?.media_url ||
+                  post.media_url
+                : post.media_url,
+            "instagram",
+          ),
         });
       }
       if (!data.paging?.next) return results;
@@ -45,7 +64,7 @@ export async function socialPosts(
     let cursor: number | undefined;
     for (let i = 0; i < 10; i++) {
       const data = await providerJson(
-        "https://open.tiktokapis.com/v2/video/list/?fields=id,title,video_description,share_url,create_time",
+        "https://open.tiktokapis.com/v2/video/list/?fields=id,title,video_description,share_url,create_time,cover_image_url",
         {
           method: "POST",
           headers: {
@@ -70,6 +89,8 @@ export async function socialPosts(
             1800,
           ),
           createdAt: new Date(Number(post.create_time) * 1000).toISOString(),
+          mediaType: "video",
+          thumbnailUrl: socialThumbnailUrl(post.cover_image_url, "tiktok"),
         });
       }
       if (!data.data.has_more) return results;

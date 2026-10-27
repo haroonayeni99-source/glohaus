@@ -12,6 +12,8 @@ import { AdminProfessionalPolicies } from "@/components/admin-professional-polic
 import { adminPolicies } from "@/modules/policies/repository";
 import { supportInbox } from "@/modules/support/repository";
 import { withAdmin } from "@/modules/admin/repository";
+import { OwnerSocialSync } from "@/components/owner-social-sync";
+import type { OwnerSocialOverview } from "@/modules/business-tools/domain";
 import { HomepageCategoryMediaControl } from "@/components/homepage-category-media-control";
 import {
   AdminWorkspaceView,
@@ -106,6 +108,7 @@ export default async function Page() {
   const integrationHealth = await withAdmin(async db =>
     (await db.query<{data:{connections:{provider:string;status:string;accounts:number;successes:number;failures:number;oldest_success:string|null}[]}}>("SELECT beauty.admin_business_tools_health() AS data")).rows[0]?.data,
   ).catch(() => null);
+  const socialOverview=isOwner?await withOwner(async db=>(await db.query<{data:OwnerSocialOverview}>("SELECT beauty.owner_social_sync_overview() AS data")).rows[0].data).catch(()=>null):null;
   const shopCategories = await withAdmin((db) =>
     productCategories(db, true),
   ).catch(() => null);
@@ -504,6 +507,7 @@ export default async function Page() {
               payment={paymentReadiness}
             />
             <h3>Calendar &amp; social connections</h3>
+            {socialOverview&&<OwnerSocialSync initial={JSON.parse(JSON.stringify(socialOverview))}/>}
             {integrationHealth ? integrationHealth.connections.length ? <div className="admin-table-scroll"><table><thead><tr><th>Provider</th><th>Status</th><th>Accounts</th><th>Successful syncs</th><th>Failed syncs</th></tr></thead><tbody>{integrationHealth.connections.map(c=><tr key={`${c.provider}:${c.status}`}><td>{c.provider}</td><td>{c.status}</td><td>{c.accounts}</td><td>{c.successes}</td><td>{c.failures}</td></tr>)}</tbody></table></div> : <p>No external calendar or social accounts connected yet.</p> : <p>Connection health is temporarily unavailable.</p>}
           </section>
         )}

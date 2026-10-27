@@ -8,7 +8,7 @@ import type {
   PublicSocialPost,
 } from "./domain";
 import { seal, unseal } from "./secrets";
-import { freshTokens, type Tokens } from "./oauth";
+import { freshTokens, providerReady, type Tokens } from "./oauth";
 import { calendarBusy, exportBooking, type ExportBooking } from "./calendars";
 import { socialPosts } from "./social";
 import { renewWatch } from "./watch";
@@ -16,13 +16,13 @@ import { withIdentity } from "@/lib/db";
 export async function businessTools(db: SqlClient, professionalId: string) {
   const connections = (
     await db.query<ConnectionStatus>(
-      "SELECT id,provider,label,status,auto_publish,export_bookings,last_success_at,last_error FROM beauty.business_connections WHERE professional_id=$1 ORDER BY created_at",
+      "SELECT id,provider,label,status,auto_publish,export_bookings,last_success_at,last_error,social_mode,sync_enabled FROM beauty.business_connections WHERE professional_id=$1 ORDER BY created_at",
       [professionalId],
     )
   ).rows;
   const posts = (
     await db.query<SocialPost>(
-      "SELECT id,platform,original_url,caption,source_created_at,service_id,publication_status,sort_order FROM beauty.social_portfolio WHERE professional_id=$1 ORDER BY sort_order,created_at DESC LIMIT 200",
+      "SELECT id,platform,original_url,caption,source_created_at,service_id,publication_status,sort_order,featured,source_available,media_type FROM beauty.social_portfolio WHERE professional_id=$1 ORDER BY featured DESC,sort_order,source_created_at DESC NULLS LAST,created_at DESC LIMIT 200",
       [professionalId],
     )
   ).rows;
@@ -32,7 +32,18 @@ export async function businessTools(db: SqlClient, professionalId: string) {
       [professionalId],
     )
   ).rows[0] || { buffer_minutes: 0, travel_buffer_minutes: 0 };
-  return { connections, posts, preferences };
+  const portfolio = (
+    await db.query<{
+      max_visible_posts: number;
+      instagram_url: string;
+      tiktok_url: string;
+      sync_allowed: boolean;
+    }>(
+      "SELECT coalesce(s.max_visible_posts,12)::integer AS max_visible_posts,p.instagram_url,p.tiktok_url,beauty.social_sync_allowed(p.id) AS sync_allowed FROM beauty.professional_profiles p LEFT JOIN beauty.social_portfolio_preferences s ON s.professional_id=p.id WHERE p.id=$1",
+      [professionalId],
+    )
+  ).rows[0];
+  return { connections, posts, preferences, portfolio };
 }
 export async function publicSocialPosts(
   db: SqlClient,
@@ -41,7 +52,7 @@ export async function publicSocialPosts(
 ) {
   const posts = (
     await db.query<PublicSocialPost>(
-      `SELECT s.* FROM beauty.public_social_portfolio s WHERE ($1::uuid IS NULL OR s.professional_id=$1) AND ($2::uuid IS NULL OR EXISTS(SELECT 1 FROM beauty.public_professional_specialities p WHERE p.professional_id=s.professional_id AND p.category_id=$2)) ORDER BY s.sort_order,s.source_created_at DESC NULLS LAST,s.id LIMIT 40`,
+      `SELECT s.* FROM (SELECT p.*,row_number() OVER(PARTITION BY p.professional_id ORDER BY p.featured DESC,p.sort_order,p.source_created_at DESC NULLS LAST,p.id) AS preview_position FROM beauty.public_social_portfolio p) s WHERE ($1::uuid IS NULL OR s.professional_id=$1) AND ($1::uuid IS NOT NULL OR s.preview_position<=3) AND ($2::uuid IS NULL OR EXISTS(SELECT 1 FROM beauty.public_professional_specialities p WHERE p.professional_id=s.professional_id AND p.category_id=$2)) ORDER BY s.featured DESC,s.sort_order,s.source_created_at DESC NULLS LAST,s.id LIMIT 80`,
       [professionalId || null, categoryId || null],
     )
   ).rows;
@@ -89,7 +100,7 @@ export async function syncProfessional(
     async (db) =>
       (
         await db.query<{ id: string }>(
-          `SELECT id FROM beauty.business_connections WHERE professional_id=$1 AND status<>'disconnected' AND ($2::uuid IS NULL OR id=$2) AND (lease_until IS NULL OR lease_until<now()) AND (NOT $3::boolean OR provider IN('google','outlook','ics')) AND ($3::boolean OR $2::uuid IS NOT NULL OR next_sync_at<=now()) ORDER BY next_sync_at LIMIT $4`,
+          `SELECT id FROM beauty.business_connections WHERE professional_id=$1 AND status<>'disconnected' AND ($2::uuid IS NULL OR id=$2) AND (lease_until IS NULL OR lease_until<now()) AND (NOT $3::boolean OR provider IN('google','outlook','ics')) AND ($3::boolean OR $2::uuid IS NOT NULL OR next_sync_at<=now()) AND (provider IN('google','outlook','ics') OR (beauty.social_sync_allowed(professional_id) AND ($2::uuid IS NOT NULL OR (sync_enabled AND social_mode<>'manual' AND coalesce(last_error,'')<>'RECONNECT_REQUIRED')))) ORDER BY CASE WHEN provider IN('google','outlook','ics') THEN 0 ELSE 1 END,next_sync_at LIMIT $4`,
           [professionalId, connectionId || null, force, limit],
         )
       ).rows,
@@ -101,7 +112,7 @@ export async function syncProfessional(
       async (db) =>
         (
           await db.query<ConnectionStatus & { secret_ciphertext: string }>(
-            `UPDATE beauty.business_connections SET lease_until=now()+interval '2 minutes' WHERE id=$1 AND professional_id=$2 AND status<>'disconnected' AND (lease_until IS NULL OR lease_until<now()) RETURNING *`,
+            `UPDATE beauty.business_connections SET lease_until=now()+interval '2 minutes' WHERE id=$1 AND professional_id=$2 AND status<>'disconnected' AND (lease_until IS NULL OR lease_until<now()) AND (provider IN('google','outlook','ics') OR beauty.social_sync_allowed(professional_id)) RETURNING *`,
             [id, professionalId],
           )
         ).rows[0],
@@ -110,6 +121,18 @@ export async function syncProfessional(
     const originalCipher = lease.secret_ciphertext;
     let currentCipher = originalCipher;
     try {
+      if (
+        ["instagram", "tiktok"].includes(lease.provider) &&
+        !providerReady(lease.provider)
+      ) {
+        await withIdentity(authId, (db) =>
+          db.query(
+            "UPDATE beauty.business_connections SET lease_until=NULL,next_sync_at=now()+interval '1 hour' WHERE id=$1 AND secret_ciphertext=$2",
+            [id, originalCipher],
+          ),
+        );
+        continue;
+      }
       let tokens = await freshTokens(
         lease.provider,
         unseal<Tokens>(
@@ -254,16 +277,34 @@ export async function syncProfessional(
       } else {
         const posts = await socialPosts(lease.provider, tokens);
         const applied = await withIdentity(authId, async (db) => {
+          await db.query(
+            "SELECT pg_advisory_xact_lock(hashtextextended('glohaus-social-sync',0))",
+          );
           const current = (
-            await db.query(
-              "SELECT id FROM beauty.business_connections WHERE id=$1 AND status<>'disconnected' AND secret_ciphertext=$2 FOR UPDATE",
+            await db.query<{
+              id: string;
+              auto_publish: boolean;
+              social_mode: string;
+              sync_enabled: boolean;
+            }>(
+              "SELECT id,auto_publish,social_mode,sync_enabled FROM beauty.business_connections WHERE id=$1 AND status<>'disconnected' AND secret_ciphertext=$2 AND beauty.social_sync_allowed(professional_id) FOR UPDATE",
               [id, tokenCipher],
             )
-          ).rows.length;
+          ).rows[0];
           if (!current) return false;
+          if (
+            !connectionId &&
+            (!current.sync_enabled || current.social_mode === "manual")
+          ) {
+            await db.query(
+              "UPDATE beauty.business_connections SET lease_until=NULL WHERE id=$1",
+              [id],
+            );
+            return false;
+          }
           for (const post of posts)
             await db.query(
-              `INSERT INTO beauty.social_portfolio(professional_id,connection_id,platform,external_id,original_url,caption,source_created_at,publication_status) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(professional_id,platform,external_id) DO UPDATE SET original_url=EXCLUDED.original_url,caption=EXCLUDED.caption,source_created_at=EXCLUDED.source_created_at,connection_id=EXCLUDED.connection_id,publication_status=CASE WHEN beauty.social_portfolio.publication_status='unavailable' THEN 'draft' ELSE beauty.social_portfolio.publication_status END`,
+              `INSERT INTO beauty.social_portfolio(professional_id,connection_id,platform,external_id,original_url,caption,source_created_at,publication_status,media_type,thumbnail_url) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT(professional_id,platform,external_id) DO UPDATE SET original_url=EXCLUDED.original_url,caption=EXCLUDED.caption,source_created_at=EXCLUDED.source_created_at,connection_id=EXCLUDED.connection_id,media_type=EXCLUDED.media_type,thumbnail_url=EXCLUDED.thumbnail_url,source_available=true,publication_status=CASE WHEN beauty.social_portfolio.publication_status='unavailable' THEN 'draft' ELSE beauty.social_portfolio.publication_status END`,
               [
                 professionalId,
                 id,
@@ -272,11 +313,13 @@ export async function syncProfessional(
                 post.url,
                 post.caption,
                 post.createdAt,
-                lease.auto_publish ? "published" : "draft",
+                current.auto_publish ? "published" : "draft",
+                post.mediaType,
+                post.thumbnailUrl,
               ],
             );
           await db.query(
-            "UPDATE beauty.social_portfolio SET publication_status='unavailable' WHERE connection_id=$1 AND NOT(external_id=ANY($2::text[]))",
+            "UPDATE beauty.social_portfolio SET source_available=false,thumbnail_url='' WHERE connection_id=$1 AND NOT(external_id=ANY($2::text[]))",
             [id, posts.map((p) => p.externalId)],
           );
           await db.query(
@@ -298,7 +341,7 @@ export async function syncProfessional(
           : "SYNC_FAILED";
       await withIdentity(authId, (db) =>
         db.query(
-          "UPDATE beauty.business_connections SET status='error',last_error=$2,failures=failures+1,lease_until=NULL,next_sync_at=now()+interval '5 minutes' WHERE id=$1 AND status<>'disconnected' AND secret_ciphertext=$3",
+          "UPDATE beauty.business_connections SET status='error',last_error=$2,failures=failures+1,lease_until=NULL,next_sync_at=now()+CASE WHEN provider IN('google','outlook','ics') THEN interval '5 minutes' WHEN $2='RECONNECT_REQUIRED' THEN interval '1 day' ELSE interval '15 minutes'*power(2,least(failures,4)) END WHERE id=$1 AND status<>'disconnected' AND secret_ciphertext=$3",
           [id, code, currentCipher],
         ),
       );

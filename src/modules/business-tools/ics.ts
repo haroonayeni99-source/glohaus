@@ -1,35 +1,10 @@
 import "server-only";
-import https from "node:https";
-import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 import { createHash } from "node:crypto";
 import ICAL from "ical.js";
+import { fetchPublicBytes } from "./public-fetch";
+export { publicAddress } from "./public-fetch";
 export type ExternalBusy = { key: string; start: string; end: string };
-export function publicAddress(address: string) {
-  if (isIP(address) === 4) {
-    const [a, b, c] = address.split(".").map(Number);
-    return !(
-      a === 0 ||
-      a === 10 ||
-      a === 127 ||
-      a >= 224 ||
-      (a === 169 && b === 254) ||
-      (a === 172 && b >= 16 && b <= 31) ||
-      (a === 192 &&
-        (b === 168 || b === 0 || (b === 88 && c === 99) || b === 2)) ||
-      (a === 198 && (b === 18 || b === 19 || b === 51)) ||
-      (a === 203 && b === 0 && c === 113) ||
-      (a === 100 && b >= 64 && b <= 127)
-    );
-  }
-  if (isIP(address) === 6)
-    return (
-      /^[23][0-9a-f]{3}:/i.test(address) &&
-      !/^2001:(?:db8|0|10|20):/i.test(address) &&
-      !/^2002:/i.test(address)
-    );
-  return false;
-}
 export function feedUrl(value: string) {
   const url = new URL(value.replace(/^webcal:/, "https:"));
   if (
@@ -45,60 +20,8 @@ export function feedUrl(value: string) {
   return url;
 }
 export async function fetchFeed(value: string) {
-  const url = feedUrl(value),
-    addresses = await lookup(url.hostname, { all: true });
-  if (!addresses.length || addresses.some((a) => !publicAddress(a.address)))
-    throw Error("FEED_UNSUPPORTED");
-  const address = addresses[0];
-  // Pin the validated DNS result for the TLS connection; never follow redirects.
-  return new Promise<string>((resolve, reject) => {
-    // A private agent avoids global environment proxies or pooled connections
-    // bypassing the validated DNS address. TLS still verifies the original host.
-    const agent = new https.Agent({ keepAlive: false });
-    let settled = false;
-    const finish = (error?: Error, body?: string) => {
-      if (settled) return;
-      settled = true;
-      agent.destroy();
-      if (error) reject(error);
-      else resolve(body!);
-    };
-    const request = https.get(
-      url,
-      {
-        family: address.family,
-        agent,
-        lookup: (_host, _options, callback) =>
-          callback(null, address.address, address.family),
-        signal: AbortSignal.timeout(8000),
-        headers: { Accept: "text/calendar" },
-      },
-      (response) => {
-        response.on("error", () => finish(Error("SYNC_FAILED")));
-        response.on("aborted", () => finish(Error("SYNC_FAILED")));
-        if (response.statusCode !== 200) {
-          response.resume();
-          finish(Error("SYNC_FAILED"));
-          return;
-        }
-        const chunks: Buffer[] = [];
-        let bytes = 0;
-        response.on("data", (chunk: Buffer) => {
-          bytes += chunk.length;
-          if (bytes > 2 * 1024 * 1024) {
-            finish(Error("FEED_UNSUPPORTED"));
-            response.destroy(Error("FEED_UNSUPPORTED"));
-            return;
-          }
-          chunks.push(chunk);
-        });
-        response.on("end", () =>
-          finish(undefined, Buffer.concat(chunks).toString("utf8")),
-        );
-      },
-    );
-    request.on("error", () => finish(Error("SYNC_FAILED")));
-  });
+  const url = feedUrl(value);
+  return (await fetchPublicBytes(url)).toString("utf8");
 }
 function instant(time: ICAL.Time, end = false) {
   if (!time.isDate && time.zone.tzid !== "floating")

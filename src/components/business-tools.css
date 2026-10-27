@@ -99,6 +99,88 @@
   display: inline-block;
   margin-block: 0.4rem;
 }
+.social-thumbnail {
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--surface-soft, #f3ecee);
+  margin-bottom: 0.8rem;
+}
+.social-thumbnail img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.social-thumbnail-placeholder {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+  box-sizing: border-box;
+  color: var(--ink, #241c1f);
+}
+.social-thumbnail-placeholder > span:first-child {
+  font-size: 1.8rem;
+}
+.social-thumbnail-placeholder small {
+  font-size: 0.75rem;
+}
+.social-featured-badge {
+  display: inline-block;
+  border: 1px solid var(--border, #cbb8be);
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+}
+.social-mini-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+.social-mini-gallery button {
+  min-width: 0;
+  padding: 0.2rem;
+  border: 1px solid var(--border, #cbb8be);
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.social-mini-gallery button[aria-pressed="true"] {
+  outline: 2px solid var(--accent, #a46b7c);
+  outline-offset: 1px;
+}
+.social-thumbnail-small {
+  margin: 0;
+}
+.social-thumbnail-small .social-thumbnail-placeholder {
+  font-size: 0.65rem;
+  padding: 0.3rem;
+  gap: 0.15rem;
+}
+.social-thumbnail-small small {
+  display: none;
+}
+.social-full-portfolio {
+  display: inline-block;
+  margin-top: 0.7rem;
+  min-height: 44px;
+  align-content: center;
+}
+.social-book-action {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+}
+html[data-theme="night"] .social-thumbnail {
+  background: #30262a;
+}
 .business-tools small {
   line-height: 1.6;
 }
@@ -121,4 +203,18 @@ html[data-theme="night"]
   .pro-editor-surface
   :is(p, label, h2, h3, small, summary, a) {
   color: inherit;
+}
+.owner-social-sync {
+  width: 100%;
+  box-sizing: border-box;
+}
+.owner-social-sync > * {
+  min-width: 0;
+}
+.owner-social-sync .admin-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.owner-social-sync summary {
+  overflow-wrap: anywhere;
 }

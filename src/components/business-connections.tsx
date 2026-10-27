@@ -22,6 +22,12 @@ export function BusinessConnections({
   ready,
   services,
   callback,
+  portfolio = {
+    max_visible_posts: 12,
+    instagram_url: "",
+    tiktok_url: "",
+    sync_allowed: true,
+  },
 }: {
   connections: ConnectionStatus[];
   posts: SocialPost[];
@@ -29,6 +35,12 @@ export function BusinessConnections({
   ready: Record<Provider, boolean>;
   services: { id: string; name: string }[];
   callback?: string;
+  portfolio?: {
+    max_visible_posts: number;
+    instagram_url: string;
+    tiktok_url: string;
+    sync_allowed: boolean;
+  };
 }) {
   const router = useRouter(),
     [busy, setBusy] = useState(false),
@@ -54,7 +66,9 @@ export function BusinessConnections({
         throw Error(
           data.error?.code === "NOT_CONFIGURED"
             ? "This provider needs setup before you can connect."
-            : "Could not save this change. Please try again.",
+            : data.error?.code === "SOCIAL_SYNC_PAUSED"
+              ? "Portfolio syncing is paused by GLOHAUS. Your bookings and profile remain available."
+              : "Could not save this change. Please try again.",
         );
       if (data.url) {
         window.location.assign(data.url);
@@ -254,11 +268,78 @@ export function BusinessConnections({
         </p>
       </section>
       <section id="social" className="pro-editor-surface">
-        <h2>Connect social media</h2>
+        <h2>Social Media &amp; Portfolio</h2>
         <p>
           Show work you already share on Instagram and TikTok. You choose what
           appears on your profile and in Discover.
         </p>
+        <p>
+          Social connections are optional. You can register, accept bookings and
+          use GLOHAUS without connecting an account. We never publish from
+          GLOHAUS to your social accounts.
+        </p>
+        {!portfolio.sync_allowed && (
+          <p role="status">
+            Portfolio syncing is paused by GLOHAUS. Your profile, existing work
+            and bookings remain available.
+          </p>
+        )}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const f = new FormData(e.currentTarget);
+            void action(
+              {
+                action: "portfolioPreferences",
+                maxVisiblePosts: Number(f.get("maxVisiblePosts")),
+                instagramUrl: f.get("instagramUrl") || "",
+                tiktokUrl: f.get("tiktokUrl") || "",
+              },
+              "social",
+              "PUT",
+            );
+          }}
+        >
+          <h3>Profile links &amp; display limit</h3>
+          <p>
+            These optional links work immediately, without account
+            authorisation. They do not import posts.
+          </p>
+          <label>
+            Instagram profile link
+            <input
+              name="instagramUrl"
+              type="url"
+              maxLength={500}
+              defaultValue={portfolio.instagram_url}
+              placeholder="https://www.instagram.com/yourstudio/"
+            />
+          </label>
+          <label>
+            TikTok profile link
+            <input
+              name="tiktokUrl"
+              type="url"
+              maxLength={500}
+              defaultValue={portfolio.tiktok_url}
+              placeholder="https://www.tiktok.com/@yourstudio"
+            />
+          </label>
+          <label>
+            Maximum visible social posts
+            <input
+              name="maxVisiblePosts"
+              type="number"
+              min={1}
+              max={40}
+              required
+              defaultValue={portfolio.max_visible_posts}
+            />
+          </label>
+          <button className="button" disabled={busy}>
+            Save portfolio settings
+          </button>
+        </form>
         {(["instagram", "tiktok"] as const).map((provider) => (
           <form
             key={provider}
@@ -270,7 +351,7 @@ export function BusinessConnections({
             <h3>{names[provider]}</h3>
             <p>
               {provider === "instagram"
-                ? "Official account connection is for eligible professional Instagram accounts."
+                ? "Official Instagram connection supports eligible Business and Creator accounts. Personal accounts must use manual links or switch to an eligible account with Instagram."
                 : "Connect an eligible TikTok account to import public videos."}{" "}
               Automatic access depends on platform approval and permissions.
             </p>
@@ -365,27 +446,65 @@ export function BusinessConnections({
             {c.status !== "disconnected" && (
               <>
                 {(["instagram", "tiktok"] as string[]).includes(c.provider) && (
-                  <label className="business-check">
-                    <input
-                      type="checkbox"
-                      disabled={busy}
-                      checked={c.auto_publish}
-                      onChange={(e) =>
-                        void action({
-                          action: "displayMode",
-                          id: c.id,
-                          automatic: e.target.checked,
-                        })
-                      }
-                    />
-                    Automatically publish newly imported posts. Existing hidden
-                    posts stay hidden.
-                  </label>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const f = new FormData(e.currentTarget);
+                      void action({
+                        action: "socialSettings",
+                        id: c.id,
+                        mode: f.get("mode"),
+                        syncEnabled: f.get("syncEnabled") === "on",
+                      });
+                    }}
+                  >
+                    <label>
+                      Display mode for {c.label}
+                      <select
+                        name="mode"
+                        defaultValue={
+                          c.social_mode ||
+                          (c.auto_publish ? "automatic" : "approval")
+                        }
+                      >
+                        <option value="approval">
+                          Approval Mode — import as drafts
+                        </option>
+                        <option value="automatic">
+                          Automatic Mode — publish new eligible work
+                        </option>
+                        <option value="manual">
+                          Manual Mode — refresh or add links yourself
+                        </option>
+                      </select>
+                    </label>
+                    <label className="business-check">
+                      <input
+                        name="syncEnabled"
+                        type="checkbox"
+                        defaultChecked={c.sync_enabled !== false}
+                      />
+                      Enable periodic portfolio syncing
+                    </label>
+                    <small>
+                      Approval Mode is the default. Manual Mode does not fetch
+                      in the background. Scheduled checks are normally hourly,
+                      subject to provider limits and retries. Existing hidden
+                      posts stay hidden.
+                    </small>
+                    <button className="button" disabled={busy}>
+                      Save connection settings
+                    </button>
+                  </form>
                 )}
                 <div className="business-actions">
                   <button
                     className="button"
-                    disabled={busy}
+                    disabled={
+                      busy ||
+                      (["instagram", "tiktok"].includes(c.provider) &&
+                        (!portfolio.sync_allowed || !ready[c.provider]))
+                    }
                     onClick={() => void action({ action: "sync", id: c.id })}
                   >
                     Sync now
@@ -435,6 +554,7 @@ export function BusinessConnections({
                   publicationStatus: f.get("status"),
                   serviceId: f.get("serviceId") || null,
                   sortOrder: Number(f.get("sort")),
+                  featured: f.get("featured") === "on",
                 },
                 "social",
                 "PUT",
@@ -451,7 +571,8 @@ export function BusinessConnections({
                 ? `Originally created ${new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", dateStyle: "medium" }).format(new Date(p.source_created_at))}`
                 : "Creation date not supplied — manually added link"}
             </small>
-            {p.publication_status === "unavailable" ? (
+            {p.publication_status === "unavailable" ||
+            p.source_available === false ? (
               <p>
                 This post is no longer available through the connected account.
               </p>
@@ -466,6 +587,14 @@ export function BusinessConnections({
                   </select>
                 </label>
                 {serviceSelect(p.service_id)}
+                <label className="business-check">
+                  <input
+                    name="featured"
+                    type="checkbox"
+                    defaultChecked={p.featured === true}
+                  />
+                  Pin as featured work
+                </label>
                 <label>
                   Display order
                   <input

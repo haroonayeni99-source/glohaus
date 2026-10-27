@@ -278,6 +278,22 @@ export function BusinessConnections({
           use GLOHAUS without connecting an account. We never publish from
           GLOHAUS to your social accounts.
         </p>
+        <details>
+          <summary>How connected-account information is used</summary>
+          <p>
+            With your permission, we store encrypted account credentials on our
+            servers to fetch eligible posts. Imported captions, source links and
+            supported previews are stored for your portfolio. Approval Mode
+            keeps new work private until you publish it.
+          </p>
+          <p>
+            Disconnecting stops imports, removes the stored credentials and
+            hides imported posts on GLOHAUS. You can also revoke access in the
+            provider’s settings. Removing work here does not delete the original
+            social post. Read our <a href="/privacy">Privacy Policy</a> for
+            information about your data and rights.
+          </p>
+        </details>
         {!portfolio.sync_allowed && (
           <p role="status">
             Portfolio syncing is paused by GLOHAUS. Your profile, existing work

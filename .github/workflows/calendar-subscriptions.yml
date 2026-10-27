@@ -1,11 +1,18 @@
-name: Verify calendar subscriptions
+name: Verify professional business tools
 on:
   push:
-    branches: [fix/calendar-readiness]
+    branches: [fix/calendar-readiness, verify/business-tools-completion]
   pull_request:
     paths:
       - src/modules/business-tools/**
       - tests/calendar-*.test.ts
+      - tests/review-photo-flow.test.ts
+      - src/modules/reviews/**
+      - src/app/api/v1/reviews/**
+      - src/app/api/v1/review-photos/**
+      - src/components/review-form.tsx
+      - src/components/business-connections.tsx
+      - scripts/check-business-tools.mjs
       - .github/workflows/calendar-subscriptions.yml
   workflow_dispatch:
 permissions:
@@ -27,6 +34,35 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Verify private-feed transport and isolated sync with the public GOV.UK calendar
-        run: pnpm exec vitest run tests/calendar-feed-transport.test.ts tests/calendar-sync-database.test.ts --maxWorkers=2
+        run: pnpm exec vitest run tests/calendar-feed-transport.test.ts tests/calendar-sync-database.test.ts tests/review-photo-flow.test.ts --maxWorkers=2
         env:
           GLOHAUS_PUBLIC_FEED_SMOKE: "1"
+  business-tools-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/prepare-test-browsers
+        with:
+          webkit: "true"
+      - name: Verify consent, ICS forms, review photos, retries and embeds in Chromium
+        run: node scripts/check-business-tools.mjs
+      - name: Verify the same forms in WebKit
+        run: node scripts/check-business-tools.mjs
+        env:
+          GLOHAUS_BUSINESS_TOOLS_ENGINE: webkit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: business-tools-browser-evidence
+          path: reports/business-tools-*

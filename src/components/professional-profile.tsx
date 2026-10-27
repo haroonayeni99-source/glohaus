@@ -31,13 +31,14 @@ export type ProfilePresentation = {
   services: Service[];
   specialities?:{speciality_id:string;name:string;category_name:string;is_primary:boolean}[];selectedSpeciality?:string|null;selectedService?:string;reviewService?:string;
   assets: { id: string; alt_text: string; media_type?: "image" | "video";speciality_ids?:string[];speciality_names?:string[] }[];
-  reviews: { id: string; rating: number; body: string; public_name: string;response_body?:string|null;service_id?:string|null;service_name?:string|null;speciality_id?:string|null;speciality_name?:string|null }[];
+  reviews: { id: string; rating: number; body: string; public_name: string;photo_id?:string;photo_alt?:string;response_body?:string|null;service_id?:string|null;service_name?:string|null;speciality_id?:string|null;speciality_name?:string|null }[];
   hours: Rule[];
   rating: number | null;
   reviewCount: number;
   booking: ReactNode;
   live?: ReactNode;
   policies?: ReactNode;
+  socialPortfolio?: ReactNode;
   follow: { following: boolean; followerCount: number; signedIn: boolean };
   messageHref: string | null;
   bookingFeePence: number;
@@ -61,6 +62,7 @@ export function ProfessionalProfile({
   booking,
   live,
   policies,
+  socialPortfolio,
   follow,
   messageHref,
   bookingFeePence,
@@ -347,6 +349,7 @@ export function ProfessionalProfile({
             )}
           </section>
           {policies}
+          {socialPortfolio}
           <section id="reviews" className="professional-section">
             <p className="eyebrow">REAL VISITS. REAL EXPERIENCES.</p>
             <h2>Kind words.</h2>
@@ -366,6 +369,7 @@ export function ProfessionalProfile({
                     {review.public_name} · {review.rating}/5
                   </strong>
                   <p>{review.body}</p>
+                  {review.photo_id && <Image src={`/api/v1/review-photos/${review.photo_id}`} alt={review.photo_alt || "Customer appointment result"} width={480} height={480} unoptimized style={{maxWidth:"100%",height:"auto"}}/>}
                   {review.response_body&&<div><strong>Professional response</strong><p>{review.response_body}</p></div>}
                   {!example&&<ContentReportButton targetType="review" targetId={review.id} label="Report review or response"/>}
                   <small>Verified completed appointment{review.service_name?` · ${review.service_name}`:""}{review.speciality_name?` · ${review.speciality_name}`:""}</small>

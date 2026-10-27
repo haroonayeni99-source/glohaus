@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { refreshServiceCalendars } from "@/modules/business-tools/worker";
 import { withAccount } from "@/lib/api-account";
 import { json } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
@@ -16,6 +17,11 @@ export async function GET(
       !z.iso.date().safeParse(date).success
     )
       throw new AccessError("INVALID_REQUEST", 400);
+    const serviceId=await withAccount(undefined,async db => {
+      await db.query("SELECT beauty.booking_policy_overview($1)",[id]);
+      return (await db.query<{service_id:string}>("SELECT service_id FROM beauty.bookings WHERE id=$1",[id])).rows[0]?.service_id;
+    });
+    if(serviceId)await refreshServiceCalendars(serviceId);
     const slots = await withAccount(undefined, async (db) => {
       await db.query("SELECT beauty.booking_policy_overview($1)", [id]);
       const b = (

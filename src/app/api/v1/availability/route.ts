@@ -5,6 +5,7 @@ import { withIdentity } from "@/lib/db";
 import { apiError, json } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
 import { appointmentSlots, type Rule } from "@/modules/availability/domain";
+import { refreshServiceCalendars } from "@/modules/business-tools/worker";
 export async function GET(request: Request) {
   try {
     const params = new URL(request.url).searchParams;
@@ -17,6 +18,7 @@ export async function GET(request: Request) {
       !Number.isFinite(Date.parse(`${date}T00:00:00Z`))
     )
       throw new AccessError("INVALID_REQUEST", 400);
+    await refreshServiceCalendars(serviceId!);
     const slots = await withIdentity("", async (db) => {
       const service = (
         await db.query<{ professional_id: string; duration_minutes: number }>(

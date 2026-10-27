@@ -1,6 +1,7 @@
 import { withPaymentWorker } from "@/modules/payments/worker";
 import { timingSafeEqual } from "node:crypto";
 import { runNotificationWorker } from "@/modules/notifications/worker";
+import { scheduleBusinessToolsSync } from "@/modules/business-tools/worker";
 export const maxDuration = 60;
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
@@ -19,5 +20,6 @@ export async function GET(request: Request) {
   } catch {
     return new Response("Scheduler unavailable", { status: 503 });
   }
+  scheduleBusinessToolsSync();
   return runNotificationWorker();
 }

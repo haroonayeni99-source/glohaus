@@ -10,6 +10,7 @@ export type ProfessionalReview = {
   created_at: Date;
   response:{body:string;status:string}|null;
   service_name: string;
+  feedback?: { answers: import("./domain").ReviewAnswers; privateSuggestion: string } | null;
 };
 export async function professionalReviews(
   db: SqlClient,
@@ -17,7 +18,7 @@ export async function professionalReviews(
 ) {
   const reviews = (
     await db.query<ProfessionalReview>(
-      `SELECT r.id,r.booking_id,r.rating,r.body,r.public_name,r.moderation_status,r.created_at,b.service_name,beauty.my_review_response(r.id) AS response FROM beauty.reviews r JOIN beauty.bookings b ON b.id=r.booking_id WHERE b.professional_id=$1 ORDER BY r.created_at DESC,r.id DESC LIMIT 100`,
+      `SELECT r.id,r.booking_id,r.rating,r.body,r.public_name,r.moderation_status,r.created_at,b.service_name,beauty.my_review_response(r.id) AS response,(SELECT jsonb_build_object('answers',f.answers,'privateSuggestion',f.private_suggestion) FROM beauty.review_feedback f WHERE f.review_id=r.id) AS feedback FROM beauty.reviews r JOIN beauty.bookings b ON b.id=r.booking_id WHERE b.professional_id=$1 ORDER BY r.created_at DESC,r.id DESC LIMIT 100`,
       [professionalId],
     )
   ).rows;

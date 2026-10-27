@@ -1,4 +1,6 @@
 "use client";
+import { SocialPortfolio } from "./social-portfolio";
+import type { PublicSocialPost } from "@/modules/business-tools/domain";
 import { TaxonomyFilters } from "./taxonomy-filters";
 import type { TaxonomyCatalog } from "@/modules/taxonomy/domain";
 
@@ -61,6 +63,7 @@ function deviceSnapshot() {
 const serverDeviceSnapshot = () => null;
 export function DiscoveryFeed({
   publishedPosts = [],
+  socialPosts = [],
   initialNext = null,
   initialEngagement = emptyEngagement,
   initialFollows = emptyFollows,
@@ -79,6 +82,7 @@ export function DiscoveryFeed({
 }: {
   taxonomy?:TaxonomyCatalog;taxonomySelection?:{categoryId?:string;specialityId?:string;templateId?:string};
   publishedPosts?: PublicPost[];
+  socialPosts?: PublicSocialPost[];
   initialNext?: string | null;
   initialEngagement?: EngagementMap;
   initialFollows?: FollowStateMap;
@@ -748,6 +752,7 @@ export function DiscoveryFeed({
             </button>
           </div>
         )}
+        {category === "For you" && !savedView && !followingView && <SocialPortfolio posts={socialPosts}/>}
       </main>
       <BottomNavigation active="discover" signedIn={viewerSignedIn} />
     </div>

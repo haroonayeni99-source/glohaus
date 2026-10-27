@@ -54,8 +54,12 @@ export async function refreshServiceCalendars(
   const owner = await withPaymentWorker(
     async (db) =>
       (
-        await db.query<{ auth_id: string; professional_id: string }>(
-          "SELECT * FROM beauty.service_calendar_owner($1)",
+        await db.query<{
+          auth_id: string;
+          professional_id: string;
+          refresh_started_at: Date;
+        }>(
+          "SELECT *,clock_timestamp() AS refresh_started_at FROM beauty.service_calendar_owner($1)",
           [serviceId],
         )
       ).rows[0],
@@ -66,6 +70,7 @@ export async function refreshServiceCalendars(
     owner.professional_id,
     undefined,
     immediate,
+    8,
   );
   if (immediate) {
     const stale = await withIdentity(
@@ -73,8 +78,8 @@ export async function refreshServiceCalendars(
       async (db) =>
         (
           await db.query(
-            "SELECT id FROM beauty.business_connections WHERE professional_id=$1 AND provider IN('google','outlook','ics') AND status<>'disconnected' AND (status<>'connected' OR last_success_at IS NULL OR last_success_at<now()-interval '15 seconds') LIMIT 1",
-            [owner.professional_id],
+            "SELECT id FROM beauty.business_connections WHERE professional_id=$1 AND provider IN('google','outlook','ics') AND status<>'disconnected' AND (status<>'connected' OR last_success_at IS NULL OR last_success_at<$2::timestamptz) LIMIT 1",
+            [owner.professional_id, owner.refresh_started_at],
           )
         ).rows.length,
     );

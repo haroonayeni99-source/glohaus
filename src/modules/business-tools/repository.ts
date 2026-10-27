@@ -61,6 +61,9 @@ export async function storeConnection(
   writeCalendar = false,
 ) {
   const ciphertext = seal(tokens, `${professionalId}:${provider}`);
+  await db.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
+    professionalId,
+  ]);
   const count = await db.query<{ count: number }>(
     "SELECT count(*)::integer AS count FROM beauty.business_connections WHERE professional_id=$1 AND NOT(provider=$2 AND label=$3)",
     [professionalId, provider, label],
@@ -221,7 +224,7 @@ export async function syncProfessional(
           )
         )
           throw Error("SYNC_FAILED");
-        await withIdentity(authId, async (db) => {
+        const applied = await withIdentity(authId, async (db) => {
           await db.query(
             "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
             [professionalId],
@@ -232,30 +235,32 @@ export async function syncProfessional(
               [id, tokenCipher],
             )
           ).rows.length;
-          if (!current) return;
+          if (!current) return false;
           await db.query(
             "DELETE FROM beauty.external_calendar_busy WHERE connection_id=$1",
             [id],
           );
           await db.query(
-            `INSERT INTO beauty.external_calendar_busy(connection_id,professional_id,event_key,starts_at,ends_at) SELECT $1,$2,x.key,x.start::timestamptz,x.end::timestamptz FROM jsonb_to_recordset($3::jsonb) AS x(key text,start text,end text) ON CONFLICT(connection_id,event_key) DO UPDATE SET starts_at=EXCLUDED.starts_at,ends_at=EXCLUDED.ends_at`,
+            `INSERT INTO beauty.external_calendar_busy(connection_id,professional_id,event_key,starts_at,ends_at) SELECT $1,$2,x.key,x."start"::timestamptz,x."end"::timestamptz FROM jsonb_to_recordset($3::jsonb) AS x(key text,"start" text,"end" text) ON CONFLICT(connection_id,event_key) DO UPDATE SET starts_at=EXCLUDED.starts_at,ends_at=EXCLUDED.ends_at`,
             [id, professionalId, JSON.stringify(busy)],
           );
           await db.query(
             "UPDATE beauty.business_connections SET status='connected',last_success_at=now(),last_error=NULL,successes=successes+1,lease_until=NULL,next_sync_at=now()+interval '2 minutes' WHERE id=$1",
             [id],
           );
+          return true;
         });
+        if (!applied) continue;
       } else {
         const posts = await socialPosts(lease.provider, tokens);
-        await withIdentity(authId, async (db) => {
+        const applied = await withIdentity(authId, async (db) => {
           const current = (
             await db.query(
               "SELECT id FROM beauty.business_connections WHERE id=$1 AND status<>'disconnected' AND secret_ciphertext=$2 FOR UPDATE",
               [id, tokenCipher],
             )
           ).rows.length;
-          if (!current) return;
+          if (!current) return false;
           for (const post of posts)
             await db.query(
               `INSERT INTO beauty.social_portfolio(professional_id,connection_id,platform,external_id,original_url,caption,source_created_at,publication_status) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(professional_id,platform,external_id) DO UPDATE SET original_url=EXCLUDED.original_url,caption=EXCLUDED.caption,source_created_at=EXCLUDED.source_created_at,connection_id=EXCLUDED.connection_id,publication_status=CASE WHEN beauty.social_portfolio.publication_status='unavailable' THEN 'draft' ELSE beauty.social_portfolio.publication_status END`,
@@ -278,7 +283,9 @@ export async function syncProfessional(
             "UPDATE beauty.business_connections SET status='connected',last_success_at=now(),last_error=NULL,successes=successes+1,lease_until=NULL,next_sync_at=now()+interval '1 hour' WHERE id=$1",
             [id],
           );
+          return true;
         });
+        if (!applied) continue;
       }
       outcomes.push(true);
     } catch (error) {

@@ -17,10 +17,12 @@ export function ContentReportButton({
   targetType,
   targetId,
   label = "Report",
+  context = "",
 }: {
   targetType: "post" | "media" | "review" | "professional";
   targetId: string;
   label?: string;
+  context?: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -51,7 +53,7 @@ export function ContentReportButton({
             aria-label="Report content"
             onSubmit={async (event) => {
               event.preventDefault();
-              const formElement=event.currentTarget;
+              const formElement = event.currentTarget;
               const form = new FormData(formElement);
               setBusy(true);
               setNotice("");
@@ -79,14 +81,18 @@ export function ContentReportButton({
                 const payload = await response.json().catch(() => null);
                 if (!response.ok) {
                   if (payload?.error?.code === "REPORT_ALREADY_OPEN")
-                    throw new Error("You already have an open report for this content.");
+                    throw new Error(
+                      "You already have an open report for this content.",
+                    );
                   throw new Error("Your report could not be submitted.");
                 }
                 setNotice("Report submitted for GLOHAUS review.");
                 formElement.reset();
               } catch (error) {
                 setNotice(
-                  error instanceof Error ? error.message : "Could not submit report.",
+                  error instanceof Error
+                    ? error.message
+                    : "Could not submit report.",
                 );
               } finally {
                 setBusy(false);
@@ -127,12 +133,17 @@ export function ContentReportButton({
                 maxLength={1000}
                 required
                 placeholder="Briefly explain what should be reviewed."
+                defaultValue={context}
               />
             </label>
             <button className="button" disabled={busy}>
               {busy ? "Submitting…" : "Submit report"}
             </button>
-            {notice && <p className="form-notice" role="status">{notice}</p>}
+            {notice && (
+              <p className="form-notice" role="status">
+                {notice}
+              </p>
+            )}
           </form>
         </div>
       )}

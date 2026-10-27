@@ -26,6 +26,7 @@ try {
     ["iphone-emulation", devices["iPhone 13"]],
     ["android-emulation", devices["Pixel 7"]],
     ["small-phone", { viewport: { width: 320, height: 760 } }],
+    ["tablet", { viewport: { width: 768, height: 1024 } }],
     ["desktop", { viewport: { width: 1440, height: 1000 } }],
   ])
     for (const theme of ["light", "night"]) {
@@ -34,6 +35,8 @@ try {
       let fail = false;
       await page.route("**/api/v1/**", (route) => {
         const request = route.request();
+        if (request.method() === "GET")
+          return route.fulfill({ status: 404, body: "" });
         writes.push({ url: request.url(), body: request.postDataJSON() });
         return route.fulfill({
           status: fail ? 503 : 200,
@@ -108,6 +111,57 @@ try {
         .click();
       await expect(page.getByRole("status")).toContainText("Saved.");
       expect(writes.at(-1).body.consent).toBe(true);
+      await page
+        .getByLabel("Instagram profile link", { exact: true })
+        .fill("https://www.instagram.com/fictional/");
+      await page
+        .getByLabel("TikTok profile link", { exact: true })
+        .fill("https://www.tiktok.com/@fictional");
+      await page
+        .getByLabel("Maximum visible social posts", { exact: true })
+        .fill("6");
+      await page
+        .getByRole("button", { name: "Save portfolio settings", exact: true })
+        .click();
+      await expect(page.getByRole("status")).toContainText("Saved.");
+      expect(writes.at(-1).body).toMatchObject({
+        action: "portfolioPreferences",
+        maxVisiblePosts: 6,
+        instagramUrl: "https://www.instagram.com/fictional/",
+        tiktokUrl: "https://www.tiktok.com/@fictional",
+      });
+      await expect(
+        page.getByLabel("Display mode for Fixture Instagram"),
+      ).toHaveValue("approval");
+      await page
+        .getByLabel("Display mode for Fixture Instagram")
+        .selectOption("manual");
+      await page.getByLabel("Enable periodic portfolio syncing").uncheck();
+      await page
+        .getByRole("button", { name: "Save connection settings", exact: true })
+        .click();
+      await expect(page.getByRole("status")).toContainText("Saved.");
+      expect(writes.at(-1).body).toMatchObject({
+        action: "socialSettings",
+        mode: "manual",
+        syncEnabled: false,
+      });
+      await expect(
+        page
+          .getByRole("article")
+          .filter({ hasText: "Fixture Instagram" })
+          .getByRole("button", { name: "Sync now", exact: true }),
+      ).toBeDisabled();
+      await page.getByLabel("Pin as featured work").check();
+      await page.getByLabel("Display order", { exact: true }).fill("2");
+      await page
+        .getByRole("button", { name: "Save post", exact: true })
+        .click();
+      await expect(page.getByRole("status")).toContainText("Saved.");
+      expect(writes.at(-1).body).toMatchObject({
+        featured: true,
+        sortOrder: 2,
+      });
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth > innerWidth + 1,
       );
@@ -201,6 +255,79 @@ try {
         .getByRole("button", { name: "Close embedded post", exact: true })
         .click();
       await expect(page.locator("iframe")).toHaveCount(0);
+      await expect(page.locator(".social-mini-gallery button")).toHaveCount(3);
+      await page.locator(".social-mini-gallery button").nth(1).click();
+      await expect(page.locator(".social-portfolio-card")).toHaveCount(1);
+      await expect(
+        page.locator(".social-mini-gallery button").nth(1),
+      ).toHaveAttribute("aria-pressed", "true");
+      await expect(
+        page.getByRole("link", { name: /complete portfolio/ }),
+      ).toHaveAttribute("href", "/p/fictional-studio#our-work");
+      await expect(
+        page.getByText("Preview unavailable — original link below").first(),
+      ).toBeVisible();
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth > innerWidth + 1,
+        ),
+      ).toBe(false);
+      await page.screenshot({
+        path: `reports/business-tools-${engine}-${name}-${theme}-discover.png`,
+        fullPage: true,
+      });
+      await goto("owner");
+      await page
+        .getByLabel("Allow social portfolio syncing globally")
+        .uncheck();
+      await page
+        .getByLabel("Reason for global change")
+        .fill("Fictional release check");
+      await page
+        .getByRole("button", {
+          name: "Save global portfolio setting",
+          exact: true,
+        })
+        .click();
+      await expect(page.getByRole("status")).toContainText("settings saved");
+      expect(writes.at(-1).body).toMatchObject({
+        professionalId: null,
+        enabled: false,
+      });
+      await page.locator("details summary").click();
+      await page
+        .getByLabel("Allow portfolio syncing for Fictional studio")
+        .uncheck();
+      await page
+        .getByLabel("Reason for this professional’s change")
+        .fill("Fictional individual pause");
+      await page
+        .getByRole("button", {
+          name: "Save professional portfolio setting",
+          exact: true,
+        })
+        .click();
+      await expect(page.getByRole("status")).toContainText("settings saved");
+      expect(writes.at(-1).body).toMatchObject({
+        professionalId: "11111111-1111-4111-8111-111111111111",
+        enabled: false,
+      });
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth > innerWidth + 1,
+        ),
+      ).toBe(false);
+      expect(
+        await page
+          .locator(".owner-social-sync")
+          .evaluate(
+            (element) => element.getBoundingClientRect().right <= innerWidth,
+          ),
+      ).toBe(true);
+      await page.screenshot({
+        path: `reports/business-tools-${engine}-${name}-${theme}-owner.png`,
+        fullPage: true,
+      });
       results.push({
         device: name,
         theme,

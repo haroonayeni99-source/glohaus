@@ -10,6 +10,7 @@ vi.mock("node:https", async (original) => {
   return { ...actual, default: { ...actual, get: network.get } };
 });
 import https from "node:https";
+import { fetchPublicBytes } from "@/modules/business-tools/public-fetch";
 import { fetchFeed, feedUrl } from "@/modules/business-tools/ics";
 class ResponseStream extends EventEmitter {
   statusCode = 200;
@@ -113,4 +114,17 @@ describe("calendar subscription transport", () => {
     await rejected;
     expect(destroyed).toHaveBeenCalled();
   });
+});
+
+it("bounds DNS resolution when a resolver never responds", async () => {
+  network.lookup.mockImplementationOnce(() => new Promise(() => {}));
+  const controller = new AbortController();
+  const result = fetchPublicBytes(
+    new URL("https://calendar.example.test/private.ics"),
+    controller.signal,
+  );
+  const rejected = expect(result).rejects.toThrow("SYNC_FAILED");
+  controller.abort();
+  await rejected;
+  expect(network.get).not.toHaveBeenCalled();
 });

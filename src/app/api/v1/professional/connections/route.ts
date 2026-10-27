@@ -4,6 +4,7 @@ import { withAccount } from "@/lib/api-account";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 import { AccessError } from "@/modules/accounts/domain";
 import {
+  type Provider,
   providerSchema,
   preferencesSchema,
 } from "@/modules/business-tools/domain";
@@ -33,6 +34,14 @@ const schema = z.discriminatedUnion("action", [
       action: z.literal("displayMode"),
       id: z.uuid(),
       automatic: z.boolean(),
+    })
+    .strict(),
+  z
+    .object({
+      action: z.literal("socialSettings"),
+      id: z.uuid(),
+      mode: z.enum(["automatic", "approval", "manual"]),
+      syncEnabled: z.boolean(),
     })
     .strict(),
 ]);
@@ -107,13 +116,26 @@ export async function POST(request: Request) {
         "professional",
         async (db) =>
           (
-            await db.query(
-              "SELECT id FROM beauty.business_connections WHERE id=$1 AND professional_id=$2",
+            await db.query<{ id: string; provider: Provider }>(
+              "SELECT id,provider FROM beauty.business_connections WHERE id=$1 AND professional_id=$2",
               [input.id, professionalId],
             )
-          ).rows.length,
+          ).rows[0],
       );
       if (!owned) throw new AccessError("FORBIDDEN", 403);
+      if (!providerReady(owned.provider))
+        return json({ error: { code: "NOT_CONFIGURED" } }, 409);
+      const paused = await withAccount(
+        "professional",
+        async (db) =>
+          (
+            await db.query(
+              "SELECT id FROM beauty.business_connections WHERE id=$1 AND provider IN('instagram','tiktok') AND NOT beauty.social_sync_allowed(professional_id)",
+              [input.id],
+            )
+          ).rows.length > 0,
+      );
+      if (paused) return json({ error: { code: "SOCIAL_SYNC_PAUSED" } }, 409);
       return json(
         await syncProfessional(account.authId, professionalId, input.id),
       );
@@ -122,7 +144,13 @@ export async function POST(request: Request) {
       await db.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
         professionalId,
       ]);
-      if (input.action === "displayMode") {
+      if (input.action === "socialSettings") {
+        const changed = await db.query(
+          "UPDATE beauty.business_connections SET social_mode=$3,sync_enabled=$4,next_sync_at=now() WHERE id=$1 AND professional_id=$2 AND provider IN('instagram','tiktok') AND status<>'disconnected' RETURNING id",
+          [input.id, professionalId, input.mode, input.syncEnabled],
+        );
+        if (!changed.rows.length) throw new AccessError("FORBIDDEN", 403);
+      } else if (input.action === "displayMode") {
         const changed = await db.query(
           "UPDATE beauty.business_connections SET auto_publish=$3 WHERE id=$1 AND professional_id=$2 AND provider IN('instagram','tiktok') AND status<>'disconnected' RETURNING id",
           [input.id, professionalId, input.automatic],

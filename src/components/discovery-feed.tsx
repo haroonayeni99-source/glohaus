@@ -752,7 +752,7 @@ export function DiscoveryFeed({
             </button>
           </div>
         )}
-        {category === "For you" && !savedView && !followingView && <SocialPortfolio posts={socialPosts}/>}
+        {category === "For you" && !savedView && !followingView && <SocialPortfolio posts={socialPosts} compact/>}
       </main>
       <BottomNavigation active="discover" signedIn={viewerSignedIn} />
     </div>

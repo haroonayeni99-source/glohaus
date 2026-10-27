@@ -1,11 +1,22 @@
 name: Verify professional business tools
 on:
   push:
-    branches: [fix/calendar-readiness, verify/business-tools-completion]
+    branches:
+      [
+        fix/calendar-readiness,
+        verify/business-tools-completion,
+        feature/social-portfolio-completion,
+      ]
   pull_request:
     paths:
       - src/modules/business-tools/**
       - tests/calendar-*.test.ts
+      - tests/social-portfolio-flow.test.ts
+      - db/migrations/*social_portfolio_completion.sql
+      - src/app/api/v1/social-thumbnails/**
+      - src/app/api/v1/admin/social-sync/**
+      - src/components/owner-social-sync.tsx
+      - src/components/social-portfolio.tsx
       - tests/review-photo-flow.test.ts
       - src/modules/reviews/**
       - src/app/api/v1/reviews/**
@@ -34,7 +45,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Verify private-feed transport and isolated sync with the public GOV.UK calendar
-        run: pnpm exec vitest run tests/calendar-feed-transport.test.ts tests/calendar-sync-database.test.ts tests/review-photo-flow.test.ts --maxWorkers=2
+        run: pnpm exec vitest run tests/calendar-feed-transport.test.ts tests/calendar-sync-database.test.ts tests/review-photo-flow.test.ts tests/social-portfolio-flow.test.ts --maxWorkers=2
         env:
           GLOHAUS_PUBLIC_FEED_SMOKE: "1"
   business-tools-browser:

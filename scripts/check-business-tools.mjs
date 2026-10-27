@@ -133,16 +133,14 @@ try {
       await page
         .getByText("Add a photo of your result (optional)", { exact: true })
         .click();
-      await page
-        .getByLabel("Result photo", { exact: true })
-        .setInputFiles({
-          name: "fictional-result.png",
-          mimeType: "image/png",
-          buffer: Buffer.from(
-            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7e8AAAAASUVORK5CYII=",
-            "base64",
-          ),
-        });
+      await page.getByLabel("Result photo", { exact: true }).setInputFiles({
+        name: "fictional-result.png",
+        mimeType: "image/png",
+        buffer: Buffer.from(
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7e8AAAAASUVORK5CYII=",
+          "base64",
+        ),
+      });
       const beforeConsent = writes.length;
       await page
         .getByRole("button", { name: "Publish review", exact: true })
@@ -182,7 +180,7 @@ try {
       });
       expect(writes.at(-1).body.photo.base64).toBeTruthy();
       await goto("social");
-      expect(await page.locator("iframe").count()).toBe(0);
+      await expect(page.locator("iframe")).toHaveCount(0);
       await page.route("https://www.tiktok.com/**", (route) =>
         route.fulfill({
           body: "<p>Mock provider frame</p>",
@@ -202,7 +200,7 @@ try {
       await page
         .getByRole("button", { name: "Close embedded post", exact: true })
         .click();
-      expect(await page.locator("iframe").count()).toBe(0);
+      await expect(page.locator("iframe")).toHaveCount(0);
       results.push({
         device: name,
         theme,

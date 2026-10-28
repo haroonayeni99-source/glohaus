@@ -127,3 +127,21 @@ it("waits for sign-out before replacing the document, and allows retry on failur
   await act(async () => container.querySelector("button")!.click());
   expect(mocks.finish).toHaveBeenCalledOnce();
 });
+it("shows the crown only for a signed-in professional and removes it after sign-out", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ account: { roles: ["professional"] } }),
+  }));
+  await render(true);
+  expect(container.querySelector(".brand-crown")).toBeTruthy();
+  await event("SIGNED_OUT", null);
+  expect(container.querySelector(".brand-crown")).toBeNull();
+});
+it("does not show the crown for a signed-in customer", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ account: { roles: ["customer"] } }),
+  }));
+  await render(true);
+  expect(container.querySelector(".brand-crown")).toBeNull();
+});

@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 const SessionContext = createContext<boolean | undefined>(undefined);
+const ProfessionalContext = createContext(false);
 
 // Presentation only. Protected pages and APIs still verify identity and roles
 // on the server; a browser session never grants application permissions.
@@ -23,6 +24,8 @@ export function AuthSessionProvider({
   children?: ReactNode;
 }) {
   const [signedIn, setSignedIn] = useState(initialSignedIn);
+  const [professional, setProfessional] = useState(false);
+  const [identityVersion, setIdentityVersion] = useState(0);
   const current = useRef<{ signedIn: boolean; userId?: string | null }>({
     signedIn: initialSignedIn,
   });
@@ -43,6 +46,10 @@ export function AuthSessionProvider({
           setSignedIn(next);
           // Refresh only identity transitions, not token refreshes or duplicate
           // SIGNED_IN events fired when a tab gains focus.
+          if (changed) {
+            setProfessional(false);
+            setIdentityVersion((version) => version + 1);
+          }
           if (changed) window.dispatchEvent(new CustomEvent("glohaus:identity-change", {detail:{signedIn:next,userId}}));
           if (changed)
             queueMicrotask(() => {
@@ -65,13 +72,31 @@ export function AuthSessionProvider({
       window.removeEventListener("pageshow", restore);
     };
   }, [router]);
+  useEffect(() => {
+    if (!signedIn) return;
+    const controller = new AbortController();
+    fetch("/api/v1/me", { cache: "no-store", signal: controller.signal })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (!controller.signal.aborted)
+          setProfessional(Array.isArray(data?.account?.roles) && data.account.roles.includes("professional"));
+      })
+      .catch(() => { /* Branding must never interrupt the rest of the site. */ });
+    return () => controller.abort();
+  }, [signedIn, identityVersion]);
   return (
     <SessionContext.Provider value={signedIn}>
-      {children}
+      <ProfessionalContext.Provider value={signedIn && professional}>
+        {children}
+      </ProfessionalContext.Provider>
     </SessionContext.Provider>
   );
 }
 
 export function useSignedIn(fallback = false) {
   return useContext(SessionContext) ?? fallback;
+}
+
+export function useProfessionalAccount() {
+  return useContext(ProfessionalContext);
 }

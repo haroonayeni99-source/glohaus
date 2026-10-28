@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   BadgeCheck,
   CalendarDays,
@@ -231,6 +232,10 @@ export function OwnerDashboardOverview({
             section explains what it controls.
           </p>
         </div>
+        <p className="admin-website-preview">
+          <Link href="/" prefetch={false}>View website</Link>
+          <span>Owners and Admins can view it while public access is off.</span>
+        </p>
         <nav
           className="admin-quick-actions"
           aria-label="Common administration tasks"

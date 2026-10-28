@@ -11,7 +11,7 @@ for (const theme of ["light", "night"] as const) {
   test(`loading screen fits and uses the approved ${theme} wordmark`, async ({ page }, testInfo) => {
     const width = testInfo.project.name === "mobile" ? 320 : 1440;
     await page.setViewportSize({ width, height: testInfo.project.name === "mobile" ? 568 : 900 });
-    await page.goto("/");
+    await page.goto("about:blank");
     await page.setContent(`<html data-theme="${theme}"><head><base href="http://127.0.0.1:3000/"><style>${css}</style></head><body>${html}</body></html>`);
     const logo = page.locator(theme === "night" ? ".glohaus-route-wordmark-night" : ".glohaus-route-wordmark-light");
     await expect(logo).toBeVisible();
@@ -31,7 +31,7 @@ for (const theme of ["light", "night"] as const) {
 
 test("reduced motion shows the complete screen without animation", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("about:blank");
   await page.setContent(`<html data-theme="night"><head><base href="http://127.0.0.1:3000/"><style>${css}</style></head><body>${html}</body></html>`);
   await expect(page.locator(".glohaus-route-slogan")).toBeVisible();
   await expect(page.locator(".glohaus-route-wordmark")).toHaveCSS("animation-name", "none");

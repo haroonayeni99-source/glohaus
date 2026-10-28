@@ -377,69 +377,24 @@ export function ExploreMapExperience({
                 }));
               }}
             >
-              <option value="">All London</option>
+              <option value="">All areas</option>
               {areas.map((borough) => <option value={borough} key={borough}>{borough}</option>)}
             </select>
             <span>{areas.length} boroughs · select an area to find beauty professionals</span>
           </div>
         )}
-        {londonSearch && <nav className="map-area-strip" aria-label="Explore London areas">
-          {["All London", ...areas].map((area) => (
-            <Link
-              prefetch={false}
-              key={area}
-              className={`map-area-card ${area.toLowerCase().replaceAll(" ", "-")}${(area === "All London" ? !filters.location : filters.location === area) ? " active" : ""}`}
-              href={discoveryHref(query, {
-                ...filters,
-                location: area === "All London" ? undefined : area,
-              })}
-            >
-              <span>{area}</span>
-              <small>
-                {area === "All London"
-                  ? "Across the city"
-                  : "Explore the borough"}
-              </small>
-            </Link>
-          ))}
-        </nav>}
       </section>
-      <nav
-        className="discovery-categories map-service-filters"
-        aria-label="Beauty categories"
-      >
-        <Link
-          prefetch={false}
-          className={!filters.categoryId && !filters.category ? "active" : ""}
-          href={discoveryHref(query, {
-            ...filters,
-            category: undefined,
-            categoryId: undefined,
-            specialityId: undefined,
-            templateId: undefined,
-          })}
-        >
-          All services
-        </Link>
-        {taxonomy?.categories
-          .filter((c) => c.active && !c.legacy_only)
-          .map((c) => (
-            <Link
-              prefetch={false}
-              key={c.id}
-              className={filters.categoryId === c.id ? "active" : ""}
-              href={discoveryHref(query, {
-                ...filters,
-                category: undefined,
-                categoryId: c.id,
-                specialityId: undefined,
-                templateId: undefined,
-              })}
-            >
-              {c.name}
-            </Link>
+      <div className="discovery-category-picker">
+        <label htmlFor="discovery-category">Beauty category</label>
+        <select id="discovery-category" value={filters.categoryId ?? ""} onChange={(event) =>
+          router.push(discoveryHref(query, { ...filters, category: undefined, categoryId: event.target.value || undefined, specialityId: undefined, templateId: undefined }))
+        }>
+          <option value="">All categories</option>
+          {taxonomy?.categories.filter((category) => category.active && !category.legacy_only).map((category) => (
+            <option key={category.id} value={category.id}>{category.name}</option>
           ))}
-      </nav>
+        </select>
+      </div>
       <div className="discovery-filter-bar">
         {toggles.map(([key, label]) => (
           <Link
@@ -462,7 +417,7 @@ export function ExploreMapExperience({
           }}
         >
           <SlidersHorizontal size={15} />
-          More filters
+          Filters
         </a>
       </div>
       <details id="discovery-refine" className="discovery-refine" ref={refinePanel}>
@@ -555,27 +510,6 @@ export function ExploreMapExperience({
             Clear my location
           </button>
         )}
-        {londonSearch && <label>
-          London borough
-          <select
-            value={londonBorough(filters.location) ?? ""}
-            onChange={(event) =>
-              router.push(
-                discoveryHref(query, {
-                  ...filters,
-                  location: event.target.value || undefined,
-                }),
-              )
-            }
-          >
-            <option value="">Choose a London borough</option>
-            {areas.map((area) => (
-              <option key={area} value={area}>
-                {area}
-              </option>
-            ))}
-          </select>
-        </label>}
         <small>Location is used only for this search and isn’t stored.</small>
       </div>
       {locationNotice && (

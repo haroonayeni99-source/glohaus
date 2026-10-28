@@ -1057,9 +1057,28 @@
 }
 .discovery-original .london-borough-picker select:focus-visible { outline:2px solid #b93f71; outline-offset:2px; }
 .discovery-original .london-borough-picker span { font-size:12px; color:var(--ui-muted); }
+.discovery-original .discovery-category-picker {
+  display:flex; align-items:center; flex-wrap:wrap; gap:9px 15px;
+  padding:10px clamp(16px,3vw,44px); border-bottom:1px solid var(--ui-border);
+}
+.discovery-original .discovery-category-picker label { font-size:13px; font-weight:750; }
+.discovery-original .discovery-category-picker select {
+  min-height:42px; min-width:min(270px,100%); max-width:100%; border:1px solid var(--ui-border);
+  border-radius:11px; padding:9px 13px; font:inherit; color:var(--ui-text);
+  background:var(--ui-surface-muted);
+}
+.discovery-original .discovery-category-picker select:focus-visible { outline:2px solid #b93f71; outline-offset:2px; }
+.discovery-original .map-explore-search { grid-template-columns:20px minmax(0,1fr) minmax(0,1fr) auto; }
+.discovery-original .map-explore-search input { color:var(--ui-text) !important; }
+.discovery-original .map-explore-search input:focus-visible { outline:2px solid #b93f71 !important; outline-offset:2px; border-radius:4px; }
 @media(max-width:600px) {
   .discovery-original .london-borough-picker { gap:8px; }
   .discovery-original .london-borough-picker select { width:100%; }
+  .discovery-original .discovery-category-picker select { width:100%; }
+  .discovery-original .map-explore-search { grid-template-columns:20px minmax(0,1fr) auto; }
+  .discovery-original .map-explore-search input[name="q"] { grid-column:2; }
+  .discovery-original .map-explore-search input[name="location"] { grid-column:2; border-top:1px solid var(--ui-border) !important; }
+  .discovery-original .map-explore-search button { grid-column:3; grid-row:1 / 3; }
 }
 
 

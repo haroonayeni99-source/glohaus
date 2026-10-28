@@ -88,3 +88,11 @@
   .glohaus-route-loading-indicator, .glohaus-route-loading-indicator span { animation: none; }
   .glohaus-route-reflection { display: none; }
 }
+
+/* The optional introduction is mounted once per document, not per route. */
+.glohaus-intro.is-leaving .glohaus-route-loading {
+  animation: glohaus-intro-exit 250ms ease-out both;
+  pointer-events: none;
+}
+@keyframes glohaus-intro-exit { from { opacity: 1; } to { opacity: 0; } }
+.glohaus-intro.is-timed-out { display: none; }

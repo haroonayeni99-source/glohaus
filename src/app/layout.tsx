@@ -4,6 +4,7 @@ import "@/components/taxonomy.css";
 import "@/components/professional-activity.css";
 import "@/components/commission-control-centre.css";
 import { AuthSessionProvider } from "@/components/auth-session";
+import { InitialLoadingScreen } from "@/components/initial-loading-screen";
 import { publicViewerSignedIn } from "@/lib/public-viewer";
 import { jsonLd, publicOrigin } from "@/lib/public-seo";
 import { PlatformLabelsProvider } from "@/components/platform-labels";
@@ -114,6 +115,9 @@ export default async function RootLayout({
           }}
         />
         {content}
+        <InitialLoadingScreen />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: `window.setTimeout(function(){document.querySelector(".glohaus-intro")?.classList.add("is-timed-out")}, 6000);` }} />
+        <noscript><style nonce={nonce}>{`.glohaus-intro { display: none !important; }`}</style></noscript>
         <PwaShell />
         <SiteFooter />
         <ThemeToggle />

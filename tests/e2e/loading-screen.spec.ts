@@ -3,13 +3,15 @@ import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import React from "react";
 import { createRequire } from "node:module";
-import { transformSync } from "esbuild";
+import { buildSync } from "esbuild";
 
 const css = readFileSync("src/app/glohaus-splash.css", "utf8");
 // Compile the real component with React's JSX runtime rather than Playwright's
 // component-testing transform, which produces a different element format.
-const source = readFileSync("src/app/loading.tsx", "utf8");
-const compiled = transformSync(source, { loader: "tsx", format: "cjs", jsx: "automatic" }).code;
+const compiled = buildSync({
+  entryPoints: ["src/app/loading.tsx"], bundle: true, platform: "node",
+  format: "cjs", jsx: "automatic", external: ["react", "react/jsx-runtime"], write: false,
+}).outputFiles[0].text;
 const moduleBox = { exports: {} as { default: React.ComponentType } };
 new Function("require", "module", "exports", compiled)(
   createRequire(`${process.cwd()}/package.json`), moduleBox, moduleBox.exports,

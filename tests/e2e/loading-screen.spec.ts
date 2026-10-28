@@ -2,10 +2,19 @@ import { test, expect } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import React from "react";
-import Loading from "../../src/app/loading";
+import { createRequire } from "node:module";
+import { transformSync } from "esbuild";
 
 const css = readFileSync("src/app/glohaus-splash.css", "utf8");
-const html = renderToStaticMarkup(React.createElement(Loading));
+// Compile the real component with React's JSX runtime rather than Playwright's
+// component-testing transform, which produces a different element format.
+const source = readFileSync("src/app/loading.tsx", "utf8");
+const compiled = transformSync(source, { loader: "tsx", format: "cjs", jsx: "automatic" }).code;
+const moduleBox = { exports: {} as { default: React.ComponentType } };
+new Function("require", "module", "exports", compiled)(
+  createRequire(`${process.cwd()}/package.json`), moduleBox, moduleBox.exports,
+);
+const html = renderToStaticMarkup(React.createElement(moduleBox.exports.default));
 
 for (const theme of ["light", "night"] as const) {
   test(`loading screen fits and uses the approved ${theme} wordmark`, async ({ page }, testInfo) => {

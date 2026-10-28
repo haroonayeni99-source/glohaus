@@ -154,10 +154,10 @@ svg {
   line-height: 1.6;
 }
 .brand {
-  font-family: "Manrope", Arial, sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 2.2rem;
-  font-weight: 800;
-  letter-spacing: -0.055em;
+  font-weight: 400;
+  letter-spacing: 0.12em;
   line-height: 1;
 }
 .brand-pro {

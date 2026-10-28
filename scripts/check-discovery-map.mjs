@@ -58,9 +58,18 @@ try {
           name: "Find Beauty Professionals Near You",
         }),
       ).toBeVisible();
-      await expect(
-        page.getByRole("link", { name: "Hair", exact: true }),
-      ).toHaveAttribute("href", /categoryId=11111111/);
+      const category = page.getByLabel("Beauty category", { exact: true });
+      await category.selectOption({ label: "Hair" });
+      expect(await page.evaluate(() => localStorage.getItem("ui-audit-last-navigation"))).toContain("categoryId=11111111-1111-4111-8111-111111111111");
+      await category.selectOption("");
+      expect(await page.evaluate(() => localStorage.getItem("ui-audit-last-navigation"))).toBe("/explore");
+      const searchForm = page.locator("form.map-explore-search");
+      await page.getByLabel("Search service, professional or area").fill("braids");
+      await page.getByLabel("City, area or postcode", { exact: true }).first().fill("London");
+      expect(await searchForm.evaluate((form) => Object.fromEntries(new FormData(form)))).toMatchObject({ q: "braids", location: "London" });
+      await expect(page.getByRole("link", { name: "Filters", exact: true })).toBeVisible();
+      await page.getByRole("link", { name: "Filters", exact: true }).click();
+      await expect(page.locator("#discovery-refine")).toHaveAttribute("open", "");
       const directions = page.getByRole("link", {
         name: "Directions to Brixton Braids in Google Maps",
         exact: true,
@@ -128,13 +137,8 @@ try {
         exact: true,
       });
       await expect(borough.locator("option")).toHaveCount(33);
-      const areas = page.getByRole("navigation", {
-        name: "Explore London areas",
-      });
-      await expect(areas.getByRole("link")).toHaveCount(33);
-      await expect(
-        areas.getByRole("link", { name: "Southwark", exact: true }),
-      ).toHaveAttribute("href", /location=Southwark/);
+      await borough.selectOption({ label: "Southwark" });
+      expect(await page.evaluate(() => localStorage.getItem("ui-audit-last-navigation"))).toContain("location=Southwark");
       await expect(
         page.getByRole("button", {
           name: "Show Area Studio on map",
@@ -330,7 +334,8 @@ try {
         width,
         passed: true,
         checks: [
-          "dynamic category links",
+          "category and borough selectors update search filters",
+          "search fields and advanced filters",
           "service links stay in place on hover and focus",
           "save persists",
           "public media quick view",

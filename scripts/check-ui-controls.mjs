@@ -138,6 +138,7 @@ try {
               .locator("#website-status")
               .getByRole("button", { name: "Turn website ON" }),
           ).toBeVisible();
+          await expect(page.locator("#website-status").getByRole("link", { name: "View website" })).toHaveAttribute("href", "/");
           await submit(page.locator("#booking-fee form"), "Update booking fee");
           await submit(
             page.locator("#shop-fees form"),

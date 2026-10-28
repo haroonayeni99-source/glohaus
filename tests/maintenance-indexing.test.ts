@@ -118,6 +118,29 @@ describe("Temporary maintenance indexing", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("x-middleware-rewrite")).toBeNull();
   });
+  it("allows an active Admin to view the private site", async () => {
+    auth.claims.mockResolvedValue({ data: { claims: { sub: "admin-id" } }, error: null });
+    auth.account.mockResolvedValue({ data: { status: "active", roles: ["admin"] }, error: null });
+    const response = await proxy(new NextRequest("https://www.glohaus.shop/"));
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+  });
+  it.each([
+    { status: "suspended", roles: ["admin"] },
+    { status: "active", roles: ["owner"], deletedAt: "2026-01-01" },
+    { status: "active", roles: ["admin"], restrictedUntil: "2999-01-01T00:00:00Z" },
+    { status: "active", roles: ["professional"] },
+  ])("does not grant bypass to a restricted or non-admin account %#", async (account) => {
+    auth.claims.mockResolvedValue({ data: { claims: { sub: "account-id" } }, error: null });
+    auth.account.mockResolvedValue({ data: account, error: null });
+    const response = await proxy(new NextRequest("https://www.glohaus.shop/"));
+    expect(response.status).toBe(503);
+  });
+  it("does not grant bypass when identity or role lookup fails", async () => {
+    auth.claims.mockResolvedValue({ data: { claims: { sub: "account-id" } }, error: null });
+    auth.account.mockResolvedValue({ data: null, error: new Error("unavailable") });
+    expect((await proxy(new NextRequest("https://www.glohaus.shop/"))).status).toBe(503);
+  });
   it("does not grant customer accounts maintenance bypass", async () => {
     auth.claims.mockResolvedValue({
       data: { claims: { sub: "customer-id" } },

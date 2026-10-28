@@ -2,6 +2,7 @@
 import { requireAdminResponse } from "@/lib/admin-response";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Globe2, LockKeyhole } from "lucide-react";
 
 export function WebsiteStatusControl({ initialEnabled }: { initialEnabled: boolean }) {
@@ -62,6 +63,15 @@ export function WebsiteStatusControl({ initialEnabled }: { initialEnabled: boole
         <span aria-hidden />
         {busy ? "Saving..." : enabled ? "Turn website OFF" : "Turn website ON"}
       </button>
+      {!enabled && (
+        <div className="website-status-preview">
+          <div>
+            <strong>Preview while the website is private</strong>
+            <p>Signed-in Owners and Admins can view the website. Public visitors will still see the maintenance page.</p>
+          </div>
+          <Link href="/" prefetch={false} className="website-status-preview-link">View website</Link>
+        </div>
+      )}
       {notice && <p className="form-notice" role="status">{notice}</p>}
     </div>
   );

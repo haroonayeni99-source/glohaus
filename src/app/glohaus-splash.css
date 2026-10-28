@@ -19,17 +19,17 @@
 .glohaus-route-wordmark {
   position: relative;
   width: 100%;
-  aspect-ratio: 6 / 1;
+  aspect-ratio: 5 / 1;
   overflow: hidden;
 }
 .glohaus-route-wordmark img {
   position: absolute;
-  width: 125%;
+  width: 120%;
   max-width: none;
   height: auto;
   left: 50%;
-  top: 53%;
-  transform: translate(-50%, -50%);
+  top: 50%;
+  transform: translate(-50%, -53%);
 }
 :root[data-theme="night"] .glohaus-route-wordmark img,
 :root.dark .glohaus-route-wordmark img {

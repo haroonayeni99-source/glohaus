@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { withAccount } from "@/lib/api-account";
 import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
-export const customerPushPreference = z
+const customerPushPreference = z
   .object({
     category: z.enum([
       "bookings",

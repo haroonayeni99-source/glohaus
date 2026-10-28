@@ -1,51 +1,90 @@
-/* Actual route loading fallback; no artificial transition delay or full-screen overlay. */
+/* One timeline for the actual route fallback; no timer holds up the page. */
 .glohaus-route-loading {
-  min-height: min(74dvh, 760px);
+  --splash-bg: #f5f2ee;
+  --splash-ink: #855247;
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
   display: grid;
   place-items: center;
-  padding: clamp(28px, 6vw, 60px) 18px;
-  background: var(--paper);
-  color: var(--ink);
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  overflow: hidden;
+  background: var(--splash-bg);
+  color: var(--splash-ink);
+  animation: glohaus-splash-background 300ms ease-out both;
 }
+:root[data-theme="night"] .glohaus-route-loading,
+:root.dark .glohaus-route-loading { --splash-bg: #000; --splash-ink: #e0a594; }
 .glohaus-route-loading-content {
-  width: min(100%, 360px);
+  width: min(100%, 420px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: clamp(18px, 5vw, 25px);
+  text-align: center;
 }
-/* The supplied artwork has generous margins; crop with CSS, keeping the
-   original file intact and the full wordmark visible at every screen width. */
 .glohaus-route-wordmark {
   position: relative;
   width: 100%;
   aspect-ratio: 5 / 1;
   overflow: hidden;
+  animation: glohaus-splash-reveal 500ms 300ms ease-out both;
 }
 .glohaus-route-wordmark img {
   position: absolute;
-  width: 120%;
   max-width: none;
   height: auto;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -53%);
 }
-:root[data-theme="night"] .glohaus-route-wordmark img,
-:root.dark .glohaus-route-wordmark img {
-  filter: grayscale(1) invert(1);
-  mix-blend-mode: screen;
+.glohaus-route-wordmark-light { width: 120%; transform: translate(-50%, -53%); }
+.glohaus-route-wordmark-night { display: none; width: 150%; transform: translate(-50%, -50%); }
+:root[data-theme="night"] .glohaus-route-wordmark-light,
+:root.dark .glohaus-route-wordmark-light { display: none; }
+:root[data-theme="night"] .glohaus-route-wordmark-night,
+:root.dark .glohaus-route-wordmark-night { display: block; }
+.glohaus-route-reflection {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 226 207 / 20%) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: glohaus-splash-reflection 800ms 800ms ease-out both;
+  pointer-events: none;
 }
-.glohaus-route-loading-spinner {
+.glohaus-route-slogan {
+  margin: 0;
+  font-size: clamp(.66rem, 2.8vw, .78rem);
+  font-weight: 500;
+  letter-spacing: .13em;
+  line-height: 1.5;
+  animation: glohaus-splash-reveal 400ms 800ms ease-out both;
+}
+.glohaus-route-loading-indicator {
   display: block;
-  width: 28px;
-  height: 28px;
-  border: 2px solid color-mix(in srgb, var(--plum) 25%, transparent);
-  border-top-color: var(--plum);
-  border-radius: 50%;
-  animation: glohaus-route-spin 850ms linear infinite;
+  width: 76px;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--splash-ink) 20%, transparent);
+  animation: glohaus-splash-reveal 400ms 800ms ease-out both;
 }
-@keyframes glohaus-route-spin { to { transform: rotate(360deg); } }
+.glohaus-route-loading-indicator span {
+  display: block;
+  width: 40%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--splash-ink);
+  animation: glohaus-splash-progress 1.5s 1.2s ease-in-out infinite alternate;
+}
+@keyframes glohaus-splash-background { from { opacity: .94; } to { opacity: 1; } }
+@keyframes glohaus-splash-reveal { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes glohaus-splash-reflection { to { transform: translateX(120%); } }
+@keyframes glohaus-splash-progress { from { transform: translateX(0); } to { transform: translateX(150%); } }
 @media (prefers-reduced-motion: reduce) {
-  .glohaus-route-loading-spinner { animation: none; }
+  .glohaus-route-loading, .glohaus-route-wordmark, .glohaus-route-slogan,
+  .glohaus-route-loading-indicator, .glohaus-route-loading-indicator span { animation: none; }
+  .glohaus-route-reflection { display: none; }
 }

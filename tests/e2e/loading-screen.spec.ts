@@ -14,7 +14,9 @@ const moduleBox = { exports: {} as { default: React.ComponentType } };
 new Function("require", "module", "exports", compiled)(
   createRequire(`${process.cwd()}/package.json`), moduleBox, moduleBox.exports,
 );
-const html = renderToStaticMarkup(React.createElement(moduleBox.exports.default));
+const html = renderToStaticMarkup(React.createElement(moduleBox.exports.default))
+  .replaceAll("/images/glohaus-wordmark.png", `data:image/png;base64,${readFileSync("public/images/glohaus-wordmark.png").toString("base64")}`)
+  .replaceAll("/images/glohaus-wordmark-night.png", `data:image/png;base64,${readFileSync("public/images/glohaus-wordmark-night.png").toString("base64")}`);
 
 for (const theme of ["light", "night"] as const) {
   test(`loading screen fits and uses the approved ${theme} wordmark`, async ({ page }, testInfo) => {

@@ -14,18 +14,28 @@
   align-items: center;
   gap: 24px;
 }
-.glohaus-route-logo {
-  display: block;
+/* The supplied artwork has generous margins; crop with CSS, keeping the
+   original file intact and the full wordmark visible at every screen width. */
+.glohaus-route-wordmark {
+  position: relative;
   width: 100%;
-  max-width: 360px;
-  height: auto;
-  object-fit: contain;
+  aspect-ratio: 6 / 1;
+  overflow: hidden;
 }
-.glohaus-route-logo-night { display: none; }
-:root[data-theme="night"] .glohaus-route-logo-light,
-:root.dark .glohaus-route-logo-light { display: none; }
-:root[data-theme="night"] .glohaus-route-logo-night,
-:root.dark .glohaus-route-logo-night { display: block; }
+.glohaus-route-wordmark img {
+  position: absolute;
+  width: 125%;
+  max-width: none;
+  height: auto;
+  left: 50%;
+  top: 53%;
+  transform: translate(-50%, -50%);
+}
+:root[data-theme="night"] .glohaus-route-wordmark img,
+:root.dark .glohaus-route-wordmark img {
+  filter: grayscale(1) invert(1);
+  mix-blend-mode: screen;
+}
 .glohaus-route-loading-spinner {
   display: block;
   width: 28px;

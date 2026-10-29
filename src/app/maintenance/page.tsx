@@ -21,7 +21,7 @@ export default function MaintenancePage() {
           GLOHAUS is temporarily unavailable to the public. Please check back
           soon.
         </p>
-        <Link href="/sign-in" className="text-link">
+        <Link href="/sign-in?returnTo=%2Fadmin" className="text-link">
           Owner / staff sign in
         </Link>
       </section>

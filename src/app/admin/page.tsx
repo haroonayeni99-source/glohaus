@@ -70,7 +70,7 @@ import {
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration" };
 export default async function Page() {
-  const result = await pageAccount("admin");
+  const result = await pageAccount("admin", "/admin");
   if (!result.account)
     return (
       <AuthFrame>

@@ -73,6 +73,10 @@ describe("Temporary maintenance indexing", () => {
     "/sitemap.xml",
     "/admin",
     "/sign-in",
+    "/sign-in?returnTo=%2Fadmin",
+    "/professional/sign-in",
+    "/forgot-password",
+    "/reset-password",
     "/api/v1/bookings",
   ])(
     "preserves the real response for %s while the public site is off",
@@ -91,6 +95,12 @@ describe("Temporary maintenance indexing", () => {
     );
     expect(response.status).toBe(503);
   });
+  it.each(["/professional", "/professional/bookings", "/professional/sign-in/private", "/forgot-password/private"])(
+    "does not exempt protected workspace or recovery subtrees: %s", async (path) => {
+      const response = await proxy(new NextRequest(`https://www.glohaus.shop${path}`));
+      expect(response.status).toBe(503);
+    },
+  );
   it("keeps direct maintenance visits unavailable even when the public site is on", async () => {
     status.mockResolvedValue(new Response("true"));
     const response = await proxy(

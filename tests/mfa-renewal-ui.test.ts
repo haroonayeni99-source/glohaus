@@ -90,3 +90,14 @@ it("keeps the existing initial MFA challenge visible for aal1 sessions", async (
   expect(container.textContent).not.toContain("Verify again for Admin");
   expect(mocks.replace).not.toHaveBeenCalled();
 });
+it("lets an already verified session continue to the server-protected Admin page", async () => {
+  await render();
+  await act(async () =>
+    Array.from(container.querySelectorAll("button"))
+      .find((button) => button.textContent === "Continue to Owner/Admin")!
+      .click(),
+  );
+  expect(mocks.replace).toHaveBeenCalledWith("/admin");
+  expect(mocks.challenge).not.toHaveBeenCalled();
+  expect(mocks.verify).not.toHaveBeenCalled();
+});

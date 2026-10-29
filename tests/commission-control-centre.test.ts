@@ -590,7 +590,10 @@ describe("Commission Control Centre database boundaries", () => {
       ).toBe(14 * 86400000);
       await expect(
         action(tx, { action: "qualify", professionalId: pro }),
-      ).rejects.toThrow("QUESTIONNAIRE_REQUIRED");
+      ).rejects.toThrow("FOUNDING_EXTENSION_NOT_AVAILABLE");
+      // Explicitly model a participant promised the historical extension.
+      await tx.query("UPDATE beauty.founding_participants SET legacy_extension_eligible=true WHERE professional_id=$1", [pro]);
+      await expect(action(tx, { action: "qualify", professionalId: pro })).rejects.toThrow("QUESTIONNAIRE_REQUIRED");
       await tx.query(
         "UPDATE beauty.commission_rules SET starts_at=now()-interval '11 days',ends_at=now()+interval '3 days' WHERE id=$1",
         [trial],

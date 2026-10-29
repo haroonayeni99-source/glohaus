@@ -269,9 +269,9 @@ export function CommissionControlCentre({
       <section className="commission-box">
         <h3>Founding Professionals Programme</h3>
         <p>
-          14 days at 0% service commission. Qualifying participants who submit
-          feedback earn another 30 days at 0%. Positive and critical feedback
-          qualify equally. Payment processing, customer booking fees,
+          New participants receive 14 days at 0% service commission only. Feedback
+          is optional and does not extend the offer. Previously promised
+          extensions remain protected. Payment processing, customer booking fees,
           verification and trial booking limits stay separate.
         </p>
         <form
@@ -326,7 +326,7 @@ export function CommissionControlCentre({
               {f.reward_rule_id
                 ? "30-day reward granted"
                 : f.submitted_at
-                  ? "Feedback submitted — awaiting participation review"
+                  ? f.legacy_extension_eligible === false ? "Optional feedback received" : "Feedback submitted — awaiting participation review"
                   : "Awaiting end-of-trial feedback"}
             </p>
             {f.questionnaire && (
@@ -339,7 +339,7 @@ export function CommissionControlCentre({
                 <dd>{f.questionnaire.useAgain}</dd>
               </dl>
             )}
-            {f.submitted_at && !f.reward_rule_id && (
+            {f.legacy_extension_eligible !== false && f.submitted_at && !f.reward_rule_id && (
               <form
                 className="editor-form"
                 onSubmit={(e) => {

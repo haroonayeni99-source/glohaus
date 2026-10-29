@@ -78,6 +78,7 @@ export type CommissionRule = {
   created_at: string;
 };
 export type FoundingParticipant = {
+  legacy_extension_eligible?: boolean;
   professional_id: string;
   trial_rule_id: string;
   reward_rule_id: string | null;

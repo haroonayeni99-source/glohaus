@@ -72,16 +72,16 @@ export function ProfessionalCommissionPanel({
         <section className="commission-box">
           <h2>Your founding programme</h2>
           <p>
-            14 days at 0% GLOHAUS service commission, plus another 30 days for
-            qualifying participants who complete their feedback. Publish your
-            work or receive a paid booking during your trial. Both positive and
-            critical feedback are welcome.
+            14 days at 0% GLOHAUS service commission. Feedback is optional for
+            new participants and does not extend their offer. Previously
+            promised extensions remain protected. Both positive and critical
+            feedback are welcome.
           </p>
           <p>
             {data.founding.reward_rule_id
               ? "Your 30-day reward is granted."
               : data.founding.submitted_at
-                ? "Feedback received — awaiting participation review."
+                ? data.founding.legacy_extension_eligible === false ? "Thank you for your optional feedback." : "Feedback received — awaiting participation review."
                 : "Complete the questionnaire from day 10 of your trial."}
           </p>
           {!data.founding.submitted_at && (

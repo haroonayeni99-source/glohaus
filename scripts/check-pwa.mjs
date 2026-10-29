@@ -136,7 +136,7 @@ try {
       await page.goto(`${base}/install`, { waitUntil: "domcontentloaded" });
       const intro = page.locator(".glohaus-intro");
       const logo = intro.locator(theme === "light" ? ".glohaus-route-wordmark-light" : ".glohaus-route-wordmark-night");
-      await expect(intro).toBeVisible();
+      await expect(intro.locator(".glohaus-route-loading")).toBeVisible();
       await expect(logo).toBeVisible();
       await expect.poll(() => logo.evaluate((image) => image.naturalWidth)).toBe(theme === "light" ? 1220 : 2048);
       await expect(intro.locator(".glohaus-route-wordmark")).toHaveCSS("opacity", "1");

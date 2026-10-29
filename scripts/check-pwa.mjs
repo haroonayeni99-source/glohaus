@@ -126,7 +126,29 @@ try {
         (value) => { if (!localStorage.getItem("glohaus-theme")) localStorage.setItem("glohaus-theme", value); },
         theme,
       );
-      await page.goto(`${base}/install`);
+      // Exercise the actual startup overlay with a slow logo on both mobile
+      // browser engines. The image delay does not affect bookings or accounts.
+      const logoPath = theme === "light" ? "**/images/glohaus-wordmark.png" : "**/images/glohaus-wordmark-night.png";
+      await page.route(logoPath, async (route) => {
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        await route.continue();
+      });
+      await page.goto(`${base}/install`, { waitUntil: "domcontentloaded" });
+      const intro = page.locator(".glohaus-intro");
+      const logo = intro.locator(theme === "light" ? ".glohaus-route-wordmark-light" : ".glohaus-route-wordmark-night");
+      await expect(intro).toBeVisible();
+      await expect(logo).toBeVisible();
+      await expect.poll(() => logo.evaluate((image) => image.naturalWidth)).toBe(theme === "light" ? 1220 : 2048);
+      await expect(intro.locator(".glohaus-route-wordmark")).toHaveCSS("opacity", "1");
+      await expect(intro.locator(".glohaus-route-slogan")).toBeVisible();
+      if (theme === "light") {
+        // An explicit light preference must win over a stale legacy dark class.
+        await page.evaluate(() => document.documentElement.classList.add("dark"));
+        await expect(logo).toBeVisible();
+        await page.evaluate(() => document.documentElement.classList.remove("dark"));
+      }
+      await page.unroute(logoPath);
+      await expect(intro).toHaveCount(0, { timeout: 6000 });
       await workerControlsPage(page);
       await expect(
         page.getByRole("heading", { name: "GLOHAUS on your Home Screen." }),

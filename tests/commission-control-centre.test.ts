@@ -569,6 +569,21 @@ describe("Commission Control Centre database boundaries", () => {
       );
       expect(after).toBe(before);
     }));
+  it("opens optional feedback after the new fourteen-day trial without granting an extension", () =>
+    isolated(async (tx) => {
+      await activate(tx);
+      const trial = (await action(tx, { action: "enrol", professionalId: pro, startsAt: tomorrow() })).ruleId;
+      await tx.query("UPDATE beauty.commission_rules SET starts_at=now()-interval '11 days',ends_at=now()+interval '3 days' WHERE id=$1", [trial]);
+      const answers = JSON.stringify({experience:"Useful booking tools",improve:"Clearer calendar please",useAgain:"Yes"});
+      await expect(as(tx,"commission-pro",()=>tx.query("SELECT beauty.submit_founding_questionnaire($1::jsonb)",[answers]))).rejects.toThrow("INVALID_QUESTIONNAIRE");
+      await tx.query("UPDATE beauty.commission_rules SET starts_at=now()-interval '15 days',ends_at=now()-interval '1 day' WHERE id=$1", [trial]);
+      await as(tx,"commission-pro",()=>tx.query("SELECT beauty.submit_founding_questionnaire($1::jsonb)",[answers]));
+      const overview = await as(tx,"commission-pro",async () => (await tx.query<{data:{founding:{trial_starts_at:string;trial_ends_at:string;reward_rule_id:string|null}}}>("SELECT beauty.my_commission_overview() AS data")).rows[0].data);
+      expect(overview.founding.trial_starts_at).toBeTruthy();
+      expect(overview.founding.trial_ends_at).toBeTruthy();
+      expect(overview.founding.reward_rule_id).toBeNull();
+      await expect(action(tx,{action:"qualify",professionalId:pro})).rejects.toThrow("FOUNDING_EXTENSION_NOT_AVAILABLE");
+    }));
   it("14+30 founding rewards require questionnaire and participation; emergency pause preserves rewards", () =>
     isolated(async (tx) => {
       await activate(tx);

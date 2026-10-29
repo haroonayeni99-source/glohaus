@@ -143,7 +143,7 @@ export const adminToolGuide: Record<
     purpose:
       "Open or close founding enrolment, or permanently retire the launch offer.",
     note: "Closing can be reversed. Retirement cannot be undone through the dashboard. Existing earned benefits continue until expiry.",
-    keywords: "trial launch offer zero commission 14 30 days",
+    keywords: "trial launch offer zero commission 14 days legacy benefits",
   },
   "professional-commission": {
     purpose:

@@ -79,6 +79,9 @@ export type CommissionRule = {
 };
 export type FoundingParticipant = {
   legacy_extension_eligible?: boolean;
+  trial_starts_at?: string;
+  trial_ends_at?: string;
+  feedback_available?: boolean;
   professional_id: string;
   trial_rule_id: string;
   reward_rule_id: string | null;

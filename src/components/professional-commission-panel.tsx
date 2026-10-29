@@ -11,6 +11,8 @@ export function ProfessionalCommissionPanel({
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const router = useRouter();
+  const legacyOffer = data.founding?.legacy_extension_eligible !== false;
+  const feedbackAvailable = data.founding?.feedback_available ?? legacyOffer;
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setBusy(true);
@@ -23,10 +25,14 @@ export function ProfessionalCommissionPanel({
       });
       if (!response.ok)
         throw new Error(
-          "Submit feedback from day 10 of your trial. Complete every answer.",
+          legacyOffer
+            ? "Submit feedback from day 10 of your trial. Complete every answer."
+            : "Optional feedback opens after your 14-day trial ends. Complete every answer.",
         );
       setNotice(
-        "Feedback received. GLOHAUS will check your trial participation; critical feedback is equally welcome.",
+        legacyOffer
+          ? "Feedback received. GLOHAUS will check your trial participation; critical feedback is equally welcome."
+          : "Thank you for your optional feedback. It does not change your commission or promotion.",
       );
       router.refresh();
     } catch (e) {
@@ -82,9 +88,14 @@ export function ProfessionalCommissionPanel({
               ? "Your 30-day reward is granted."
               : data.founding.submitted_at
                 ? data.founding.legacy_extension_eligible === false ? "Thank you for your optional feedback." : "Feedback received — awaiting participation review."
-                : "Complete the questionnaire from day 10 of your trial."}
+                : legacyOffer ? "Complete the questionnaire from day 10 of your trial."
+                  : feedbackAvailable ? "You can optionally share feedback about your trial."
+                  : "Optional feedback opens after your 14-day trial ends."}
           </p>
-          {!data.founding.submitted_at && (
+          {data.founding.trial_starts_at && data.founding.trial_ends_at && (
+            <p>Trial: {new Date(data.founding.trial_starts_at).toLocaleDateString("en-GB", { timeZone: "Europe/London" })} to {new Date(data.founding.trial_ends_at).toLocaleDateString("en-GB", { timeZone: "Europe/London" })}. Your applicable standard commission resumes after the offer expires.</p>
+          )}
+          {!data.founding.submitted_at && feedbackAvailable && (
             <form className="editor-form" onSubmit={(e) => void submit(e)}>
               <label>
                 How was your experience?

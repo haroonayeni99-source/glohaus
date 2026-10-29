@@ -118,7 +118,7 @@ export function ProfessionalPolicyEditor({ data,initialServiceId="" }: { data: P
     timezone: "Europe/London",
     pricePence: 5000,
     depositPence: resolved.paymentRequirement === "full" ? 5000 : Math.round((5000 * (resolved.depositPercent || 30)) / 100),
-    bookingFeePence: 100,
+    bookingFeePence: data.bookingFeePence ?? 150,
     fullPrepayment: resolved.paymentRequirement === "full",
     paymentRequirement: resolved.paymentRequirement ?? "deposit_or_full",
     publishedAt: null,

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { PublicHeader } from "@/components/public-header";
+import type { PublicBookingFees } from "@/modules/bookings/public-fees";
 
 type FaqItem = {
   category: string;
@@ -29,7 +30,7 @@ const categories = [
   "Support",
 ];
 
-const items: FaqItem[] = [
+const makeItems = (fees: PublicBookingFees | null): FaqItem[] => [
   {
     category: "General",
     question: "What is GLOHAUS?",
@@ -409,9 +410,8 @@ const items: FaqItem[] = [
     question: "Does GLOHAUS charge customers a booking fee?",
     answer: (
       <>
-        Yes. GLOHAUS currently plans to charge customers a{" "}
-        <strong>£1 booking fee</strong> on applicable service bookings. The
-        booking fee must be shown clearly before the customer confirms payment.
+        Yes. {fees ? <>The standard booking fee is <strong>£{(fees.standardFeePence / 100).toFixed(2)}</strong>. {fees.promotionEnabled && <>Eligible new customers with a valid recorded referral pay £{(fees.promotionalFeePence / 100).toFixed(2)} on their first qualifying booking across GLOHAUS. </>}</> : <>The current booking fee is shown with your booking details. </>}
+        The fee and any referral discount are shown before you confirm payment. An active discounted checkout reserves the offer; failed, expired, cancelled or refunded bookings do not permanently use it. Duplicate accounts and self-referrals are not eligible.
       </>
     ),
   },
@@ -421,8 +421,7 @@ const items: FaqItem[] = [
     answer: (
       <>
         No. The total payable price should be visible before final checkout.
-        For example, a £50 service plus the £1 GLOHAUS booking fee should be
-        presented as <strong>£51 total</strong>. The customer should be able to
+        {fees ? <>For example, a £50 service plus the standard £{(fees.standardFeePence / 100).toFixed(2)} booking fee is <strong>£{((5000 + fees.standardFeePence) / 100).toFixed(2)} total</strong>. </> : <>The service price and booking fee are itemised together. </>}The customer should be able to
         see the booking fee before committing to the booking.
       </>
     ),
@@ -769,11 +768,12 @@ const items: FaqItem[] = [
   },
 ];
 
-export function FaqContent() {
+export function FaqContent({ bookingFees = null }: { bookingFees?: PublicBookingFees | null }) {
   const [selected, setSelected] = useState("All");
+  const items = useMemo(() => makeItems(bookingFees), [bookingFees]);
   const visibleItems = useMemo(
     () => (selected === "All" ? items : items.filter((item) => item.category === selected)),
-    [selected],
+    [selected, items],
   );
 
   return (

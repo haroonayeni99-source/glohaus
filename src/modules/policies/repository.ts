@@ -10,7 +10,7 @@ async function data<T>(db: SqlClient, sql: string, args: unknown[] = []) {
   return (await db.query<{ data: T }>(sql, args)).rows[0].data;
 }
 export const policyWorkspace = (db: SqlClient) =>
-  data<PolicyWorkspace>(db, "SELECT beauty.my_policy_workspace() AS data");
+  data<PolicyWorkspace>(db, "SELECT beauty.my_policy_workspace()||jsonb_build_object('bookingFeePence',beauty.public_booking_fee_pence()) AS data");
 export const servicePolicy = (db: SqlClient, id: string,options?:{variationId?:string|null;extraIds?:string[]}) =>
   options?data<PolicyPreview>(db,"SELECT beauty.public_service_policy($1,$2,$3) AS data",[id,options.variationId??null,options.extraIds??[]]):data<PolicyPreview>(db,"SELECT beauty.public_service_policy($1) AS data",[id]);
 export const bookingPolicy = (db: SqlClient, id: string) =>

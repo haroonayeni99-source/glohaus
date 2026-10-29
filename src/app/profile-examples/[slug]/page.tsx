@@ -9,6 +9,7 @@ import {
   findProfileExample,
 } from "@/modules/professionals/examples";
 import { money } from "@/modules/professionals/domain";
+import { publicBookingFees } from "@/modules/bookings/public-fees";
 import "@/components/profile-examples.css";
 import { publicExampleVisibility } from "@/modules/professionals/example-visibility-repository";
 import { visibleProfileExamples } from "@/modules/professionals/example-visibility";
@@ -45,6 +46,8 @@ export default async function ExampleProfilePage({
     ? query.speciality
     : undefined;
   const signedIn = await publicViewerSignedIn();
+  const fees = await publicBookingFees();
+  const exampleFee = fees?.standardFeePence ?? 150;
   const next =
     visible[(visible.indexOf(p) + 1) % visible.length];
   return (
@@ -87,7 +90,7 @@ export default async function ExampleProfilePage({
         reviewCount={0}
         follow={{ following: false, followerCount: 0, signedIn: false }}
         messageHref={null}
-        bookingFeePence={100}
+        bookingFeePence={exampleFee}
         presentation={p.style}
         example={{ basePath: p.path, mediaSources: p.mediaSources }}
         policies={
@@ -116,10 +119,10 @@ export default async function ExampleProfilePage({
             <p>{selected.description}</p>
             <p>
               <strong>
-                {money(selected.price_pence + 100)} illustrative total
+                {money(selected.price_pence + exampleFee)} illustrative total
               </strong>
               <br />
-              Service {money(selected.price_pence)} + example booking fee £1.00
+              Service {money(selected.price_pence)} + example booking fee {money(exampleFee)}. Live fees and any eligible referral offer are confirmed before booking.
             </p>
             <p>
               {selected.duration_minutes} minutes ·{" "}

@@ -5,8 +5,10 @@ import { apiError, assertSameOrigin, json, smallJson } from "@/lib/http";
 
 const schema = z.object({
   amountPence: z.number().int().min(0).max(2500),
+  promotionalFeePence: z.number().int().min(0).max(2500).optional(),
+  promotionEnabled: z.boolean().optional(),
   reason: z.string().trim().min(5).max(500),
-}).strict();
+}).strict().refine(value => value.promotionalFeePence === undefined || value.promotionalFeePence <= value.amountPence);
 
 export async function POST(request: Request) {
   try {
@@ -16,18 +18,12 @@ export async function POST(request: Request) {
 
     await withOwner((db) =>
       db.query(
-        "SELECT beauty.set_financial_fee_rule($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
+        "SELECT beauty.owner_set_booking_fees($1,$2,$3,$4)",
         [
-          "booking",
-          null,
-          "customer",
-          0,
           parsed.data.amountPence,
-          0,
-          null,
-          1,
-          "platform",
+          parsed.data.promotionalFeePence ?? null,
           parsed.data.reason,
+          parsed.data.promotionEnabled ?? null,
         ],
       ),
     );

@@ -16,6 +16,9 @@ const maintenanceExempt = [
 ];
 
 function isMaintenanceExempt(pathname: string) {
+  // Authentication entry and recovery must remain usable while the site is
+  // paused. Exempt these exact pages, never the professional workspace.
+  if (["/professional/sign-in", "/forgot-password", "/reset-password"].includes(pathname)) return true;
   // Crawlers still need the real discovery files while the Owner pauses the
   // public site. Never rewrite XML or robots.txt to an HTML maintenance page.
   if (pathname === "/robots.txt" || pathname === "/sitemap.xml") return true;

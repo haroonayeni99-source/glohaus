@@ -132,6 +132,17 @@ export function MfaManager() {
             This session has completed two-step verification. Owner and Admin
             access may require a fresh authenticator check.
           </p>
+          <button
+            className="button"
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              router.replace("/admin");
+              router.refresh();
+            }}
+          >
+            Continue to Owner/Admin
+          </button>
           {verifiedFactor && (
             <button
               className="button"

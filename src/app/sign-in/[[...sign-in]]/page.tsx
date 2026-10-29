@@ -15,8 +15,10 @@ export default async function Page({
   searchParams: Promise<{ returnTo?: string; intent?: string; authError?: string }>;
 }) {
   const { returnTo, intent, authError } = await searchParams;
+  const destination = safeReturnTo(returnTo, "/account");
+  const ownerEntry = destination === "/admin" || destination.startsWith("/admin/");
 
-  if (intent === "professional") {
+  if (intent === "professional" && !ownerEntry) {
     const params = new URLSearchParams();
     if (returnTo) params.set("returnTo", returnTo);
     if (authError) params.set("authError", authError);
@@ -39,12 +41,12 @@ export default async function Page({
       {authConfigured() ? (
         <>
           <nav className="auth-switch" aria-label="Customer sign in">
-            <strong>Customer sign in</strong>{" "}
+            <strong>{ownerEntry ? "Owner / Admin sign in" : "Customer sign in"}</strong>{" "}
             <Link href="/professional/sign-in">Beauty professional? Sign in to GLOHAUS PRO</Link>
           </nav>
           <EmailAuthForm
             mode="sign-in"
-            redirectTo={safeReturnTo(returnTo, "/account")}
+            redirectTo={destination}
             audience="customer"
           />
           <p className="auth-switch">

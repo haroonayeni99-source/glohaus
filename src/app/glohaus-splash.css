@@ -17,7 +17,7 @@
   animation: glohaus-splash-background 300ms ease-out both;
 }
 :root[data-theme="night"] .glohaus-route-loading,
-:root.dark .glohaus-route-loading { --splash-bg: #000; --splash-ink: #e0a594; }
+:root.dark:not([data-theme="light"]) .glohaus-route-loading { --splash-bg: #000; --splash-ink: #e0a594; }
 .glohaus-route-loading-content {
   width: min(100%, 420px);
   display: flex;
@@ -43,9 +43,9 @@
 .glohaus-route-wordmark-light { width: 120%; transform: translate(-50%, -53%); }
 .glohaus-route-wordmark-night { display: none; width: 150%; transform: translate(-50%, -50%); }
 :root[data-theme="night"] .glohaus-route-wordmark-light,
-:root.dark .glohaus-route-wordmark-light { display: none; }
+:root.dark:not([data-theme="light"]) .glohaus-route-wordmark-light { display: none; }
 :root[data-theme="night"] .glohaus-route-wordmark-night,
-:root.dark .glohaus-route-wordmark-night { display: block; }
+:root.dark:not([data-theme="light"]) .glohaus-route-wordmark-night { display: block; }
 .glohaus-route-reflection {
   position: absolute;
   inset: 0;

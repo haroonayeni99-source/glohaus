@@ -9,14 +9,34 @@ export function InitialLoadingScreen() {
 
   useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const hold = window.setTimeout(() => {
-      if (reduceMotion) {
-        setPhase("done");
-        return;
-      }
-      setPhase("leaving");
-    }, reduceMotion ? 0 : 1900);
-    return () => window.clearTimeout(hold);
+    let hold: number | undefined;
+    let fallback: number | undefined;
+    let started = false;
+    const image = document.querySelector<HTMLImageElement>(
+      document.documentElement.dataset.theme === "night"
+        ? ".glohaus-intro .glohaus-route-wordmark-night"
+        : ".glohaus-intro .glohaus-route-wordmark-light",
+    );
+    const startHold = () => {
+      if (started) return;
+      started = true;
+      window.clearTimeout(fallback);
+      hold = window.setTimeout(() => setPhase(reduceMotion ? "done" : "leaving"), reduceMotion ? 900 : 1900);
+    };
+    if (!image || (image.complete && image.naturalWidth > 0)) {
+      startHold();
+    } else {
+      image.addEventListener("load", startHold, { once: true });
+      image.addEventListener("error", startHold, { once: true });
+      // Never leave visitors waiting indefinitely if an asset or network fails.
+      fallback = window.setTimeout(startHold, 1200);
+    }
+    return () => {
+      window.clearTimeout(hold);
+      window.clearTimeout(fallback);
+      image?.removeEventListener("load", startHold);
+      image?.removeEventListener("error", startHold);
+    };
   }, []);
 
   useEffect(() => {

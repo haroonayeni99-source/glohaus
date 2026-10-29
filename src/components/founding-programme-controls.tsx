@@ -79,8 +79,8 @@ export function FoundingProgrammeControls({
             <strong>Status: {data.programme.state}</strong>
           </p>
           <p>
-            14 days at 0% GLOHAUS service commission, plus 30 days for
-            qualifying participation and the feedback questionnaire. Processing
+            New participants receive 14 days at 0% GLOHAUS service commission only.
+            Previously promised extensions remain protected. Optional feedback does not extend new offers. Processing
             and customer booking fees remain separate.
           </p>
           <p>

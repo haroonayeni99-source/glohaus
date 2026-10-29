@@ -190,17 +190,17 @@ try {
       await page.locator(".theme-toggle").click();
       await expect.poll(() => page.locator('meta[name="theme-color"]').evaluateAll(metas => [...new Set(metas.map(meta => meta.content))])).toEqual([themeColor]);
       expect(manifest.data.icons.map((icon) => icon.src)).toEqual([
-        "/icons/glohaus-home-192-v2.png",
-        "/icons/glohaus-home-512-v2.png",
-        "/icons/glohaus-home-maskable-512-v2.png",
+        "/icons/glohaus-home-192-v3.png",
+        "/icons/glohaus-home-512-v3.png",
+        "/icons/glohaus-home-maskable-512-v3.png",
       ]);
       const dimensions = await page.evaluate(async () => {
         return Promise.all(
           [
-            "/icons/glohaus-home-192-v2.png",
-            "/icons/glohaus-home-512-v2.png",
-            "/icons/glohaus-home-apple-180-v2.png",
-            "/icons/glohaus-home-maskable-512-v2.png",
+            "/icons/glohaus-home-192-v3.png",
+            "/icons/glohaus-home-512-v3.png",
+            "/icons/glohaus-home-apple-180-v3.png",
+            "/icons/glohaus-home-maskable-512-v3.png",
           ].map(
             (src) =>
               new Promise((resolve) => {
@@ -218,7 +218,7 @@ try {
         [180, 180],
         [512, 512],
       ]);
-      expect(manifest.apple).toContain("/icons/glohaus-home-apple-180-v2.png");
+      expect(manifest.apple).toContain("/icons/glohaus-home-apple-180-v3.png");
       await workerControlsPage(page);
       expect(
         await page.evaluate(
@@ -304,6 +304,10 @@ try {
           "/icons/glohaus-home-512-v2.png",
           "/icons/glohaus-home-apple-180-v2.png",
           "/icons/glohaus-home-maskable-512-v2.png",
+          "/icons/glohaus-home-192-v3.png",
+          "/icons/glohaus-home-512-v3.png",
+          "/icons/glohaus-home-apple-180-v3.png",
+          "/icons/glohaus-home-maskable-512-v3.png",
         ].sort(),
       );
       await page.screenshot({

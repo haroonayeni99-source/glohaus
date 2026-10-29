@@ -13,19 +13,19 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: appThemeColors.light,
     icons: [
       {
-        src: "/icons/glohaus-home-192-v2.png",
+        src: "/icons/glohaus-home-192-v3.png",
         sizes: "192x192",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/icons/glohaus-home-512-v2.png",
+        src: "/icons/glohaus-home-512-v3.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/icons/glohaus-home-maskable-512-v2.png",
+        src: "/icons/glohaus-home-maskable-512-v3.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",

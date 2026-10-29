@@ -80,6 +80,10 @@ it("precaches only the static help screen and exact icons, omitting credentials"
     "/icons/glohaus-home-512-v2.png",
     "/icons/glohaus-home-apple-180-v2.png",
     "/icons/glohaus-home-maskable-512-v2.png",
+    "/icons/glohaus-home-192-v3.png",
+    "/icons/glohaus-home-512-v3.png",
+    "/icons/glohaus-home-apple-180-v3.png",
+    "/icons/glohaus-home-maskable-512-v3.png",
   ]);
   expect(
     requests.every(
@@ -95,6 +99,7 @@ it("deletes only its old static caches and activates updates only on a same-orig
     ["glohaus-pwa-static-v0"],
     ["glohaus-pwa-static-v1"],
     ["glohaus-pwa-static-v2"],
+    ["glohaus-pwa-static-v3"],
   ]);
   await h.lifecycle("message", {
     data: { type: "GLOHAUS_ACTIVATE_UPDATE" },

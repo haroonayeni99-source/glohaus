@@ -1,8 +1,8 @@
 /* One GLOHAUS worker for installation, static offline help and existing push.
    Never cache pages, APIs, payment responses, uploads, maps or account data. */
-const STATIC_CACHE = "glohaus-pwa-static-v3";
+const STATIC_CACHE = "glohaus-pwa-static-v4";
 const OFFLINE_URL = "/offline.html";
-const STATIC_FILES = [OFFLINE_URL, "/icons/glohaus-192.png", "/icons/glohaus-512.png", "/icons/apple-touch-icon.png", "/icons/glohaus-maskable-512.png", "/icons/glohaus-home-192-v2.png", "/icons/glohaus-home-512-v2.png", "/icons/glohaus-home-apple-180-v2.png", "/icons/glohaus-home-maskable-512-v2.png"];
+const STATIC_FILES = [OFFLINE_URL, "/icons/glohaus-192.png", "/icons/glohaus-512.png", "/icons/apple-touch-icon.png", "/icons/glohaus-maskable-512.png", "/icons/glohaus-home-192-v2.png", "/icons/glohaus-home-512-v2.png", "/icons/glohaus-home-apple-180-v2.png", "/icons/glohaus-home-maskable-512-v2.png", "/icons/glohaus-home-192-v3.png", "/icons/glohaus-home-512-v3.png", "/icons/glohaus-home-apple-180-v3.png", "/icons/glohaus-home-maskable-512-v3.png"];
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(STATIC_CACHE).then((cache) =>
     cache.addAll(STATIC_FILES.map((url) => new Request(url, { cache: "reload", credentials: "omit" }))),

@@ -10,9 +10,10 @@ Production target: `haroon-glohaus/glohaus1`, `www.glohaus.shop`.
 - [x] Merge PR #189 as `d9ef66de46df7e041746f87d2f05a4bd9683ce3e`.
 - [x] Verify Vercel production deployment `dpl_AnBwXUDeBpyNSViP8faFVnntZV4J` READY and assigned to all production domains.
 - [x] Implement maintenance-safe Owner sign-in, password recovery and verified MFA continuation in PR #190.
-- [ ] Merge and verify PR #190 after CI.
+- [x] Merge PR #190 as `406a0f0935efdbe27b41a036d9258d62ce1dd4d0`; verify production READY and all five access pages returning 200.
 - [x] Implement and validate optional feedback timing and trial dates; apply matching additive function migration.
-- [ ] Publish and verify feedback timing application release.
+- [x] Merge PR #191 after all CI checks passed as `7a4b5524ca093bfd6fb75b59c59fbb7807b7ed08`.
+- [x] Verify #191 production deployment `dpl_3z4RjJS8oR6Mg2uPU4xMCRqfm3t1` READY and assigned to `www.glohaus.shop` at `7a4b5524ca093bfd6fb75b59c59fbb7807b7ed08`.
 
 Terminal Git push cannot authenticate. Connected GitHub Git-data APIs successfully create trees, commits and branches; this is the working publishing path. The production homepage is intentionally in maintenance; no Owner setting was changed.
 
@@ -20,9 +21,9 @@ Terminal Git push cannot authenticate. Connected GitHub Git-data APIs successful
 
 | Priority | Previous evidence | Work completed | Tests / verification | Production status | Remaining work |
 | --- | --- | --- | --- | --- | --- |
-| 1 Access and releases | Main deployed, older PRs open; terminal push missing credentials | Verified correct project; recovered #189; #190 implements scoped access fixes | 89 targeted auth/session/MFA/maintenance tests, TypeScript, lint, production build | Founding release READY; access PR awaiting CI | Authenticated Owner refresh, logout/login and real PWA restart |
+| 1 Access and releases | Main deployed, older PRs open; terminal push missing credentials | Verified correct project; recovered #189; #190 implements scoped access fixes | 89 targeted auth/session/MFA/maintenance tests, TypeScript, lint, production build | Founding and access releases READY | Authenticated Owner refresh, logout/login and real PWA restart |
 | 2 Booking fee | Current public copy says £1; one Owner amount control | Inspected fee configuration and snapshot architecture | No new pricing activated | Unchanged | £1.50 standard, £1 eligible first booking, dual controls, eligibility and concurrency checks, consistent public wording and receipts |
-| 3 Founding | New-participant extension previously available | New participants receive fourteen days only; existing participants retain legacy eligibility; optional feedback gate and trial dates added | CI on #189 passed; SQL rollback validation; 43 commission/reward tests; production function verification | #189 live; feedback schema applied, UI release pending | Owner expiry notices; complete timing UI release and browser verification |
+| 3 Founding | New-participant extension previously available | New participants receive fourteen days only; existing participants retain legacy eligibility; optional feedback gate and trial dates added | CI on #189 passed; SQL rollback validation; 43 commission/reward tests; production function verification | #189 and #191 live; both migrations verified | Owner expiry notices and authenticated professional UI/device verification |
 | 4 Referrals | Attribution, fraud-review and appreciation tables/functions already exist | Recovered isolated retained-contribution qualification helper; actual cash remains disabled | Reward tests; database schema inspection | Helper included in #189; no automatic payout | Full hybrid rewards ledger, caps, thresholds, reconciliation, ambassador/student/academy programme controls and issue #147 acceptance checks |
 | 5 Marketplace | Existing multi-speciality, services, portfolio, orders and seller hub routes | Confirmed current implementation exists | Existing CI covers multi-speciality and seller isolation | Existing production implementation | Authenticated complete journeys, uploads, verification limits and reviews |
 | 6 Integrations | Existing social and calendar tools/migrations | Confirmed existing professional business-tools and social-portfolio migrations | Not yet independently exercised | Existing implementation | Provider permissions, Meta review/account actions, end-to-end provider checks |
@@ -47,3 +48,15 @@ Terminal Git push cannot authenticate. Connected GitHub Git-data APIs successful
 | #62 | Current webhook handles provider refund events and reconciliation migration exists | Retain current flow; verify reconciliation with safe tests |
 
 These findings identify existing code, not a claim that every affected authenticated journey was tested in this session. No real charges, refunds, withdrawals, outreach messages or rewards were initiated.
+
+## Confirmed remaining implementation
+
+The standard customer booking fee is still £1. The £1.50 standard / £1 referred-first-booking fee is not activated. Its earlier eligibility brief was recovered: one platform-wide use per eligible referred customer; failed, cancelled and refunded bookings must not permanently consume the discount. Existing anonymous policy previews must be connected to authenticated eligibility and immutable checkout snapshots, with concurrency/duplicate-account safeguards and consistent public wording, before activation.
+
+The full referral/ambassador rewards system is unfinished; actual automatic cash payouts remain disabled. Owner expiry notices, authenticated/PWA tests and the broader integration, security, SEO and device checks above are unfinished. Supabase still reports leaked-password protection disabled: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+
+Validation: full local suite 1,561 passed, 2 skipped; TypeScript, lint and production builds passed; all CI checks passed for PRs #189, #190 and #191. Production robots.txt and sitemap return 200; eight sitemap URLs contain no private dashboard paths. Post-release error/fatal log scans returned no entries for the first two releases.
+
+## Final production checkpoint
+
+All three application PRs (#189, #190, #191) passed their CI checks and are merged. Final production commit: `7a4b5524ca093bfd6fb75b59c59fbb7807b7ed08`, project `glohaus1`, deployment `dpl_3z4RjJS8oR6Mg2uPU4xMCRqfm3t1`, READY with `www.glohaus.shop` assigned. Combined final-branch authentication/commission/reward checks: 132 passed. Owner entry, stale-professional-intent Owner entry, professional sign-in, forgot password and reset password all returned HTTP 200; the two Owner entries showed the Owner/Admin label and no professional form. Real authenticated Owner/professional and physical-device checks remain outstanding. The public site remains in maintenance mode. The wider backlog is not complete.

@@ -33,3 +33,9 @@ Authenticated hosted customer/professional/Owner journeys require user-controlle
 `db/patches/rebooking-global-optout.sql` (SHA-256 `608acdf7999a2cf7d1d84be64079d213b6023b24efdb3028e955586f22a90b73`) is applied only to isolated staging as `rebooking_global_optout_candidate`, version `20261030212621`. It links the existing global preference/unsubscribe function to the new scoped consent and queue: withdrawing global rebooking consent revokes existing named permissions, records immutable events and suppresses waiting reminders. A later global opt-in alone cannot revive them.
 
 The full local suite before this final follow-up passed 1,755 tests with four skips (three native concurrency cases and one external-feed smoke). Four additional real-component form tests passed. Final follow-up checks and native PostgreSQL results are recorded in the PR. All sending remains OFF.
+
+## Concurrent queue and withdrawal/pause
+
+`db/patches/rebooking-scope-serialization.sql` (SHA-256 `516556497514c221044ce5a5cdb9c2d7f2dc5c542e7dad0591ec0f6a4a15da72`) is applied only to isolated staging as `rebooking_scope_serialization_candidate`, version `20261030212955`. Scoped consent writes, professional controls and global opt-out use the existing queue advisory lock. They therefore wait for an in-flight queue transaction before suppressing its new work, closing the queue-versus-pause/re-opt-in race without changing payment or reward locks.
+
+70 focused tests passed after this change; the additional parallel queue/pause case is native-PostgreSQL-only and skipped in PGlite. It waits for an actual ungranted advisory lock, commits the queue transaction, then verifies that pause suppresses the newly committed job. Native CI results are required before treating that concurrent case as passed.

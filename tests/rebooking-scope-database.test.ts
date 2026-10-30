@@ -18,6 +18,15 @@ beforeAll(async () => {
       "utf8",
     ),
   );
+  await db.exec(
+    await readFile(
+      new URL(
+        "../db/patches/rebooking-scope-serialization.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
   for (const auth of ["rebook-pro", "rebook-client", "rebook-owner"]) {
     const a = await db.transaction(async (tx) => {
       await tx.exec("SET LOCAL ROLE beauty_app");
@@ -689,3 +698,70 @@ it("global withdrawal suppresses waiting work and later global opt-in cannot rev
     expect(await preflight(tx, jobs[0].id)).toBeNull();
     expect(await prepare(tx)).toBe(0);
   }));
+it.skipIf(process.env.GLOHAUS_NATIVE_DATABASE !== "1")(
+  "pause waits for a concurrent queue transaction then suppresses its new job",
+  async () => {
+    await db.query(
+      "INSERT INTO beauty.rebooking_professional_settings(professional_id,paused) VALUES($1,false)",
+      [pro],
+    );
+    await db.query(
+      "INSERT INTO beauty.rebooking_customer_consents(user_id,professional_id,enabled) VALUES($1,$2,true)",
+      [client, pro],
+    );
+    await db.query("UPDATE beauty.rebooking_settings SET enabled=true");
+    await booking(db);
+    let release!: () => void;
+    let ready!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const queued = new Promise<void>((resolve) => {
+      ready = resolve;
+    });
+    const preparing = db.transaction(async (tx) => {
+      await prepare(tx);
+      ready();
+      await held;
+    });
+    await Promise.race([queued, preparing]);
+    const pausing = db.transaction(async (tx) => {
+      await actor(
+        tx,
+        "rebook-pro",
+        "SELECT beauty.set_my_professional_rebooking($1::jsonb)",
+        [JSON.stringify({ paused: true, delayDays: 28 })],
+      );
+    });
+    let waiting = false;
+    try {
+      for (let attempt = 0; attempt < 100; attempt++) {
+        waiting = (
+          await db.query<{ waiting: boolean }>(
+            "SELECT EXISTS(SELECT 1 FROM pg_locks WHERE locktype='advisory' AND NOT granted) AS waiting",
+          )
+        ).rows[0].waiting;
+        if (waiting) break;
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+    } finally {
+      release();
+    }
+    await Promise.all([preparing, pausing]);
+    expect(waiting).toBe(true);
+    expect(
+      (
+        await db.query<{ state: string }>(
+          "SELECT state FROM beauty.rebooking_outbox",
+        )
+      ).rows[0].state,
+    ).toBe("suppressed");
+    expect(
+      (
+        await db.query(
+          "SELECT paused FROM beauty.rebooking_professional_settings",
+        )
+      ).rows[0].paused,
+    ).toBe(true);
+  },
+);

@@ -1,0 +1,13 @@
+import {afterEach,beforeEach,expect,it,vi} from "vitest";
+import {AccessError} from "@/modules/accounts/domain";
+const mocks=vi.hoisted(()=>({professional:true,choices:vi.fn(),query:vi.fn()}));
+vi.mock("@/lib/api-account",()=>({withAccount:async(role:string,work:(db:object,account:object)=>unknown)=>{if(!mocks.professional)throw new AccessError("FORBIDDEN",403);return work({query:mocks.query},{professionalId:"00000000-0000-4000-8000-000000000001"});}}));
+vi.mock("@/modules/bundles/repository",()=>({bundleChoices:mocks.choices}));
+import {POST} from "@/app/api/v1/professional/bundles/route";
+import {readBundleSelection} from "@/modules/bundles/links";
+const serviceId="00000000-0000-4000-8000-000000000002",productId="00000000-0000-4000-8000-000000000003";
+const req=(body:unknown={serviceId,productId},origin="https://glohaus.test")=>new Request("https://glohaus.test/api/v1/professional/bundles",{method:"POST",headers:{origin,"content-type":"application/json"},body:JSON.stringify(body)});
+beforeEach(()=>{vi.clearAllMocks();vi.stubEnv("GLOHAUS_BUNDLE_LINK_SECRET","fixture-key-only");mocks.professional=true;mocks.choices.mockResolvedValue({slug:"fixture-studio",services:[{id:serviceId}],products:[{id:productId}]});});afterEach(()=>vi.unstubAllEnvs());
+it("requires professional access and rejects cross-origin or financial field injection",async()=>{mocks.professional=false;expect((await POST(req())).status).toBe(403);mocks.professional=true;expect((await POST(req({serviceId,productId},"https://attacker.test"))).status).toBe(403);expect((await POST(req({serviceId,productId,discount:500}))).status).toBe(400);});
+it("rejects another professional's product and ineligible sellers",async()=>{expect((await POST(req({serviceId,productId:"00000000-0000-4000-8000-000000000099"}))).status).toBe(400);mocks.choices.mockResolvedValue(null);expect((await POST(req())).status).toBe(403);});
+it("creates only a signed selection URL without database writes or checkout",async()=>{const response=await POST(req());expect(response.status).toBe(200);const {path}=await response.json();const token=new URL(path,"https://glohaus.test").searchParams.get("selection");expect(readBundleSelection(token)).toMatchObject({serviceId,productId,professionalId:"00000000-0000-4000-8000-000000000001"});expect(mocks.query).not.toHaveBeenCalled();expect(path).not.toContain("discount");});

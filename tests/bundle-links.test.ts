@@ -1,0 +1,7 @@
+import {afterEach,expect,it,vi} from "vitest";
+import {readBundleSelection,signBundleSelection} from "@/modules/bundles/links";
+const value={version:1 as const,professionalId:"00000000-0000-4000-8000-000000000001",serviceId:"00000000-0000-4000-8000-000000000002",productId:"00000000-0000-4000-8000-000000000003"};
+afterEach(()=>vi.unstubAllEnvs());
+it("round-trips a signed selection without exposing the key",()=>{vi.stubEnv("GLOHAUS_BUNDLE_LINK_SECRET","fixture-only-signing-key");const token=signBundleSelection(value);expect(readBundleSelection(token)).toEqual(value);expect(token).not.toContain("fixture-only-signing-key");});
+it("rejects tampering, malformed tokens and tokens signed with another key",()=>{vi.stubEnv("GLOHAUS_BUNDLE_LINK_SECRET","fixture-only-signing-key");const token=signBundleSelection(value);const [body,sig]=token.split('.');const forged=Buffer.from(JSON.stringify({...value,productId:value.professionalId})).toString("base64url")+'.'+sig;expect(readBundleSelection(forged)).toBeNull();expect(readBundleSelection(body+'.bad')).toBeNull();vi.stubEnv("GLOHAUS_BUNDLE_LINK_SECRET","different-fixture-key");expect(readBundleSelection(token)).toBeNull();});
+it("fails closed when signing is unavailable",()=>{vi.stubEnv("GLOHAUS_BUNDLE_LINK_SECRET","");vi.stubEnv("CRON_SECRET","");expect(()=>signBundleSelection(value)).toThrow("BUNDLE_LINKS_UNAVAILABLE");expect(readBundleSelection("x.y")).toBeNull();});

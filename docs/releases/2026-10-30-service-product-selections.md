@@ -1,0 +1,9 @@
+# Service and product selections
+
+Verified, payment-ready professionals with a published public page can choose one published service and one in-stock, non-away product from their own account and create a signed share link. Creation writes no database data and sends no messages. The public page validates the signature and rechecks current publication, professional eligibility, stock and seller availability before displaying either selection.
+
+This is the approved initial bundle stage: a connected recommendation with separate booking and product-cart purchases. Show current base-service and product prices individually, never a discount or fabricated combined total. Service options, booking fees, shipping, payment and refund terms remain in the existing flows. No stock or appointment is reserved by opening a link, and no referral reward or attribution is created by selection generation.
+
+HMAC signatures use the dedicated GLOHAUS_BUNDLE_LINK_SECRET if configured, otherwise the existing CRON_SECRET with a distinct purpose prefix. Tokens contain public IDs and a signature, no secret or personal information, and grant no private access. Rotating the signing key invalidates old selection links. Listing changes and current eligibility always take precedence. Production CRON_SECRET presence was verified from metadata without reading its value.
+
+Verified: 13 token/API/database and existing checkout tests passed. Token tampering, wrong key, missing key, role/origin/injected financial fields, cross-professional products, withdrawn/stock-zero products and seller eligibility checks are covered. TypeScript, targeted lint and production build passed; the final anchor/highlight adjustment and CI are being verified. Authenticated hosted UI remains unverified. No migration is required; prices, financial policies and approved profile design are preserved.

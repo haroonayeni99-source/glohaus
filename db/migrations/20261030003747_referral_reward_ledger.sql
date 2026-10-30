@@ -146,7 +146,11 @@ BEGIN
  PERFORM pg_advisory_xact_lock(hashtextextended('referral-rewards',0));SELECT * INTO existing FROM beauty.referral_rewards WHERE booking_id=target;
  IF existing.id IS NOT NULL THEN
  e:=beauty.referral_reward_evidence(target,existing.referral_id,existing.rule_id);
- IF e->>'decision'<>'QUALIFIED' AND NOT EXISTS(SELECT 1 FROM beauty.referral_reward_events WHERE reward_id=existing.id AND status IN ('reversed','rejected')) THEN INSERT INTO beauty.referral_reward_events(reward_id,status,reason) VALUES(existing.id,'reversed',e->>'decision');END IF;RETURN 'EXISTING_REWARD';END IF;
+ IF e->>'decision'<>'QUALIFIED' AND NOT EXISTS(SELECT 1 FROM beauty.referral_reward_events WHERE reward_id=existing.id AND status IN ('reversed','rejected')) THEN INSERT INTO beauty.referral_reward_events(reward_id,status,reason) VALUES(existing.id,'reversed',e->>'decision');END IF;
+ outcome:=CASE WHEN EXISTS(SELECT 1 FROM beauty.referral_reward_events WHERE reward_id=existing.id AND status IN ('reversed','rejected')) THEN 'REWARD_CLOSED' ELSE e->>'decision' END;
+ sim_key:=md5(jsonb_build_array(target,existing.referral_id,existing.rule_id,outcome,existing.amount_pence,e->>'net')::text);
+ IF (SELECT fingerprint FROM beauty.referral_reward_simulations WHERE booking_id=target ORDER BY sequence DESC LIMIT 1) IS DISTINCT FROM sim_key THEN INSERT INTO beauty.referral_reward_simulations(booking_id,referral_id,rule_id,decision,would_earn_pence,retained_net_pence,fingerprint) VALUES(target,existing.referral_id,existing.rule_id,outcome,CASE WHEN outcome='QUALIFIED' THEN existing.amount_pence ELSE 0 END,(e->>'net')::bigint,sim_key);END IF;
+ RETURN 'EXISTING_REWARD';END IF;
  SELECT f.* INTO a FROM beauty.referral_first_attribution f JOIN beauty.bookings b ON b.id=target JOIN beauty.professional_profiles p ON p.id=b.professional_id
  WHERE (f.channel='professional-to-professional' AND f.referred_user_id=p.user_id) OR (f.channel<>'professional-to-professional' AND f.referred_user_id=b.customer_id) ORDER BY f.attributed_at,f.referral_id LIMIT 1;
  IF a.referral_id IS NULL THEN RETURN 'NO_ATTRIBUTION';END IF;

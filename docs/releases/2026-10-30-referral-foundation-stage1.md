@@ -1,55 +1,98 @@
-# Referral foundation Stage 1 — first implementation batch
+# GLOHAUS referral foundation — Stage 1
 
-Status: isolated development branch; no production migration or reward launch.
+Status: implementation in draft PR #193, tested on isolated database copies.
+No production migration, reward launch, fee change or cash payout has occurred.
+All four channels default OFF, emergency stop ON, reward amounts zero and the
+monthly budget unset. Only the Owner can configure and explicitly launch a channel.
 
-## Approved scope
+## Reused foundations
 
-The Owner approved continuing after the Step 0 inspection, specifically resolving
-qualification disagreements and enforcing one referral per person. Stage 1 also
-requires the unified four-channel system, immutable reward ledger, financial
-safeguards, Owner controls and dry-run dashboard. This batch does not complete
-that wider scope.
+Existing account/Owner/MFA permissions, professional and customer referral aliases,
+booking/payment/dispute events, provider-fee reconciliation, financial journal,
+review queue, growth components and scheduled maintenance remain connected.
+The permanent first-attribution registry imports the earliest existing claim,
+preserving historical source rows. New attribution is captured at Auth INSERT,
+not from subsequently editable metadata. Signup alone never creates a reward.
 
-## Changes in this batch
+## Delivered source
 
-- Event reconciliation and the Owner refresh now use the same database evaluator.
-- Qualifying booking evidence requires completed status and completion date,
-  captured on-platform payment with a provider reference and paid status, no
-  refund of any amount, no dispute and no booking of one's own professional profile.
-- Referral qualification waits fourteen days after completion by default. Ordinary
-  consented profile-view conversion tracking retains its existing completion timing.
-- Flagged or rejected reviews are reflected in qualification history without
-  clearing or changing the Owner's decision.
-- A permanent person-level reservation prevents a second referral across the
-  existing customer and professional referral tables. The primary key is the
-  concurrency boundary; no application-only check is relied on.
-- Existing historical conflicts retain their source records; earliest creation date,
-  then referral ID, deterministically selects the permanent reservation. Historical
-  accounts are not newly rewarded or promised a reward.
-- Attribution identity, code and date cannot be changed. Removing a legacy source
-  record does not free the person's reservation. No new customer-facing messages,
-  rewards, financial transactions, commission changes or Founding changes are created.
+- One permanent random canonical code per account, explicit channel links and
+  Owner-created manual partner codes with an existing credit recipient account.
+- Four channels: customer, professional to professional, professionals introducing
+  their own customers, and manual partners. Legacy GC/GH links remain aliases.
+- Immutable first attribution with code, channel and signup date. A second claim
+  is blocked across channels, including after deletion of a legacy source row.
+  The old post-signup claim form/API is retired.
+- One shared booking evidence check and a default 14-day completed-booking hold.
+  Captured on-platform payment, completion, no refund/dispute and a genuinely new
+  customer are required. Flags, self-bookings and linked accounts prevent qualification.
+- Retained revenue comes from posted platform revenue and actual provider costs,
+  not service value, deposits, waived commission or estimated processing fees.
+  Unknown costs remain pending. Default minimum is £2; a fixed reward exceeding
+  40% of retained net is refused rather than silently reduced.
+- Append-only original reward and event tables. Database uniqueness covers booking
+  and referral. Status changes append pending/approved/released/reversed/rejected
+  events; original amounts, rule versions and dates are never rewritten. Refunds,
+  disputes and new disqualifying evidence append reversals automatically.
+- Dry-run simulations are separate from credit-bearing records. They do not consume
+  real launch allocations. A booking-time switch/rule snapshot prevents retroactive
+  awards for bookings made while OFF and preserves a live booking's recorded offer.
+- Audited channel rules, per-person/channel monthly caps, overall monthly budget,
+  explicit channel launch confirmation and an emergency stop. Emergency stop pauses
+  every channel; launching one channel does not restart the others. Caps use London
+  calendar months and a shared database lock. Reversed original allocations still
+  count toward that month's caps and budget, conservatively.
+- Salted hashes for device cookie, verified phone/billing phone, email pattern,
+  Stripe card fingerprint, billing address and deployment-observed IP signals.
+  Overlaps create review cases, not automatic findings of fraud. Owner review
+  decisions append history. A new customer matching an older paying account is
+  also flagged. Raw card/contact/address/IP values are not stored in the signal tables.
+- Owner page `/admin/referrals`: one table per channel, budget/rules/launch/stop,
+  partner codes, risk review, ledger history and settings audit. Historical review
+  cases remain in the existing queue and contribute to the central flag counts.
+  The obsolete commission-waiver planning form is replaced with the new controls.
+- Scheduled catch-up processes bookings in bounded, rotating batches; source
+  payment/refund/dispute changes reconcile existing rewards immediately.
 
-## Validation
+## Required acceptance checks
 
-Targeted local validation: 36 tests passed, one native PostgreSQL concurrency test
-skipped locally. This includes applying the complete migration history to an isolated
-PGlite database, both cross-channel claim directions, self-referrals, immutability,
-removal/reclaim protection, Owner refresh versus event qualification, partial/full
-refunds, cancellation, disputes, hold periods and missing provider references.
-Native PostgreSQL execution, wider regression checks and release status are tracked
-in the pull request; do not interpret the local skip as a pass.
+Executed in isolated PostgreSQL-compatible fixtures. Native CI additionally checks
+real PostgreSQL migrations and concurrent claims/cap allocation. Exact final-head
+counts and CI links are recorded in the PR description.
 
-## Still required before Stage 1 is complete
+| Required check | Verified behavior |
+| --- | --- |
+| Self-referral | Direct self claims fail; known self email creates no attribution |
+| Duplicate reward | Database rejects a second original for the same booking |
+| Signup only | No reward or credit event is created |
+| Cancel/refund/dispute | Booking cannot qualify |
+| Refund after reward | Released credit receives a negative reversal event |
+| Founding protection | Existing 0% rule dates and legacy eligibility are unchanged |
+| Minimum revenue | £1.99 retained net is refused under the £2 default |
+| Caps | Person/channel/budget limits pause new allocations; native cap race permits one winner |
+| Master OFF | Only simulation rows are written; OFF-period bookings cannot be awarded after launch |
+| Append-only | Update/delete/truncate attempts fail for ledger and settings history |
 
-- Canonical account codes, all four channel links, signup-time capture and manual partners.
-- Linking the new reservation to professional-own-customer and manual-partner claims.
-- Reliable shared-device/phone/email-pattern/card/address/IP evidence and review integration.
-- Append-only reward/event ledger, original-award booking uniqueness and financial reversals.
-- Actual retained revenue integration, £2 minimum, 40% ceiling, audited per-channel
-  settings, caps, Owner-set overall budget, dry-run accounting and launch/emergency controls.
-- Central channel dashboard and all ten required Stage 1 acceptance tests.
-- Verified restorable production backup before any production database change.
+Additional checks cover all four channels, actual-fee double-count prevention,
+unknown-cost holds, 40% ceiling, immutable signup metadata, risk review, private
+signal access, emergency stop, locked offers and Owner-page authorization/outages.
 
-Rewards remain OFF. The overall budget and reward amounts have not been invented.
-The unrelated fee PR remains paused. Existing Founding commitments are unchanged.
+## Release gates and practical limits
+
+1. Finish final-head CI and preview review. A Vercel frontend preview alone is not
+   proof that these database migrations are installed on an isolated hosted backend.
+2. Take and verify a restorable production database backup before any production
+   database change. The connected database tool has no backup/export operation;
+   the Supabase dashboard currently requires sign-in in the cloud browser.
+3. Apply verified changes only to the production database associated with glohaus1,
+   then deploy the matching glohaus1 application and verify tracking and Owner access.
+   Re-check that every reward channel remains OFF and the budget remains unset.
+4. Reward launch is a separate, future Owner approval. Do not enable channels,
+   create real reward records, release credits or run cash payouts during deployment.
+
+Historical device/IP/card/address evidence cannot be invented: coverage starts
+when the corresponding security sign-in or verified payment path observes it.
+The device signal is a first-party security cookie, not a hardware identity.
+Shared-household signals can be legitimate and require review. Customer-facing
+credit redemption and partner portals are not added in this infrastructure stage.
+The unrelated booking-fee PR remains paused. No Founding commitments are changed.

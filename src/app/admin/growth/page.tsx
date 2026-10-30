@@ -1,7 +1,6 @@
 import { AcquisitionReport } from "@/components/acquisition-report";
 import type { AcquisitionOverview } from "@/modules/admin/acquisition";
 import Link from "next/link";
-import { saveRewardDraft } from "./reward-action";
 import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
 import { AccessMessage } from "@/components/access-message";
@@ -18,7 +17,7 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
   const params = await searchParams;
   const period = growthPeriod(params.period);
   const rank = ["completedBookings","uniqueClients","returningClients","completedValuePence"].includes(params.rank??"") ? params.rank! : "completedBookings";
-  const [result, referralRows, activeRows, profileOpenRows, customerReferrals, customerReferralsInPeriod, topCustomerReferrers, rewardDraft] = await Promise.all([
+  const [result, referralRows, activeRows, profileOpenRows, customerReferrals, customerReferralsInPeriod, topCustomerReferrers] = await Promise.all([
     withOwner(db => ownerGrowthOverview(db, period)).catch(() => null),
     withOwner(db => ownerReferralPeriod(db, period)).catch(() => null),
     withOwner(db => ownerMeaningfulActivity(db, period)).catch(() => null),
@@ -44,9 +43,6 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
        GROUP BY c.code ORDER BY attributed DESC,c.code ASC LIMIT 25`,
       [period==="week"?"7 days":period==="year"?"1 year":"1 month"]
     )).rows).catch(() => null),
-    withOwner(async db => (await db.query<{value:{enabled:boolean;customerCreditPence:number;professionalWaiverDays:number;minimumCompletedBookings:number}|null}>(
-      "SELECT value FROM beauty.platform_settings WHERE key='referral_rewards_draft'"
-    )).rows[0]?.value).catch(() => null),
   ]);
   const acquisition = await withOwner(async db => (await db.query<{data:AcquisitionOverview}>("SELECT beauty.acquisition_overview($1,true) AS data",[period==="week"?7:period==="year"?366:31])).rows[0]?.data ?? null).catch(()=>null);
   const rows = [...(result?.rows ?? [])].sort((a,b)=>Number(b[rank as keyof typeof b])-Number(a[rank as keyof typeof a]));
@@ -76,8 +72,8 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
           <tbody>{rows.map(row=><tr key={row.professionalId}><td>{row.businessName}</td><td>{row.completedBookings}</td><td>{row.uniqueClients}</td><td>{row.returningClients}</td><td>{money(Number(row.completedValuePence))}</td></tr>)}
           {!rows.length && <tr><td colSpan={5}>No qualifying completed bookings in this period.</td></tr>}</tbody></table></div>
       </section></>}
-    <section className="admin-detail-card" style={{ padding: 24, marginTop: 20 }}><h2>Referral performance</h2>
-      <p>Attributed accounts created within the selected reporting period. Rewards are not enabled.</p>
+    <section className="admin-detail-card" style={{ padding: 24, marginTop: 20 }}><h2>Earlier professional referral records</h2>
+      <p>Historical records from the earlier professional register. Use the Referral Foundation for unified current reporting.</p>
       {referralRows ? <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Professional</th><th>Qualified</th><th>Attributed accounts</th></tr></thead><tbody>
       {referralRows.map(r=><tr key={r.professionalId}><td>{r.businessName}</td><td>{r.qualifiedReferrals}</td><td>{r.referredAccounts}</td></tr>)}
       {!referralRows.length&&<tr><td colSpan={3}>No referrals recorded in this period.</td></tr>}</tbody></table></div> : <p role="alert">Referral reporting unavailable.</p>}
@@ -97,7 +93,7 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
       {profileOpenRows ? <ul>{profileOpenRows.map(row=><li key={row.professionalId}>{result?.rows.find(p=>p.professionalId===row.professionalId)?.businessName??"Professional"}: {Number(row.opens)} opens</li>)}</ul> : <p role="alert">Profile opening statistics unavailable.</p>}
     </section>
     <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
-      <h2>Customer referrals</h2>
+      <h2>Earlier customer referral records</h2>
       {customerReferrals ? <p>{customerReferrals.total} attributed registrations overall · {customerReferrals.last30Days} in the last 30 days.</p> : <p role="alert">Customer referral statistics unavailable.</p>}
       {customerReferralsInPeriod ? <p><strong>{customerReferralsInPeriod.registrations}</strong> attributed registrations from <strong>{customerReferralsInPeriod.referrers}</strong> distinct referrers during the selected {period==="week"?"7 days":period==="month"?"month":"year"}.</p> : <p role="alert">Period referral statistics unavailable.</p>}
       <h3>Most successful customer referrers</h3>
@@ -108,26 +104,7 @@ export default async function GrowthPage({ searchParams }: { searchParams: Promi
       </tbody></table></div> : <p role="alert">Customer referrer ranking unavailable.</p>}
       <p>Rewards remain disabled.</p>
     </section>
-    <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
-      <p className="eyebrow">OWNER CONTROL · DRAFT ONLY</p>
-      <h2>Referral rewards planning</h2>
-      <p>Rewards are permanently OFF in this release. These values are planning settings only. They cannot issue booking credits, waive commission or trigger payments.</p>
-      <form action={saveRewardDraft} style={{display:"grid",gap:12,maxWidth:440}}>
-        <label>Proposed customer booking credit (pence, maximum £10)
-          <input type="number" name="customerCreditPence" min="0" max="1000" step="1" required defaultValue={rewardDraft?.customerCreditPence??0}/>
-        </label>
-        <label>Proposed professional commission waiver (days, maximum 30)
-          <input type="number" name="professionalWaiverDays" min="0" max="30" step="1" required defaultValue={rewardDraft?.professionalWaiverDays??0}/>
-        </label>
-        <label>Minimum qualifying completed paid bookings (1 to 5)
-          <input type="number" name="minimumBookings" min="1" max="5" step="1" required defaultValue={rewardDraft?.minimumCompletedBookings??1}/>
-        </label>
-        <button className="button" type="submit">Save draft settings (rewards stay off)</button>
-      </form>
-      {params.rewardDraft==="saved"&&<p role="status">Draft saved. Rewards remain disabled.</p>}
-      {params.rewardDraft==="invalid"&&<p role="alert">Invalid reward settings. No changes saved.</p>}
-      {params.rewardDraft==="unavailable"&&<p role="alert">Settings unavailable; no changes saved.</p>}
-    </section>
+    <section className="admin-detail-card" style={{padding:24,marginTop:20}}><h2>Referral reward controls</h2><p>Configure credit-only rules, review cases and inspect all four channels in the Referral Foundation.</p><Link href="/admin/referrals">Open unified referral controls →</Link></section>
     <p>Website-wide unique visits and precise view-to-booking conversions are not estimated.</p>
   </main>;
 }

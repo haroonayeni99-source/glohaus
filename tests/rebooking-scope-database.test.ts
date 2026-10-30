@@ -27,6 +27,12 @@ beforeAll(async () => {
       "utf8",
     ),
   );
+  await db.exec(
+    await readFile(
+      new URL("../db/patches/rebooking-repeat-optout.sql", import.meta.url),
+      "utf8",
+    ),
+  );
   for (const auth of ["rebook-pro", "rebook-client", "rebook-owner"]) {
     const a = await db.transaction(async (tx) => {
       await tx.exec("SET LOCAL ROLE beauty_app");
@@ -698,6 +704,49 @@ it("global withdrawal suppresses waiting work and later global opt-in cannot rev
     expect(await preflight(tx, jobs[0].id)).toBeNull();
     expect(await prepare(tx)).toBe(0);
   }));
+it("repeated unsubscribe revokes a named choice saved while global email was already off", () =>
+  isolated(async (tx) => {
+    await booking(tx);
+    await tx.query(
+      "UPDATE beauty.marketing_preferences SET rebooking=false WHERE user_id=$1",
+      [client],
+    );
+    await actor(
+      tx,
+      "rebook-client",
+      "SELECT beauty.set_my_rebooking_consent($1,'email',true)",
+      [pro],
+    );
+    const token = (
+      await tx.query(
+        "SELECT unsubscribe_token FROM beauty.marketing_preferences WHERE user_id=$1",
+        [client],
+      )
+    ).rows[0].unsubscribe_token;
+    expect(
+      (
+        await worker(tx, "SELECT beauty.unsubscribe_marketing($1) AS changed", [
+          token,
+        ])
+      ).rows[0].changed,
+    ).toBe(true);
+    expect(
+      (
+        await tx.query(
+          "SELECT enabled FROM beauty.rebooking_customer_consents WHERE user_id=$1",
+          [client],
+        )
+      ).rows[0].enabled,
+    ).toBe(false);
+    await tx.query(
+      "UPDATE beauty.marketing_preferences SET rebooking=true WHERE user_id=$1",
+      [client],
+    );
+    await tx.query("UPDATE beauty.rebooking_settings SET enabled=true");
+    expect(await prepare(tx)).toBe(0);
+  }));
+
+// Uses committed disposable fixtures across connections; keep this native-only case last.
 it.skipIf(process.env.GLOHAUS_NATIVE_DATABASE !== "1")(
   "pause waits for a concurrent queue transaction then suppresses its new job",
   async () => {

@@ -39,3 +39,9 @@ The full local suite before this final follow-up passed 1,755 tests with four sk
 `db/patches/rebooking-scope-serialization.sql` (SHA-256 `516556497514c221044ce5a5cdb9c2d7f2dc5c542e7dad0591ec0f6a4a15da72`) is applied only to isolated staging as `rebooking_scope_serialization_candidate`, version `20261030212955`. Scoped consent writes, professional controls and global opt-out use the existing queue advisory lock. They therefore wait for an in-flight queue transaction before suppressing its new work, closing the queue-versus-pause/re-opt-in race without changing payment or reward locks.
 
 70 focused tests passed after this change; the additional parallel queue/pause case is native-PostgreSQL-only and skipped in PGlite. It waits for an actual ungranted advisory lock, commits the queue transaction, then verifies that pause suppresses the newly committed job. Native CI results are required before treating that concurrent case as passed.
+
+## Repeated unsubscribe while already globally off
+
+A regression reproduced that a named choice saved while global rebooking was already off survived a second unsubscribe. The candidate `db/patches/rebooking-repeat-optout.sql` changes the trigger to process any saved global-off value, not just true-to-false transitions. It preserves the scope function and queue lock.
+
+Applied only to isolated staging as `rebooking_repeat_optout_candidate`, version `20261030221540`; SHA-256 `33eda21303ef2b46aebfe596e4a370d8ca133a1c40cb7550fed21158e1b17e25`. Local final focused checks: 71 passed, one native-only parallel case skipped. Native PostgreSQL must verify the expanded 26-case scoped suite. All four candidate files must be packaged/reconciled in their documented order before any production release.

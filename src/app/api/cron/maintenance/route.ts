@@ -28,6 +28,9 @@ export async function GET(request: Request) {
     });
 
     const activity = await withPaymentWorker(async (db) => (await db.query<{ data: { alerts: number } }>("SELECT beauty.run_professional_activity_monitor() AS data")).rows[0].data);
+    const founding = await withPaymentWorker(async (db) =>
+      (await db.query<{ data: { alerts: number } }>("SELECT beauty.run_founding_expiry_monitor() AS data")).rows[0].data,
+    );
 
     const providerCosts = await retryBookingProviderCosts();
     const preparation = await withPaymentWorker(async (db) => (await db.query<{ data: Record<string,number> }>("SELECT beauty.purge_booking_preparation() AS data")).rows[0].data);
@@ -43,7 +46,7 @@ export async function GET(request: Request) {
     });
 
     return Response.json(
-      { ...result, providerCosts, preparation, activity },
+      { ...result, providerCosts, preparation, activity, founding },
       {
         headers: { "Cache-Control": "private, no-store" },
       },

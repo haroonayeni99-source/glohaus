@@ -15,12 +15,14 @@ export function EmailAuthForm({
   audience = "customer",
   referral,
   isolatedPreviewAuth = false,
+  ownerEntry = false,
 }: {
   mode: "sign-in" | "sign-up";
   redirectTo: string;
   audience?: "customer" | "professional";
   referral?: ReferralLink|null;
   isolatedPreviewAuth?: boolean;
+  ownerEntry?: boolean;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -225,19 +227,24 @@ export function EmailAuthForm({
   }
 
   const professional = audience === "professional";
+  const ownerSignIn = ownerEntry && mode === "sign-in" && !professional;
   const title =
     mode === "sign-in"
-      ? professional
-        ? "GLOHAUS PRO sign in"
-        : "Customer sign in"
+      ? ownerSignIn
+        ? "Owner / Admin sign in"
+        : professional
+          ? "GLOHAUS PRO sign in"
+          : "Customer sign in"
       : professional
         ? "Create your professional account"
         : "Create your account";
   const description =
     mode === "sign-in"
-      ? professional
-        ? "Sign in to manage your professional dashboard, bookings, clients and earnings."
-        : "Sign in to your customer account to discover, book, shop and manage appointments."
+      ? ownerSignIn
+        ? "Use the email address assigned Owner or Admin access. Your existing role and authenticator checks still apply."
+        : professional
+          ? "Sign in to manage your professional dashboard, bookings, clients and earnings."
+          : "Sign in to your customer account to discover, book, shop and manage appointments."
       : professional
         ? "Start building your GLOHAUS PRO storefront today."
         : "Discover, save and book beauty that feels like you.";
@@ -302,14 +309,16 @@ export function EmailAuthForm({
           ? "Please wait…"
           : mode === "sign-up"
             ? "Create account"
-            : professional
-              ? "Sign in to GLOHAUS PRO"
-              : "Sign in as customer"}
+            : ownerSignIn
+              ? "Sign in as Owner / Admin"
+              : professional
+                ? "Sign in to GLOHAUS PRO"
+                : "Sign in as customer"}
       </button>
       <p className="auth-switch">
         {mode === "sign-in" ? (
           <>
-            New to {professional ? "GLOHAUS PRO" : "GLOHAUS"}?{" "}
+            {ownerSignIn ? "Need a separate customer account? " : <>New to {professional ? "GLOHAUS PRO" : "GLOHAUS"}?{" "}</>}
             <Link
               href={
                 professional

@@ -59,6 +59,7 @@ export default async function Page({
             mode="sign-in"
             redirectTo={destination}
             audience="customer"
+            ownerEntry={ownerEntry}
           />
           <p className="auth-switch">
             Owner/Admin accounts are detected automatically and open the Owner/Admin control centre.

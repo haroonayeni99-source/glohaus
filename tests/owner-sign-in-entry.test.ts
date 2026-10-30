@@ -17,6 +17,7 @@ it("preserves an explicit Owner destination despite a stale professional intent"
   expect(children[0].props.children[0].props.children).toBe("Owner / Admin sign in");
   expect(children[0].props["aria-label"]).toBe("Owner / Admin sign in");
   expect(children[1].props.redirectTo).toBe("/admin");
+  expect(children[1].props.ownerEntry).toBe(true);
 });
 it("keeps ordinary professional sign-in intent working", async () => {
   await expect(Page({ searchParams: Promise.resolve({ intent: "professional" }) })).rejects.toThrow("/professional/sign-in");

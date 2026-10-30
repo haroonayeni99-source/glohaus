@@ -1,3 +1,4 @@
+import { renderToStaticMarkup } from "react-dom/server";
 import * as React from "react";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { EmailAuthForm } from "@/components/email-auth-form";
@@ -178,4 +179,23 @@ describe("email authentication submission", () => {
     expect(mocks.setters[0]).toHaveBeenLastCalledWith(expect.stringContaining("sign in again"));
   });
 
+});
+
+describe("sign-in entry copy", () => {
+  it.each([
+    ["sign-in", "customer", true, "Owner / Admin sign in", "Sign in as Owner / Admin"],
+    ["sign-in", "customer", false, "Customer sign in", "Sign in as customer"],
+    ["sign-in", "professional", true, "GLOHAUS PRO sign in", "Sign in to GLOHAUS PRO"],
+    ["sign-up", "customer", true, "Create your account", "Create account"],
+  ] as const)("labels %s/%s explicitly without changing its audience", (mode, audience, ownerEntry, title, button) => {
+    const markup = renderToStaticMarkup(EmailAuthForm({ mode, audience, ownerEntry, redirectTo: "/admin" }));
+    expect(markup).toContain(`<h1>${title}</h1>`);
+    expect(markup).toContain(`>${button}</button>`);
+    if (mode === "sign-in" && audience === "customer" && ownerEntry) {
+      expect(markup).toContain("assigned Owner or Admin access");
+      expect(markup).toContain("Need a separate customer account?");
+    }
+    expect(mocks.signIn).not.toHaveBeenCalled();
+    expect(mocks.signUp).not.toHaveBeenCalled();
+  });
 });

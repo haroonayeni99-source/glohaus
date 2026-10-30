@@ -27,3 +27,9 @@ After staging application: automation false; unpaused professionals zero; enable
 59 focused tests across scoped API/DB and existing reminder/worker isolation passed; TypeScript, targeted lint, whitespace checks and production build passed before publication. A dedicated disposable native PostgreSQL job verifies the scoped database cases without access to a remote database. Full-suite and final-head CI results belong in the PR release record; do not infer them from this initial checkpoint.
 
 Authenticated hosted customer/professional/Owner journeys require user-controlled credentials/MFA and remain unverified. Production backup/restore verification, migration packaging and explicit Owner activation are still required. Physical-device and external-provider checks are separate. Incremental rebooking measurement/holdout remains a later pilot step requiring real completed bookings and sufficient volume; no retention uplift is claimed.
+
+## Global unsubscribe follow-up
+
+`db/patches/rebooking-global-optout.sql` (SHA-256 `608acdf7999a2cf7d1d84be64079d213b6023b24efdb3028e955586f22a90b73`) is applied only to isolated staging as `rebooking_global_optout_candidate`, version `20261030212621`. It links the existing global preference/unsubscribe function to the new scoped consent and queue: withdrawing global rebooking consent revokes existing named permissions, records immutable events and suppresses waiting reminders. A later global opt-in alone cannot revive them.
+
+The full local suite before this final follow-up passed 1,755 tests with four skips (three native concurrency cases and one external-feed smoke). Four additional real-component form tests passed. Final follow-up checks and native PostgreSQL results are recorded in the PR. All sending remains OFF.

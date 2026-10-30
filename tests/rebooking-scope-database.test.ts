@@ -12,6 +12,12 @@ beforeAll(async () => {
       "utf8",
     ),
   );
+  await db.exec(
+    await readFile(
+      new URL("../db/patches/rebooking-global-optout.sql", import.meta.url),
+      "utf8",
+    ),
+  );
   for (const auth of ["rebook-pro", "rebook-client", "rebook-owner"]) {
     const a = await db.transaction(async (tx) => {
       await tx.exec("SET LOCAL ROLE beauty_app");
@@ -644,4 +650,42 @@ it("consent for a different professional cannot qualify this booking", () =>
         [JSON.stringify({ serviceId: foreign, delayDays: 30 })],
       ),
     ).rejects.toThrow("FORBIDDEN");
+  }));
+it("global withdrawal suppresses waiting work and later global opt-in cannot revive named consent", () =>
+  isolated(async (tx) => {
+    await booking(tx);
+    await tx.query("UPDATE beauty.rebooking_settings SET enabled=true");
+    await prepare(tx);
+    const jobs = await claim(tx);
+    const token = (
+      await tx.query(
+        "SELECT unsubscribe_token FROM beauty.marketing_preferences WHERE user_id=$1",
+        [client],
+      )
+    ).rows[0].unsubscribe_token;
+    expect(
+      (
+        await worker(tx, "SELECT beauty.unsubscribe_marketing($1) AS changed", [
+          token,
+        ])
+      ).rows[0].changed,
+    ).toBe(true);
+    expect(
+      (
+        await tx.query(
+          "SELECT enabled FROM beauty.rebooking_customer_consents WHERE user_id=$1",
+          [client],
+        )
+      ).rows[0].enabled,
+    ).toBe(false);
+    expect(
+      (await tx.query("SELECT details FROM beauty.rebooking_scope_events"))
+        .rows[0].details,
+    ).toMatchObject({ source: "global_opt_out", enabled: false });
+    await tx.query(
+      "UPDATE beauty.marketing_preferences SET rebooking=true WHERE user_id=$1",
+      [client],
+    );
+    expect(await preflight(tx, jobs[0].id)).toBeNull();
+    expect(await prepare(tx)).toBe(0);
   }));

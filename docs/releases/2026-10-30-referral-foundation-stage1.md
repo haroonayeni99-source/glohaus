@@ -33,7 +33,9 @@ not from subsequently editable metadata. Signup alone never creates a reward.
 - Append-only original reward and event tables. Database uniqueness covers booking
   and referral. Status changes append pending/approved/released/reversed/rejected
   events; original amounts, rule versions and dates are never rewritten. Refunds,
-  disputes and new disqualifying evidence append reversals automatically.
+  disputes and confirmed disqualifying evidence append reversals automatically.
+  Open review flags pause unreleased awards so an Owner clearance can resume approval;
+  released credit is reversed if later evidence makes it ineligible.
 - Dry-run simulations are separate from credit-bearing records. They do not consume
   real launch allocations. A booking-time switch/rule snapshot prevents retroactive
   awards for bookings made while OFF and preserves a live booking's recorded offer.

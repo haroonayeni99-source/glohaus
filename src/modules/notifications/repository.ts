@@ -6,6 +6,7 @@ export type InAppNotification = {
   booking_id: string | null;
   product_order_id: string | null;
   kind:
+    | "founding_expiry"
     | "arrival_update"
     | "journey_departure"
     | "customer_message"

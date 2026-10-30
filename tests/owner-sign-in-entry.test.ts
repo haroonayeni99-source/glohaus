@@ -4,7 +4,7 @@ import Page from "@/app/sign-in/[[...sign-in]]/page";
 
 const redirect = vi.hoisted(() => vi.fn((url: string) => { throw new Error(url); }));
 vi.mock("next/navigation", () => ({ redirect }));
-vi.mock("@/lib/preview-auth", () => ({ productionAuthUrl: () => null }));
+vi.mock("@/lib/preview-auth", () => ({ productionAuthUrl: () => null, isolatedValidationPreview: () => false }));
 vi.mock("@/lib/config", () => ({ authConfigured: () => true }));
 vi.mock("@/components/auth-frame", () => ({ AuthFrame: "div" }));
 vi.mock("@/components/email-auth-form", () => ({ EmailAuthForm: "form" }));

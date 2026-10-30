@@ -51,47 +51,7 @@ LIVE AND VERIFIED below is restricted to the specific observed behaviour. PARTIA
 2. Complete isolated authenticated customer/professional/Owner screen checks with user-controlled sign-in and MFA. Do not enter credentials through model-visible tools or use real customer data as fixtures. Then complete safe authorised production account checks.
 3. Explicitly approve any new standard/referral fee values and activation, reward channel amounts/budgets/launch and real promotional sends. Until then keep their safe defaults/off switches.
 4. Resolve Meta/other provider identity and permission requirements in the relevant external accounts. Verify each provider journey after authorisation.
-5. Perform physical iPhone/Android installed-app tests and Search Console inspection. Current browser emulation and sitemap GET checks a…3071 tokens truncated…onents/access-message";
-import { PublicHeader } from "@/components/public-header";
-import { ProfessionalNavigation } from "@/components/professional-navigation";
-import { MarketingPreferencesForm } from "@/components/marketing-preferences-form";
+5. Perform physical iPhone/Android installed-app tests and Search Console inspection. Current browser emulation and sitemap GET checks are narrower evidence.
+6. Review leaked-password protection availability and plan entitlement before enabling; no paid upgrade is authorised. Guidance: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection .
 
-export default async function MarketingPreferencesPage() {
-  const result = await pageAccount();
-  if (!result.account) return <div className="standalone-message"><AccessMessage code={result.error} /></div>;
-  const account = result.account;
-  const preferences = await withIdentity(
-    account.authId,
-    async (db) =>
-      (
-        await db.query<{ data: Record<string, boolean> }>(
-          "SELECT beauty.my_marketing_preferences() AS data",
-        )
-      ).rows[0]?.data ?? {},
-  );
-
-  const professional = account.roles.includes("professional");
-  const content = (
-    <main id="main" className={professional ? "pro-main pro-management-page" : "customer-account-page"}>
-      <p className="eyebrow">EMAIL PREFERENCES</p>
-      <h1>Choose what GLOHAUS sends you.</h1>
-      <p className="lead">
-        Marketing is optional. Booking, order, security, verification and payout emails stay separate and may still be sent when needed.
-      </p>
-      <p><Link href="/account/rebooking">Choose rebooking emails by professional</Link></p>
-      <MarketingPreferencesForm initial={marketingPreferences(preferences)} professional={professional} />
-    </main>
-  );
-
-  return professional ? (
-    <div className="pro-app">
-      <ProfessionalNavigation active="more" displayName={account.displayName} />
-      {content}
-    </div>
-  ) : (
-    <>
-      <PublicHeader signedIn />
-      {content}
-    </>
-  );
-}
+These gates do not prevent scoped application-only fixes, read-only production inspection or isolated tests. Continue those independently. Never mark the whole platform complete while these acceptance items remain unresolved.

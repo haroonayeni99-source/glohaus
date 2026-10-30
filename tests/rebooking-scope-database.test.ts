@@ -758,7 +758,7 @@ it.skipIf(process.env.GLOHAUS_NATIVE_DATABASE !== "1")(
     ).toBe("suppressed");
     expect(
       (
-        await db.query(
+        await db.query<{ paused: boolean }>(
           "SELECT paused FROM beauty.rebooking_professional_settings",
         )
       ).rows[0].paused,

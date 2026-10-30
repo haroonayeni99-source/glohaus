@@ -123,7 +123,12 @@ export async function publicProfessionals(
          bool_or(CASE WHEN $6::boolean OR $22::date IS NOT NULL THEN beauty.public_service_available_on(svc.id,coalesce($22::date,(now() AT TIME ZONE 'Europe/London')::date)) ELSE false END) AS available
          FROM beauty.public_services svc WHERE svc.professional_id=p.id
          AND beauty.service_matches_treatment(svc.id,CASE WHEN resolved.kind IS NOT NULL THEN $18 ELSE '' END,$19,$20,$21)
-         AND (resolved.kind IS NOT NULL OR $18='' OR to_tsvector('simple',svc.name) @@ plainto_tsquery('simple',$18) OR p.business_name ILIKE $1 OR p.city ILIKE $1 OR p.category ILIKE $1 OR d.location_details ILIKE $1)
+         AND (resolved.kind IS NOT NULL OR $18='' OR to_tsvector('simple',concat_ws(' ',svc.name,svc.description,svc.speciality_name,svc.category)) @@ plainto_tsquery('simple',$18)
+           OR EXISTS(SELECT 1 FROM beauty.public_service_options opt WHERE opt.service_id=svc.id AND opt.active
+             AND ($11::integer IS NULL OR CASE WHEN opt.kind='variation' THEN opt.price_pence ELSE svc.from_price_pence+opt.price_pence END <= $11)
+             AND (NOT $3::boolean OR CASE WHEN opt.kind='variation' THEN opt.price_pence ELSE svc.from_price_pence+opt.price_pence END <= 5000)
+             AND to_tsvector('simple',concat_ws(' ',svc.name,svc.description,svc.speciality_name,svc.category,opt.name,
+               (SELECT string_agg(attribute.value,' ') FROM jsonb_each_text(opt.attributes) attribute))) @@ plainto_tsquery('simple',$18)) OR p.business_name ILIKE $1 OR p.city ILIKE $1 OR p.category ILIKE $1 OR d.location_details ILIKE $1)
          AND ($10::text='' OR svc.category ILIKE $10 OR svc.speciality_name ILIKE $10 OR svc.name ILIKE $10)
          AND ($11::integer IS NULL OR svc.from_price_pence<=$11)
          AND ((NOT $6::boolean AND $22::date IS NULL) OR beauty.public_service_available_on(svc.id,coalesce($22::date,(now() AT TIME ZONE 'Europe/London')::date)))

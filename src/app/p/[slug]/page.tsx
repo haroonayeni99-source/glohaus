@@ -1,3 +1,7 @@
+import {readBundleSelection} from "@/modules/bundles/links";
+import {bundleChoices} from "@/modules/bundles/repository";
+import {AddToCartButton} from "@/components/add-to-cart-button";
+import {money} from "@/modules/professionals/domain";
 import { recordConsentedView } from "./growth-action";
 import { publicSocialPosts } from "@/modules/business-tools/repository";
 import { SocialPortfolio } from "@/components/social-portfolio";
@@ -54,7 +58,7 @@ export default async function Profile({
 }: {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{
-    service?:string;speciality?:string;reviewService?:string;
+    selection?:string;service?:string;speciality?:string;reviewService?:string;
     bookService?: string;
     bookPayment?: string;
     bookVariation?:string;bookExtras?:string;
@@ -192,7 +196,12 @@ export default async function Profile({
   });
   if (!data) notFound();
   const socialPosts = await withIdentity("", db => publicSocialPosts(db,data.professional.id)).catch(() => []);
-  const focusService=data.services.find(s=>s.id===(booking.service||booking.bookService));
+  const selection=readBundleSelection(booking.selection);
+  const choices=selection?.professionalId===data.professional.id?await withIdentity("",db=>bundleChoices(db,data.professional.id,selection!)).catch(()=>null):null;
+  const pairedService=choices?.services.find(s=>s.id===selection?.serviceId);
+  const pairedProduct=choices?.products.find(p=>p.id===selection?.productId);
+  const validSelection=Boolean(pairedService&&pairedProduct);
+  const focusService=data.services.find(s=>s.id===(booking.service||booking.bookService||(validSelection?pairedService?.id:undefined)));
   const selectedSpeciality=focusService?.speciality_id??(data.specialities.some(s=>s.speciality_id===booking.speciality)?booking.speciality:null);
   return (
     <>
@@ -239,7 +248,7 @@ export default async function Profile({
         policies={<section id="professional-policies" className="professional-section"><h2>Rules & booking policies</h2><p>Choose a service to inspect its applicable general and service-specific terms before booking.</p>{data.policies.map(p=><details key={p.id}><summary>{data.services.find(s=>s.id===p.id)?.name}</summary><ProfessionalPolicySummary policy={p.policy}/></details>)}</section>}
         details={data.details}
         services={data.services}
-        specialities={data.specialities} selectedSpeciality={selectedSpeciality} selectedService={booking.service} reviewService={booking.reviewService}
+        specialities={data.specialities} selectedSpeciality={selectedSpeciality} selectedService={booking.service||(validSelection?pairedService?.id:undefined)} reviewService={booking.reviewService}
         assets={data.assets}
         reviews={data.reviews}
         hours={data.hours}
@@ -255,7 +264,9 @@ export default async function Profile({
             lastMinute={data.lastMinute}
           />
         }
-        booking={
+        booking={<>
+          {validSelection&&pairedService&&pairedProduct&&<section className="professional-section" aria-label="Service and product selection"><h2>Service + product selection</h2><p><strong>{pairedService.name}</strong> · {money(pairedService.price_pence)} base service. Options and the booking fee are shown before booking.</p><p><strong>{pairedProduct.name}</strong> · {money(pairedProduct.price_pence)}</p><p>{pairedProduct.description}</p><p>Book the service below and choose whether to add the product to your separate cart. This selection does not reserve stock or an appointment. Shipping, fees and refund terms remain separate.</p><AddToCartButton productId={pairedProduct.id}/></section>}
+          {booking.selection&&!validSelection&&<p role="status">This service and product selection is unavailable. You can still browse the professional&apos;s current services.</p>}
           <BookingPicker
             services={data.services}
             ready={paymentReady()}
@@ -265,13 +276,13 @@ export default async function Profile({
             verificationStatus={data.access.status}
             starterBookingsRemaining={data.access.starterBookingsRemaining}
             initialSelection={{
-              serviceId: booking.bookService||booking.service,
+              serviceId: booking.bookService||booking.service||(validSelection?pairedService?.id:undefined),
               paymentChoice: booking.bookPayment === "full" || booking.bookPayment === "deposit" ? booking.bookPayment : "auto",
               variationId:booking.bookVariation,extraIds:booking.bookExtras?.split(",").slice(0,10),
               date: booking.bookDate,
               startsAt: booking.bookTime,
             }}
-          />
+          /></>
         }
       />
       <BottomNavigation active="search" />

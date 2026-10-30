@@ -1,0 +1,11 @@
+import {beforeEach,expect,it,vi} from "vitest";
+import {AccessError} from "@/modules/accounts/domain";
+const mocks=vi.hoisted(()=>({query:vi.fn(),owner:true}));
+vi.mock("@/modules/admin/repository",()=>({withOwner:async(work:(db:object)=>unknown)=>{if(!mocks.owner)throw new AccessError("FORBIDDEN",403);return work({query:mocks.query});}}));
+import {POST} from "@/app/api/v1/admin/academies/route";
+const body={action:"create",academy:"Academy",cohort:"Autumn",reason:"Approved pilot cohort"};
+const req=(payload:unknown=body,origin="https://glohaus.test")=>new Request("https://glohaus.test/api/v1/admin/academies",{method:"POST",headers:{origin,"content-type":"application/json"},body:JSON.stringify(payload)});
+beforeEach(()=>{vi.clearAllMocks();mocks.owner=true;mocks.query.mockResolvedValue({rows:[{id:"00000000-0000-4000-8000-000000000001"}]});});
+it("requires Owner access and same-origin JSON",async()=>{mocks.owner=false;expect((await POST(req())).status).toBe(403);mocks.owner=true;expect((await POST(req(body,"https://attacker.test"))).status).toBe(403);expect(mocks.query).not.toHaveBeenCalled();});
+it("rejects automatic reward and referral injection",async()=>{expect((await POST(req({...body,reward:500}))).status).toBe(400);expect(mocks.query).not.toHaveBeenCalled();});
+it("saves only through the Owner-checked procedure",async()=>{const response=await POST(req());expect(response.status).toBe(200);expect(response.headers.get("cache-control")).toBe("private, no-store");expect(mocks.query).toHaveBeenCalledOnce();});

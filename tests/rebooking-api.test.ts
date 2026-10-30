@@ -1,0 +1,11 @@
+import {beforeEach,expect,it,vi} from "vitest";
+import {AccessError} from "@/modules/accounts/domain";
+const mocks=vi.hoisted(()=>({query:vi.fn(),owner:true}));
+vi.mock("@/modules/admin/repository",()=>({withOwner:async(work:(db:object)=>unknown)=>{if(!mocks.owner)throw new AccessError("FORBIDDEN",403);return work({query:mocks.query});}}));
+import {POST} from "@/app/api/v1/admin/rebooking/route";
+const rules={enabled:false,delayDays:28,cooldownDays:30,dailyCap:25,monthlyCap:100,reason:"Approved reminder pilot"};
+const req=(body:unknown,origin="https://glohaus.test")=>new Request("https://glohaus.test/api/v1/admin/rebooking",{method:"POST",headers:{origin,"content-type":"application/json"},body:JSON.stringify(body)});
+beforeEach(()=>{vi.clearAllMocks();mocks.owner=true;mocks.query.mockResolvedValue({rows:[]});});
+it("requires Owner access and same-origin JSON",async()=>{mocks.owner=false;expect((await POST(req(rules))).status).toBe(403);mocks.owner=true;expect((await POST(req(rules,"https://attacker.test"))).status).toBe(403);expect(mocks.query).not.toHaveBeenCalled();});
+it("rejects hidden consent, reward or out-of-range changes",async()=>{for(const body of [{...rules,optInEveryone:true},{...rules,reward:500},{...rules,cooldownDays:1},{...rules,reason:""}])expect((await POST(req(body))).status).toBe(400);expect(mocks.query).not.toHaveBeenCalled();});
+it("accepts an emergency stop independently of incomplete settings",async()=>{expect((await POST(req({action:"stop"}))).status).toBe(200);expect(mocks.query).toHaveBeenCalledWith("SELECT beauty.owner_rebooking_stop()");});

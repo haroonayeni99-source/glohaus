@@ -34,3 +34,8 @@ describe("Resend provider email events", () => {
     expect(providerEmailEvent(null)).toBeNull();
   });
 });
+it("recognises only valid rebooking job tags from verified provider event data",()=>{
+ const job="00000000-0000-4000-8000-000000000001";
+ expect(providerEmailEvent({type:"email.bounced",data:{email_id:"fixture",tags:{glohaus_rebooking_id:job}}})?.rebookingJobId).toBe(job);
+ expect(providerEmailEvent({type:"email.bounced",data:{email_id:"fixture",tags:{glohaus_rebooking_id:"invalid"}}})?.rebookingJobId).toBeUndefined();
+});

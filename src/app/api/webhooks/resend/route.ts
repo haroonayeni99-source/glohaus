@@ -32,8 +32,8 @@ export async function POST(request: Request) {
   if (!event) return new Response("Ignored", { status: 200 });
 
   try {
-    await withPaymentWorker((db) =>
-      db.query(
+    await withPaymentWorker(async (db) => {
+      await db.query(
         "SELECT beauty.record_email_provider_event($1,$2,$3,$4,$5)",
         [
           id,
@@ -42,8 +42,9 @@ export async function POST(request: Request) {
           event.providerEventAt,
           event.recipientEmail,
         ],
-      ),
-    );
+      );
+      if(event.rebookingJobId)await db.query("SELECT beauty.record_rebooking_email_event($1,$2,$3,$4,$5)",[id,event.rebookingJobId,event.providerEmailId,event.providerEventType,event.recipientEmail]);
+    });
     return new Response("OK", { status: 200 });
   } catch {
     console.error("Email webhook processing failed");

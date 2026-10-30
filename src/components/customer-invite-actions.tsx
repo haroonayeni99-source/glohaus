@@ -3,7 +3,7 @@ import { useState } from "react";
 
 export function CustomerInviteActions({code}:{code:string}) {
   const [message,setMessage]=useState("");
-  const url=`https://www.glohaus.shop/sign-up?ref=${encodeURIComponent(code)}`;
+  const url=`https://www.glohaus.shop/r/${encodeURIComponent(code)}?channel=customer`;
   async function copy() {
     try { await navigator.clipboard.writeText(url); setMessage("Referral link copied"); }
     catch { setMessage("Unable to copy automatically"); }

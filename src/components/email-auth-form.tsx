@@ -1,7 +1,9 @@
 "use client";
 
+import { emailAuthCallbackUrl } from "@/lib/email-auth-callback";
 import { customerNameSchema } from "@/modules/accounts/customer-profile-domain";
-import { useState } from "react";
+import {referralLink,type ReferralLink} from "@/modules/referrals/links";
+import {useState} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -11,10 +13,14 @@ export function EmailAuthForm({
   mode,
   redirectTo,
   audience = "customer",
+  referral,
+  isolatedPreviewAuth = false,
 }: {
   mode: "sign-in" | "sign-up";
   redirectTo: string;
   audience?: "customer" | "professional";
+  referral?: ReferralLink|null;
+  isolatedPreviewAuth?: boolean;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -75,14 +81,7 @@ export function EmailAuthForm({
   }
 
   function authCallbackUrl(next: string) {
-    const productionHosts = new Set(["glohaus.shop", "www.glohaus.shop"]);
-    const current = new URL(window.location.href);
-    const origin = productionHosts.has(current.hostname)
-      ? current.origin
-      : "https://www.glohaus.shop";
-    const url = new URL("/auth/callback", origin);
-    url.searchParams.set("next", next);
-    return url.toString();
+    return emailAuthCallbackUrl(window.location.href, next, isolatedPreviewAuth);
   }
 
   function confirmationDestination() {
@@ -102,12 +101,15 @@ export function EmailAuthForm({
       if (mode === "sign-up") {
         const name = audience === "customer" ? customerNameSchema.safeParse({firstName: formData.get("firstName"),lastName: formData.get("lastName") || ""}) : null;
         if (name && !name.success) { setError("Enter your first name. Your surname is optional."); setPending(false); return; }
+        const typedCode=String(formData.get("referralCode")??"").trim();
+        const signupReferral=typedCode?referralLink(typedCode,referral?.channel??(typedCode.toUpperCase().startsWith("GP")?"manual-partner":audience==="professional"?"professional-to-professional":"customer")):null;
+        if(typedCode&&!signupReferral){setError("Check the referral code, or leave it blank to continue without a referral.");setPending(false);return;}
         result = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: authCallbackUrl(confirmationDestination()),
-            data: { glohaus_audience: audience, ...(name?.success ? {first_name:name.data.firstName,last_name:name.data.lastName} : {}) },
+            data: { glohaus_audience: audience, ...(signupReferral ? {glohaus_referral:signupReferral} : {}), ...(name?.success ? {first_name:name.data.firstName,last_name:name.data.lastName} : {}) },
           },
         });
       } else {
@@ -273,6 +275,7 @@ export function EmailAuthForm({
           required
         />
       </label>
+      {mode === "sign-up"&&<label>Referral code (optional)<input name="referralCode" defaultValue={referral?.code??""} maxLength={40} autoComplete="off"/></label>}
       {mode === "sign-in" && (
         <p className="auth-switch">
           <Link href="/forgot-password">Forgot password?</Link>

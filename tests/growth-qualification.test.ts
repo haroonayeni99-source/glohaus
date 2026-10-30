@@ -1,8 +1,8 @@
 import {describe,it,expect} from "vitest";
 import {qualifyReferral,eligibleViewToBooking,referralReviewSignals,AUTOMATIC_REFERRAL_REWARDS_ENABLED} from "@/modules/admin/growth-qualification";
 const now=Date.parse("2026-10-20T12:00:00Z");
-const base={referrerUserId:"a",referredUserId:"b",registrationAtMs:now,claimAtMs:now+1000,accountClaims:1};
-const booking={status:"completed" as const,capturedPence:5000,refundedPence:0,disputed:false,customerId:"b",professionalOwnerUserId:"c"};
+const base={referrerUserId:"a",referredUserId:"b",registrationAtMs:now,claimAtMs:now+1000,accountClaims:1,evaluatedAtMs:now+14*86400000};
+const booking={onPlatformPaid:true,completedAtMs:now,status:"completed" as const,capturedPence:5000,refundedPence:0,disputed:false,customerId:"b",professionalOwnerUserId:"c"};
 describe("referral qualification — no money movement",()=>{
  it("requires genuine paid completed booking",()=>expect(qualifyReferral({...base,paidBooking:booking}).status).toBe("qualified"));
  it("does not reward registration alone",()=>expect(qualifyReferral(base).status).toBe("pending"));
@@ -11,6 +11,12 @@ describe("referral qualification — no money movement",()=>{
  it("never qualifies unpaid or no-show bookings",()=>{expect(qualifyReferral({...base,paidBooking:{...booking,status:"payment_pending"}}).status).toBe("pending");expect(qualifyReferral({...base,paidBooking:{...booking,status:"no_show"}}).status).toBe("rejected")});
  it("flags disputes and invalid payment",()=>{expect(qualifyReferral({...base,paidBooking:{...booking,disputed:true}}).status).toBe("flagged");expect(qualifyReferral({...base,paidBooking:{...booking,refundedPence:9999}}).status).toBe("flagged")});
  it("rejects full refund and suspicious booking ownership",()=>{expect(qualifyReferral({...base,paidBooking:{...booking,refundedPence:5000}}).status).toBe("rejected");expect(qualifyReferral({...base,paidBooking:{...booking,customerId:"not-b"}}).status).toBe("flagged")});
+ it("rejects partial refunds",()=>expect(qualifyReferral({...base,paidBooking:{...booking,refundedPence:1}}).status).toBe("rejected"));
+ it("waits fourteen days after completion",()=>{
+  expect(qualifyReferral({...base,evaluatedAtMs:now+14*86400000-1,paidBooking:booking}).reason).toBe("REFUND_WINDOW_OPEN");
+  expect(qualifyReferral({...base,paidBooking:{...booking,completedAtMs:undefined}}).status).toBe("pending");
+ });
+ it("requires on-platform payment evidence",()=>expect(qualifyReferral({...base,paidBooking:{...booking,onPlatformPaid:false}}).reason).toBe("ON_PLATFORM_PAYMENT_REQUIRED"));
  it("never enables automatic rewards",()=>expect(AUTOMATIC_REFERRAL_REWARDS_ENABLED).toBe(false));
 });
 describe("consented attribution and review signals",()=>{

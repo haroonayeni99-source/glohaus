@@ -4,6 +4,8 @@
  */
 export type ReferralStatus = "attributed" | "pending" | "qualified" | "flagged" | "rejected" | "reversed";
 export type BookingEvidence = {
+  onPlatformPaid: boolean;
+  completedAtMs?: number;
   status: "payment_pending" | "confirmed" | "cancelled" | "completed" | "no_show" | "expired";
   capturedPence: number;
   refundedPence: number;
@@ -17,6 +19,8 @@ export type ReferralEvidence = {
   registrationAtMs: number;
   claimAtMs: number;
   accountClaims: number;
+  evaluatedAtMs?: number;
+  holdDays?: number;
   paidBooking?: BookingEvidence;
 };
 export type QualificationResult = {status: ReferralStatus; reason: string};
@@ -37,7 +41,14 @@ export function qualifyReferral(e: ReferralEvidence): QualificationResult {
   if (!Number.isSafeInteger(b.capturedPence) || !Number.isSafeInteger(b.refundedPence) ||
       b.capturedPence <= 0 || b.refundedPence < 0 || b.refundedPence > b.capturedPence)
     return {status:"flagged",reason:"INVALID_PAYMENT_EVIDENCE"};
-  if (b.refundedPence === b.capturedPence) return {status:"rejected",reason:"FULLY_REFUNDED"};
+  if (!b.onPlatformPaid) return {status:"pending",reason:"ON_PLATFORM_PAYMENT_REQUIRED"};
+  if (b.refundedPence > 0) return {status:"rejected",reason:"REFUNDED"};
+  const holdDays=e.holdDays??14;
+  if (!Number.isSafeInteger(holdDays) || holdDays<0 || holdDays>365 ||
+      !Number.isFinite(e.evaluatedAtMs) || !Number.isFinite(b.completedAtMs))
+    return {status:"pending",reason:"MISSING_HOLD_EVIDENCE"};
+  if (e.evaluatedAtMs! < b.completedAtMs! + holdDays*86400000)
+    return {status:"pending",reason:"REFUND_WINDOW_OPEN"};
   return {status:"qualified",reason:"COMPLETED_PAID_BOOKING"};
 }
 /** Attribution is deliberately limited to consented authenticated first-party interactions. */

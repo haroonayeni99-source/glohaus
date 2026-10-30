@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { authConfigured } from "@/lib/config";
-import { productionAuthUrl } from "@/lib/preview-auth";
+import { productionAuthUrl, isolatedValidationPreview } from "@/lib/preview-auth";
 import { AuthFrame } from "@/components/auth-frame";
 import { AccessMessage } from "@/components/access-message";
 import { ForgotPasswordForm } from "@/components/forgot-password-form";
@@ -12,7 +12,7 @@ export default function Page() {
   if (previewTarget) redirect(previewTarget);
   return (
     <AuthFrame>
-      {authConfigured() ? <ForgotPasswordForm /> : <AccessMessage />}
+      {authConfigured() ? <ForgotPasswordForm isolatedPreviewAuth={isolatedValidationPreview()} /> : <AccessMessage />}
     </AuthFrame>
   );
 }

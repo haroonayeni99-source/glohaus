@@ -1,7 +1,9 @@
+import {cookies} from "next/headers";
+import {referralCookie,referralLink,referralPath} from "@/modules/referrals/links";
 import {FoundingProgrammeOffer} from "@/components/founding-programme-offer";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { productionAuthUrl } from "@/lib/preview-auth";
+import { productionAuthUrl, isolatedValidationPreview } from "@/lib/preview-auth";
 import { BriefcaseBusiness, ChevronRight, UserRound } from "lucide-react";
 import { authConfigured } from "@/lib/config";
 import { AuthFrame } from "@/components/auth-frame";
@@ -14,14 +16,17 @@ export const metadata = { title: "Create your account" };
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ intent?: string; returnTo?: string; ref?: string }>;
+  searchParams: Promise<{ intent?: string; returnTo?: string; ref?: string;channel?:string }>;
 }) {
-  const { intent, returnTo, ref } = await searchParams;
+  const { intent, returnTo, ref, channel } = await searchParams;
+  const incomingReferral=referralLink(ref,channel);
+  if(incomingReferral)redirect(referralPath(incomingReferral));
+  const capturedReferral=referralCookie((await cookies()).get("glohaus_referral_signup")?.value);
   const customerReferral = typeof ref === "string" && /^GC[A-F0-9]{16}$/.test(ref.toUpperCase()) ? ref.toUpperCase() : null;
   const previewTarget = productionAuthUrl(
     "/sign-up",
     new URLSearchParams(
-      Object.entries({ intent, returnTo, ref: customerReferral ?? undefined }).filter(
+      Object.entries({ intent, returnTo, ref: capturedReferral?.code ?? customerReferral ?? undefined,channel:capturedReferral?.channel }).filter(
         (entry): entry is [string, string] => typeof entry[1] === "string",
       ),
     ),
@@ -91,7 +96,9 @@ export default async function Page({
       {professional&&<FoundingProgrammeOffer/>}
       {authConfigured() ? (
         <EmailAuthForm
+          isolatedPreviewAuth={isolatedValidationPreview()}
           mode="sign-up"
+          referral={capturedReferral}
           redirectTo={target}
           audience={professional ? "professional" : "customer"}
         />

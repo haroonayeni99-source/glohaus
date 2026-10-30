@@ -89,21 +89,14 @@ try {
       await serviceLink.scrollIntoViewIfNeeded();
       await page.mouse.move(0, 0);
       await expect(firstCard).not.toHaveClass(/is-selected/);
-      // Hover/focus can scroll the page. Compare document coordinates so the
-      // assertion detects actual layout movement rather than viewport scrolling.
-      const serviceLinkBox = () => serviceLink.evaluate((link) => {
-        const rect = link.getBoundingClientRect();
-        return { x: rect.x + window.scrollX, y: rect.y + window.scrollY,
-          width: rect.width, height: rect.height };
-      });
-      const restingLink = await serviceLinkBox();
+      const restingLink = await serviceLink.boundingBox();
       await serviceLink.hover();
       await expect(firstCard).toHaveClass(/is-selected/);
-      const hoveredLink = await serviceLinkBox();
+      const hoveredLink = await serviceLink.boundingBox();
       expect(hoveredLink).toEqual(restingLink);
       await page.mouse.move(0, 0);
       await serviceLink.focus();
-      expect(await serviceLinkBox()).toEqual(restingLink);
+      expect(await serviceLink.boundingBox()).toEqual(restingLink);
       await page
         .getByRole("button", { name: "Save Brixton Braids", exact: true })
         .click();

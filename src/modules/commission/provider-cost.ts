@@ -40,6 +40,13 @@ export async function reconcileBookingProviderCost(
       ],
     ),
   );
+  const details=charge.billing_details;
+  const address=details?.address;
+  await withPaymentWorker(db=>db.query("SELECT beauty.record_booking_referral_security($1,$2,$3,$4,$5)",[
+    bookingId,intentId,charge.payment_method_details?.card?.fingerprint??null,
+    address?.line1&&address.postal_code?[address.country,address.postal_code,address.line1,address.line2].filter(Boolean).join(" "):null,
+    details?.phone??null,
+  ]));
   return true;
 }
 export async function retryBookingProviderCosts() {

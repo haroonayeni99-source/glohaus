@@ -1,3 +1,4 @@
+import {recordRequestReferralSecurity} from "@/modules/referrals/security";
 import { getIdentity } from "@/lib/identity";
 import { withIdentity } from "@/lib/db";
 import { enrolAccount, ensureCustomerAccount } from "@/modules/accounts/repository";
@@ -24,6 +25,7 @@ export async function POST(request: Request) {
       });
     }
     authorize(account, identity);
+    await recordRequestReferralSecurity(request,identity.authId).catch(()=>console.error("Referral security evidence capture pending"));
     return json({ redirectTo: workspacePath(account) });
   } catch (error) {
     return apiError(error);
@@ -47,6 +49,7 @@ export async function PUT(request: Request) {
       account = (await supabaseAccount()) ?? (await supabaseEnrolAccount("customer"));
     }
     authorize(account, identity);
+    await recordRequestReferralSecurity(request,identity.authId).catch(()=>console.error("Referral security evidence capture pending"));
     return json({ redirectTo: workspacePath(account) });
   } catch (error) {
     return apiError(error);

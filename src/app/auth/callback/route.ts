@@ -1,3 +1,4 @@
+import {recordRequestReferralSecurity} from "@/modules/referrals/security";
 import { readPublicEnvironment } from "@/lib/public-runtime-config";
 import { customerNameFromMetadata } from "@/modules/accounts/customer-profile-domain";
 import { NextResponse, type NextRequest } from "next/server";
@@ -144,5 +145,6 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  await recordRequestReferralSecurity(request,user.id).catch(()=>console.error("Referral security evidence capture pending"));
   return response;
 }

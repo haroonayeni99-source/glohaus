@@ -30,7 +30,7 @@ export async function createTestDatabase() {
     };
     await adapter.exec(`CREATE ROLE authenticated NOLOGIN; CREATE ROLE anon NOLOGIN;
       CREATE SCHEMA auth;
-      CREATE TABLE auth.users(id uuid PRIMARY KEY,email text,email_confirmed_at timestamptz);
+      CREATE TABLE auth.users(id uuid PRIMARY KEY,email text,email_confirmed_at timestamptz,raw_user_meta_data jsonb DEFAULT '{}'::jsonb,created_at timestamptz DEFAULT now(),phone text,phone_confirmed_at timestamptz);
       CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $$
         SELECT nullif(current_setting('test.auth_id',true),'')::uuid $$;`);
     // The tests use only the common SQL/transaction/close interface above.
@@ -43,7 +43,7 @@ export async function createTestDatabase() {
     CREATE ROLE authenticated NOLOGIN;
     CREATE ROLE anon NOLOGIN;
     CREATE SCHEMA auth;
-    CREATE TABLE auth.users(id uuid PRIMARY KEY,email text,email_confirmed_at timestamptz);
+    CREATE TABLE auth.users(id uuid PRIMARY KEY,email text,email_confirmed_at timestamptz,raw_user_meta_data jsonb DEFAULT '{}'::jsonb,created_at timestamptz DEFAULT now(),phone text,phone_confirmed_at timestamptz);
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $$
       SELECT nullif(current_setting('test.auth_id',true),'')::uuid
     $$;

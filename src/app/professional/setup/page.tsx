@@ -225,6 +225,7 @@ export default async function ProfessionalSetup() {
             </article>
           ))}
         </section>
+        <p><Link href="/professional/launch">Launch support for newly qualified professionals and academy graduates →</Link></p>
         <Link className="button" href="/professional">
           Go to your business workspace
         </Link>

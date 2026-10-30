@@ -7,6 +7,8 @@ concurrency:
   group: verify-${{ github.ref }}
   cancel-in-progress: true
 
+# Optional dependency-cache restoration is disabled while cache egress is unavailable.
+# Every job still installs exact lockfile dependencies before its existing checks.
 jobs:
   seller-native-postgres:
     runs-on: ubuntu-latest
@@ -31,7 +33,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Verify full migrations, seller isolation and concurrent pause/cart locking on PostgreSQL
         run: pnpm exec vitest run tests/seller-hub.test.ts --maxWorkers=1
@@ -61,7 +62,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Verify withdrawal request isolation, leases and bank-return accounting on PostgreSQL
         run: pnpm exec vitest run tests/payout-request-database.test.ts --maxWorkers=1
@@ -79,7 +79,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
@@ -107,7 +106,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
@@ -136,7 +134,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm security:secrets
@@ -226,7 +223,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
       - name: Verify support inbox and Owner/Admin navigation
@@ -254,7 +250,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
@@ -277,7 +272,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
@@ -299,7 +293,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
@@ -321,7 +314,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
@@ -343,7 +335,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
@@ -365,7 +356,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
@@ -388,7 +378,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
@@ -415,7 +404,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
@@ -439,7 +427,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
@@ -467,7 +454,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: node scripts/check-node-version.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm security:secrets
@@ -500,7 +486,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
         with:

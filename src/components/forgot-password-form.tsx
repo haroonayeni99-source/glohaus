@@ -1,23 +1,11 @@
 "use client";
 
+import { emailAuthCallbackUrl } from "@/lib/email-auth-callback";
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-const PRODUCTION_HOSTS = new Set(["glohaus.shop", "www.glohaus.shop"]);
-const FALLBACK_PRODUCTION_ORIGIN = "https://www.glohaus.shop";
-
-function passwordRecoveryCallbackUrl() {
-  const current = new URL(window.location.href);
-  const origin = PRODUCTION_HOSTS.has(current.hostname)
-    ? current.origin
-    : FALLBACK_PRODUCTION_ORIGIN;
-  const callbackUrl = new URL("/auth/callback", origin);
-  callbackUrl.searchParams.set("next", "/reset-password");
-  return callbackUrl.toString();
-}
-
-export function ForgotPasswordForm() {
+export function ForgotPasswordForm({isolatedPreviewAuth = false}: {isolatedPreviewAuth?: boolean} = {}) {
   const [pending, setPending] = useState(false);
   const [sent, setSent] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -34,10 +22,9 @@ export function ForgotPasswordForm() {
     const supabase = createClient();
 
     const result = await supabase.auth.resetPasswordForEmail(email, {
-      // Keep password recovery on the exact production origin the browser is
-      // already using. This avoids PKCE/cookie problems caused by bouncing
-      // between www and apex domains or Vercel aliases.
-      redirectTo: passwordRecoveryCallbackUrl(),
+      // Preserve the selected production origin, or the explicitly isolated
+      // staging origin, so confirmation stays with its PKCE cookies.
+      redirectTo: emailAuthCallbackUrl(window.location.href, "/reset-password", isolatedPreviewAuth),
     });
 
     setPending(false);

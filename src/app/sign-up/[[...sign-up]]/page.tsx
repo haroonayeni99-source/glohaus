@@ -3,7 +3,7 @@ import {referralCookie,referralLink,referralPath} from "@/modules/referrals/link
 import {FoundingProgrammeOffer} from "@/components/founding-programme-offer";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { productionAuthUrl } from "@/lib/preview-auth";
+import { productionAuthUrl, isolatedValidationPreview } from "@/lib/preview-auth";
 import { BriefcaseBusiness, ChevronRight, UserRound } from "lucide-react";
 import { authConfigured } from "@/lib/config";
 import { AuthFrame } from "@/components/auth-frame";
@@ -96,6 +96,7 @@ export default async function Page({
       {professional&&<FoundingProgrammeOffer/>}
       {authConfigured() ? (
         <EmailAuthForm
+          isolatedPreviewAuth={isolatedValidationPreview()}
           mode="sign-up"
           referral={capturedReferral}
           redirectTo={target}

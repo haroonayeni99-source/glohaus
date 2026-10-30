@@ -1,5 +1,6 @@
 "use client";
 
+import { emailAuthCallbackUrl } from "@/lib/email-auth-callback";
 import { customerNameSchema } from "@/modules/accounts/customer-profile-domain";
 import {referralLink,type ReferralLink} from "@/modules/referrals/links";
 import {useState} from "react";
@@ -13,11 +14,13 @@ export function EmailAuthForm({
   redirectTo,
   audience = "customer",
   referral,
+  isolatedPreviewAuth = false,
 }: {
   mode: "sign-in" | "sign-up";
   redirectTo: string;
   audience?: "customer" | "professional";
   referral?: ReferralLink|null;
+  isolatedPreviewAuth?: boolean;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -78,14 +81,7 @@ export function EmailAuthForm({
   }
 
   function authCallbackUrl(next: string) {
-    const productionHosts = new Set(["glohaus.shop", "www.glohaus.shop"]);
-    const current = new URL(window.location.href);
-    const origin = productionHosts.has(current.hostname)
-      ? current.origin
-      : "https://www.glohaus.shop";
-    const url = new URL("/auth/callback", origin);
-    url.searchParams.set("next", next);
-    return url.toString();
+    return emailAuthCallbackUrl(window.location.href, next, isolatedPreviewAuth);
   }
 
   function confirmationDestination() {

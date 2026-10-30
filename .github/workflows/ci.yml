@@ -68,6 +68,36 @@ jobs:
         env:
           GLOHAUS_NATIVE_DATABASE: "1"
 
+  referred-fees-native-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: local-ci-fixture
+          POSTGRES_DB: glohaus_seller_validation
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d glohaus_seller_validation"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Verify immutable referral fees and concurrent first-booking reservations on PostgreSQL
+        run: pnpm exec vitest run tests/referred-booking-fees.test.ts --maxWorkers=1
+        env:
+          GLOHAUS_NATIVE_DATABASE: "1"
+
   profile-examples:
     runs-on: ubuntu-latest
     timeout-minutes: 15

@@ -31,6 +31,9 @@ export function ProfessionalPolicySummary({
           . Service price {money(policy.pricePence)}.
         </p>
       )}
+      {!!policy.referralDiscountPence && (
+        <p className="policy-material">Standard booking fee {money(policy.standardFeePence ?? policy.bookingFeePence + policy.referralDiscountPence)} · First-booking referral discount −{money(policy.referralDiscountPence)} · Your booking fee {money(policy.bookingFeePence)}.</p>
+      )}
       <dl>
         <div>
           <dt>Booking payment</dt>

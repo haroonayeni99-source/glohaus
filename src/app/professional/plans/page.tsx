@@ -141,7 +141,7 @@ export default async function ProfessionalPlansPage() {
           <p>
             Example on Starter: a £100 service has an £8 GLOHAUS commission,
             leaving £92 professional earnings before any other applicable
-            adjustments. The customer&apos;s separate £1 booking fee is not
+            adjustments. The customer&apos;s separate booking fee is not
             deducted from your service price and is not shown as your earnings.
           </p>
         </section>
@@ -149,8 +149,8 @@ export default async function ProfessionalPlansPage() {
         <section className="pro-panel">
           <h2>Customer pricing stays separate</h2>
           <p>
-            Customers see the service price, the mandatory £1 GLOHAUS booking
-            fee and the total they need to pay. They do not see your commission,
+            Customers see the service price, the applicable GLOHAUS booking
+            fee, any eligible referral discount and the total they need to pay. They do not see your commission,
             subscription price, payout amount or GLOHAUS share of your earnings.
           </p>
         </section>

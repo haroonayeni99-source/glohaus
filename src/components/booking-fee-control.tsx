@@ -22,11 +22,13 @@ export function BookingFeeControl({ initial }: { initial: OwnerBookingFeeRule })
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amountPence: Math.round(pounds * 100),
+          promotionalFeePence: Math.round(Number(form.get("promotionalAmount")) * 100),
+          promotionEnabled: form.get("promotionEnabled") === "on",
           reason: form.get("reason"),
         }),
       });
       await requireAdminResponse(response, "Booking fee change was not saved.");
-      setNotice("Booking fee updated for new bookings. Existing paid bookings keep their original fee.");
+      setNotice("Booking fees updated for new reservations. Existing bookings keep their quoted fee.");
       router.refresh();
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Could not save booking fee.");
@@ -40,10 +42,9 @@ export function BookingFeeControl({ initial }: { initial: OwnerBookingFeeRule })
       <div className="owner-fee-current">
         <span>Current customer booking fee</span>
         <strong>£{(initial.fixedFeePence / 100).toFixed(2)}</strong>
-        {initial.usingDefault && <small>Using the default £1.00 rule</small>}
       </div>
       <label>
-        New booking fee (£)
+        Standard booking fee (£)
         <input
           name="amount"
           type="number"
@@ -54,6 +55,16 @@ export function BookingFeeControl({ initial }: { initial: OwnerBookingFeeRule })
           required
         />
         <small>Applies to new bookings only. Maximum owner setting: £25.</small>
+      </label>
+      <label>
+        Eligible referred first-booking fee (£)
+        <input name="promotionalAmount" type="number" min={0} max={25} step="0.01"
+          defaultValue={((initial.promotionalFeePence ?? Math.min(100, initial.fixedFeePence)) / 100).toFixed(2)} required />
+        <small>Must not exceed the standard fee. One eligible first booking across GLOHAUS, with a valid recorded referral.</small>
+      </label>
+      <label className="policy-check">
+        <input name="promotionEnabled" type="checkbox" defaultChecked={initial.promotionEnabled ?? false} />
+        Enable the referred first-booking promotion for new reservations
       </label>
       <label>
         Reason for change

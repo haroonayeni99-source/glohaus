@@ -211,6 +211,9 @@ export type PolicyPreview = {
   pricePence: number;
   depositPence: number;
   bookingFeePence: number;
+  standardFeePence?: number;
+  referralDiscountPence?: number;
+  referralPromotionEligible?: boolean;
   fullPrepayment: boolean;
   paymentChoice?: "deposit" | "full";
   paymentRequirement?: "deposit_or_full" | "full";
@@ -237,6 +240,7 @@ export type PolicyScope = {
   published_version_id: string | null;
 };
 export type PolicyWorkspace = {
+  bookingFeePence?: number;
   scopes: PolicyScope[];
   versions: PolicyVersion[];
   services: { id: string; name: string }[];

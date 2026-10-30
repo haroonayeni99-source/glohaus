@@ -7,16 +7,26 @@ import { AccessMessage } from "@/components/access-message";
 import { safeReturnTo } from "@/lib/return-to";
 import { EmailAuthForm } from "@/components/email-auth-form";
 
-export const metadata = { title: "Customer sign in" };
+type SignInProps = {
+  searchParams: Promise<{ returnTo?: string; intent?: string; authError?: string }>;
+};
+
+function isOwnerEntry(returnTo?: string) {
+  const destination = safeReturnTo(returnTo, "/account");
+  return destination === "/admin" || destination.startsWith("/admin/");
+}
+
+export async function generateMetadata({ searchParams }: SignInProps) {
+  const { returnTo } = await searchParams;
+  return { title: isOwnerEntry(returnTo) ? "Owner / Admin sign in" : "Customer sign in" };
+}
 
 export default async function Page({
   searchParams,
-}: {
-  searchParams: Promise<{ returnTo?: string; intent?: string; authError?: string }>;
-}) {
+}: SignInProps) {
   const { returnTo, intent, authError } = await searchParams;
   const destination = safeReturnTo(returnTo, "/account");
-  const ownerEntry = destination === "/admin" || destination.startsWith("/admin/");
+  const ownerEntry = isOwnerEntry(returnTo);
 
   if (intent === "professional" && !ownerEntry) {
     const params = new URLSearchParams();
@@ -40,7 +50,7 @@ export default async function Page({
     <AuthFrame audience="customer">
       {authConfigured() ? (
         <>
-          <nav className="auth-switch" aria-label="Customer sign in">
+          <nav className="auth-switch" aria-label={ownerEntry ? "Owner / Admin sign in" : "Customer sign in"}>
             <strong>{ownerEntry ? "Owner / Admin sign in" : "Customer sign in"}</strong>{" "}
             <Link href="/professional/sign-in">Beauty professional? Sign in to GLOHAUS PRO</Link>
           </nav>

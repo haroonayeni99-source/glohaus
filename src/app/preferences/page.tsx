@@ -1,3 +1,4 @@
+import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 import { marketingPreferences } from "@/lib/marketing-preferences";
@@ -30,6 +31,7 @@ export default async function MarketingPreferencesPage() {
       <p className="lead">
         Marketing is optional. Booking, order, security, verification and payout emails stay separate and may still be sent when needed.
       </p>
+      <p><Link href="/account/rebooking">Choose rebooking emails by professional</Link></p>
       <MarketingPreferencesForm initial={marketingPreferences(preferences)} professional={professional} />
     </main>
   );

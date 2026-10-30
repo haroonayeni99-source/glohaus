@@ -33,6 +33,7 @@ export default async function NotificationSettingsPage() {
           Choose your email and push alerts, and manage the devices that receive
           them.
         </p>
+        <p><Link href="/professional/settings/rebooking">Manage customer rebooking reminders</Link></p>
         <ProfessionalNotificationSettings
           initial={settings}
           publicKey={process.env.VAPID_PUBLIC_KEY || null}

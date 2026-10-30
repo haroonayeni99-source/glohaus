@@ -6,7 +6,7 @@ import {ClientImportForm,type ImportedContactSummary} from "@/components/client-
 export const dynamic="force-dynamic";
 export const metadata={title:"Import your clients | GLOHAUS PRO",robots:{index:false,follow:false}};
 export default async function Page(){
- const access=await pageAccount("professional");if(!access.account)return <AccessMessage code={access.error}/>;
+ const access=await pageAccount("professional","/professional/clients/import");if(!access.account)return <AccessMessage code={access.error}/>;
  const account=access.account;
  const contacts=await withIdentity(account.authId,async db=>(await db.query<ImportedContactSummary>("SELECT id,name,email,phone,permission_date::text AS permission_date FROM beauty.professional_imported_contacts WHERE professional_id=$1 AND removed_at IS NULL ORDER BY created_at DESC,id LIMIT 500",[account.professionalId])).rows).catch(()=>null);
  return <main className="professional-shell" style={{maxWidth:950,margin:"0 auto",padding:24}}><Link href="/professional/clients">← Your clients</Link><h1>Bring your existing clients</h1>

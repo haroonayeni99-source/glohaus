@@ -94,14 +94,15 @@ export async function syncProfessional(
   connectionId?: string,
   force = false,
   limit = 5,
+  calendarOnly = false,
 ) {
   const candidates = await withIdentity(
     authId,
     async (db) =>
       (
         await db.query<{ id: string }>(
-          `SELECT id FROM beauty.business_connections WHERE professional_id=$1 AND status<>'disconnected' AND ($2::uuid IS NULL OR id=$2) AND (lease_until IS NULL OR lease_until<now()) AND (NOT $3::boolean OR provider IN('google','outlook','ics')) AND ($3::boolean OR $2::uuid IS NOT NULL OR next_sync_at<=now()) AND (provider IN('google','outlook','ics') OR (beauty.social_sync_allowed(professional_id) AND ($2::uuid IS NOT NULL OR (sync_enabled AND social_mode<>'manual' AND coalesce(last_error,'')<>'RECONNECT_REQUIRED')))) ORDER BY CASE WHEN provider IN('google','outlook','ics') THEN 0 ELSE 1 END,next_sync_at LIMIT $4`,
-          [professionalId, connectionId || null, force, limit],
+          `SELECT id FROM beauty.business_connections WHERE professional_id=$1 AND status<>'disconnected' AND ($2::uuid IS NULL OR id=$2) AND (lease_until IS NULL OR lease_until<now()) AND (NOT ($3::boolean OR $5::boolean) OR provider IN('google','outlook','ics')) AND ($3::boolean OR $2::uuid IS NOT NULL OR next_sync_at<=now()) AND (provider IN('google','outlook','ics') OR (beauty.social_sync_allowed(professional_id) AND ($2::uuid IS NOT NULL OR (sync_enabled AND social_mode<>'manual' AND coalesce(last_error,'')<>'RECONNECT_REQUIRED')))) ORDER BY CASE WHEN provider IN('google','outlook','ics') THEN 0 ELSE 1 END,next_sync_at LIMIT $4`,
+          [professionalId, connectionId || null, force, limit, calendarOnly],
         )
       ).rows,
   );

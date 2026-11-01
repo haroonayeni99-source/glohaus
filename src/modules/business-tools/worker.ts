@@ -71,6 +71,7 @@ export async function refreshServiceCalendars(
     undefined,
     immediate,
     8,
+    true, // Availability must not wait for unrelated social portfolio refreshes.
   );
   if (immediate) {
     const stale = await withIdentity(

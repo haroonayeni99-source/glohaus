@@ -1,3 +1,4 @@
+import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 import { pageAccount } from "@/lib/page-access";
@@ -26,10 +27,13 @@ export default async function ProfessionalClientsPage({
     professionalClients(db, result.account.professionalId!, options),
   );
   return (
+    <>
+    <p style={{padding:"12px 24px"}}><Link href="/professional/clients/import">Import consenting existing clients</Link> · <Link href="/professional/performance">Business Hub</Link></p>
     <ProfessionalClientDirectory
       clients={clients}
       options={options}
       displayName={result.account.displayName}
     />
+    </>
   );
 }

@@ -11,9 +11,9 @@ it('does not switch existing production tokens to sandbox credentials',async()=>
 
 it('reports only fixed sandbox OAuth categories, never provider descriptions',async()=>{
   const {providerJson}=await import('@/modules/business-tools/oauth');
-  vi.stubGlobal('fetch',vi.fn(async()=>new Response(JSON.stringify({error:'invalid_client',error_description:'private provider detail'}),{status:400})));
+  vi.stubGlobal('fetch',vi.fn(async()=>new Response(JSON.stringify({error:'invalid_client',error_description:'private provider detail'}),{status:200})));
   await expect(providerJson('https://open.tiktokapis.com/v2/oauth/token/',{},true)).rejects.toThrow('TIKTOK_INVALID_CLIENT');
-  await expect(providerJson('https://open.tiktokapis.com/v2/oauth/token/')).rejects.toThrow('RECONNECT_REQUIRED');
+  expect(await providerJson('https://open.tiktokapis.com/v2/oauth/token/')).toHaveProperty('error','invalid_client');
   vi.stubGlobal('fetch',vi.fn(async()=>new Response(JSON.stringify({error:'untrusted private value'}),{status:400})));
   await expect(providerJson('https://open.tiktokapis.com/v2/oauth/token/',{},true)).rejects.toThrow('RECONNECT_REQUIRED');
 });

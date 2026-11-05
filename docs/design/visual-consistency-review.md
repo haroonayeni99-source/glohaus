@@ -3,6 +3,10 @@
 Prepared 5 November 2026. Review branch: `preview/visual-consistency-20261105`.
 Production baseline: GitHub main `ae958b7b120a6e3ba08b75945e95110480fa0c16` (local equivalent tree at `d7f6438`). No production changes or deployment.
 
+## Additional direction — preserve visual richness
+
+Haroon explicitly does not want minimalism. Keep Marketplace/Discover gradients, imagery, rich cards, useful density and distinctive typography. Simplify organisation and task flow, without stripping visual character or features. See `feature-consolidation-review.md` for the source-grounded consolidation assessment, desktop/mobile presentation, risks and approval gates. GLOHAUS Together is the planned umbrella for service gifting and group contributions; it is not verified as an existing implemented payment feature. No additional fee or financial behaviour is approved by visual feedback.
+
 ## Decision to review
 
 Refine the existing platform using Marketplace and Discover as the quality benchmark. Keep their layouts, image-led discovery, berry/pink accents, rounded cards, hierarchy and richer professional information. Carry those qualities into shared controls and the homepage without changing the platform's identity or business behaviour.

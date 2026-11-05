@@ -59,3 +59,7 @@ Together/gifting/group contributions were not found as a customer-facing impleme
 ## Approval boundary
 
 Haroon has approved continued investigation, planning and preview refinement. This addendum is **not** approval to delete routes, restructure permissions, activate rewards, introduce Together payments, change fees or deploy major design changes. No such changes were implemented in this batch.
+
+### Preview follow-through
+
+The isolated preview now includes an Organisation & Together screen and Bookings view buttons to demonstrate the grouping above without merging live pages. The entry-only loading clarification is tracked in the parent brief. All business/permissions/route changes remain behind the stated approval boundary.

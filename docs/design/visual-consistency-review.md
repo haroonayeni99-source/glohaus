@@ -118,3 +118,19 @@ Do not label this first source audit as a completed physical-device or every-wor
 - Chromium DOM checks: 320 px canvas has 318 px content/318 px scroll width; 390 px has 388/388; 820 px has 818/818. Borders account for the remaining 2 px. The document had no horizontal overflow in the checked canvases.
 - Existing embedded hair/nails/hero assets loaded successfully. Theme and menu selection controls were exercised. Desktop light and mobile night proof images were captured.
 - These files are isolated: no `src/`, database, payment or role files were changed. The sole Vercel configuration change disables automatic builds of this review branch; the main/production configuration is preserved.
+
+## Continued preview work — organisation and entry-only loading
+
+This batch follows the consolidation assessment with an Organisation & Together preview section: grouped professional tools, customer Bookings view examples and rich berry presentation for the planned Together umbrella. It remains illustrative; no route merger, financial feature or Together payment has been activated.
+
+The loading clarification is implemented in source on the **review branch only**:
+
+- `src/app/loading.tsx` now renders a compact semantic route-pending status, not a fixed branded overlay. It affects route fallback presentation throughout the root layout's 81 inventoried page entry points.
+- `InitialLoadingScreen` observes the initial route-pending marker. It completes immediately when that content becomes ready, independent of logo/image downloads, and does not remount during ordinary client navigation.
+- CSS hides entry branding before hydration when the page is already ready. It shows branding only if the first document still has a pending route. The existing six-second escape and no-JavaScript safeguard remain; they prevent a stuck overlay and are not minimum display durations.
+- Light/night splash canvases now use the destination's `--paper` token. The slogan/indicator no longer wait 800 ms to begin appearing. Existing wordmark assets are retained pending final brand approval.
+- No new preference switch has been assumed: “optional” means conditional on entry readiness, never a mandatory introduction. Normal navigation receives local progress/status feedback.
+
+Five meaningful loading tests pass: already-ready entry skips branding; readiness removes it without waiting for images; subsequent route pending does not replay it; night/reduced-motion uses the same readiness behaviour; normal route fallback has a status and no branded overlay. TypeScript, targeted ESLint and preview JavaScript syntax checks pass.
+
+Real-browser streaming/hydration, disabled/slow JavaScript, Safari/Android and installed-PWA acceptance are still pending. CSS `:has()` support and the initial route marker ordering must be checked on the actual supported browser matrix before release. No production deployment was performed.

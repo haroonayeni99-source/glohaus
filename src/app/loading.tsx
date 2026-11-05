@@ -1,6 +1,8 @@
-import { LoadingScreen } from "@/components/loading-screen";
-
-// Next.js removes this fallback as soon as the requested route is ready.
+// Keep routine navigation feedback local; branding is reserved for document entry.
 export default function Loading() {
-  return <LoadingScreen />;
+  return (
+    <main id="main" className="glohaus-page-pending" data-glohaus-route-pending>
+      <p role="status">Loading this page…</p>
+    </main>
+  );
 }

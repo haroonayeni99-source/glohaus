@@ -13,3 +13,5 @@ document.querySelector('#search-form').onsubmit=e=>{e.preventDefault();document.
 for(const item of document.querySelectorAll('[data-close-menu]'))item.onclick=()=>document.querySelector('#menu').open=false;
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelector('#menu').open=false;document.querySelector('#splash').hidden=true;}});
 document.querySelector('#dismiss-install').onclick=()=>{document.querySelector('#install-card').hidden=true;document.querySelector('#install-status').textContent='Dismissed in this preview. Proposed production behaviour retains the existing 90-day dismissal.';};
+
+for(const button of document.querySelectorAll('[data-booking]'))button.onclick=()=>{for(const item of document.querySelectorAll('[data-booking]'))item.setAttribute('aria-pressed',String(item===button));document.querySelector('#booking-example').textContent=({upcoming:'Upcoming appointments remain here.',history:'History keeps previous visits, reviews and rebooking together.',all:'All appointments stays available without an extra page.'})[button.dataset.booking]+' No real booking data is loaded in this preview.';};

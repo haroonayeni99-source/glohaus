@@ -1,6 +1,6 @@
 /* One timeline for the actual route fallback; no timer holds up the page. */
 .glohaus-route-loading {
-  --splash-bg: #f5f2ee;
+  --splash-bg: var(--paper, #fcfbf9);
   --splash-ink: #855247;
   position: fixed;
   inset: 0;
@@ -17,7 +17,7 @@
   animation: glohaus-splash-background 300ms ease-out both;
 }
 :root[data-theme="night"] .glohaus-route-loading,
-:root.dark:not([data-theme="light"]) .glohaus-route-loading { --splash-bg: #000; --splash-ink: #e0a594; }
+:root.dark:not([data-theme="light"]) .glohaus-route-loading { --splash-bg: var(--paper, #171415); --splash-ink: #e0a594; }
 .glohaus-route-loading-content {
   width: min(100%, 420px);
   display: flex;
@@ -31,7 +31,7 @@
   width: 100%;
   aspect-ratio: 5 / 1;
   overflow: hidden;
-  animation: glohaus-splash-reveal 500ms 300ms ease-out both;
+  animation: glohaus-splash-reveal 500ms ease-out both;
 }
 .glohaus-route-wordmark img {
   position: absolute;
@@ -60,7 +60,7 @@
   font-weight: 500;
   letter-spacing: .13em;
   line-height: 1.5;
-  animation: glohaus-splash-reveal 400ms 800ms ease-out both;
+  animation: glohaus-splash-reveal 400ms ease-out both;
 }
 .glohaus-route-loading-indicator {
   display: block;
@@ -69,7 +69,7 @@
   overflow: hidden;
   border-radius: 2px;
   background: color-mix(in srgb, var(--splash-ink) 20%, transparent);
-  animation: glohaus-splash-reveal 400ms 800ms ease-out both;
+  animation: glohaus-splash-reveal 400ms ease-out both;
 }
 .glohaus-route-loading-indicator span {
   display: block;
@@ -96,3 +96,17 @@
 }
 @keyframes glohaus-intro-exit { from { opacity: 1; } to { opacity: 0; } }
 .glohaus-intro.is-timed-out { display: none; }
+
+/* Entry branding appears only while the first document has a pending route.
+   CSS suppresses it before hydration on already-ready pages. Once the initial
+   component completes it is unmounted, so later route fallbacks cannot replay it. */
+.glohaus-intro { display: none; }
+body:has([data-glohaus-route-pending]) .glohaus-intro:not(.is-timed-out) { display: block; }
+.glohaus-intro.is-timed-out { display: none !important; }
+.glohaus-page-pending {
+  width: min(100% - 32px, 1100px);
+  margin: 32px auto;
+  padding: 16px;
+  color: var(--ink);
+  font: inherit;
+}

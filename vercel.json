@@ -31,7 +31,8 @@
       "security/verified-runtime-release": false,
       "security/pinned-container-runtime-20261024": false,
       "perf/public-discovery-bandwidth": false,
-      "fix/support-alert-health": false
+      "fix/support-alert-health": false,
+      "preview/visual-consistency-20261105": false
     }
   },
   "regions": [

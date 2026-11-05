@@ -22,6 +22,8 @@ function isMaintenanceExempt(pathname: string) {
   // Crawlers still need the real discovery files while the Owner pauses the
   // public site. Never rewrite XML or robots.txt to an HTML maintenance page.
   if (pathname === "/robots.txt" || pathname === "/sitemap.xml") return true;
+  // Public TikTok ownership proof must remain reachable while bookings are paused.
+  if (pathname === "/tiktok4kXbYGivtSy0C6XvUarwhG75p1uHwDAm.txt") return true;
   return maintenanceExempt.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`),
   );

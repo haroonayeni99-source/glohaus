@@ -69,6 +69,7 @@ describe("Temporary maintenance indexing", () => {
     },
   );
   it.each([
+    "/tiktok4kXbYGivtSy0C6XvUarwhG75p1uHwDAm.txt",
     "/robots.txt",
     "/sitemap.xml",
     "/admin",
@@ -89,6 +90,10 @@ describe("Temporary maintenance indexing", () => {
       expect(status).not.toHaveBeenCalled();
     },
   );
+  it.each(["/tiktok4kXbYGivtSy0C6XvUarwhG75p1uHwDAm.txt/private", "/tiktok-other.txt"])("does not widen the verification exemption: %s", async (path) => {
+    const response = await proxy(new NextRequest(`https://www.glohaus.shop${path}`));
+    expect(response.status).toBe(503);
+  });
   it("does not turn the crawler exemption into a subtree bypass", async () => {
     const response = await proxy(
       new NextRequest("https://www.glohaus.shop/sitemap.xml/private"),

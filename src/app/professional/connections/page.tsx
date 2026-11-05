@@ -41,7 +41,7 @@ export default async function Connections({
     outlook: providerReady("outlook"),
     ics: providerReady("ics"),
     instagram: providerReady("instagram"),
-    tiktok: providerReady("tiktok"),
+    tiktok: providerReady("tiktok", a.professionalId!),
   };
   return (
     <div className="pro-app">

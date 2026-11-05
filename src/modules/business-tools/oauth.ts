@@ -3,6 +3,7 @@ import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import type { Provider } from "./domain";
 import { encryptionReady, seal, unseal } from "./secrets";
 export type Tokens = {
+  tiktokApp?: "sandbox" | "production";
   accessToken: string;
   refreshToken?: string;
   expiresAt: number;
@@ -25,8 +26,16 @@ const names = {
   tiktok: "TIKTOK",
   ics: "ICS",
 };
-export function configuration(provider: Provider) {
-  const prefix = names[provider];
+export function configuration(provider: Provider, professionalId?: string) {
+  const sandbox =
+    provider === "tiktok" &&
+    Boolean(professionalId) &&
+    (process.env.TIKTOK_SANDBOX_PROFESSIONAL_IDS || "")
+      .split(",")
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .includes(professionalId!);
+  const prefix = sandbox ? "TIKTOK_SANDBOX" : names[provider];
   const origin = process.env.GLOHAUS_PUBLIC_URL || "https://www.glohaus.shop";
   const base = new URL(origin);
   if (
@@ -35,12 +44,13 @@ export function configuration(provider: Provider) {
   )
     throw Error("NOT_CONFIGURED");
   return {
+    sandbox,
     clientId: process.env[`${prefix}_CLIENT_ID`] || "",
     secret: process.env[`${prefix}_CLIENT_SECRET`] || "",
     redirectUri: `${base.origin}/api/v1/professional/connections/${provider}/callback`,
   };
 }
-export function providerReady(provider: Provider) {
+export function providerReady(provider: Provider, professionalId?: string) {
   if (!encryptionReady()) return false;
   if (provider === "ics") return true;
   if (
@@ -48,12 +58,12 @@ export function providerReady(provider: Provider) {
     !/^v\d+\.\d+$/.test(process.env.INSTAGRAM_API_VERSION || "")
   )
     return false;
-  const config = configuration(provider);
+  const config = configuration(provider, professionalId);
   // Credentials alone do not imply approved public access.
   return Boolean(
     config.clientId &&
     config.secret &&
-    process.env[`${names[provider]}_ENABLED`] === "true",
+    (config.sandbox || process.env[`${names[provider]}_ENABLED`] === "true"),
   );
 }
 const authEndpoints = {
@@ -68,7 +78,7 @@ export function beginOAuth(
   professionalId: string,
   writeCalendar: boolean,
 ) {
-  if (!providerReady(provider)) throw Error("NOT_CONFIGURED");
+  if (!providerReady(provider, professionalId)) throw Error("NOT_CONFIGURED");
   const verifier = randomBytes(32).toString("base64url"),
     nonce = randomBytes(32).toString("hex");
   const state: OAuthState = {
@@ -80,7 +90,7 @@ export function beginOAuth(
     writeCalendar,
     expiresAt: Date.now() + 600000,
   };
-  const config = configuration(provider),
+  const config = configuration(provider, professionalId),
     url = new URL(authEndpoints[provider]);
   url.search = new URLSearchParams({
     [provider === "tiktok" ? "client_key" : "client_id"]: config.clientId,
@@ -150,7 +160,7 @@ export async function exchangeCode(
   code: string,
 ): Promise<Tokens> {
   const p = state.provider,
-    config = configuration(p);
+    config = configuration(p, state.professionalId);
   const body = new URLSearchParams({
     client_id: config.clientId,
     client_secret: config.secret,
@@ -188,6 +198,13 @@ export async function exchangeCode(
     };
   }
   return {
+    ...(p === "tiktok"
+      ? {
+          tiktokApp: config.sandbox
+            ? ("sandbox" as const)
+            : ("production" as const),
+        }
+      : {}),
     accessToken: response.access_token,
     refreshToken: response.refresh_token,
     expiresAt: Date.now() + Number(response.expires_in || 3600) * 1000,
@@ -196,7 +213,16 @@ export async function exchangeCode(
 export async function freshTokens(
   provider: Provider,
   tokens: Tokens,
+  professionalId?: string,
 ): Promise<Tokens> {
+  if (provider === "tiktok") {
+    const config = configuration(provider, professionalId);
+    if (
+      (tokens.tiktokApp || "production") !==
+      (config.sandbox ? "sandbox" : "production")
+    )
+      throw Error("RECONNECT_REQUIRED");
+  }
   if (tokens.expiresAt > Date.now() + 120000 || provider === "ics")
     return tokens;
   if (provider === "instagram") {
@@ -214,7 +240,7 @@ export async function freshTokens(
     };
   }
   if (!tokens.refreshToken) throw Error("RECONNECT_REQUIRED");
-  const config = configuration(provider),
+  const config = configuration(provider, professionalId),
     body = new URLSearchParams({
       client_id: config.clientId,
       client_secret: config.secret,

@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     const account = await withAccount("professional", async (_db, a) => a);
     const professionalId = account.professionalId!;
     if (input.action === "connect") {
-      if (!providerReady(input.provider))
+      if (!providerReady(input.provider, professionalId))
         return json({ error: { code: "NOT_CONFIGURED" } }, 409);
       if (input.provider === "ics") {
         let url: string;
@@ -127,7 +127,7 @@ export async function POST(request: Request) {
           ).rows[0],
       );
       if (!owned) throw new AccessError("FORBIDDEN", 403);
-      if (!providerReady(owned.provider))
+      if (!providerReady(owned.provider, professionalId))
         return json({ error: { code: "NOT_CONFIGURED" } }, 409);
       const paused = await withAccount(
         "professional",

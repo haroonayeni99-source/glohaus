@@ -124,7 +124,7 @@ export async function syncProfessional(
     try {
       if (
         ["instagram", "tiktok"].includes(lease.provider) &&
-        !providerReady(lease.provider)
+        !providerReady(lease.provider, professionalId)
       ) {
         await withIdentity(authId, (db) =>
           db.query(
@@ -140,6 +140,7 @@ export async function syncProfessional(
           lease.secret_ciphertext,
           `${professionalId}:${lease.provider}`,
         ),
+        professionalId,
       );
       tokens = await renewWatch(
         lease.provider,

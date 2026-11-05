@@ -42,7 +42,13 @@ export async function revokeDisconnectedTikTok(
 ) {
   try {
     const tokens = unseal<Tokens>(ciphertext, `${professionalId}:tiktok`);
-    const config = configuration("tiktok");
+    const config =
+      tokens.tiktokApp === "sandbox"
+        ? {
+            clientId: process.env.TIKTOK_SANDBOX_CLIENT_ID || "",
+            secret: process.env.TIKTOK_SANDBOX_CLIENT_SECRET || "",
+          }
+        : configuration("tiktok");
     if (!tokens.accessToken || !config.clientId || !config.secret) return false;
     const response = await fetch(
       "https://open.tiktokapis.com/v2/oauth/revoke/",

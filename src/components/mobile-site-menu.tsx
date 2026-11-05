@@ -5,6 +5,7 @@ import { useSignedIn } from "./auth-session";
 import Link from "next/link";
 import { Menu } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { ThemeToggle } from "./theme-toggle";
 import { AccountControls } from "./account-controls";
 
 const publicLinks = [
@@ -102,9 +103,9 @@ export function MobileSiteMenu({
               : "Website menu links"
           }
         >
-          {(professionalWorkspace ? professionalLinks : publicLinks).map(
+          {(professionalWorkspace ? professionalLinks : publicLinks.filter(([,href]) => !["/how-it-works","/professional-preview","/about","/faq"].includes(href))).map(
             ([label, href]) => (
-              <Link key={href} href={href}>
+              <Link key={href} href={href} className={!professionalWorkspace && ["/", "/discover"].includes(href) ? "menu-primary-duplicate" : undefined}>
                 {label}
               </Link>
             ),
@@ -116,7 +117,7 @@ export function MobileSiteMenu({
             aria-label="Mobile account links"
           >
             {accountLinks.map(([label, href]) => (
-              <Link key={href} href={protectedHref(href)}>
+              <Link key={href} href={protectedHref(href)} className={["/account/bookings", "/messages", "/account"].includes(href) ? "menu-primary-duplicate" : undefined}>
                 {label}
               </Link>
             ))}
@@ -128,6 +129,10 @@ export function MobileSiteMenu({
             )}
           </nav>
         )}
+        <details className="mobile-menu-help"><summary>Help & GLOHAUS</summary><nav aria-label="Help and information">
+          <Link href="/how-it-works">How it works</Link><Link href="/professional-preview">For professionals</Link><Link href="/about">About</Link><Link href="/faq">FAQ</Link><Link href="/contact">Contact support</Link>
+        </nav></details>
+        <ThemeToggle inline />
         {signedIn && canAccessAdmin && (
           <Link className="mobile-menu-owner" href="/admin">
             Owner/Admin

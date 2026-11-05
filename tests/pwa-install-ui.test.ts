@@ -12,6 +12,7 @@ let Shell: typeof import("@/components/pwa-shell").PwaShell;
 let Button: typeof import("@/components/pwa-shell").InstallButton;
 let standalone = false;
 beforeEach(async () => {
+  vi.useFakeTimers();
   vi.resetModules();
   vi.clearAllMocks();
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -59,10 +60,13 @@ beforeEach(async () => {
 afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 it("offers manual iPhone guidance without requesting notification permission and persists dismissal", async () => {
   await act(async () => root.render(React.createElement(Shell)));
+  expect(container.querySelector(".pwa-notice")).toBeNull();
+  await act(async () => vi.advanceTimersByTime(30000));
   expect(container.textContent).toContain("iPhone installation steps");
   expect(Notification.requestPermission).not.toHaveBeenCalled();
   await act(async () =>

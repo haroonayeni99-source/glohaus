@@ -3,48 +3,29 @@
 import { useEffect, useState } from "react";
 import { LoadingScreen } from "./loading-screen";
 
-/** A brief introduction on the first document load, never on client navigation. */
+/** Branded entry fallback only: no minimum duration and no replay on SPA navigation. */
 export function InitialLoadingScreen() {
-  const [phase, setPhase] = useState<"visible" | "leaving" | "done">("visible");
+  const [complete, setComplete] = useState(false);
 
   useEffect(() => {
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let hold: number | undefined;
-    let fallback: number | undefined;
-    let started = false;
-    const image = document.querySelector<HTMLImageElement>(
-      document.documentElement.dataset.theme === "night"
-        ? ".glohaus-intro .glohaus-route-wordmark-night"
-        : ".glohaus-intro .glohaus-route-wordmark-light",
-    );
-    const startHold = () => {
-      if (started) return;
-      started = true;
-      window.clearTimeout(fallback);
-      hold = window.setTimeout(() => setPhase(reduceMotion ? "done" : "leaving"), reduceMotion ? 900 : 1900);
-    };
-    if (!image || (image.complete && image.naturalWidth > 0)) {
-      startHold();
-    } else {
-      image.addEventListener("load", startHold, { once: true });
-      image.addEventListener("error", startHold, { once: true });
-      // Never leave visitors waiting indefinitely if an asset or network fails.
-      fallback = window.setTimeout(startHold, 1200);
+    let active = true;
+    const observer = new MutationObserver(checkReady);
+    function checkReady() {
+      if (!document.querySelector("[data-glohaus-route-pending]")) {
+        observer.disconnect();
+        if (active) setComplete(true);
+      }
     }
+    observer.observe(document.body, { childList: true, subtree: true });
+    // Check the committed document, rather than holding the website for a logo
+    // asset, animation, image download or an arbitrary introductory timer.
+    queueMicrotask(checkReady);
     return () => {
-      window.clearTimeout(hold);
-      window.clearTimeout(fallback);
-      image?.removeEventListener("load", startHold);
-      image?.removeEventListener("error", startHold);
+      active = false;
+      observer.disconnect();
     };
   }, []);
 
-  useEffect(() => {
-    if (phase !== "leaving") return;
-    const finish = window.setTimeout(() => setPhase("done"), 250);
-    return () => window.clearTimeout(finish);
-  }, [phase]);
-
-  if (phase === "done") return null;
-  return <div className={`glohaus-intro${phase === "leaving" ? " is-leaving" : ""}`}><LoadingScreen initial /></div>;
+  if (complete) return null;
+  return <div className="glohaus-intro"><LoadingScreen initial /></div>;
 }

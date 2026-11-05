@@ -3,7 +3,8 @@
 import { useSignedIn } from "./auth-session";
 
 import Link from "next/link";
-import { Bell, Search } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Bell, Search, ShoppingBag } from "lucide-react";
 import { MobileSiteMenu } from "./mobile-site-menu";
 import { Brand } from "./brand";
 
@@ -16,6 +17,7 @@ export function GlohausHeader({
   signedIn?: boolean;
 }) {
   const signedIn = useSignedIn(initialSignedIn);
+  const pathname = usePathname();
   const notificationHref = signedIn
     ? "/notifications"
     : "/sign-in?returnTo=%2Fnotifications";
@@ -68,6 +70,7 @@ export function GlohausHeader({
             Sign up
           </Link>
         )}
+        {pathname === "/shop" && <Link className="header-shop-cart" href={signedIn ? "/cart" : "/sign-in?returnTo=%2Fcart"}><ShoppingBag size={18} aria-hidden /> <span>Cart</span></Link>}
         <MobileSiteMenu signedIn={signedIn} />
       </nav>
     </header>

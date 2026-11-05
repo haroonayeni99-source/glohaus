@@ -15,6 +15,7 @@ import { PwaShell } from "@/components/pwa-shell";
 import "@/components/pwa.css";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { themeBootstrap } from "@/lib/theme-preference";
 import { appThemeColors } from "@/lib/app-theme-colors";
 import "./globals.css";
 import "./glohaus-splash.css";
@@ -27,27 +28,10 @@ import "./location.css";
 import "../components/professional-profile.css";
 import "../components/viewport-video.css";
 import "../components/professional-policies.css";
+import "./visual-refinement.css";
 
 export const dynamic = "force-dynamic";
 
-const themeBootstrap = `(() => {
-  try {
-    const saved = window.localStorage.getItem("glohaus-theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const theme =
-      saved === "night" || (saved !== "light" && prefersDark) ? "night" : "light";
-    document.documentElement.dataset.theme = theme;
-    document.documentElement.style.colorScheme = theme === "night" ? "dark" : "light";
-  } catch {
-    document.documentElement.dataset.theme = "light";
-    document.documentElement.style.colorScheme = "light";
-  }
-  const colors = ${JSON.stringify(appThemeColors)};
-  const color = colors[document.documentElement.dataset.theme] || colors.light;
-  document.querySelectorAll('meta[name="theme-color"]').forEach(meta => {
-    meta.content = color;
-  });
-})();`;
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.glohaus.shop"),

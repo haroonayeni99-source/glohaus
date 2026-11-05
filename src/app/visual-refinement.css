@@ -1,0 +1,59 @@
+/* Approved refinement layer: presentation only; retains existing route layouts. */
+:root {
+  --gh-canvas: #fcfbf9; --gh-surface: #fff; --gh-soft: #fce7f0;
+  --gh-text: #241e21; --gh-muted: #6c5c64; --gh-control-border: #927d87;
+  --gh-action: #a82962; --gh-on-action: #fff; --gh-focus: #a82962;
+  --gh-brand-font: Arial, sans-serif; --gh-brand-tracking: .12em;
+  --ui-surface: var(--gh-surface); --ui-surface-muted: #f5eeee;
+  --ui-text: var(--gh-text); --ui-muted: var(--gh-muted); --ui-border: var(--gh-control-border);
+  --ui-accent: var(--gh-action); --ui-on-accent: var(--gh-on-action); --ui-focus: var(--gh-focus);
+}
+:root[data-theme="night"] {
+  --gh-canvas: #171415; --gh-surface: #231d1f; --gh-soft: #432535;
+  --gh-text: #f7efeb; --gh-muted: #c7b9c0; --gh-control-border: #a08895;
+  --gh-action: #f19cbd; --gh-on-action: #30121f; --gh-focus: #f4b6ce;
+  --ui-surface: var(--gh-surface); --ui-surface-muted: #30272c;
+  --ui-text: var(--gh-text); --ui-muted: var(--gh-muted); --ui-border: var(--gh-control-border);
+  --ui-accent: var(--gh-action); --ui-on-accent: var(--gh-on-action); --ui-focus: var(--gh-focus);
+}
+.mobile-home-brand .brand { font-family: var(--gh-brand-font); font-weight: 400; letter-spacing: var(--gh-brand-tracking); font-size: clamp(1.25rem, 5.1vw, 1.75rem); }
+.mobile-home-brand > span { line-height: 1.4; }
+.mobile-home-search { border: 1px solid var(--gh-control-border); background: var(--gh-surface); }
+.mobile-home-search input, .mobile-home-search svg { color: var(--gh-text); }
+.mobile-home-search input::placeholder { color: var(--gh-muted); opacity: 1; }
+.appearance-setting { display: grid; grid-template-columns: 1fr minmax(0, 180px); align-items: center; gap: 12px; padding: 12px 0; color: var(--gh-text); }
+.appearance-setting label { font-size: .875rem; font-weight: 650; }
+.appearance-setting select { min-height: 44px; width: 100%; max-width: 100%; border: 1px solid var(--gh-control-border); border-radius: 10px; padding: 8px 10px; background: var(--gh-surface); color: var(--gh-text); font: inherit; }
+.appearance-setting-footer { width: min(400px, calc(100% - 32px)); margin: 12px auto calc(100px + env(safe-area-inset-bottom)); }
+.header-shop-cart { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; font-size: .875rem; }
+.mobile-menu-help { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 8px; }
+.mobile-menu-help > summary { min-height: 44px; display: flex; align-items: center; padding: 10px; cursor: pointer; font-weight: 650; }
+.mobile-site-menu-panel .appearance-setting { border-top: 1px solid var(--line); margin-top: 8px; }
+.business-tool-section { margin: 28px 0; }
+.business-tool-section h2 { margin-bottom: 16px; font-family: var(--font-sans); font-size: clamp(1.2rem, 3vw, 1.55rem); font-weight: 700; }
+/* Installation/update guidance stays in page flow; never covers the hero/form. */
+.pwa-notice { position: static; width: min(850px, calc(100% - 32px)); margin: 24px auto; padding-right: 54px; }
+.pwa-notice:has(.pwa-dismiss) { position: relative; }
+@media (max-width: 600px) {
+  /* Hide duplicates only on routes with the visible customer bottom bar. */
+  body:has(.glohaus-bottom-nav) .mobile-site-menu .menu-primary-duplicate { display: none; }
+  .mobile-site-menu-panel { max-height: calc(100dvh - 160px - env(safe-area-inset-bottom)); }
+  .glohaus-header-actions { gap: 6px; }
+  .header-shop-cart { padding: 8px; font-size: .75rem; }
+}
+@media (prefers-reduced-motion: reduce) { .mobile-home-categories { scroll-behavior: auto; } }
+
+:root[data-theme] .mobile-home-search { background: var(--gh-surface); border-color: var(--gh-control-border); }
+:root[data-theme] .mobile-home-search input, :root[data-theme] .mobile-home-search svg { color: var(--gh-text); }
+:root[data-theme] .mobile-home-search input::placeholder { color: var(--gh-muted); opacity: 1; }
+.account-tool-section { margin: 28px 0; }
+.account-tool-section > h2 { font-family: var(--font-sans); font-size: 1.25rem; font-weight: 700; margin-bottom: 14px; }
+@media (max-width: 600px) {
+ .glohaus-header { display: flex; flex-wrap: wrap; }
+ .glohaus-header-actions { margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+}
+
+:is(.glohaus-sign-in,.home-mobile-signin,.glohaus-search-link,.glohaus-notification-link) { min-height: 44px; }
+:root[data-theme="night"] :is(.mobile-customer-home,.mobile-home-main) { background: var(--gh-canvas); color: var(--gh-text); }
+:root[data-theme] .glohaus-bottom-nav { background: var(--gh-surface); border-color: var(--line); }
+:root[data-theme="night"] .glohaus-bottom-nav a[aria-current="page"] { color: var(--gh-action); }

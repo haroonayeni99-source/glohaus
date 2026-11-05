@@ -54,6 +54,11 @@ export function PwaShell() {
     pwaServerSnapshot,
   );
   const state = snapshot ? JSON.parse(snapshot) : null;
+  const [installEngaged, setInstallEngaged] = useState(false);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setInstallEngaged(true), 30000);
+    return () => window.clearTimeout(timer);
+  }, []);
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
   const [updateError, setUpdateError] = useState("");
   const reloading = useRef(false);
@@ -101,6 +106,7 @@ export function PwaShell() {
   }, []);
   const safeEntry = ["/", "/account", "/professional"].includes(pathname);
   const offer =
+    installEngaged &&
     safeEntry &&
     state?.secure &&
     !state.standalone &&

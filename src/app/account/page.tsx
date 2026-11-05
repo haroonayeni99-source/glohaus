@@ -30,15 +30,9 @@ export const metadata = { title: "Your account" };
 const links = [
   ["Your profile", "Your name and photo", "/account/profile", UserRound],
   [
-    "Upcoming bookings",
-    "Your next moment of self-care",
+    "Bookings",
+    "Upcoming appointments, history, reviews and rebooking",
     "/account/bookings",
-    CalendarDays,
-  ],
-  [
-    "Booking history",
-    "Past visits, reviews and rebooking",
-    "/account/bookings?view=history",
     CalendarDays,
   ],
   [
@@ -107,18 +101,18 @@ export default async function Page() {
           <p>Discover. Book. Get inspired.</p>
         </section>
         {!profile?.first_name && <p className="form-notice"><Link href="/account/profile">Add your name and an optional photo</Link> so your professional can recognise you.</p>}
-        <nav className="account-menu" aria-label="Your account">
-          {links.map(([label, description, href, Icon]) => (
-            <Link href={href} key={href}>
-              <Icon size={21} aria-hidden />
-              <span>
-                <strong>{label}</strong>
-                <small>{description}</small>
-              </span>
-              <ChevronRight size={18} aria-hidden />
-            </Link>
-          ))}
-        </nav>
+        {[
+          {title: "Bookings & purchases", routes: ["/account/bookings", "/account/reviews", "/account/orders", "/wallet"]},
+          {title: "Your community", routes: ["/account/following", "/account/saved", "/account/invite", "/feature-votes"]},
+          {title: "Account & settings", routes: ["/account/profile", "/security", "/notifications", "/account/notifications", "/preferences", "/install"]},
+        ].map(group => <section className="account-tool-section" key={group.title}>
+          <h2>{group.title}</h2>
+          <nav className="account-menu" aria-label={group.title}>
+            {links.filter(([, , href]) => group.routes.includes(href)).map(([label, description, href, Icon]) => <Link href={href} key={href}>
+              <Icon size={21} aria-hidden /><span><strong>{label}</strong><small>{description}</small></span><ChevronRight size={18} aria-hidden />
+            </Link>)}
+          </nav>
+        </section>)}
         <div className="account-switch">
           {account.roles.includes("professional") && (
             <Link className="button" href="/professional">

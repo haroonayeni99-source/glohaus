@@ -139,18 +139,24 @@ export default async function ToolsPage() {
         <p className="pro-page-lead">
           Manage your bookings, Shop, verification, content, money and account tools from one place.
         </p>
-        <nav className="tools-grid" aria-label="Business tools">
-          {tools.map(([label, description, href, Icon]) => (
-            <Link key={href} href={href} className="tool-card">
-              <Icon size={23} aria-hidden />
-              <span>
-                <strong>{label}</strong>
-                <small>{description}</small>
-              </span>
-              <ChevronRight size={18} aria-hidden />
-            </Link>
-          ))}
-        </nav>
+        {[
+          { name: "Appointments & clients", match: ["/professional/bookings", "/professional/availability", "/professional/clients", "/professional/policies", "/professional/connections#calendar", "/messages?view=professional"] },
+          { name: "Your storefront & content", match: ["/professional/profile", "/professional/portfolio", "/professional/connections#social", "/professional/posts", "/professional/live", "/professional/reviews", "/professional/bundles"] },
+          { name: "Shop & fulfilment", match: ["/professional/seller-hub", "/professional/products", "/professional/orders"] },
+          { name: "Money, setup & account", match: [] as string[] },
+        ].map((group, index, groups) => {
+          const entries = tools.filter(([, , href]) => index === groups.length - 1
+            ? !groups.slice(0, -1).some(g => g.match.includes(href))
+            : group.match.includes(href));
+          return <section className="business-tool-section" key={group.name}>
+            <h2>{group.name}</h2>
+            <nav className="tools-grid" aria-label={group.name}>
+              {entries.map(([label, description, href, Icon]) => <Link key={href} href={href} className="tool-card">
+                <Icon size={23} aria-hidden /><span><strong>{label}</strong><small>{description}</small></span><ChevronRight size={18} aria-hidden />
+              </Link>)}
+            </nav>
+          </section>;
+        })}
         <Link className="pro-back-link" href="/professional">
           <LayoutDashboard size={16} aria-hidden /> Back to dashboard
         </Link>

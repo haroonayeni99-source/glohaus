@@ -24,9 +24,11 @@ export async function GET(
   const config = configuration(provider),
     origin = new URL(config.redirectUri).origin;
   let result = "error";
+  let phase = "account";
   try {
     const query = new URL(request.url).searchParams;
     const account = await withAccount("professional", async (_db, a) => a);
+    phase = "state";
     const state = validateOAuthState(
       cookieJar.get(name)?.value || "",
       query.get("state") || "",
@@ -37,7 +39,9 @@ export async function GET(
       throw Error("INVALID_STATE");
     const code = query.get("code");
     if (!code || code.length > 4096) throw Error("INVALID_CODE");
+    phase = "exchange";
     const tokens = await exchangeCode(state, code);
+    phase = "store";
     const connection = await withAccount("professional", (db) =>
       storeConnection(
         db,
@@ -54,14 +58,19 @@ export async function GET(
         state.writeCalendar,
       ),
     );
+    phase = "sync";
     const synced = await syncProfessional(
       account.authId,
       state.professionalId,
       connection.id,
     );
     result = synced.failed ? "sync_error" : "connected";
-  } catch {
-    /* Keep provider responses, codes and tokens out of logs and redirects. */
+  } catch (error) {
+    // Only fixed categories are logged: never provider payloads, URLs, codes,
+    // ciphertext, tokens, account identifiers or arbitrary exception messages.
+    const safe = new Set(["INVALID_STATE", "INVALID_CODE", "RECONNECT_REQUIRED", "NOT_CONFIGURED", "TOO_MANY_CONNECTIONS"]);
+    const code = error instanceof Error && safe.has(error.message) ? error.message : "CONNECTION_FAILED";
+    console.warn("Business connection callback failed", {provider,phase,code});
   }
   cookieJar.delete({ name, path: "/api/v1/professional/connections" });
   return Response.redirect(

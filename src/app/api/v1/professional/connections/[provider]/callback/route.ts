@@ -71,7 +71,7 @@ export async function GET(
   } catch (error) {
     // Only fixed categories are logged: never provider payloads, URLs, codes,
     // ciphertext, tokens, account identifiers or arbitrary exception messages.
-    const safe = new Set(["INVALID_STATE", "INVALID_CODE", "RECONNECT_REQUIRED", "NOT_CONFIGURED", "TOO_MANY_CONNECTIONS", "INVALID_SECRET"]);
+    const safe = new Set(["INVALID_STATE", "INVALID_CODE", "RECONNECT_REQUIRED", "NOT_CONFIGURED", "TOO_MANY_CONNECTIONS", "INVALID_SECRET", "TIKTOK_INVALID_CLIENT", "TIKTOK_INVALID_GRANT", "TIKTOK_INVALID_REQUEST", "TIKTOK_INVALID_SCOPE", "TIKTOK_UNAUTHORIZED_CLIENT"]);
     const code = error instanceof Error && safe.has(error.message) ? error.message : "CONNECTION_FAILED";
     console.warn("Business connection callback failed", {provider,phase,code});
     if (sandboxDiagnostic) diagnostic = `&diagnostic=${phase}_${code}`;

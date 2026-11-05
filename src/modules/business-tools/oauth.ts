@@ -138,7 +138,7 @@ export function validateOAuthState(
     throw Error("INVALID_STATE");
   return state;
 }
-export async function providerJson(url: string, init: RequestInit = {}) {
+export async function providerJson(url: string, init: RequestInit = {}, sandboxOAuthDiagnostic = false) {
   const response = await fetch(url, {
     ...init,
     cache: "no-store",
@@ -147,6 +147,16 @@ export async function providerJson(url: string, init: RequestInit = {}) {
       ? AbortSignal.any([init.signal, AbortSignal.timeout(8000)])
       : AbortSignal.timeout(8000),
   });
+  if (!response.ok && sandboxOAuthDiagnostic && url === "https://open.tiktokapis.com/v2/oauth/token/") {
+    const payload = await response.json().catch(() => null);
+    const categories: Record<string, string> = {
+      invalid_client: "TIKTOK_INVALID_CLIENT", invalid_grant: "TIKTOK_INVALID_GRANT",
+      invalid_request: "TIKTOK_INVALID_REQUEST", invalid_scope: "TIKTOK_INVALID_SCOPE",
+      unauthorized_client: "TIKTOK_UNAUTHORIZED_CLIENT",
+    };
+    if (payload && typeof payload.error === "string" && Object.hasOwn(categories, payload.error))
+      throw Error(categories[payload.error]);
+  }
   if (!response.ok)
     throw Error(
       [400, 401, 403].includes(response.status)
@@ -181,7 +191,7 @@ export async function exchangeCode(
     tiktok: "https://open.tiktokapis.com/v2/oauth/token/",
     ics: "",
   };
-  const response = await providerJson(endpoints[p], { method: "POST", body });
+  const response = await providerJson(endpoints[p], { method: "POST", body }, p === "tiktok" && config.sandbox);
   if (!response.access_token) throw Error("RECONNECT_REQUIRED");
   if (p === "instagram") {
     const longUrl = new URL("https://graph.instagram.com/access_token");

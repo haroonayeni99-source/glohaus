@@ -25,9 +25,12 @@ export async function GET(
     origin = new URL(config.redirectUri).origin;
   let result = "error";
   let phase = "account";
+  let sandboxDiagnostic = false;
+  let diagnostic = "";
   try {
     const query = new URL(request.url).searchParams;
     const account = await withAccount("professional", async (_db, a) => a);
+    sandboxDiagnostic = provider === "tiktok" && configuration(provider, account.professionalId!).sandbox;
     phase = "state";
     const state = validateOAuthState(
       cookieJar.get(name)?.value || "",
@@ -68,13 +71,14 @@ export async function GET(
   } catch (error) {
     // Only fixed categories are logged: never provider payloads, URLs, codes,
     // ciphertext, tokens, account identifiers or arbitrary exception messages.
-    const safe = new Set(["INVALID_STATE", "INVALID_CODE", "RECONNECT_REQUIRED", "NOT_CONFIGURED", "TOO_MANY_CONNECTIONS"]);
+    const safe = new Set(["INVALID_STATE", "INVALID_CODE", "RECONNECT_REQUIRED", "NOT_CONFIGURED", "TOO_MANY_CONNECTIONS", "INVALID_SECRET"]);
     const code = error instanceof Error && safe.has(error.message) ? error.message : "CONNECTION_FAILED";
     console.warn("Business connection callback failed", {provider,phase,code});
+    if (sandboxDiagnostic) diagnostic = `&diagnostic=${phase}_${code}`;
   }
   cookieJar.delete({ name, path: "/api/v1/professional/connections" });
   return Response.redirect(
-    `${origin}/professional/connections?connection=${result}`,
+    `${origin}/professional/connections?connection=${result}${diagnostic}`,
     303,
   );
 }

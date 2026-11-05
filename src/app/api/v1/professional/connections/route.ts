@@ -9,6 +9,10 @@ import {
   preferencesSchema,
 } from "@/modules/business-tools/domain";
 import { beginOAuth, providerReady } from "@/modules/business-tools/oauth";
+import {
+  disconnectConnection,
+  revokeDisconnectedTikTok,
+} from "@/modules/business-tools/disconnect";
 import { feedUrl } from "@/modules/business-tools/ics";
 import {
   storeConnection,
@@ -140,7 +144,7 @@ export async function POST(request: Request) {
         await syncProfessional(account.authId, professionalId, input.id),
       );
     }
-    await withAccount("professional", async (db) => {
+    const disconnected = await withAccount("professional", async (db) => {
       await db.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
         professionalId,
       ]);
@@ -157,21 +161,19 @@ export async function POST(request: Request) {
         );
         if (!changed.rows.length) throw new AccessError("FORBIDDEN", 403);
       } else {
-        const changed = await db.query(
-          "UPDATE beauty.business_connections SET status='disconnected',secret_ciphertext='',lease_until=NULL,last_error=NULL WHERE id=$1 AND professional_id=$2 RETURNING id",
-          [input.id, professionalId],
-        );
-        if (!changed.rows.length) throw new AccessError("FORBIDDEN", 403);
-        await db.query(
-          "DELETE FROM beauty.external_calendar_busy WHERE connection_id=$1",
-          [input.id],
-        );
-        await db.query(
-          "UPDATE beauty.social_portfolio SET publication_status='hidden' WHERE connection_id=$1",
-          [input.id],
-        );
+        return disconnectConnection(db, professionalId, input.id);
       }
     });
+    if (disconnected?.provider === "tiktok" && disconnected.secret_ciphertext) {
+      const revoked = await revokeDisconnectedTikTok(
+        professionalId,
+        disconnected.secret_ciphertext,
+      );
+      return json({
+        saved: true,
+        revocation: revoked ? "confirmed" : "not_confirmed",
+      });
+    }
     return json({ saved: true });
   } catch (error) {
     return apiError(error);

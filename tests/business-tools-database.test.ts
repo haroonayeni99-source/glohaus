@@ -4,6 +4,7 @@ import { enrolAccount, type SqlClient } from "@/modules/accounts/repository";
 import { updateProfile, saveService } from "@/modules/professionals/repository";
 import { saveSchedule } from "@/modules/availability/repository";
 import { publicSocialPosts } from "@/modules/business-tools/repository";
+import { disconnectConnection } from "@/modules/business-tools/disconnect";
 const db = await createTestDatabase();
 let pro: string, otherPro: string, service: string;
 const start = new Date(Date.now() + 7 * 86400000);
@@ -147,6 +148,18 @@ beforeAll(async () => {
 });
 afterAll(() => db.close());
 describe("business tools database boundaries", () => {
+  it("disconnects only an owned TikTok connection and hides imported videos", () => isolated(async tx => {
+    const id = await connection(tx);
+    await as(tx, "tools-pro", () => tx.query("UPDATE beauty.business_connections SET provider='tiktok',secret_ciphertext='fixture-cipher' WHERE id=$1", [id]));
+    await as(tx, "tools-pro", () => tx.query("INSERT INTO beauty.social_portfolio(professional_id,connection_id,platform,external_id,original_url,publication_status) VALUES($1,$2,'tiktok','12345678','https://www.tiktok.com/@fixture/video/12345678','published')", [pro,id]));
+    await expect(as(tx, "tools-other-pro", () => disconnectConnection(tx,otherPro,id))).rejects.toThrow("FORBIDDEN");
+    expect((await tx.query("SELECT status FROM beauty.business_connections WHERE id=$1",[id])).rows[0].status).toBe("connected");
+    const removed = await as(tx, "tools-pro", () => disconnectConnection(tx,pro,id));
+    expect(removed).toEqual({provider:"tiktok",secret_ciphertext:"fixture-cipher"});
+    expect((await tx.query("SELECT status,secret_ciphertext,lease_until FROM beauty.business_connections WHERE id=$1",[id])).rows[0]).toMatchObject({status:"disconnected",secret_ciphertext:"",lease_until:null});
+    expect((await tx.query("SELECT publication_status FROM beauty.social_portfolio WHERE connection_id=$1",[id])).rows[0].publication_status).toBe("hidden");
+    expect(await as(tx, "", () => publicSocialPosts(tx,pro))).toEqual([]);
+  }));
   it("denies other professionals and customers access to connection credentials", () =>
     isolated(async (tx) => {
       const id = await connection(tx);

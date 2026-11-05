@@ -75,11 +75,13 @@ export function BusinessConnections({
         return;
       }
       setNotice(
-        data.failed
-          ? "Sync needs attention. Your connection is not up to date. Check the status below."
-          : data.duplicate
-            ? "That post is already in your portfolio."
-            : "Saved. Your changes are up to date.",
+        data.revocation === "not_confirmed"
+          ? "Disconnected from GLOHAUS and imported videos hidden. TikTok access removal could not be confirmed. Remove GLOHAUS from your connected apps in TikTok settings."
+          : data.failed
+            ? "Sync needs attention. Your connection is not up to date. Check the status below."
+            : data.duplicate
+              ? "That post is already in your portfolio."
+              : "Saved. Your changes are up to date.",
       );
       router.refresh();
     } catch (error) {

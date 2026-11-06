@@ -6,7 +6,7 @@ Baseline: a214c00605bd445f49b908525479356843bd68fc. Target: existing haroon-gloh
 
 Reuse the existing GeographicMap renderer if the primary WebGL renderer fails. Consent remains required before requesting third-party map tiles. Standard-map zoom, pan, reset, pin selection, highlighting and viewport callbacks remain available. The enhanced WebGL path remains in place. No financial, account, schema or credential changes.
 
-89 focused tests across 17 files passed, covering map fallback, location, PWA, auth/recovery and analytics. TypeScript, scoped ESLint and production webpack build passed. Browser acceptance using the actual components with synthetic public pins confirmed loaded OpenStreetMap tiles, zoom 10 to 11, changed longitude after pan, reset to initial viewport and selected-pin state. This verifies the standard renderer, not physical touch/pinch or native WebGL graphics.
+89 focused tests across 17 files passed, covering map fallback, location, PWA, auth/recovery and analytics. TypeScript, scoped ESLint and production webpack build passed. Local browser acceptance using actual components and synthetic pins confirmed zoom 10 to 11, pan, reset and selection; visual inspection then revealed provider-blocked tiles on the local preview. Production acceptance on www.glohaus.shop/explore?location=SE15 confirmed actual street imagery, zoom, selected Test Studio pin with matching profile card, and View all London reset to zoom 10. This verifies the standard renderer, not physical touch/pinch or native WebGL graphics.
 
 ## Email evidence
 
@@ -36,3 +36,7 @@ Use a confirmed Owner-controlled auth test mailbox. Request one reset, verify pr
 ## Rollback
 
 Restore branch restore/before-standard-map-20261106 retains the baseline. Revert only the scoped application change or restore the prior Vercel deployment; do not reset databases or credentials. Later independent work must be preserved.
+
+## Live release identity
+
+Application commit aee2fae50726ee41a36d355e1a0d555b9cbc4a3a deployed READY as dpl_HLeKboPgZqzFQAXMdkTiShfw5YBJ, with www.glohaus.shop/glohaus.shop aliases verified. Native WebGL and physical touch gestures remain unverified. Provider block on the local preview did not occur in the inspected production map. This follow-up updates evidence only.

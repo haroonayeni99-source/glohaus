@@ -28,7 +28,7 @@ export default async function Page() {
       <PublicHeader signedIn />
       <main id="main" className="catalog-page following-page">
         <DiscoverNavigation active="professionals" />
-        <WorkspaceIntro eyebrow="YOUR GLOHAUS COMMUNITY" title={<>Professionals you <em>follow.</em></>}><p>Keep up with the beauty professionals you want to book, revisit and support.</p></WorkspaceIntro>
+        <WorkspaceIntro eyebrow="YOUR GLOHAUS COMMUNITY" title={<>Professionals you <em>follow.</em></>}><p>Find and revisit the professionals you follow.</p></WorkspaceIntro>
         {professionals.length ? (
           <div className="following-list">
             {professionals.map((pro) => (
@@ -46,8 +46,8 @@ export default async function Page() {
         ) : (
           <section className="catalog-empty">
             <Users size={32} aria-hidden />
-            <h2>Your following list is ready to grow.</h2>
-            <p>Follow professionals from their GLOHAUS profile and they will appear here.</p>
+            <h2>No followed professionals yet.</h2>
+            <p>Follow a professional from their profile to save them here.</p>
             <Link className="button small" href="/explore">Explore professionals</Link>
           </section>
         )}

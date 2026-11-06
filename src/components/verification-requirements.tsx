@@ -56,9 +56,7 @@ export function VerificationRequirements() {
           </h3>
           {!data.started ? (
             <p>
-              Confirm the age and terms declarations below, then continue to
-              Stripe. Stripe will tell you which documents and business details
-              are required for your account.
+              Confirm your age and accept the terms below. Stripe will then show the documents and business details your account needs.
             </p>
           ) : (
             <>
@@ -78,8 +76,7 @@ export function VerificationRequirements() {
                 </>
               ) : (
                 <p>
-                  No information is currently requested. Stripe may still be
-                  reviewing your account or request additional details later.
+                  No details are needed now. Stripe may still be reviewing your account or ask for more later.
                 </p>
               )}
               {data.pending.length > 0 && (

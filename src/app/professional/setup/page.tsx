@@ -174,10 +174,7 @@ export default async function ProfessionalSetup() {
             {progressPercent}%
           </progress>
           <p>
-            This checklist tracks your profile, services, hours and portfolio.
-            Verification is separate and does not change this percentage.
-            Check your verification status above for your booking limits and
-            available features.
+            Setup progress covers your profile, services, hours and portfolio. Verification is separate; check your status above for booking limits and available features.
           </p>
           <p>
             <Link href={next?.[2] || "/professional/profile"}>

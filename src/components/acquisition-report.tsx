@@ -41,22 +41,13 @@ export function AcquisitionReport({
         service value · {money(total.commission)} recorded professional
         commission.
       </p>
-      <p>
-        Sources come from customer confirmations, supported where available by
-        consented profile history, invitations and referral records. An
-        invitation or QR code alone never establishes a source. Unconfirmed
-        sources stay unknown; conflicting evidence requires review. These
-        reports do not alter fees or imply ownership of a customer.
-      </p>
-      <p>
-        Returning means an earlier completed paid appointment with that
-        professional, including appointments before the reporting period.
-        Refunded-in-full, cancelled, incomplete and disputed bookings are
-        excluded. Service value is the booked price; net captured includes
-        deposits and customer fees after refunds, so it is not the
-        professional’s earnings. Commission is read from recorded financial
-        quotes with a payment ledger entry.
-      </p>
+      <p>See where completed paid bookings came from and how often clients returned. These figures do not change fees or establish ownership of a customer.</p>
+      <details>
+        <summary>How sources and figures are counted</summary>
+        <p>Sources use customer confirmations, supported where available by consented profile history, invitations and referral records. A link or QR code alone does not confirm a source; unknown sources stay unknown and conflicting evidence needs review.</p>
+        <p>A returning booking follows an earlier completed paid appointment with the same professional, even before this reporting period. Cancelled, incomplete, fully refunded and disputed bookings are excluded.</p>
+        <p>Service value is the booked price. Payments after refunds can include deposits and customer fees; they are not professional earnings. Commission comes from recorded financial quotes with a payment ledger entry.</p>
+      </details>
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>
@@ -70,7 +61,7 @@ export function AcquisitionReport({
               <th>Returning customers</th>
               <th>Supported / reviewed</th>
               <th>Service value</th>
-              <th>Net captured</th>
+              <th>Payments after refunds</th>
               <th>Commission</th>
             </tr>
           </thead>
@@ -99,8 +90,7 @@ export function AcquisitionReport({
         </table>
       </div>
       <p>
-        Unique customers above are deduplicated across professionals.
-        Per-professional customer counts should not be added together.
+        Each customer is counted once in the total above. Do not add individual professionals’ customer counts together.
       </p>
     </section>
   );

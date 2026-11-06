@@ -48,11 +48,11 @@ export default async function Page({searchParams}:{searchParams:Promise<{period?
   }).catch(()=>null);
   const money=(pence:number)=>new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"}).format(pence/100);
   return <div className="pro-app"><ProfessionalNavigation active="more" displayName={access.account.displayName} /><main id="main" className="pro-main pro-management-page"><AcquisitionReport data={acquisition}/>
-    {invitation&&<section className="admin-detail-card" style={{padding:24,marginTop:20}}><h2>Your customer invitation</h2><p>Share this link or QR code with your clients. They choose whether to record the invitation. It never proves customer ownership or changes fees.</p><p><a href={`/i/${invitation.token}`}>{`https://glohaus.shop/i/${invitation.token}`}</a></p><a className="button" href="/api/v1/professional/invitation-qr">Download invitation QR code</a></section>}
+    {invitation&&<section className="admin-detail-card" style={{padding:24,marginTop:20}}><h2>Your customer invitation</h2><p>Share this link or QR code with clients; they choose whether to record the invitation. Invitations do not change fees or prove customer ownership.</p><p><a href={`/i/${invitation.token}`}>{`https://glohaus.shop/i/${invitation.token}`}</a></p><a className="button" href="/api/v1/professional/invitation-qr">Download invitation QR code</a></section>}
 
     <Link href="/professional">← Professional dashboard</Link>
     <header style={{margin:"22px 0"}}><p className="eyebrow">PRIVATE PROFESSIONAL INSIGHTS</p><h1>Business Hub</h1>
-      <p>Your completed bookings, customers, aggregate profile opens and referrals. Only you can access these figures.</p></header>
+      <p>Your private overview of completed bookings, clients, profile opens and referrals.</p></header>
     <nav style={{display:"flex",flexWrap:"wrap",gap:10,marginBottom:20}} aria-label="Reporting period">
       {(["week","month","year"] as const).map(p=><Link key={p} href={`/professional/performance?period=${p}&retention=${retention}`} className="button small" aria-current={p===period?"page":undefined}>{p==="week"?"7 days":p==="month"?"31 days":"366 days"}</Link>)}
     </nav>
@@ -60,8 +60,8 @@ export default async function Page({searchParams}:{searchParams:Promise<{period?
       <section className="admin-detail-card" style={{padding:24}}>
         <h2>My bookings</h2><p><strong>{metrics.profileOpens}</strong> recorded signed-in profile opens in this period.</p><p><strong>{metrics.row.bookings}</strong> completed bookings · <strong>{metrics.row.clients}</strong> unique clients · <strong>{metrics.row.returningClients}</strong> returning clients</p>
         <p>{money(metrics.row.serviceValuePence)} booked service value · {money(metrics.row.netCapturedPence)} captured payments after refunds.</p>
-        <p>Captured payments can include deposits and customer fees. They are not your earnings, profit or available balance. <Link href="/professional/wallet">View your wallet</Link>.</p>
-        <p>Returning clients have an earlier completed paid appointment with you, including before this reporting period. {metrics.row.multipleVisitClients} clients had multiple visits in this period; {metrics.row.futureBookedClients} clients have a confirmed future booking. Cancelled, unpaid, fully refunded and disputed appointments are excluded.</p>
+        <p>Payments received can include deposits and customer fees. They are not your earnings, profit or available balance. <Link href="/professional/wallet">View your wallet</Link>.</p>
+        <p>Returning clients have previously completed a paid appointment with you, even before this period. {metrics.row.multipleVisitClients} clients had multiple visits in this period; {metrics.row.futureBookedClients} clients have a confirmed future booking. Cancelled, unpaid, fully refunded and disputed appointments are excluded.</p>
       </section>
       <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
         <h2>Bring your own clients</h2>
@@ -70,10 +70,10 @@ export default async function Page({searchParams}:{searchParams:Promise<{period?
         <p><Link href="/professional/clients">Manage your clients</Link> · <Link href="/professional/services">Manage services</Link> · <Link href="/professional/availability">Manage availability</Link></p>
       </section>
       <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
-        <h2>Client retention</h2>
+        <h2>Clients who return</h2>
         <nav aria-label="Return window" style={{display:"flex",flexWrap:"wrap",gap:10}}>{([30,60,90] as const).map(days=><Link key={days} className="button small" aria-current={days===retention?"page":undefined} href={`/professional/performance?period=${period}&retention=${days}`}>{days}-day return</Link>)}</nav>
-        <p>For clients whose first completed paid appointment was between {reportingDays[period]+retention} and {retention} days ago, how many returned within {retention} days? Every client in this cohort has a full observation window.</p>
-        {metrics.row.cohortClients?<p><strong>{metrics.row.cohortReturned} of {metrics.row.cohortClients}</strong> returned ({Math.round(100*metrics.row.cohortReturned/metrics.row.cohortClients)}%). This describes recorded appointments, not an estimate or proof of growth.</p>:<p>Not enough mature booking history for this cohort. No retention percentage is estimated.</p>}
+        <p>Of clients whose first completed paid appointment was {retention}–{reportingDays[period]+retention} days ago, how many returned within {retention} days? Everyone counted has had the full {retention} days to return.</p>
+        {metrics.row.cohortClients?<p><strong>{metrics.row.cohortReturned} of {metrics.row.cohortClients}</strong> returned ({Math.round(100*metrics.row.cohortReturned/metrics.row.cohortClients)}%). Based on recorded appointments; this does not prove business growth.</p>:<p>Not enough clients have had the full time to return. No percentage is estimated.</p>}
       </section>
       <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
         <h2>Most popular booked services</h2>
@@ -82,9 +82,9 @@ export default async function Page({searchParams}:{searchParams:Promise<{period?
         {!metrics.popularServices.length&&<p>No completed services in this period.</p>}
       </section>
       <section className="admin-detail-card" style={{padding:24,marginTop:20}}>
-        <h2>Refer &amp; Grow</h2><p><strong>{metrics.referrals.qualified}</strong> qualified referrals out of {metrics.referrals.total} attributed accounts.</p>
+        <h2>Refer &amp; Grow</h2><p><strong>{metrics.referrals.qualified}</strong> qualifying referrals from {metrics.referrals.total} accounts linked to your code.</p>
         {metrics.code?<><p>Your referral code: <strong>{metrics.code}</strong></p><p>Share your code directly with someone interested in GLOHAUS.</p><ReferralShareActions code={metrics.code} /></>:<p>No referral code assigned yet.</p>}
-        <p>Reward incentives are not yet active; referrals do not create automatic credits or payouts.</p>
+        <p>Referral rewards are not active. Sharing a code does not create credits or payouts.</p>
       </section>
     </>}
   </main></div>;

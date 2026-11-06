@@ -108,13 +108,7 @@ export default async function ProfessionalWalletPage() {
           Your commission and founding rewards
         </Link>
         <p className="pro-page-lead">
-          Your balance is calculated from protected transaction records. If a
-          booking is disputed, GLOHAUS normally ring-fences the disputed amount
-          and keeps an additional 50% safety buffer in your wallet while
-          allowing the rest of your eligible balance to remain withdrawable. A
-          full withdrawal freeze is used only when the reserve cannot be
-          covered, multiple disputes are open, or another account risk
-          restriction applies.
+          Your balance comes from protected transaction records. A dispute normally holds the disputed amount plus a 50% safety buffer; other eligible funds stay withdrawable unless the reserve is insufficient, multiple disputes are open or another risk restriction requires a full freeze.
         </p>
 
         <section
@@ -340,9 +334,7 @@ export default async function ProfessionalWalletPage() {
               </span>
             </div>
             <p>
-              Choose how much of your released balance to withdraw. The exact
-              Instant fee is shown before you submit and is never allowed to
-              push your GLOHAUS wallet below zero.
+              Withdraw from your released balance. The exact Instant fee appears before submission and cannot take your wallet below zero.
             </p>
             <WithdrawalForm
               availablePence={withdrawablePence}
@@ -377,9 +369,7 @@ export default async function ProfessionalWalletPage() {
             <PayoutDashboardButton />
           ) : access.verified && hasStripeAccount ? (
             <p className="form-notice" role="status">
-              Payout management is temporarily unavailable because the protected
-              Stripe payment runtime is not fully configured. Your GLOHAUS
-              wallet balance remains recorded and protected.
+              Stripe payout management is not ready yet. Your wallet balance remains recorded and protected.
             </p>
           ) : (
             <ConnectButton
@@ -396,14 +386,7 @@ export default async function ProfessionalWalletPage() {
             </span>
             <h2>How money moves</h2>
             <p>
-              Service deposit proceeds begin as pending and become eligible
-              after a completed appointment has remained clear for 24 hours.
-              Product proceeds remain pending until tracked delivery is
-              confirmed by the customer, then become eligible after 48 hours. A
-              booking dispute ring-fences the amount connected to that booking
-              in your disputed balance. A 50% safety buffer normally remains in
-              the wallet while other eligible earnings stay withdrawable; higher
-              dispute risk can trigger a full freeze.
+              Service deposits become eligible 24 hours after completion if the appointment remains clear. Product proceeds become eligible 48 hours after the customer confirms tracked delivery; the dispute and hold rules above still apply.
             </p>
           </div>
           <WalletCards className="pro-wallet-symbol" aria-hidden />

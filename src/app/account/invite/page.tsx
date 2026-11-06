@@ -18,10 +18,10 @@ export default async function Page({searchParams}:{searchParams:Promise<{claim?:
     <Link href="/account">← My account</Link>
     <section className="admin-detail-card" style={{padding:24,marginTop:24}}>
       <p className="eyebrow">GLOHAUS COMMUNITY</p><h1>Invite friends</h1>
-      <p>Know someone who would enjoy discovering beauty professionals? Share GLOHAUS with them.</p>
+      <p>Share your code with friends who want to find beauty professionals.</p>
       {referral ? <>
         <p>Your code: <strong>{referral.code}</strong></p>
-        <p>{referral.totalReferrals} attributed registration(s). Rewards disabled.</p>
+        <p>{referral.totalReferrals} sign-up(s) linked to your code.</p>
         <CustomerInviteActions code={referral.code}/>
       </> : <p role="alert">Referral codes are temporarily unavailable.</p>}
       <form action={claimReferral} style={{marginTop:20}}>
@@ -33,7 +33,7 @@ export default async function Page({searchParams}:{searchParams:Promise<{claim?:
       </form>
       {claim==="success"&&<p role="status">Invitation registered. No rewards have been issued.</p>}
       {claim==="unavailable"&&<p role="alert">Code not accepted. It may be invalid, expired, already claimed or your own.</p>}
-      <p>Attribution records valid account claims only. Referral incentives are currently disabled.</p>
+      <p>Only valid invitation claims are counted. Referral rewards are currently disabled.</p>
     </section>
   </main>;
 }

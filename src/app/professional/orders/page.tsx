@@ -32,8 +32,7 @@ export default async function ProfessionalOrdersPage() {
         <p className="pro-kicker">SHOP FULFILMENT</p>
         <h1>Product orders</h1>
         <p className="pro-page-lead">
-          Paid orders appear here as they are confirmed. Mark orders as processing,
-          add tracking when you dispatch them, or start a refund before shipment when needed.
+          Manage confirmed paid orders: mark them as processing, add dispatch tracking or request a refund before shipment.
         </p>
         <ProductOrderList initialOrders={orders} mode="professional" />
       </main>

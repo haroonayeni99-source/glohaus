@@ -17,14 +17,14 @@ export async function CommunicationsSettings({ authId, professional = false }: {
       <Link href={professional ? "/notifications?view=professional" : "/notifications"}>Open notification inbox →</Link>
     </nav>
     <section id="activity" className="communications-section">
-      <p className="eyebrow">ACTIVITY & DELIVERY</p><h2>Stay up to date, your way.</h2>
-      <p>Essential booking, order, security and payment notices stay separate from optional marketing. Your notification inbox remains available.</p>
-      <p>Email and supported phone or browser push are managed below. SMS controls are not currently available here.</p>
+      <p className="eyebrow">ACTIVITY & DELIVERY</p><h2>Activity alerts</h2>
+      <p>Manage service alerts here; marketing choices are separate below.</p>
+      <p>Choose email and supported device alerts. SMS settings are not available here.</p>
       {alerts.status === "fulfilled" && alerts.value ? <ProfessionalNotificationSettings audience={professional ? "professional" : "customer"} initial={alerts.value} publicKey={process.env.VAPID_PUBLIC_KEY || null} pushConfigured={Boolean(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY && process.env.VAPID_SUBJECT)} /> : <p role="alert">We couldn’t load your alert settings. Reload to try again. Your saved choices have not changed.</p>}
     </section>
     <section id="marketing" className="communications-section">
-      <p className="eyebrow">OPTIONAL MARKETING</p><h2>Choose what inspires you.</h2>
-      <p>Manage promotional email separately. Opting out here does not turn off essential service notices.</p>
+      <p className="eyebrow">OPTIONAL MARKETING</p><h2>Marketing emails</h2>
+      <p>Choose optional promotional emails. Opting out does not stop essential service notices.</p>
       {marketing.status === "fulfilled" && marketing.value ? <MarketingPreferencesForm initial={marketingPreferences(marketing.value)} professional={professional} /> : <p role="alert">We couldn’t load your marketing choices. Reload to try again. Your existing consent has not changed.</p>}
     </section>
   </div>;

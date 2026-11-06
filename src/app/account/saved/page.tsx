@@ -37,7 +37,7 @@ export default async function SavedPage({
           ← Discover
         </Link>
         <DiscoverNavigation active="saved" />
-        <WorkspaceIntro eyebrow="YOUR INSPIRATION COLLECTION" title="Saved looks"><p>The work you love, ready to revisit.</p></WorkspaceIntro>
+        <WorkspaceIntro eyebrow="YOUR INSPIRATION COLLECTION" title="Saved looks"><p>Revisit the posts you have saved.</p></WorkspaceIntro>
         {posts.length ? (
           <div className="saved-look-grid">
             {posts.slice(0, 40).map((post) => (
@@ -73,8 +73,8 @@ export default async function SavedPage({
         ) : (
           <section className="catalog-empty">
             <Bookmark size={30} aria-hidden />
-            <h2>Make room for inspiration.</h2>
-            <p>Save a community post while browsing and find it here.</p>
+            <h2>No saved looks yet.</h2>
+            <p>Save a post in Discover to find it here.</p>
             <Link className="button" href="/discover">
               Explore inspiration
             </Link>

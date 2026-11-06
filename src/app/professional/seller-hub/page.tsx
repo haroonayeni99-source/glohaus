@@ -98,9 +98,7 @@ export default async function SellerHubPage() {
           ))}
         </div>
         <p className="seller-muted">
-          Product sales are gross item sales before fees, costs or
-          partial-refund adjustments. Cancelled orders and orders marked refund
-          pending or refunded are excluded. Use your wallet for net proceeds.{" "}
+          Sales are item totals before fees, costs and partial-refund adjustments. Cancelled, refund-pending and refunded orders are excluded; your wallet shows net proceeds.{" "}
           {data.overview.refundOrders30Days} order(s) from the last 30 days are
           marked refund pending or refunded.
         </p>
@@ -119,8 +117,7 @@ export default async function SellerHubPage() {
         <section className="seller-panel" aria-labelledby="insights-heading">
           <h2 id="insights-heading">Your product insights</h2>
           <p>
-            Units and gross item sales over the last 30 days. These figures
-            describe your shop, rather than marketplace-wide demand.
+            Your units sold and item sales over 30 days, not demand across GLOHAUS.
           </p>
           {data.products.length ? (
             <div className="seller-table-scroll">

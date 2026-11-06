@@ -195,8 +195,7 @@ export function WithdrawalForm({
       )}
       {!instantConfigured && (
         <p className="form-help">
-          Instant withdrawal will unlock after GLOHAUS completes Stripe Instant
-          Payout fee configuration. Standard withdrawal remains available.
+          Instant withdrawals are not ready yet; Standard withdrawals remain available.
         </p>
       )}
       {instantBlocked && (

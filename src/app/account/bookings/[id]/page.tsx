@@ -170,10 +170,7 @@ export default async function Booking({
                 <dd>{money(financialDisclosure.refundedPence)}</dd>
               </dl>
               <p>
-                This is the booking quote, not a withdrawable balance.
-                Outstanding service balances, refunds, disputes and payout
-                checks can change what you receive. Check the wallet transaction
-                history for current funds and holds.
+                This quote is not your available balance. Unpaid balances, refunds, disputes and payout checks can affect your earnings; check your wallet for current funds and holds.
               </p>
               <Link href="/professional/wallet">
                 View wallet, holds and payout history
@@ -248,8 +245,7 @@ export default async function Booking({
           )}
           {b.payment_status === "refund_required" && (
             <p className="form-notice">
-              Your payment is awaiting a refund decision or payment review. A
-              cancellation does not itself mean a refund has been sent.
+              Your payment is under review. Cancelling a booking does not mean a refund has been sent.
             </p>
           )}
         </section>
@@ -315,8 +311,7 @@ export default async function Booking({
         <section className="form-notice">
           <strong>This appointment time is free again.</strong>
           <p>
-            If you still want to work this time, promote it as a last-minute
-            slot so customers can find and book it quickly.
+            Offer this time as a last-minute slot if you still want to take a booking.
           </p>
           <Link
             className="text-link"

@@ -206,25 +206,18 @@ export function ProfessionalNotificationSettings({
     <div className="pro-notification-settings">
       {!customer && (
         <p>
-          Essential booking, order, cancellation, security and payment email
-          notices stay enabled. Every critical transaction remains in your
-          dashboard.
+          Essential booking, order, cancellation, security and payment emails stay on. Important transactions also remain in your dashboard.
         </p>
       )}
       {customer && (
         <p>
-          Choose optional phone and browser alerts below. Essential booking and
-          payment emails and your private in-app records remain available.
-          Enabling this device does not grant location access or enable journey
-          reminders.
+          Choose optional device alerts below. This does not grant location access or turn on journey reminders.
         </p>
       )}
       <section className="pro-settings-card" aria-labelledby="device-heading">
         <h2 id="device-heading">Phone and browser push</h2>
         <p>
-          On iPhone or iPad, open GLOHAUS in Safari, choose Share → Add to Home
-          Screen, then open the installed app to enable notifications. Supported
-          Android and desktop browsers can enable push here.
+          On iPhone or iPad: Safari → Share → Add to Home Screen, then enable alerts in the installed app. Supported Android and desktop browsers can enable alerts here.
         </p>
         <p>
           <Link href="/install">Home Screen installation instructions</Link>
@@ -352,9 +345,7 @@ export function ProfessionalNotificationSettings({
         )}
         {customer && (
           <p>
-            Smart Journey departure alerts also need an eligible journey plan
-            with reminders enabled. Installing the app does not enable
-            background GPS tracking.
+            Departure alerts need an eligible journey plan with reminders turned on. Installing GLOHAUS does not enable background GPS tracking.
           </p>
         )}
       </section>

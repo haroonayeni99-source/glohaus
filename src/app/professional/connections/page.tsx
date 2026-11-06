@@ -53,9 +53,7 @@ export default async function Connections({
         <p className="pro-kicker">WORKS ALONGSIDE YOUR BUSINESS</p>
         <h1>Your calendars. Your work. Connected.</h1>
         <p className="pro-page-lead">
-          Keep your regular clients and booking methods. We’re building GLOHAUS
-          to help you manage availability, showcase your talent and reach
-          additional customers.
+          Connect your calendars and social accounts to manage availability and show your work.
         </p>
         <BusinessConnections
           {...JSON.parse(JSON.stringify(data))}

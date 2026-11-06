@@ -166,14 +166,10 @@ export function BusinessConnections({
       <section id="calendar" className="pro-editor-surface">
         <h2>Calendar &amp; availability</h2>
         <p>
-          Keep using your existing booking platforms. Connect your calendar to
-          GLOHAUS and manage your availability in one place.
+          Connect your calendar to share busy times while keeping your existing booking tools.
         </p>
         <p>
-          We read busy times from your primary Google calendar or default
-          Outlook calendar. Private appointment titles and customer details are
-          not shown to customers. Check that appointments from your other
-          platforms appear on that calendar.
+          We read your primary Google or default Outlook calendar. Customers cannot see private titles or client details; make sure your other bookings appear on that calendar.
         </p>
         {(["google", "outlook"] as const).map((provider) => (
           <form
@@ -199,9 +195,7 @@ export function BusinessConnections({
               Also add GLOHAUS appointments to this calendar
             </label>
             <small>
-              Optional. Adds private “GLOHAUS appointment” events without client
-              names. GLOHAUS remains the place to cancel or reschedule these
-              bookings.
+              Optional: add private appointment events without client names. Cancel or reschedule GLOHAUS bookings here.
             </small>
             <label className="business-check">
               <input type="checkbox" required disabled={!ready[provider]} />I
@@ -277,10 +271,7 @@ export function BusinessConnections({
         >
           <h3>Give yourself breathing room</h3>
           <p>
-            Buffers reserve time on both sides of busy appointments, breaks and
-            external events. They affect new bookings; your existing
-            appointments stay in place. Travel time is an extra buffer when you
-            need it.
+            Buffers add time before and after busy appointments, breaks and calendar events. Travel time adds an extra buffer; existing bookings stay unchanged.
           </p>
           <label>
             Appointment buffer
@@ -318,10 +309,7 @@ export function BusinessConnections({
           </Link>
         </form>
         <p>
-          Calendar sync reduces conflicts but cannot guarantee instant updates
-          or prevent every double booking. When a connected calendar is stale or
-          has an error, new slots may be paused until it syncs or you disconnect
-          it.
+          Calendar updates can be delayed, so clashes are still possible. New slots may pause if a calendar is out of date or has an error, until it syncs or you disconnect it.
         </p>
       </section>
       <section id="social" className="pro-editor-surface">
@@ -342,9 +330,7 @@ export function BusinessConnections({
           appears on your profile and in Discover.
         </p>
         <p>
-          Social connections are optional. You can register, accept bookings and
-          use GLOHAUS without connecting an account. We never publish from
-          GLOHAUS to your social accounts.
+          Connecting social accounts is optional and never required for bookings. GLOHAUS does not post to your social accounts.
         </p>
         <details>
           <summary>How connected-account information is used</summary>
@@ -468,9 +454,7 @@ export function BusinessConnections({
         >
           <h3>Add a post link</h3>
           <p>
-            Use a full Instagram post/Reel or TikTok video URL. We do not scrape
-            it, copy its media or invent a creation date. New links start as
-            drafts.
+            Paste a full Instagram post/Reel or TikTok video link. It starts as a private draft; we do not scrape or copy its media, or invent a creation date.
           </p>
           <label>
             Post URL
@@ -623,9 +607,7 @@ export function BusinessConnections({
       <section id="posts" className="pro-editor-surface">
         <h2>Portfolio &amp; social posts</h2>
         <p>
-          Only published posts appear publicly. Lower display numbers come
-          first. A linked service shows its current starting price and booking
-          options.
+          Publish a post to show it publicly; lower display numbers appear first. Link a service to show its current starting price and booking options.
         </p>
         {!posts.length && (
           <p>

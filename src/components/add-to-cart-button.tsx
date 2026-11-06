@@ -71,6 +71,7 @@ export function AddToCartButton({
         type="button"
         className="shop-add-button"
         disabled={disabled || busy}
+        data-analytics-action="add_to_cart"
         onClick={add}
       >
         <ShoppingBag size={15} aria-hidden />

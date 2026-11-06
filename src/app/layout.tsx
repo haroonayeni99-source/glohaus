@@ -1,3 +1,4 @@
+import { EngagementPreferences } from "@/components/engagement-preferences";
 import { serializePublicRuntimeConfiguration } from "@/lib/public-runtime-config";
 import "@/components/professional-notifications.css";
 import "@/components/taxonomy.css";
@@ -105,6 +106,7 @@ export default async function RootLayout({
         <PwaShell />
         <SiteFooter />
         <ThemeToggle />
+        <EngagementPreferences />
       </body>
     </html>
   );

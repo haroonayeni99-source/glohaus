@@ -43,6 +43,7 @@ export function SiteFooter() {
         <h2>The details</h2>
         <Link href="/terms">Terms & conditions</Link>
         <Link href="/privacy">Privacy policy</Link>
+        <button className="footer-analytics-preferences" type="button" onClick={() => window.dispatchEvent(new Event("glohaus:analytics-preferences"))}>Analytics preferences</button>
         <Link href="/refunds">Cancellations & refunds</Link>
         <Link href="/marketplace-terms">Marketplace terms</Link>
       </nav>

@@ -520,6 +520,7 @@ export function BookingPicker({
             className="button full-width booking-pay-button"
             type="button"
             disabled={!ready || !accepted || !policy || loadingPolicy || submitting || (earlyServiceNeeded&&!earlyServiceRequested)}
+            data-analytics-action="checkout"
             onClick={() => void submitBooking()}
           >
             {submitting

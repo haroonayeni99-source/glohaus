@@ -1,0 +1,115 @@
+.engagement-preferences {
+  margin: 24px auto;
+  padding: clamp(18px, 3vw, 30px);
+  max-width: 1100px;
+  width: calc(100% - 32px);
+  border: 1px solid var(--border, #ddc9d1);
+  border-radius: 24px;
+  background: var(--surface, #fff8f5);
+  color: var(--text, #30212b);
+}
+.engagement-preferences h2 {
+  font-size: 1.25rem;
+  margin: 0 0 10px;
+}
+.engagement-preferences p {
+  line-height: 1.65;
+  max-width: 85ch;
+}
+.engagement-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.engagement-actions button {
+  min-height: 44px;
+  flex: 1;
+  max-width: 280px;
+}
+.engagement-workspace {
+  padding: clamp(18px, 4vw, 48px);
+  max-width: 1500px;
+  margin: auto;
+}
+.engagement-workspace header {
+  margin: 26px 0;
+}
+.engagement-workspace p {
+  line-height: 1.65;
+  max-width: 90ch;
+}
+.engagement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 16px;
+  margin: 22px 0;
+}
+.engagement-workspace .admin-detail-card {
+  padding: clamp(16px, 3vw, 24px);
+  margin-block: 18px;
+}
+.engagement-metric strong {
+  display: block;
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  margin: 8px 0;
+}
+.engagement-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: end;
+}
+.engagement-filters label {
+  display: grid;
+  gap: 6px;
+  flex: 1;
+  min-width: 140px;
+}
+.engagement-filters input,
+.engagement-filters select {
+  min-height: 44px;
+  width: 100%;
+  max-width: 100%;
+}
+.engagement-workspace .admin-table-wrap {
+  overflow-x: auto;
+}
+.engagement-workspace th,
+.engagement-workspace td {
+  padding: 12px;
+  text-align: left;
+}
+.engagement-workspace caption {
+  text-align: left;
+  padding: 12px;
+}
+.engagement-status {
+  border-left: 4px solid var(--accent, #a74367);
+  padding: 14px 18px;
+  background: var(--surface, #fff8f5);
+  border-radius: 12px;
+}
+.engagement-workspace progress {
+  width: 100%;
+  accent-color: #a74367;
+}
+.engagement-workspace .engagement-insight {
+  background: var(--surface, #fff8f5);
+  padding: 14px;
+  border: 1px solid var(--border, #ddc9d1);
+  border-radius: 14px;
+}
+
+.glohaus-site-footer .footer-analytics-preferences {
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  padding: 8px 0;
+  min-height: 44px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

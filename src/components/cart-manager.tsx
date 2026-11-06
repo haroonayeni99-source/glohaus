@@ -214,6 +214,7 @@ export function CartManager({ initialCart }: { initialCart: CartOverview }) {
         <button
           type="button"
           disabled={hasUnavailable || busyId !== null}
+          data-analytics-action="checkout"
           onClick={checkout}
         >
           {busyId === "checkout" ? "Opening secure checkout…" : "Checkout securely"}

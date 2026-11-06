@@ -266,6 +266,7 @@ export function OwnerDashboardOverview({
               <small>{adminToolGuide[id]?.purpose}</small>
             </a>
           ))}
+          {account.roles.includes("owner") && <Link href="/admin/engagement"><strong>Website engagement</strong><small>Page engagement, Discover watch time and customer journeys.</small></Link>}
         </nav>
         <div className="owner-kpi-grid">
           <article className="owner-kpi-card owner-kpi-blue">

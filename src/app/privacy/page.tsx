@@ -8,9 +8,16 @@ export default function PrivacyPage() {
   return (
     <PolicyPage
       title="Privacy Policy"
-      updated="25 October 2026"
+      updated="6 November 2026"
       summary="How GLOHAUS expects to handle account, booking, marketplace and safety information."
     >
+      <section>
+        <h2>Optional website engagement analytics</h2>
+        <p>When this feature is enabled, we ask for your permission before recording page categories, active engagement time, scroll depth, selected interactions and Discover video viewing. Optional analytics is separate from account access, theme preferences, marketing and the existing per-profile referral consent. Rejecting it does not prevent browsing, booking or shopping.</p>
+        <p>With permission, random browser identifiers help estimate unique visitors for up to 30 days and group activity into sessions. They do not identify a person across devices. Sessions expire after 30 minutes without interaction. Activity may be associated with a server-verified booking or purchase to measure conversion; the Owner sees aggregate reports rather than customer identities or individual browsing histories. Activity is retained for up to 90 days, with low-volume journey patterns suppressed.</p>
+        <p>We do not send form values, search text, private messages, account identifiers, raw page URLs, query strings, payment credentials, IP addresses or full browser fingerprints to this analytics dataset. Our hosting and database providers process the data on our behalf. Essential hosting/security logs are separate. No activity is sent to advertising platforms, and no session recordings are created.</p>
+        <p>Use “Analytics preferences” in the website footer to allow or reject analytics at any time. Withdrawing permission stops further collection and removes analytics identifiers from this browser; existing activity expires under the retention limit. Contact us about your privacy rights using the contact information in this policy. If tracking is disabled, no optional engagement events are collected.</p>
+      </section>
       <section>
         <h2>Information GLOHAUS uses</h2>
         <p>

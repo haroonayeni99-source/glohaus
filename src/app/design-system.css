@@ -120,8 +120,8 @@
   color: #fdf8fa;
 }
 :root:not([data-theme="night"]) .pro-app .pro-header-account .text-link {
-  color: var(--ui-text);
-  background: var(--ui-surface);
+  color: #fffafb;
+  background: transparent;
 }
 :root:not([data-theme="night"])
   .pro-app

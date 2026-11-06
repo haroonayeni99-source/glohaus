@@ -87,3 +87,13 @@
 :root[data-theme] .auth-layout-customer .auth-story :is(.brand, h2, p, span) { color:#fff4f8; }
 :root[data-theme="night"] .auth-layout-professional .auth-story { background:var(--ui-surface); color:var(--ui-text); }
 :root[data-theme="night"] .auth-layout-professional .auth-story :is(.brand,h2,p,span) { color:var(--ui-text); }
+/* Discover chrome follows the theme; white text over media remains intentional. */
+:root[data-theme] .discover-app .discovery-nav.selected { background:var(--ui-surface-muted); color:var(--ui-accent); }
+:root[data-theme] .discover-app .discovery-tabs button.active,
+:root[data-theme] .discover-app .button:not(.button-secondary):not(.button-light) {
+  background:var(--ui-accent); color:var(--ui-on-accent); border-color:var(--ui-accent);
+  transition-property:transform,box-shadow;
+}
+:root[data-theme] .discover-app .feed-overline > span {
+  background:#231d1f; color:#fff; border-radius:999px; padding:6px 10px;
+}

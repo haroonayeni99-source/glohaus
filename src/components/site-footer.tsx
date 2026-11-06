@@ -8,7 +8,6 @@ export function SiteFooter() {
   if (
     pathname.startsWith("/admin") ||
     pathname.startsWith("/professional") ||
-    pathname === "/discover" ||
     pathname === "/messages" ||
     pathname === "/maintenance"
   )

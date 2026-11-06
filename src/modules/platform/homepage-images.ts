@@ -24,7 +24,7 @@ export const homepageCategories = {
       key: "hair",
       label: "Hair",
       image:
-        "https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=240&q=82",
+        "/images/categories/hair-v2.webp",
     },
     {
       key: "nails",
@@ -36,7 +36,7 @@ export const homepageCategories = {
       key: "lashes",
       label: "Lashes",
       image:
-        "https://images.unsplash.com/photo-1583001931096-959e9a1a6223?auto=format&fit=crop&w=240&q=82",
+        "/images/categories/lashes.svg",
     },
     {
       key: "skin",

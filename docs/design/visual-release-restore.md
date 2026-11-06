@@ -37,3 +37,16 @@ If the deployment is no longer available, prepare a new build using the preserve
 - Installation guidance is delayed 30 seconds and kept in page flow, retaining 90-day dismissal. Updates remain explicit and do not automatically reload unsaved work.
 
 GLOHAUS Together monetary gifting/group funding, new fees, reward activation and production social-sync approval are **not** activated by this visual release.
+
+## Homepage polish follow-up — 6 November 2026
+
+- Restore branch for the first visual release: `restore/before-homepage-polish-20261106`.
+- Source: `72eb8d9f3838002a2486b1f4646e019931a3d47a`.
+- READY production deployment: `dpl_9fue9zFE2Hswcc91jwur7LdPhEhV`.
+- Floating appearance control restored at Haroon's request; Light, Night and Use device setting remain available. Menu settings remain available too. This supersedes the footer relocation above.
+- Homepage-only richer hero treatment, stronger typography, clearer search, category rings and booking-guide/inspiration card polish. Existing images, links and workflow logic retained.
+- No financial, data, auth, permission or integration configuration changes.
+
+Both restore points remain available. A request to undo only this follow-up should preserve the first visual release; a request for the original appearance uses the pre-visual restore branch above.
+
+Category audit: corrected default mobile Hair image to the existing hair asset and replaced an unrelated landscape in the Lashes fallback with an explicit lash illustration. Owner-selected category images still take precedence.

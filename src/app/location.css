@@ -220,3 +220,9 @@
     white-space: normal;
   }
 }
+
+/* Reuse the existing non-WebGL renderer only after map permission is given. */
+.glohaus-locator-standard { display:flex; flex-direction:column; min-height:460px; }
+.glohaus-standard-map-notice { margin:0; padding:10px 14px; font-size:.85rem; color:var(--ui-muted); background:var(--ui-surface); }
+.glohaus-locator-standard > .geo-map { flex:1; display:flex; flex-direction:column; margin:0; border:0; border-radius:0; min-height:400px; }
+.glohaus-locator-standard .geo-map-surface { flex:1; min-height:300px; }

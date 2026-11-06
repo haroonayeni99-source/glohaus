@@ -27,6 +27,8 @@ export function GeographicMap({
   onSelect,
   onHighlight,
   onViewportChange,
+  initiallyLoaded = false,
+  resetSignal,
 }: {
   pins?: Pin[];
   focus?: Coordinates;
@@ -38,8 +40,10 @@ export function GeographicMap({
   onSelect?: (id: string) => void;
   onHighlight?: (id: string | null) => void;
   onViewportChange?: (viewport: MapViewport) => void;
+  initiallyLoaded?: boolean;
+  resetSignal?: number;
 }) {
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(initiallyLoaded);
   const [failed, setFailed] = useState(false);
   const [center, setCenter] = useState<Coordinates>(
     focus ?? pins[0] ?? { latitude: 51.5074, longitude: -0.1278 },
@@ -54,6 +58,12 @@ export function GeographicMap({
   const pinchDistance = useRef<number | null>(null);
   const lastTap = useRef<{ time: number; x: number; y: number } | null>(null);
   const [lastFocus, setLastFocus] = useState(focus);
+  const [lastReset, setLastReset] = useState(resetSignal);
+  if (resetSignal !== lastReset) {
+    setLastReset(resetSignal);
+    setCenter(focus ?? pins[0] ?? { latitude: 51.5074, longitude: -0.1278 });
+    setZoom(initialZoom);
+  }
   if (
     focus &&
     (focus.latitude !== lastFocus?.latitude ||

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { loadMapLibre, supportsMapGraphics } from "@/lib/maplibre-client";
 import type { Map as MapLibreMap, Marker as MapLibreMarker } from "maplibre-gl";
 import Link from "next/link";
+import { GeographicMap } from "./geographic-map";
 import {
   distanceMiles,
   type Coordinates,
@@ -65,7 +66,7 @@ export function ProfessionalLocatorMap({
   }, [onSelect, onHighlight, onViewportChange]);
 
   useEffect(() => {
-    if (!consented || !mapContainer.current) return;
+    if (!consented || error || !mapContainer.current) return;
     let cancelled = false;
     const activeMarkers = markers.current;
     const cartoKey = readPublicEnvironment("NEXT_PUBLIC_CARTO_BASEMAPS_KEY");
@@ -262,7 +263,7 @@ export function ProfessionalLocatorMap({
     };
     // Initial map construction only; updates handled by separate effects.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [consented, darkMode]);
+  }, [consented, darkMode, error]);
 
   useEffect(() => {
     const instance = map.current;
@@ -352,6 +353,15 @@ export function ProfessionalLocatorMap({
   }, [pins, selectedId, highlightedId, consented, ready]);
 
   const selected = pins.find((pin) => pin.id === selectedId);
+  if (consented && error) return (
+    <section className="glohaus-locator glohaus-locator-standard" aria-label="Interactive professional locator map">
+      <p className="glohaus-standard-map-notice" role="status">Using the standard street map. Zoom, move and select a professional pin below.</p>
+      <GeographicMap initiallyLoaded pins={pins} focus={focus} initialZoom={10}
+        focusZoom={selectedId ? 14 : 10} selectedId={selectedId} highlightedId={highlightedId}
+        onSelect={onSelect} onHighlight={onHighlight} onViewportChange={onViewportChange}
+        resetSignal={resetLondonSignal} />
+    </section>
+  );
   return (
     <section
       className="glohaus-locator"

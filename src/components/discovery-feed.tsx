@@ -414,6 +414,7 @@ export function DiscoveryFeed({
           </div>
         </header>
         <DiscoverNavigation active={category === "Saved" ? "saved" : category === "Following" ? "following" : "explore"} routeBase={routeBase} />
+        <div className="discovery-filter-row">
         {taxonomy && (
           <details className="taxonomy-discover-controls">
             <summary>Filter by speciality</summary>
@@ -436,6 +437,7 @@ export function DiscoveryFeed({
               {labels[item as keyof typeof labels] || item}
             </button>
           ))}
+        </div>
         </div>
         <DiscoveryLiveStrip stories={stories} lastMinute={lastMinute} />
         <div className="feed-layout">

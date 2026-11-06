@@ -42,11 +42,12 @@ export function AcquisitionReport({
         commission.
       </p>
       <p>See where completed paid bookings came from and how often clients returned. These figures do not change fees or establish ownership of a customer.</p>
+      <p>Service value and payments after refunds are not your earnings or available balance.</p>
       <details>
         <summary>How sources and figures are counted</summary>
         <p>Sources use customer confirmations, supported where available by consented profile history, invitations and referral records. A link or QR code alone does not confirm a source; unknown sources stay unknown and conflicting evidence needs review.</p>
         <p>A returning booking follows an earlier completed paid appointment with the same professional, even before this reporting period. Cancelled, incomplete, fully refunded and disputed bookings are excluded.</p>
-        <p>Service value is the booked price. Payments after refunds can include deposits and customer fees; they are not professional earnings. Commission comes from recorded financial quotes with a payment ledger entry.</p>
+        <p>Service value is the booked price. Payments after refunds can include deposits and customer fees. Commission comes from recorded financial quotes with a payment ledger entry.</p>
       </details>
       <div className="admin-table-wrap">
         <table className="admin-table">

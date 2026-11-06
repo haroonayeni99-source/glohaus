@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type {
@@ -40,8 +40,11 @@ export function BusinessConnections({
     instagram_url: string;
     tiktok_url: string;
     sync_allowed: boolean;
+    public_profile_ready?: boolean;
   };
 }) {
+  const inFlight = useRef(false);
+  const [refreshing, startRefresh] = useTransition();
   const router = useRouter(),
     [busy, setBusy] = useState(false),
     [notice, setNotice] = useState(
@@ -52,7 +55,8 @@ export function BusinessConnections({
           : "",
     );
   async function action(body: unknown, path = "connections", method = "POST") {
-    if (busy) return;
+    if (inFlight.current || refreshing) return;
+    inFlight.current = true;
     setBusy(true);
     setNotice("");
     try {
@@ -60,15 +64,26 @@ export function BusinessConnections({
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
+        signal: AbortSignal.timeout(70000),
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
+      if (!data)
+        throw Error(
+          "The server returned an unexpected response. Refresh this page and check the result before trying again.",
+        );
       if (!response.ok)
         throw Error(
           data.error?.code === "NOT_CONFIGURED"
             ? "This provider needs setup before you can connect."
             : data.error?.code === "SOCIAL_SYNC_PAUSED"
               ? "Portfolio syncing is paused by GLOHAUS. Your bookings and profile remain available."
-              : "Could not save this change. Please try again.",
+              : response.status === 401
+                ? "Your session has expired. Sign in to GLOHAUS again."
+                : response.status === 403
+                  ? "This account cannot manage that connection or post. Check that you are signed in to the correct professional profile."
+                  : data.error?.code === "INVALID_REQUEST"
+                    ? "Check the post link and form values, then try again."
+                    : "This change could not be completed. Your existing settings are preserved. Please try again.",
         );
       if (data.url) {
         window.location.assign(data.url);
@@ -79,14 +94,32 @@ export function BusinessConnections({
           ? "Disconnected from GLOHAUS and imported videos hidden. TikTok access removal could not be confirmed. Remove GLOHAUS from your connected apps in TikTok settings."
           : data.failed
             ? "Sync needs attention. Your connection is not up to date. Check the status below."
-            : data.duplicate
-              ? "That post is already in your portfolio."
-              : "Saved. Your changes are up to date.",
+            : typeof data.synced === "number"
+              ? data.synced > 0
+                ? "Refresh complete. Eligible public videos are listed below. Choose Published and Save post to display a draft on your profile. TikTok drafts are not imported."
+                : "No refresh ran. Another sync may already be running. Wait a moment, then refresh this page to check its status."
+              : method === "DELETE"
+                ? "Removed from public display. Imported posts remain here as Hidden so later syncs preserve your choice; manually added links are removed."
+                : data.duplicate
+                  ? "That post is already in your portfolio."
+                  : "Saved. Your changes are up to date.",
       );
-      router.refresh();
+      startRefresh(() => router.refresh());
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Please try again.");
+      setNotice(
+        typeof error === "object" &&
+          error !== null &&
+          "name" in error &&
+          ["TimeoutError", "AbortError"].includes(String(error.name))
+          ? "This request took too long. Refresh this page to check whether it completed before retrying."
+          : error instanceof TypeError
+            ? "Could not reach GLOHAUS. Check your connection, then try again."
+            : error instanceof Error
+              ? error.message
+              : "Please try again.",
+      );
     } finally {
+      inFlight.current = false;
       setBusy(false);
     }
   }
@@ -105,9 +138,31 @@ export function BusinessConnections({
   );
   return (
     <div className="business-tools">
-      <p role="status" aria-live="polite">
-        {notice}
-      </p>
+      {(notice || busy || refreshing) && (
+        <div
+          className="business-feedback"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <p>
+            {busy
+              ? "Updating your connection or portfolio…"
+              : refreshing
+                ? "Updating the displayed results…"
+                : notice}
+          </p>
+          {!busy && !refreshing && (
+            <button
+              type="button"
+              aria-label="Dismiss connection message"
+              onClick={() => setNotice("")}
+            >
+              ×
+            </button>
+          )}
+        </div>
+      )}
       <section id="calendar" className="pro-editor-surface">
         <h2>Calendar &amp; availability</h2>
         <p>
@@ -255,7 +310,7 @@ export function BusinessConnections({
               ))}
             </select>
           </label>
-          <button className="button" disabled={busy}>
+          <button className="button" disabled={busy || refreshing}>
             Save buffers
           </button>
           <Link href="/professional/availability">
@@ -271,6 +326,17 @@ export function BusinessConnections({
       </section>
       <section id="social" className="pro-editor-surface">
         <h2>Social Media &amp; Portfolio</h2>
+        {portfolio.public_profile_ready === false && (
+          <p role="note">
+            Your public professional profile is not ready yet. Videos can be
+            imported and prepared privately, but visitors cannot see them until
+            you{" "}
+            <Link href="/professional/profile">
+              complete and publish your professional profile
+            </Link>
+            .
+          </p>
+        )}
         <p>
           Show work you already share on Instagram and TikTok. You choose what
           appears on your profile and in Discover.
@@ -354,7 +420,7 @@ export function BusinessConnections({
               defaultValue={portfolio.max_visible_posts}
             />
           </label>
-          <button className="button" disabled={busy}>
+          <button className="button" disabled={busy || refreshing}>
             Save portfolio settings
           </button>
         </form>
@@ -420,7 +486,7 @@ export function BusinessConnections({
             This is my work, I have the necessary permissions, and I consent to
             displaying it on GLOHAUS.
           </label>
-          <button className="button" disabled={busy}>
+          <button className="button" disabled={busy || refreshing}>
             Add post link
           </button>
         </form>
@@ -429,7 +495,10 @@ export function BusinessConnections({
         <h2>Your connections</h2>
         {!connections.length && <p>No external accounts connected yet.</p>}
         {connections.map((c) => (
-          <article key={c.id} className="business-connection">
+          <article
+            key={`${c.id}:${c.social_mode}:${c.sync_enabled}`}
+            className="business-connection"
+          >
             <h3>{c.label}</h3>
             <p>
               <strong>
@@ -455,7 +524,7 @@ export function BusinessConnections({
             {c.last_error && (
               <p role="alert">
                 {c.last_error === "RECONNECT_REQUIRED"
-                  ? "Permissions have expired or been removed. Connect this provider again."
+                  ? "Permissions have expired, are missing or have been removed. Reconnect this provider in Social Media & Portfolio above."
                   : c.last_error === "FEED_UNSUPPORTED"
                     ? "This calendar format or timezone is not supported. Use manual time off while you check the feed."
                     : "We could not finish the last sync. Try again or reconnect."}
@@ -513,7 +582,7 @@ export function BusinessConnections({
                       outside that recent window stops appearing publicly;
                       original posts are not deleted.
                     </small>
-                    <button className="button" disabled={busy}>
+                    <button className="button" disabled={busy || refreshing}>
                       Save connection settings
                     </button>
                   </form>
@@ -523,16 +592,17 @@ export function BusinessConnections({
                     className="button"
                     disabled={
                       busy ||
+                      refreshing ||
                       (["instagram", "tiktok"].includes(c.provider) &&
                         (!portfolio.sync_allowed || !ready[c.provider]))
                     }
                     onClick={() => void action({ action: "sync", id: c.id })}
                   >
-                    Sync now
+                    {busy ? "Working…" : "Refresh public videos / sync now"}
                   </button>
                   <button
                     className="button button-secondary"
-                    disabled={busy}
+                    disabled={busy || refreshing}
                     onClick={() => {
                       if (
                         window.confirm(
@@ -565,7 +635,7 @@ export function BusinessConnections({
         {posts.map((p) => (
           <form
             className="business-connection"
-            key={p.id}
+            key={`${p.id}:${p.publication_status}:${p.service_id}:${p.sort_order}:${p.featured}`}
             onSubmit={(e) => {
               e.preventDefault();
               const f = new FormData(e.currentTarget);
@@ -628,15 +698,15 @@ export function BusinessConnections({
                     defaultValue={p.sort_order}
                   />
                 </label>
-                <button className="button" disabled={busy}>
-                  Save post
+                <button className="button" disabled={busy || refreshing}>
+                  {busy ? "Saving…" : "Save post"}
                 </button>
               </>
             )}
             <button
               type="button"
               className="button button-secondary"
-              disabled={busy}
+              disabled={busy || refreshing}
               onClick={() => void action({ id: p.id }, "social", "DELETE")}
             >
               Remove from display

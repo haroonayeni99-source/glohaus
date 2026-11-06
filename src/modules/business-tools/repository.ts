@@ -38,8 +38,9 @@ export async function businessTools(db: SqlClient, professionalId: string) {
       instagram_url: string;
       tiktok_url: string;
       sync_allowed: boolean;
+      public_profile_ready: boolean;
     }>(
-      "SELECT coalesce(s.max_visible_posts,12)::integer AS max_visible_posts,p.instagram_url,p.tiktok_url,beauty.social_sync_allowed(p.id) AS sync_allowed FROM beauty.professional_profiles p LEFT JOIN beauty.social_portfolio_preferences s ON s.professional_id=p.id WHERE p.id=$1",
+      "SELECT coalesce(s.max_visible_posts,12)::integer AS max_visible_posts,p.instagram_url,p.tiktok_url,(p.slug IS NOT NULL AND p.publication_status='published') AS public_profile_ready,beauty.social_sync_allowed(p.id) AS sync_allowed FROM beauty.professional_profiles p LEFT JOIN beauty.social_portfolio_preferences s ON s.professional_id=p.id WHERE p.id=$1",
       [professionalId],
     )
   ).rows[0];

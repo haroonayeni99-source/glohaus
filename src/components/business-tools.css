@@ -218,3 +218,31 @@ html[data-theme="night"]
 .owner-social-sync summary {
   overflow-wrap: anywhere;
 }
+
+.business-feedback {
+  position: fixed;
+  z-index: 60;
+  inset: auto 1rem calc(5.5rem + env(safe-area-inset-bottom)) auto;
+  width: min(30rem, calc(100vw - 2rem));
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 1rem;
+  border: 1px solid var(--ui-border);
+  border-radius: 1rem;
+  background: var(--ui-surface, #fff);
+  color: var(--ui-text, #231c20);
+  box-shadow: 0 10px 35px #0002;
+}
+.business-tools .business-feedback p {
+  margin: 0;
+}
+.business-feedback button {
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  background: transparent;
+  color: inherit;
+  border: 1px solid var(--ui-border);
+  border-radius: 0.5rem;
+}

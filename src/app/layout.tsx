@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { PageLoading } from "@/components/page-loading";
 import { EngagementPreferences } from "@/components/engagement-preferences";
 import { serializePublicRuntimeConfiguration } from "@/lib/public-runtime-config";
 import "@/components/professional-notifications.css";
@@ -55,23 +57,30 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: dark)", color: appThemeColors.night },
   ],
 };
+async function PlatformContent({ children }: { children: React.ReactNode }) {
+  const [labels, signedIn] = await Promise.all([
+    publicLabels(),
+    publicViewerSignedIn(),
+  ]);
+  return (
+    <AuthSessionProvider initialSignedIn={signedIn}>
+      <PlatformLabelsProvider labels={labels}>{children}</PlatformLabelsProvider>
+    </AuthSessionProvider>
+  );
+}
+
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [labels, signedIn, requestHeaders] = await Promise.all([publicLabels(), publicViewerSignedIn(), headers()]);
-  const nonce = requestHeaders.get("x-nonce") ?? undefined;
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const content = (
     <>
-      <a className="skip-link" href="#main">
-        Skip to content
-      </a>
-      <AuthSessionProvider initialSignedIn={signedIn}>
-      <PlatformLabelsProvider labels={labels}>
-        {children}
-      </PlatformLabelsProvider>
-      </AuthSessionProvider>
+      <a className="skip-link" href="#main">Skip to content</a>
+      <Suspense fallback={<PageLoading />}>
+        <PlatformContent>{children}</PlatformContent>
+      </Suspense>
     </>
   );
   return (

@@ -24,14 +24,14 @@ for (const theme of ["light", "night"] as const) {
     await page.setViewportSize({ width, height: testInfo.project.name === "mobile" ? 568 : 900 });
     await page.goto("about:blank");
     await page.setContent(`<html data-theme="${theme}"><head><base href="http://127.0.0.1:3000/"><style>${css}</style></head><body>${html}</body></html>`);
-    const logo = page.locator(".glohaus-loading-brand");
+    const logo = page.locator(theme === "night" ? ".glohaus-route-wordmark-night" : ".glohaus-route-wordmark-light");
     await expect(logo).toBeVisible();
-    await expect(logo).toHaveText("GLOHAUS");
+    await expect(logo).toHaveAttribute("src", theme === "night" ? "/images/glohaus-wordmark-night.png" : "/images/glohaus-wordmark.png");
     await expect(page.locator(".glohaus-route-slogan")).toHaveText("Look Good. Feel Good. Stand Out.");
     const fits = await page.evaluate(() => {
       const frame = document.querySelector(".glohaus-route-wordmark")!.getBoundingClientRect();
-      const logo = document.querySelector(".glohaus-loading-brand")!.getBoundingClientRect();
-      return logo.left >= frame.left && logo.right <= frame.right && document.documentElement.scrollWidth <= innerWidth;
+      const logo = document.querySelector(".glohaus-route-loading-content")!.getBoundingClientRect();
+      return frame.left >= 0 && frame.right <= innerWidth && logo.left >= 0 && logo.right <= innerWidth && document.documentElement.scrollWidth <= innerWidth;
     });
     expect(fits).toBe(true);
   });

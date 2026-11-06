@@ -1,3 +1,4 @@
+import { WorkspaceIntro } from "@/components/workspace-intro";
 export const dynamic = "force-dynamic";
 
 import { pageAccount } from "@/lib/page-access";
@@ -30,10 +31,7 @@ export default async function History({
     <>
       <PublicHeader signedIn />
       <main id="main" className="catalog-page">
-        <p className="eyebrow">YOUR APPOINTMENTS</p>
-        <h1>
-          A little time <em>for you.</em>
-        </h1>
+        <WorkspaceIntro eyebrow="YOUR APPOINTMENTS" title={<>A little time <em>for you.</em></>}><p>Your upcoming appointments and past visits, together in one place.</p></WorkspaceIntro>
         <BookingNavigation
           view={options.view}
           base="/account/bookings"

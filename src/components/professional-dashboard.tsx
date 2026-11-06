@@ -64,7 +64,7 @@ export function ProfessionalDashboard({
         active="dashboard"
         displayName={account.displayName}
       />
-      <main id="main" className="pro-main">
+      <main id="main" className="pro-main pro-dashboard-home">
         <section className="pro-welcome">
           <div>
             <p className="pro-kicker">GLOHAUS PRO</p>

@@ -1,3 +1,4 @@
+import { WorkspaceIntro } from "@/components/workspace-intro";
 import { DiscoverNavigation } from "@/components/discover-navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -36,8 +37,7 @@ export default async function SavedPage({
           ← Discover
         </Link>
         <DiscoverNavigation active="saved" />
-        <p className="eyebrow">YOUR INSPIRATION COLLECTION</p>
-        <h1>Saved looks</h1>
+        <WorkspaceIntro eyebrow="YOUR INSPIRATION COLLECTION" title="Saved looks"><p>The work you love, ready to revisit.</p></WorkspaceIntro>
         {posts.length ? (
           <div className="saved-look-grid">
             {posts.slice(0, 40).map((post) => (

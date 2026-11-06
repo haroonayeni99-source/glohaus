@@ -1,3 +1,4 @@
+import { WorkspaceIntro } from "@/components/workspace-intro";
 import { DiscoverNavigation } from "@/components/discover-navigation";
 import Link from "next/link";
 import { Users, MapPin, ArrowUpRight } from "lucide-react";
@@ -27,9 +28,7 @@ export default async function Page() {
       <PublicHeader signedIn />
       <main id="main" className="catalog-page following-page">
         <DiscoverNavigation active="professionals" />
-        <p className="eyebrow">YOUR GLOHAUS COMMUNITY</p>
-        <h1>Professionals you <em>follow.</em></h1>
-        <p className="lead">Keep up with the beauty professionals you want to book, revisit and support.</p>
+        <WorkspaceIntro eyebrow="YOUR GLOHAUS COMMUNITY" title={<>Professionals you <em>follow.</em></>}><p>Keep up with the beauty professionals you want to book, revisit and support.</p></WorkspaceIntro>
         {professionals.length ? (
           <div className="following-list">
             {professionals.map((pro) => (

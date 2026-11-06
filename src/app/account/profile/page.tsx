@@ -1,3 +1,4 @@
+import { WorkspaceIntro } from "@/components/workspace-intro";
 import Link from "next/link";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
@@ -27,8 +28,7 @@ export default async function Page() {
         <Link className="text-link" href="/account">
           ← Your account
         </Link>
-        <p className="eyebrow">YOUR PROFILE</p>
-        <h1>Help your professional recognise you.</h1>
+        <WorkspaceIntro eyebrow="YOUR PROFILE" title="Help your professional recognise you." />
         <CustomerProfileEditor
           userId={account.id}
           profile={

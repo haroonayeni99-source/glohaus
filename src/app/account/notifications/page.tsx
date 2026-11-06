@@ -1,3 +1,4 @@
+import { WorkspaceIntro } from "@/components/workspace-intro";
 import Link from "next/link";
 import { pageAccount } from "@/lib/page-access";
 import { AccessMessage } from "@/components/access-message";
@@ -9,8 +10,7 @@ export default async function CustomerNotificationSettingsPage() {
   const result = await pageAccount("customer");
   if (!result.account) return <main id="main" className="standalone-message"><AccessMessage code={result.error} /></main>;
   return <><PublicHeader signedIn /><main id="main" className="customer-account-page communications-page">
-    <Link href="/account">← Your account</Link><p className="eyebrow">YOUR PREFERENCES</p>
-    <h1>Notifications & Communications</h1><p className="lead">Activity alerts, optional marketing and your connected devices, together in one place.</p>
+    <Link href="/account">← Your account</Link><WorkspaceIntro eyebrow="YOUR PREFERENCES" title="Notifications & Communications"><p>Activity alerts, optional marketing and your connected devices, together in one place.</p></WorkspaceIntro>
     <CommunicationsSettings authId={result.account.authId} />
   </main></>;
 }

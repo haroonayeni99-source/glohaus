@@ -1,3 +1,4 @@
+import { WorkspaceIntro } from "@/components/workspace-intro";
 export const dynamic = "force-dynamic";
 
 import { pageAccount } from "@/lib/page-access";
@@ -27,11 +28,7 @@ export default async function CustomerOrdersPage() {
     <>
       <PublicHeader signedIn />
       <main id="main" className="catalog-page product-orders-page">
-        <p className="eyebrow">SHOP ORDERS</p>
-        <h1>Your product orders.</h1>
-        <p className="lead">
-          Track your GLOHAUS Shop purchases, shipping updates, delivery and refunds in one place.
-        </p>
+        <WorkspaceIntro eyebrow="SHOP ORDERS" title="Your product orders."><p>Track your GLOHAUS Shop purchases, shipping updates, delivery and refunds in one place.</p></WorkspaceIntro>
         <ProductOrderList initialOrders={orders} mode="customer" />
       </main>
       <BottomNavigation active="profile" signedIn />

@@ -89,7 +89,7 @@ export default async function Page() {
   return (
     <>
       <PublicHeader signedIn />
-      <main id="main" className="customer-account-page">
+      <main id="main" className="customer-account-page customer-account-dashboard">
         <section className="customer-identity">
           <span className="customer-avatar" aria-hidden>
             {profile?.has_photo ? <Image src={`/api/v1/customer-photos/${account.id}`} width={80} height={80} alt="" unoptimized className="customer-profile-portrait"/> : account.displayName.slice(0, 1).toUpperCase()}
@@ -99,7 +99,7 @@ export default async function Page() {
           <p>Discover. Book. Get inspired.</p>
         </section>
         {!profile?.first_name && <p className="form-notice"><Link href="/account/profile">Add your name and an optional photo</Link> so your professional can recognise you.</p>}
-        {[
+        <div className="account-workspace-grid">{[
           {title: "Bookings & purchases", routes: ["/account/bookings", "/account/reviews", "/account/orders", "/wallet"]},
           {title: "Community & ideas", routes: ["/account/invite", "/feature-votes"]},
           {title: "Account & settings", routes: ["/account/profile", "/security", "/notifications", "/account/notifications", "/install"]},
@@ -110,7 +110,7 @@ export default async function Page() {
               <Icon size={21} aria-hidden /><span><strong>{label}</strong><small>{description}</small></span><ChevronRight size={18} aria-hidden />
             </Link>)}
           </nav>
-        </section>)}
+        </section>)}</div>
         <section className="account-discover-collection"><p className="eyebrow">YOUR INSPIRATION</p><h2>Make Discover yours.</h2><p>Explore looks, catch up with professionals and revisit your saved inspiration.</p><Link className="button" href="/discover">Open Discover</Link><details><summary>Your saved content & following</summary><nav aria-label="Personal Discover shortcuts"><Link href="/account/saved">Saved looks</Link><Link href="/account/following">Followed professionals</Link></nav></details></section>
         <div className="account-switch">
           {account.roles.includes("professional") && (

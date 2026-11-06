@@ -119,3 +119,73 @@
 .professional-menu-groups summary { padding:12px 10px; min-height:44px; cursor:pointer; font-weight:750; }
 .discover-collection-nav { margin:8px 0 20px; }
 @media(max-width:600px) { .workspace-section-links { gap:6px; } .workspace-section-links a { padding:10px 12px; font-size:.78rem; } .communications-section { padding:16px; } }
+
+/* Platform layout refinement: customer journeys and role dashboards only.
+   Shop/Discover page composition, operational forms and financial logic stay owned by their existing components. */
+:root { --gh-panel-radius: 24px; --gh-panel-shadow: 0 12px 34px #54233f0c; --gh-panel-border: color-mix(in srgb,var(--gh-action) 20%,var(--line)); }
+.workspace-intro { position:relative; isolation:isolate; overflow:hidden; padding:clamp(24px,4vw,44px); margin:20px 0 30px; border:1px solid var(--gh-panel-border); border-radius:28px; background:radial-gradient(ellipse at 100% 0%,#e89cbd44,transparent 65%),linear-gradient(125deg,var(--gh-surface),var(--gh-soft)); box-shadow:var(--gh-panel-shadow); }
+.workspace-intro .eyebrow { color:var(--gh-action); margin:0 0 14px; font-size:.7rem; font-weight:750; letter-spacing:.14em; }
+:is(.catalog-page,.customer-account-page) .workspace-intro h1 { margin:0; max-width:820px; font-family:Manrope,var(--font-sans); font-size:clamp(1.9rem,4.1vw,3.45rem); line-height:1.08; font-weight:800; letter-spacing:-.05em; color:var(--gh-text); overflow-wrap:anywhere; }
+.workspace-intro h1 em { color:var(--gh-action); font-style:normal; }
+.workspace-intro-description { max-width:720px; color:var(--gh-muted); font-size:1rem; line-height:1.65; }
+.workspace-intro-description p { margin:16px 0 0; }
+.customer-account-dashboard { width:min(1200px,100%); max-width:1200px; padding:32px clamp(16px,4vw,40px) 120px; }
+.customer-account-dashboard .customer-identity { position:relative; text-align:left; padding:32px; margin:0 0 28px; border:1px solid var(--gh-panel-border); border-radius:28px; background:radial-gradient(ellipse at right top,#e79dbd55,transparent 65%),linear-gradient(130deg,var(--gh-surface),var(--gh-soft)); box-shadow:var(--gh-panel-shadow); }
+.customer-account-dashboard .customer-avatar { margin:0 0 18px; width:72px; height:72px; border:3px solid var(--gh-surface); box-shadow:0 0 0 1px var(--gh-panel-border),0 8px 22px #78234f20; background:var(--gh-action); color:var(--gh-on-action); }
+.customer-account-dashboard .customer-identity h1 { max-width:100%; overflow-wrap:anywhere; font-size:clamp(2rem,4.5vw,3.5rem); line-height:1.08; }
+.account-workspace-grid { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:24px; align-items:start; }
+.account-workspace-grid .account-tool-section { margin:0; min-width:0; }
+.account-workspace-grid .account-tool-section:last-child { grid-column:1/-1; }
+.account-workspace-grid .account-menu { grid-template-columns:1fr; border:0; background:none; overflow:visible; gap:12px; }
+.account-workspace-grid .account-tool-section:last-child .account-menu { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.account-workspace-grid .account-menu > a { display:grid; grid-template-columns:40px minmax(0,1fr) 18px; min-height:106px; padding:20px 16px; gap:12px; border:1px solid var(--gh-panel-border); border-radius:20px; background:var(--gh-surface); box-shadow:var(--gh-panel-shadow); text-decoration:none; color:var(--gh-text); }
+.account-workspace-grid .account-menu > a > svg:first-child { width:40px; height:40px; padding:9px; border-radius:13px; background:var(--gh-soft); color:var(--gh-action); }
+.account-workspace-grid .account-menu > a > svg:last-child { width:18px; color:var(--gh-action); }
+.account-workspace-grid .account-menu small { color:var(--gh-muted); opacity:1; }
+.account-workspace-grid .account-menu > a:hover { border-color:var(--gh-action); }
+:is(.catalog-page,.customer-account-page):has(> .workspace-intro) > .catalog-empty { border:1px solid var(--gh-panel-border); border-radius:var(--gh-panel-radius); background:linear-gradient(140deg,var(--gh-surface),var(--gh-soft)); padding:clamp(28px,5vw,60px); margin:24px 0; box-shadow:var(--gh-panel-shadow); }
+:is(.catalog-page,.customer-account-page):has(> .workspace-intro) .booking-view-tabs { display:flex; flex-wrap:wrap; gap:8px; padding:8px; border:1px solid var(--gh-panel-border); border-radius:18px; background:var(--gh-surface); }
+:is(.catalog-page,.customer-account-page):has(> .workspace-intro) .booking-view-tabs a { min-height:44px; padding:12px 18px; border-radius:12px; }
+:is(.catalog-page,.customer-account-page):has(> .workspace-intro) .booking-view-tabs a[aria-current="page"] { background:var(--gh-action); color:var(--gh-on-action); border-color:transparent; }
+:is(.catalog-page,.customer-account-page):has(> .workspace-intro) :is(.appointment-card,.saved-look-card,.following-row,.customer-review-list > article) { border:1px solid var(--gh-panel-border); border-radius:22px; background:var(--gh-surface); box-shadow:var(--gh-panel-shadow); }
+:is(.catalog-page,.customer-account-page):has(> .workspace-intro) .customer-review-list > article { padding:24px; }
+.pro-dashboard-home .pro-welcome { padding:clamp(24px,4vw,40px); margin-bottom:24px; border:1px solid var(--gh-panel-border); border-radius:28px; background:radial-gradient(ellipse at 100% 0%,#e89cbd44,transparent 65%),linear-gradient(130deg,var(--gh-surface),var(--gh-soft)); box-shadow:var(--gh-panel-shadow); gap:24px; }
+.pro-dashboard-home .pro-welcome h1 { font-family:Manrope,var(--font-sans); font-size:clamp(1.9rem,3.2vw,3rem); line-height:1.12; color:var(--gh-text); overflow-wrap:anywhere; }
+.pro-dashboard-home .pro-welcome p { color:var(--gh-muted); }
+.pro-dashboard-home .pro-welcome .pro-kicker { color:var(--gh-action); }
+.pro-dashboard-home :is(.pro-panel,.pro-setup-card,.pro-live-card) { border-radius:var(--gh-panel-radius); border-color:var(--gh-panel-border); box-shadow:var(--gh-panel-shadow); }
+.pro-dashboard-home .pro-stat-grid > article { border-radius:20px; border-color:var(--gh-panel-border); }
+.pro-dashboard-home .pro-quick-actions { gap:12px; margin:28px 0; }
+.pro-dashboard-home .pro-quick-actions > a { border-radius:18px; min-height:88px; border:1px solid var(--gh-panel-border); box-shadow:var(--gh-panel-shadow); }
+.admin-workspace .admin-task-intro { padding:clamp(24px,3vw,36px); margin:12px 0 20px; border:1px solid var(--gh-panel-border); border-radius:26px; background:radial-gradient(ellipse at 100% 0%,#e89cbd44,transparent 65%),linear-gradient(130deg,var(--gh-surface),var(--gh-soft)); }
+.admin-workspace .admin-task-intro h2 { font-family:Manrope,var(--font-sans); font-size:clamp(1.6rem,2.5vw,2.5rem); line-height:1.15; letter-spacing:-.04em; color:var(--gh-text); }
+.admin-workspace .admin-task-intro p { color:var(--gh-muted); font-size:.92rem; max-width:720px; line-height:1.6; }
+.admin-workspace .admin-quick-actions { gap:12px; }
+.admin-workspace .admin-quick-actions a { border:1px solid var(--gh-panel-border); border-radius:18px; padding:18px; background:var(--gh-surface); box-shadow:var(--gh-panel-shadow); }
+.admin-workspace .admin-quick-actions a strong { color:var(--gh-text); font-size:.86rem; }
+.admin-workspace .admin-quick-actions a small { color:var(--gh-muted); line-height:1.5; }
+.admin-workspace :is(.owner-dashboard-card,.owner-kpi-card,.admin-detail-card) { border-radius:22px; }
+@media(max-width:900px) { .account-workspace-grid { grid-template-columns:1fr; } .account-workspace-grid .account-tool-section:last-child .account-menu { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:600px) {
+ .workspace-intro { padding:24px 20px; margin:18px 0 24px; border-radius:24px; }
+ .workspace-intro-description { font-size:.92rem; }
+ .customer-account-dashboard .customer-identity { padding:24px; }
+ .account-workspace-grid .account-tool-section:last-child .account-menu { grid-template-columns:1fr; }
+ .account-workspace-grid .account-menu > a { min-height:96px; }
+ .pro-dashboard-home .pro-welcome { flex-direction:column; align-items:flex-start; }
+ .pro-dashboard-home .pro-welcome .pro-icon-button { max-width:100%; }
+ .admin-workspace .admin-task-intro { padding:24px 18px; }
+}
+:is(.catalog-page,.customer-account-page):has(> .workspace-intro) .catalog-empty h2 { font-family:Manrope,var(--font-sans); font-size:clamp(1.3rem,3vw,1.8rem); font-weight:750; letter-spacing:-.035em; }
+:is(.catalog-page,.customer-account-page):has(> .workspace-intro) .catalog-empty > .text-link { display:inline-flex; align-items:center; justify-content:center; min-height:46px; padding:12px 20px; border-radius:999px; background:var(--gh-action); color:var(--gh-on-action); text-decoration:none; font-weight:700; }
+/* Public information retains its existing content and FAQ accordions. */
+.public-info-page > :is(.public-info-hero,.faq-hero) { padding:clamp(26px,4vw,46px); margin:20px 0 30px; border:1px solid var(--gh-panel-border); border-radius:28px; background:radial-gradient(ellipse at right top,#e89cbd44,transparent 65%),linear-gradient(125deg,var(--gh-surface),var(--gh-soft)); box-shadow:var(--gh-panel-shadow); }
+.public-info-page > :is(.public-info-hero,.faq-hero) h1 { font-family:Manrope,var(--font-sans); font-size:clamp(2rem,4.1vw,3.5rem); font-weight:800; line-height:1.1; letter-spacing:-.05em; color:var(--gh-text); }
+.public-info-page > :is(.public-info-hero,.faq-hero) .eyebrow { color:var(--gh-action); }
+.public-info-page > :is(.public-info-hero,.faq-hero) > p:last-child { color:var(--gh-muted); max-width:760px; line-height:1.65; }
+.public-info-page .public-info-grid { gap:20px; }
+.public-info-page .public-info-grid > article { padding:clamp(22px,3vw,30px); border:1px solid var(--gh-panel-border); border-radius:24px; background:var(--gh-surface); box-shadow:var(--gh-panel-shadow); }
+.public-info-page .public-info-cta { border-radius:24px; border:1px solid var(--gh-panel-border); }
+@media(max-width:600px) { .public-info-page > :is(.public-info-hero,.faq-hero) { border-radius:24px; padding:26px 20px; } }
+.pro-dashboard-home .pro-welcome .pro-icon-button { display:inline-flex; align-items:center; align-self:flex-start; justify-content:center; flex-shrink:0; gap:8px; width:auto; height:auto; min-height:44px; padding:12px 16px; border:1px solid var(--gh-panel-border); border-radius:14px; background:var(--gh-surface); color:var(--gh-text); font-size:.85rem; }
+.pro-dashboard-home .pro-welcome .pro-icon-button span { display:inline; }

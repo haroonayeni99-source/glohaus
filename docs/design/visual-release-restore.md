@@ -54,3 +54,7 @@ Category audit: corrected default mobile Hair image to the existing hair asset a
 ## Navigation and communications follow-up — 6 November 2026
 
 Before this release: source `a753612d63fc7eac0350223370fadfc9dc5cd897`, preserved branch `restore/before-navigation-organisation-20261106`, production deployment `dpl_FJAYHxhP9o6o9wkrHR7KMbicRoWV`. Revert only the navigation follow-up to retain the homepage polish and restored floating theme control. Follow the selective-revert/rollback procedure above; never reset the database, permissions or credentials.
+
+## Platform layout polish — 6 November 2026
+
+Restore point: `restore/before-platform-layout-20261106`, source `5f6ffb1cee81a25dae00123d547225e3b0f6c828`, production deployment `dpl_6H1FPUMq9TcvjqbbQEDjXZ2uFQ8N`. Reverting only this pass preserves the direct one-click Light/Night switch and previous navigation/homepage work. See `platform-layout-polish-20261106.md` for scope. Use the existing selective restore procedure; no database restore is required.

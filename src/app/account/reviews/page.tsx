@@ -1,3 +1,4 @@
+import { WorkspaceIntro } from "@/components/workspace-intro";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
@@ -41,8 +42,7 @@ export default async function ReviewsPage() {
         <Link className="back-link" href="/account">
           ← Your account
         </Link>
-        <p className="eyebrow">YOUR VERIFIED VISITS</p>
-        <h1>My reviews</h1>
+        <WorkspaceIntro eyebrow="YOUR VERIFIED VISITS" title="My reviews"><p>Your experiences, shared after verified appointments.</p></WorkspaceIntro>
         <div className="customer-review-list">
           {reviews.map((review) => (
             <article key={review.id}>

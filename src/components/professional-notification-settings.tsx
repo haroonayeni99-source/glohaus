@@ -347,7 +347,7 @@ export function ProfessionalNotificationSettings({
           <p>
             Promotional email uses your existing professional promotions
             consent.{" "}
-            <Link href="/preferences">Manage all marketing preferences</Link>.
+            <a href="#marketing">Manage optional marketing below</a>.
           </p>
         )}
         {customer && (

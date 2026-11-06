@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   CalendarDays,
+  UsersRound,
   Eye,
   ChevronRight,
   ImagePlus,
@@ -11,7 +12,6 @@ import {
   ShieldCheck,
   BadgeCheck,
   Star,
-  Megaphone,
   ThumbsUp,
   Bell,
   Compass,
@@ -27,6 +27,11 @@ import { ProfessionalNavigation } from "@/components/professional-navigation";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Business tools · GLOHAUS PRO" };
 const tools = [
+  ["Dashboard", "Your next actions and business overview", "/professional", LayoutDashboard],
+  ["Business Hub", "Performance, clients, retention and business insights", "/professional/performance", LayoutDashboard],
+  ["Bookings", "Manage appointments and booking history", "/professional/bookings", CalendarDays],
+  ["Clients", "Your existing client-management tools", "/professional/clients", UsersRound],
+  ["Referrals", "Your existing professional referral journey", "/professional/referrals", UsersRound],
   ["Service + product selections", "Connect your services and available products in one shareable link", "/professional/bundles", PackageCheck],
   ["Launch support", "Practical steps from training to your first returning clients", "/professional/launch", ListChecks],
   ["Seller Hub", "Products, orders, sales insights and Time Away", "/professional/seller-hub", ShoppingBag],
@@ -107,9 +112,8 @@ const tools = [
     "/professional/profile#verification",
     BadgeCheck,
   ],
-  ["Notification settings", "Choose email and push alerts and manage your devices", "/professional/settings/notifications", Bell],
+  ["Notifications & Communications", "Business alerts, marketing choices and connected devices", "/professional/settings/notifications", Bell],
   ["Notifications", "Booking reminders, Shop updates and account activity", "/notifications?view=professional", Bell],
-  ["Marketing preferences", "Choose optional customer-growth and business emails", "/preferences", Megaphone],
   ["Feature votes", "Privately vote on what GLOHAUS should build next", "/feature-votes", ThumbsUp],
   [
     "Account & security",
@@ -139,16 +143,20 @@ export default async function ToolsPage() {
         <p className="pro-page-lead">
           Manage your bookings, Shop, verification, content, money and account tools from one place.
         </p>
+        <nav className="workspace-section-links" aria-label="Business tool groups">{["Business overview","Appointments & clients","Services & portfolio","Shop & selling","Finance","Growth","Business settings"].map((name,i)=><a key={name} href={`#business-group-${i}`}>{name}</a>)}</nav>
         {[
+          { name: "Business overview", match: ["/professional", "/professional/performance"] },
           { name: "Appointments & clients", match: ["/professional/bookings", "/professional/availability", "/professional/clients", "/professional/policies", "/professional/connections#calendar", "/messages?view=professional"] },
-          { name: "Your storefront & content", match: ["/professional/profile", "/professional/portfolio", "/professional/connections#social", "/professional/posts", "/professional/live", "/professional/reviews", "/professional/bundles"] },
-          { name: "Shop & fulfilment", match: ["/professional/seller-hub", "/professional/products", "/professional/orders"] },
-          { name: "Money, setup & account", match: [] as string[] },
+          { name: "Services & portfolio", match: ["/professional/services", "/professional/profile", "/professional/portfolio", "/professional/connections#social", "/professional/posts", "/professional/live", "/professional/reviews", "/professional/bundles"] },
+          { name: "Shop & selling", match: ["/professional/seller-hub", "/professional/products", "/professional/orders"] },
+          { name: "Finance", match: ["/professional/wallet", "/professional/plans"] },
+          { name: "Growth", match: ["/professional/referrals", "/professional/launch"] },
+          { name: "Business settings", match: [] as string[] },
         ].map((group, index, groups) => {
           const entries = tools.filter(([, , href]) => index === groups.length - 1
             ? !groups.slice(0, -1).some(g => g.match.includes(href))
             : group.match.includes(href));
-          return <section className="business-tool-section" key={group.name}>
+          return <section className="business-tool-section" id={`business-group-${index}`} key={group.name}>
             <h2>{group.name}</h2>
             <nav className="tools-grid" aria-label={group.name}>
               {entries.map(([label, description, href, Icon]) => <Link key={href} href={href} className="tool-card">

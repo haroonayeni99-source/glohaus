@@ -29,6 +29,9 @@ const accountLinks = [
   ["Account & security", "/security"],
 ] as const;
 const professionalLinks = [
+  ["Business Hub", "/professional/performance"],
+  ["Services & portfolio", "/professional/services"],
+  ["Notifications & Communications", "/professional/settings/notifications"],
   ["Rules & Policies", "/professional/policies"],
   ["Dashboard", "/professional"],
   ["Bookings", "/professional/bookings"],
@@ -103,7 +106,13 @@ export function MobileSiteMenu({
               : "Website menu links"
           }
         >
-          {(professionalWorkspace ? professionalLinks : publicLinks.filter(([,href]) => !["/how-it-works","/professional-preview","/about","/faq"].includes(href))).map(
+          {professionalWorkspace && <div className="professional-menu-groups">{[
+            {title:"Business overview", routes:["/professional", "/professional/performance", "/professional/tools"]},
+            {title:"Appointments & clients", routes:["/professional/bookings", "/professional/clients", "/professional/policies", "/messages?view=professional"]},
+            {title:"Services & selling", routes:["/professional/services", "/professional/products", "/professional/orders", "/professional/posts"]},
+            {title:"Finance & settings", routes:["/professional/wallet", "/professional/profile#verification", "/professional/settings/notifications", "/notifications?view=professional", "/security", "/account"]},
+          ].map(group=><details key={group.title} open={group.title==="Business overview"}><summary>{group.title}</summary>{professionalLinks.filter(([,href])=>group.routes.includes(href)).map(([label,href])=><Link key={href} href={href}>{label}</Link>)}</details>)}</div>}
+          {(!professionalWorkspace ? publicLinks.filter(([,href]) => !["/how-it-works","/professional-preview","/about","/faq"].includes(href)) : []).map(
             ([label, href]) => (
               <Link key={href} href={href} className={!professionalWorkspace && ["/", "/discover"].includes(href) ? "menu-primary-duplicate" : undefined}>
                 {label}

@@ -1,3 +1,4 @@
+import { DiscoverNavigation } from "@/components/discover-navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Bookmark } from "lucide-react";
@@ -31,9 +32,10 @@ export default async function SavedPage({
     <>
       <PublicHeader signedIn />
       <main id="main" className="catalog-page">
-        <Link className="back-link" href="/account">
-          ← Your account
+        <Link className="back-link" href="/discover">
+          ← Discover
         </Link>
+        <DiscoverNavigation active="saved" />
         <p className="eyebrow">YOUR INSPIRATION COLLECTION</p>
         <h1>Saved looks</h1>
         {posts.length ? (
@@ -73,8 +75,8 @@ export default async function SavedPage({
             <Bookmark size={30} aria-hidden />
             <h2>Make room for inspiration.</h2>
             <p>Save a community post while browsing and find it here.</p>
-            <Link className="button" href="/">
-              Explore the feed
+            <Link className="button" href="/discover">
+              Explore inspiration
             </Link>
           </section>
         )}
@@ -89,7 +91,7 @@ export default async function SavedPage({
           )}
         </nav>
       </main>
-      <BottomNavigation active="profile" signedIn />
+      <BottomNavigation active="discover" signedIn />
     </>
   );
 }

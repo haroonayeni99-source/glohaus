@@ -1,0 +1,82 @@
+Route,Audience,Source,Static links (dynamic links stay in source),Disposition
+/about,Public / shared,src/app/about/page.tsx,/explore,Kept compatible; no route removed
+/account/bookings/[id],Customer,src/app/account/bookings/[id]/page.tsx,/professional/availability#last-minute; /professional/wallet,Kept compatible; no route removed
+/account/bookings,Customer,src/app/account/bookings/page.tsx,,Kept compatible; no route removed
+/account/following,Customer,src/app/account/following/page.tsx,/explore,Kept compatible; no route removed
+/account/invite,Customer,src/app/account/invite/page.tsx,/account,Kept compatible; no route removed
+/account/notifications,Customer,src/app/account/notifications/page.tsx,/account,Kept compatible; no route removed
+/account/orders,Customer,src/app/account/orders/page.tsx,,Kept compatible; no route removed
+/account,Customer,src/app/account/page.tsx,/account/following; /account/profile; /account/saved; /discover; /explore; /professional,Kept compatible; no route removed
+/account/profile,Customer,src/app/account/profile/page.tsx,/account,Kept compatible; no route removed
+/account/reviews,Customer,src/app/account/reviews/page.tsx,/account; /account/bookings?view=history,Kept compatible; no route removed
+/account/saved,Customer,src/app/account/saved/page.tsx,/discover,Kept compatible; no route removed
+/admin/growth,Owner/Admin,src/app/admin/growth/page.tsx,/admin; /admin/growth/review,Kept compatible; no route removed
+/admin/growth/review,Owner/Admin,src/app/admin/growth/review/page.tsx,/admin/growth; ?period=month; ?period=week; ?period=year,Kept compatible; no route removed
+/admin,Owner/Admin,src/app/admin/page.tsx,/admin/growth; /admin/verification,Kept compatible; no route removed
+/admin/verification,Owner/Admin,src/app/admin/verification/page.tsx,/admin#backend-health,Kept compatible; no route removed
+/cart,Public / shared,src/app/cart/page.tsx,,Kept compatible; no route removed
+/contact,Public / shared,src/app/contact/page.tsx,/faq; mailto:glohausuk@gmail.com; mailto:support@glohaus.shop,Kept compatible; no route removed
+/contact/tickets/[id],Public / shared,src/app/contact/tickets/[id]/page.tsx,,Kept compatible; no route removed
+/cream-preview,Public / shared,src/app/cream-preview/page.tsx,,Kept compatible; no route removed
+/customer-preview,Public / shared,src/app/customer-preview/page.tsx,/customer-preview; /explore; /security; /shop,Kept compatible; no route removed
+/discover,Public / shared,src/app/discover/page.tsx,,Kept compatible; no route removed
+/explore,Public / shared,src/app/explore/page.tsx,/profile-examples,Kept compatible; no route removed
+/faq,Public / shared,src/app/faq/page.tsx,,Kept compatible; no route removed
+/feature-votes,Public / shared,src/app/feature-votes/page.tsx,,Kept compatible; no route removed
+/forgot-password,Public / shared,src/app/forgot-password/page.tsx,,Kept compatible; no route removed
+/how-it-works,Public / shared,src/app/how-it-works/page.tsx,/explore,Kept compatible; no route removed
+/i/[token],Public / shared,src/app/i/[token]/page.tsx,,Kept compatible; no route removed
+/install,Public / shared,src/app/install/page.tsx,/; /account; /account/notifications; /contact; /professional; /professional/settings/notifications; https://www.glohaus.shop/install,Kept compatible; no route removed
+/live/[sessionId],Public / shared,src/app/live/[sessionId]/page.tsx,/explore,Kept compatible; no route removed
+/maintenance,Public / shared,src/app/maintenance/page.tsx,/sign-in?returnTo=%2Fadmin,Kept compatible; no route removed
+/marketing/unsubscribe,Public / shared,src/app/marketing/unsubscribe/page.tsx,,Kept compatible; no route removed
+/marketplace-terms,Public / shared,src/app/marketplace-terms/page.tsx,,Kept compatible; no route removed
+/messages,Public / shared,src/app/messages/page.tsx,,Kept compatible; no route removed
+/notifications,Customer,src/app/notifications/page.tsx,/account/notifications; /professional/settings/notifications,Kept compatible; no route removed
+/onboarding,Public / shared,src/app/onboarding/page.tsx,,Kept compatible; no route removed
+/p/[slug],Public / shared,src/app/p/[slug]/page.tsx,,Kept compatible; no route removed
+/p/[slug]/services/[id],Public / shared,src/app/p/[slug]/services/[id]/page.tsx,,Kept compatible; no route removed
+/,Public / shared,src/app/page.tsx,,Kept compatible; no route removed
+/posts/[id],Public / shared,src/app/posts/[id]/page.tsx,/,Kept compatible; no route removed
+/preferences,Customer,src/app/preferences/page.tsx,,Kept compatible; no route removed
+/privacy,Public / shared,src/app/privacy/page.tsx,/contact; /contact?topic=Privacy%20%26%20data%20request; /contact?topic=Privacy%20complaint; https://ico.org.uk/make-a-complaint/; https://policies.google.com/privacy; mailto:glohausuk@gmail.com,Kept compatible; no route removed
+/professional/availability,Professional,src/app/professional/availability/page.tsx,/professional; /professional/connections#calendar,Kept compatible; no route removed
+/professional/bookings,Professional,src/app/professional/bookings/page.tsx,,Kept compatible; no route removed
+/professional/bundles,Professional,src/app/professional/bundles/page.tsx,/professional/seller-hub; /professional/setup; /professional/tools,Kept compatible; no route removed
+/professional/clients,Professional,src/app/professional/clients/page.tsx,,Kept compatible; no route removed
+/professional/commission,Professional,src/app/professional/commission/page.tsx,,Kept compatible; no route removed
+/professional/connections,Professional,src/app/professional/connections/page.tsx,/professional/tools,Kept compatible; no route removed
+/professional/launch,Professional,src/app/professional/launch/page.tsx,/contact; /professional/plans; /professional/tools,Kept compatible; no route removed
+/professional/live,Professional,src/app/professional/live/page.tsx,/professional; /professional/profile#verification; /professional/setup,Kept compatible; no route removed
+/professional/orders,Professional,src/app/professional/orders/page.tsx,,Kept compatible; no route removed
+/professional,Professional,src/app/professional/page.tsx,,Kept compatible; no route removed
+/professional/performance,Professional,src/app/professional/performance/page.tsx,/api/v1/professional/invitation-qr; /professional; /professional/availability; /professional/clients; /professional/profile; /professional/services; /professional/wallet,Kept compatible; no route removed
+/professional/plans,Professional,src/app/professional/plans/page.tsx,/professional/setup,Kept compatible; no route removed
+/professional/policies,Professional,src/app/professional/policies/page.tsx,,Kept compatible; no route removed
+/professional/portfolio,Professional,src/app/professional/portfolio/page.tsx,/professional; /professional/connections#social,Kept compatible; no route removed
+/professional/posts,Professional,src/app/professional/posts/page.tsx,/professional,Kept compatible; no route removed
+/professional/products,Professional,src/app/professional/products/page.tsx,,Kept compatible; no route removed
+/professional/profile,Professional,src/app/professional/profile/page.tsx,/professional; /professional/availability; /professional/portfolio; /professional/services,Kept compatible; no route removed
+/professional/referrals,Professional,src/app/professional/referrals/page.tsx,,Kept compatible; no route removed
+/professional/reviews,Professional,src/app/professional/reviews/page.tsx,/professional; /professional/bookings,Kept compatible; no route removed
+/professional/seller-hub,Professional,src/app/professional/seller-hub/page.tsx,/professional/products,Kept compatible; no route removed
+/professional/services,Professional,src/app/professional/services/page.tsx,/professional/tools,Kept compatible; no route removed
+/professional/settings/notifications,Professional,src/app/professional/settings/notifications/page.tsx,/professional/tools,Kept compatible; no route removed
+/professional/setup,Professional,src/app/professional/setup/page.tsx,/professional; /professional-preview; /professional/launch; /professional/plans; /professional/profile#verification,Kept compatible; no route removed
+/professional/sign-in,Professional,src/app/professional/sign-in/page.tsx,/forgot-password; /sign-in,Kept compatible; no route removed
+/professional/tools,Professional,src/app/professional/tools/page.tsx,/professional,Kept compatible; no route removed
+/professional/wallet,Professional,src/app/professional/wallet/page.tsx,/professional/bookings; /professional/commission; /professional/plans,Kept compatible; no route removed
+/professional-preview,Public / shared,src/app/professional-preview/page.tsx,/customer-preview; /professional-preview; /professional-preview?view=availability; /professional-preview?view=clients; /professional-preview?view=verification; /profile-examples; /shop; /sign-in?intent=professional&returnTo=/professional; /sign-up?intent=professional&returnTo=/professional/setup,Kept compatible; no route removed
+/professional-terms,Public / shared,src/app/professional-terms/page.tsx,,Kept compatible; no route removed
+/profile-examples/[slug],Public / shared,src/app/profile-examples/[slug]/page.tsx,/explore; /profile-examples; /sign-up?intent=professional&returnTo=/professional/setup,Kept compatible; no route removed
+/profile-examples,Public / shared,src/app/profile-examples/page.tsx,/professional/plans; /professional/profile; /profile-examples; /sign-up?intent=professional&returnTo=/professional/setup,Kept compatible; no route removed
+/refunds,Public / shared,src/app/refunds/page.tsx,,Kept compatible; no route removed
+/reset-password,Public / shared,src/app/reset-password/page.tsx,,Kept compatible; no route removed
+/security/[[...security]],Public / shared,src/app/security/[[...security]]/page.tsx,/onboarding; /workspace,Kept compatible; no route removed
+/share,Public / shared,src/app/share/page.tsx,,Kept compatible; no route removed
+/shop,Public / shared,src/app/shop/page.tsx,#categories; #products; /contact; /explore; /refunds; /shop; /shop#products,Kept compatible; no route removed
+/sign-in/[[...sign-in]],Public / shared,src/app/sign-in/[[...sign-in]]/page.tsx,/forgot-password; /professional/sign-in,Kept compatible; no route removed
+/sign-up/[[...sign-up]],Public / shared,src/app/sign-up/[[...sign-up]]/page.tsx,/sign-in; /sign-up?intent=professional,Kept compatible; no route removed
+/terms,Public / shared,src/app/terms/page.tsx,https://maps.google.com/help/terms_maps/; https://policies.google.com/privacy,Kept compatible; no route removed
+/wallet,Customer,src/app/wallet/page.tsx,/account/bookings; /explore,Kept compatible; no route removed
+/workspace,Customer,src/app/workspace/page.tsx,,Kept compatible; no route removed

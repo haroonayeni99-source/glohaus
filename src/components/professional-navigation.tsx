@@ -9,8 +9,6 @@ import {
   WalletCards,
   ArrowLeftRight,
   ShoppingBag,
-  PackageCheck,
-  ShieldCheck,
 } from "lucide-react";
 import { Brand } from "./brand";
 import { MobileSiteMenu } from "./mobile-site-menu";
@@ -42,18 +40,10 @@ export function ProfessionalNavigation({
         </div>
         <div className="pro-header-account">
           <nav className="pro-header-shortcuts" aria-label="Professional shortcuts">
-            <Link href="/professional/policies"><ShieldCheck size={14} aria-hidden />Rules & Policies</Link>
+            <Link href="/professional/performance"><LayoutDashboard size={14} aria-hidden />Business Hub</Link>
             <Link href="/professional/seller-hub">
               <ShoppingBag size={14} aria-hidden />
               Seller Hub
-            </Link>
-            <Link href="/professional/orders">
-              <PackageCheck size={14} aria-hidden />
-              Orders
-            </Link>
-            <Link href="/professional/profile#verification">
-              <ShieldCheck size={14} aria-hidden />
-              Verification
             </Link>
           </nav>
           <ProfessionalNotificationBell />

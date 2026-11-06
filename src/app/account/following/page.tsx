@@ -1,3 +1,4 @@
+import { DiscoverNavigation } from "@/components/discover-navigation";
 import Link from "next/link";
 import { Users, MapPin, ArrowUpRight } from "lucide-react";
 import { pageAccount } from "@/lib/page-access";
@@ -25,6 +26,7 @@ export default async function Page() {
     <>
       <PublicHeader signedIn />
       <main id="main" className="catalog-page following-page">
+        <DiscoverNavigation active="professionals" />
         <p className="eyebrow">YOUR GLOHAUS COMMUNITY</p>
         <h1>Professionals you <em>follow.</em></h1>
         <p className="lead">Keep up with the beauty professionals you want to book, revisit and support.</p>
@@ -51,7 +53,7 @@ export default async function Page() {
           </section>
         )}
       </main>
-      <BottomNavigation active="profile" signedIn />
+      <BottomNavigation active="discover" signedIn />
     </>
   );
 }

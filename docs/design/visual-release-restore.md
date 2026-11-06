@@ -50,3 +50,7 @@ GLOHAUS Together monetary gifting/group funding, new fees, reward activation and
 Both restore points remain available. A request to undo only this follow-up should preserve the first visual release; a request for the original appearance uses the pre-visual restore branch above.
 
 Category audit: corrected default mobile Hair image to the existing hair asset and replaced an unrelated landscape in the Lashes fallback with an explicit lash illustration. Owner-selected category images still take precedence.
+
+## Navigation and communications follow-up — 6 November 2026
+
+Before this release: source `a753612d63fc7eac0350223370fadfc9dc5cd897`, preserved branch `restore/before-navigation-organisation-20261106`, production deployment `dpl_FJAYHxhP9o6o9wkrHR7KMbicRoWV`. Revert only the navigation follow-up to retain the homepage polish and restored floating theme control. Follow the selective-revert/rollback procedure above; never reset the database, permissions or credentials.

@@ -193,69 +193,14 @@ export const adminToolGuide: Record<
 };
 
 export const adminTaskGroups = [
-  { label: "Start here", ids: ["overview"] },
-  {
-    label: "People & access",
-    ids: [
-      "users",
-      "professionals",
-      "live-access",
-      "professional-policies",
-      "professional-activity",
-      "auth-accounts",
-      "staff",
-    ],
-  },
-  {
-    label: "Bookings & money",
-    ids: [
-      "bookings",
-      "orders",
-      "payments",
-      "booking-fee",
-      "shop-fees",
-      "professional-commission",
-      "analytics",
-    ],
-  },
-  {
-    label: "Support & safety",
-    ids: [
-      "support",
-      "payment-disputes",
-      "refund-appeals",
-      "reviews",
-      "reports",
-    ],
-  },
-  {
-    label: "Website & content",
-    ids: [
-      "homepage-media",
-      "categories",
-      "product-categories",
-      "settings",
-      "content",
-      "profile-examples",
-      "website-status",
-    ],
-  },
-  {
-    label: "Growth & offers",
-    ids: ["referrals", "founding-programme", "marketing"],
-  },
-  {
-    label: "System & delivery",
-    ids: [
-      "backend-health",
-      "arrival-management",
-      "push-delivery-health",
-      "payment-readiness",
-      "email-readiness",
-      "email-delivery-health",
-      "audit",
-    ],
-  },
+  { label: "Start here", ids: ["overview", "analytics"] },
+  { label: "People & verification", ids: ["users", "professionals", "live-access", "professional-policies", "professional-activity"] },
+  { label: "Bookings, orders & cases", ids: ["bookings", "orders", "reviews", "support", "payment-disputes", "refund-appeals", "reports"] },
+  { label: "Payments, commissions & fees", ids: ["payments", "booking-fee", "shop-fees", "professional-commission", "payment-readiness"] },
+  { label: "Referrals & growth", ids: ["referrals", "founding-programme"] },
+  { label: "Marketing & communications", ids: ["marketing", "arrival-management", "push-delivery-health", "email-readiness", "email-delivery-health"] },
+  { label: "Platform & content", ids: ["homepage-media", "categories", "product-categories", "settings", "content", "profile-examples", "website-status"] },
+  { label: "Security & system health", ids: ["auth-accounts", "staff", "backend-health", "audit"] },
 ];
 
 export function matchesAdminTool(id: string, label: string, query: string) {

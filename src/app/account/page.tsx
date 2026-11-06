@@ -15,7 +15,6 @@ import {
   PackageCheck,
   Users,
   WalletCards,
-  Megaphone,
   ThumbsUp,
   Smartphone,
 } from "lucide-react";
@@ -67,9 +66,8 @@ const links = [
   ],
   ["Invite friends", "Share GLOHAUS with someone", "/account/invite", Users],
   ["Notifications", "Keep up with your appointments", "/notifications", Bell],
-  ["Phone notification settings", "Choose alerts, enable devices and send a test", "/account/notifications", Bell],
+  ["Notifications & Communications", "Activity alerts, optional marketing and connected devices", "/account/notifications", Bell],
   ["Install GLOHAUS", "Add GLOHAUS to your Home Screen", "/install", Smartphone],
-  ["Marketing preferences", "Choose the optional GLOHAUS emails you want", "/preferences", Megaphone],
   ["Feature votes", "Privately vote on what GLOHAUS should build next", "/feature-votes", ThumbsUp],
   [
     "Account & security",
@@ -103,8 +101,8 @@ export default async function Page() {
         {!profile?.first_name && <p className="form-notice"><Link href="/account/profile">Add your name and an optional photo</Link> so your professional can recognise you.</p>}
         {[
           {title: "Bookings & purchases", routes: ["/account/bookings", "/account/reviews", "/account/orders", "/wallet"]},
-          {title: "Your community", routes: ["/account/following", "/account/saved", "/account/invite", "/feature-votes"]},
-          {title: "Account & settings", routes: ["/account/profile", "/security", "/notifications", "/account/notifications", "/preferences", "/install"]},
+          {title: "Community & ideas", routes: ["/account/invite", "/feature-votes"]},
+          {title: "Account & settings", routes: ["/account/profile", "/security", "/notifications", "/account/notifications", "/install"]},
         ].map(group => <section className="account-tool-section" key={group.title}>
           <h2>{group.title}</h2>
           <nav className="account-menu" aria-label={group.title}>
@@ -113,6 +111,7 @@ export default async function Page() {
             </Link>)}
           </nav>
         </section>)}
+        <section className="account-discover-collection"><p className="eyebrow">YOUR INSPIRATION</p><h2>Make Discover yours.</h2><p>Explore looks, catch up with professionals and revisit your saved inspiration.</p><Link className="button" href="/discover">Open Discover</Link><details><summary>Your saved content & following</summary><nav aria-label="Personal Discover shortcuts"><Link href="/account/saved">Saved looks</Link><Link href="/account/following">Followed professionals</Link></nav></details></section>
         <div className="account-switch">
           {account.roles.includes("professional") && (
             <Link className="button" href="/professional">

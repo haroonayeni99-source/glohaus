@@ -48,7 +48,7 @@ export default async function NotificationsPage({
           <p className="pro-kicker">ACTIVITY</p>
           <h1>Your notifications.</h1>
           <p className="pro-page-lead">Booking reminders, Shop updates and other account activity appear here as they are recorded.</p>
-          <Link href="/professional/settings/notifications">Notification settings →</Link>
+          <Link href="/professional/settings/notifications">Notifications & Communications →</Link>
           {content}
         </main>
       </div>
@@ -60,7 +60,7 @@ export default async function NotificationsPage({
         <p className="eyebrow">ACTIVITY</p>
         <h1>Your notifications.</h1>
         <p className="lead">Booking reminders, Shop updates and other account activity appear here as they are recorded.</p>
-        <Link href="/account/notifications">Phone notification settings →</Link>
+        <Link href="/account/notifications">Notifications & Communications →</Link>
         {content}
       </main>
     </>

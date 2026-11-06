@@ -1,4 +1,5 @@
 "use client";
+import { DiscoverNavigation } from "./discover-navigation";
 import { SocialPortfolio } from "./social-portfolio";
 import type { PublicSocialPost } from "@/modules/business-tools/domain";
 import { TaxonomyFilters } from "./taxonomy-filters";
@@ -334,7 +335,7 @@ export function DiscoveryFeed({
         <nav aria-label="Main navigation">
           <button
             className={
-              category !== "Saved" ? "discovery-nav selected" : "discovery-nav"
+              category !== "Saved" && category !== "Following" ? "discovery-nav selected" : "discovery-nav"
             }
             onClick={() => filter("For you")}
           >
@@ -412,6 +413,7 @@ export function DiscoveryFeed({
             </Link>
           </div>
         </header>
+        <DiscoverNavigation active={category === "Saved" ? "saved" : category === "Following" ? "following" : "explore"} routeBase={routeBase} />
         {taxonomy && (
           <details className="taxonomy-discover-controls">
             <summary>Filter by speciality</summary>
@@ -423,7 +425,7 @@ export function DiscoveryFeed({
         )}
         <div className="discovery-tabs" aria-label="Filter inspiration">
           {canPublish && <Link className="discovery-create-mobile" href="/professional/posts">Post / Story</Link>}
-          {["Following", "For you", ...categories, "Tutorials"].map((item) => (
+          {["For you", ...categories, "Tutorials"].map((item) => (
             <button
               key={item}
               aria-pressed={category === item}

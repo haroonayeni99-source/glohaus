@@ -1,3 +1,4 @@
+import { ProfessionalNavigation } from "@/components/professional-navigation";
 import {businessInsights,businessDisputesCte,reportingDays,retentionWindow} from "@/modules/professionals/business-insights";
 import { AcquisitionReport } from "@/components/acquisition-report";
 import type { AcquisitionOverview } from "@/modules/admin/acquisition";
@@ -46,7 +47,7 @@ export default async function Page({searchParams}:{searchParams:Promise<{period?
     return {row,referrals,code,popularServices,profile,profileOpens:Number(profileOpens)};
   }).catch(()=>null);
   const money=(pence:number)=>new Intl.NumberFormat("en-GB",{style:"currency",currency:"GBP"}).format(pence/100);
-  return <main style={{maxWidth:950,margin:"0 auto",padding:"clamp(20px,4vw,48px)"}}><AcquisitionReport data={acquisition}/>
+  return <div className="pro-app"><ProfessionalNavigation active="more" displayName={access.account.displayName} /><main id="main" className="pro-main pro-management-page"><AcquisitionReport data={acquisition}/>
     {invitation&&<section className="admin-detail-card" style={{padding:24,marginTop:20}}><h2>Your customer invitation</h2><p>Share this link or QR code with your clients. They choose whether to record the invitation. It never proves customer ownership or changes fees.</p><p><a href={`/i/${invitation.token}`}>{`https://glohaus.shop/i/${invitation.token}`}</a></p><a className="button" href="/api/v1/professional/invitation-qr">Download invitation QR code</a></section>}
 
     <Link href="/professional">← Professional dashboard</Link>
@@ -86,5 +87,5 @@ export default async function Page({searchParams}:{searchParams:Promise<{period?
         <p>Reward incentives are not yet active; referrals do not create automatic credits or payouts.</p>
       </section>
     </>}
-  </main>;
+  </main></div>;
 }

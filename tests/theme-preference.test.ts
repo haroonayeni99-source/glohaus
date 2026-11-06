@@ -15,7 +15,25 @@ beforeEach(()=>{
 afterEach(async()=>{await act(async()=>root.unmount());container.remove();delete document.documentElement.dataset.theme;vi.restoreAllMocks();vi.unstubAllGlobals();});
 it('preserves explicit preference and follows the OS only in System mode',()=>{expect(resolveTheme('light',true)).toBe('light');expect(resolveTheme('night',false)).toBe('night');expect(resolveTheme('system',true)).toBe('night');expect(resolveTheme(null,false)).toBe('light');});
 it('bootstraps the OS theme even if storage is unavailable',()=>{dark=true;vi.spyOn(Storage.prototype,'getItem').mockImplementation(()=>{throw Error('blocked')});window.eval(themeBootstrap);expect(document.documentElement.dataset.theme).toBe('night');expect(document.documentElement.style.colorScheme).toBe('dark');});
-it('keeps explicit saved Light during hydration on a dark device',async()=>{dark=true;localStorage.setItem('glohaus-theme','light');window.eval(themeBootstrap);const {ThemeToggle}=await import('@/components/theme-toggle');await act(async()=>root.render(React.createElement(ThemeToggle)));expect(document.documentElement.dataset.theme).toBe('light');expect(container.querySelector('select')?.value).toBe('light');});
-it('updates System mode when the device changes',async()=>{const {ThemeToggle}=await import('@/components/theme-toggle');await act(async()=>root.render(React.createElement(ThemeToggle)));await act(async()=>{dark=true;changes.forEach(f=>f());});expect(document.documentElement.dataset.theme).toBe('night');});
-it('keeps a manual choice usable when saving storage is blocked',async()=>{vi.spyOn(Storage.prototype,'setItem').mockImplementation(()=>{throw Error('blocked')});const {ThemeToggle}=await import('@/components/theme-toggle');await act(async()=>root.render(React.createElement(ThemeToggle)));const select=container.querySelector('select')!;await act(async()=>{select.value='night';select.dispatchEvent(new Event('change',{bubbles:true}));});expect(document.documentElement.dataset.theme).toBe('night');expect(select.value).toBe('night');});
-it('restores the compact floating control while keeping the device preference available',async()=>{const {ThemeToggle}=await import('@/components/theme-toggle');await act(async()=>root.render(React.createElement(ThemeToggle)));expect(container.querySelector('.theme-toggle-layer summary')?.getAttribute('aria-label')).toBe('Appearance settings');expect([...container.querySelectorAll('option')].map(o=>o.value)).toEqual(['system','light','night']);});
+it('keeps explicit saved Light during hydration on a dark device',async()=>{dark=true;localStorage.setItem('glohaus-theme','light');window.eval(themeBootstrap);const {ThemeToggle}=await import('@/components/theme-toggle');await act(async()=>root.render(React.createElement(ThemeToggle,{inline:true})));expect(document.documentElement.dataset.theme).toBe('light');expect(container.querySelector('select')?.value).toBe('light');});
+it('updates System mode when the device changes',async()=>{const {ThemeToggle}=await import('@/components/theme-toggle');await act(async()=>root.render(React.createElement(ThemeToggle,{inline:true})));await act(async()=>{dark=true;changes.forEach(f=>f());});expect(document.documentElement.dataset.theme).toBe('night');});
+it('keeps a manual choice usable when saving storage is blocked',async()=>{vi.spyOn(Storage.prototype,'setItem').mockImplementation(()=>{throw Error('blocked')});const {ThemeToggle}=await import('@/components/theme-toggle');await act(async()=>root.render(React.createElement(ThemeToggle,{inline:true})));const select=container.querySelector('select')!;await act(async()=>{select.value='night';select.dispatchEvent(new Event('change',{bubbles:true}));});expect(document.documentElement.dataset.theme).toBe('night');expect(select.value).toBe('night');});
+it('switches the floating button directly in both directions and saves the choice',async()=>{
+ const {ThemeToggle}=await import('@/components/theme-toggle');
+ await act(async()=>root.render(React.createElement(ThemeToggle)));
+ const button=container.querySelector('button')!;
+ expect(container.querySelector('select,details')).toBeNull();
+ expect(button.textContent).toBe('Night');
+ await act(async()=>button.click());
+ expect(document.documentElement.dataset.theme).toBe('night');expect(localStorage.getItem('glohaus-theme')).toBe('night');expect(button.textContent).toBe('Light');
+ await act(async()=>button.click());
+ expect(document.documentElement.dataset.theme).toBe('light');expect(localStorage.getItem('glohaus-theme')).toBe('light');expect(button.textContent).toBe('Night');
+});
+it('keeps device settings in the menu and synchronises the floating button',async()=>{
+ const {ThemeToggle}=await import('@/components/theme-toggle');
+ await act(async()=>root.render(React.createElement(React.Fragment,null,React.createElement(ThemeToggle),React.createElement(ThemeToggle,{inline:true}))));
+ expect([...container.querySelectorAll('option')].map(o=>o.value)).toEqual(['system','light','night']);
+ await act(async()=>container.querySelector('button')!.click());expect(container.querySelector('select')!.value).toBe('night');
+ await act(async()=>{const select=container.querySelector('select')!;select.value='system';select.dispatchEvent(new Event('change',{bubbles:true}));});
+ expect(document.documentElement.dataset.theme).toBe('light');expect(container.querySelector('button')!.textContent).toBe('Night');
+});

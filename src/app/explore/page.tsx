@@ -44,8 +44,14 @@ export default async function Explore({
   }>;
 }) {
   const { query: q, filters, after } = discoveryOptions(await searchParams);
-  const viewerSignedIn = await publicViewerSignedIn();
-  const postcodeCentre = await resolvePostcodeLocation(filters.location);
+  // Independent lookups start together; catalogue failures retain the retry UI.
+  const [viewerSignedIn, postcodeCentre, catalogResult] = await Promise.all([
+    publicViewerSignedIn(),
+    resolvePostcodeLocation(filters.location),
+    process.env.DATABASE_URL
+      ? publicTaxonomyCatalog().then(value => ({ value, error: null })).catch(error => ({ value: emptyTaxonomy, error }))
+      : Promise.resolve({ value: emptyTaxonomy, error: null }),
+  ]);
   let exampleVisibility = process.env.DATABASE_URL ? { enabled: false, hiddenSlugs: [] as string[] } : defaultExampleVisibility;
 
   let taxonomy = emptyTaxonomy;
@@ -55,7 +61,8 @@ export default async function Explore({
 
   if (process.env.DATABASE_URL) {
     try {
-      const catalog = await publicTaxonomyCatalog();
+      if (catalogResult.error) throw catalogResult.error;
+      const catalog = catalogResult.value;
       const result = await withIdentity("", async (db) => ({
         ...(await (postcodeCentre
           ? discoveryPage(db, q, undefined, { ...filters, location: undefined }, {

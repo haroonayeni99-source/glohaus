@@ -1,4 +1,4 @@
-import type { Coordinates } from "./location";
+import { coordinatesSchema, type Coordinates } from "./location";
 
 const FULL_POSTCODE = /^(GIR\s?0AA|(?:[A-Z]{1,2}\d[A-Z\d]?)\s*\d[A-Z]{2})$/i;
 const OUTWARD_CODE = /^[A-Z]{1,2}\d[A-Z\d]?$/i;
@@ -22,7 +22,8 @@ export async function resolvePostcodeLocation(value?: string): Promise<Coordinat
     const point = result as { latitude?: unknown; longitude?: unknown };
     if (typeof point.latitude !== "number" || typeof point.longitude !== "number") return null;
     if (!Number.isFinite(point.latitude) || !Number.isFinite(point.longitude)) return null;
-    return { latitude: point.latitude, longitude: point.longitude };
+    const coordinates = coordinatesSchema.safeParse({ latitude: point.latitude, longitude: point.longitude });
+    return coordinates.success ? coordinates.data : null;
   } catch {
     return null;
   }

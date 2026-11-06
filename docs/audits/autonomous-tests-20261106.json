@@ -1,0 +1,1251 @@
+{
+  "date": "2026-11-06",
+  "baseline": "57ff5f2af00ca8f3d7d79b985f0e14af382b1dd0",
+  "environment": "isolated Vitest/native PGlite and mocked providers; no real transactions",
+  "totalTests": 1681,
+  "passed": 1679,
+  "failed": 0,
+  "skipped": 2,
+  "files": [
+    {
+      "file": "tests/account-security-workflow.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "skipped": []
+    },
+    {
+      "file": "tests/account-supabase-fallback.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/admin-category-manager.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/admin-finance.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/admin-overview-resilience.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/admin-route-contracts.test.ts",
+      "status": "passed",
+      "passed": 102,
+      "skipped": []
+    },
+    {
+      "file": "tests/admin-shop-orders.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/admin-support-inbox-ui.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "skipped": []
+    },
+    {
+      "file": "tests/admin.test.ts",
+      "status": "passed",
+      "passed": 19,
+      "skipped": []
+    },
+    {
+      "file": "tests/arrival-api.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/arrival-database.test.ts",
+      "status": "passed",
+      "passed": 17,
+      "skipped": []
+    },
+    {
+      "file": "tests/arrival-domain.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "skipped": []
+    },
+    {
+      "file": "tests/auth-assurance.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/auth-callback-origin.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/auth-flow.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "skipped": []
+    },
+    {
+      "file": "tests/auth-session-ui.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/authorization.test.ts",
+      "status": "passed",
+      "passed": 20,
+      "skipped": []
+    },
+    {
+      "file": "tests/availability-calendar.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/availability-input.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/availability.test.ts",
+      "status": "passed",
+      "passed": 21,
+      "skipped": []
+    },
+    {
+      "file": "tests/booking-database.test.ts",
+      "status": "passed",
+      "passed": 26,
+      "skipped": []
+    },
+    {
+      "file": "tests/booking-date-input.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "skipped": []
+    },
+    {
+      "file": "tests/booking-disputes.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/booking-finance.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/booking-location.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/booking-payment-api.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/booking-return-page.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/bookings.test.ts",
+      "status": "passed",
+      "passed": 21,
+      "skipped": []
+    },
+    {
+      "file": "tests/bundle-api.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/bundle-choices.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/bundle-links.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/business-insights.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "skipped": []
+    },
+    {
+      "file": "tests/business-tools-database.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "skipped": []
+    },
+    {
+      "file": "tests/business-tools.test.ts",
+      "status": "passed",
+      "passed": 15,
+      "skipped": []
+    },
+    {
+      "file": "tests/calendar-feed-transport.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "skipped": []
+    },
+    {
+      "file": "tests/calendar-sync-database.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "skipped": [
+        "real calendar sync transactions with a simulated external feed fetches the official public GOV.UK calendar over real HTTPS and commits its busy snapshot"
+      ]
+    },
+    {
+      "file": "tests/cart-feedback.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "skipped": []
+    },
+    {
+      "file": "tests/cart-routes.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "skipped": []
+    },
+    {
+      "file": "tests/cart-signin-return.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/checkout-resume.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/client-blocking.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "skipped": []
+    },
+    {
+      "file": "tests/commission-api.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "skipped": []
+    },
+    {
+      "file": "tests/commission-control-centre.test.ts",
+      "status": "passed",
+      "passed": 38,
+      "skipped": []
+    },
+    {
+      "file": "tests/commission-ui.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/communications-navigation.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/content-media-publication.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "skipped": []
+    },
+    {
+      "file": "tests/content-media-registration.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "skipped": []
+    },
+    {
+      "file": "tests/content-security-policy.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/content-upload-controls.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/customer-home-summary.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/customer-pwa-api.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/customer-pwa-notifications.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "skipped": []
+    },
+    {
+      "file": "tests/dashboard.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/database-connections.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/database-tls.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/database.test.ts",
+      "status": "passed",
+      "passed": 12,
+      "skipped": []
+    },
+    {
+      "file": "tests/discover-footer.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/discovery-map-categories.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/discovery-query-bounds.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/email-auth-form.test.ts",
+      "status": "passed",
+      "passed": 17,
+      "skipped": []
+    },
+    {
+      "file": "tests/example-listings.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "skipped": []
+    },
+    {
+      "file": "tests/example-visibility-api.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/example-visibility-database.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "skipped": []
+    },
+    {
+      "file": "tests/example-visibility-reader.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/explore-follows-race.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "skipped": []
+    },
+    {
+      "file": "tests/explore-load-state.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "skipped": []
+    },
+    {
+      "file": "tests/explore-page-failure.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/explore-parallel.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/extended-database.test.ts",
+      "status": "passed",
+      "passed": 12,
+      "skipped": []
+    },
+    {
+      "file": "tests/feature-voting-database.test.ts",
+      "status": "passed",
+      "passed": 15,
+      "skipped": []
+    },
+    {
+      "file": "tests/feature-voting-route.test.ts",
+      "status": "passed",
+      "passed": 14,
+      "skipped": []
+    },
+    {
+      "file": "tests/feature-voting-ui.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/finance-database.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "skipped": []
+    },
+    {
+      "file": "tests/finance.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/follows.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/growth-automation-database.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/growth-qualification.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "skipped": []
+    },
+    {
+      "file": "tests/home-navigation.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "skipped": []
+    },
+    {
+      "file": "tests/homepage-category-database.test.ts",
+      "status": "passed",
+      "passed": 29,
+      "skipped": []
+    },
+    {
+      "file": "tests/homepage-category-images.test.ts",
+      "status": "passed",
+      "passed": 23,
+      "skipped": []
+    },
+    {
+      "file": "tests/homepage-image-routes.test.ts",
+      "status": "passed",
+      "passed": 19,
+      "skipped": []
+    },
+    {
+      "file": "tests/http.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "skipped": []
+    },
+    {
+      "file": "tests/in-app-notifications.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/initial-loading-screen.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/journey-routing-api.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/journey-routing-database.test.ts",
+      "status": "passed",
+      "passed": 13,
+      "skipped": []
+    },
+    {
+      "file": "tests/journey-routing.test.ts",
+      "status": "passed",
+      "passed": 11,
+      "skipped": []
+    },
+    {
+      "file": "tests/launch-journeys.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/launch-seo.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/lip-filler-taxonomy.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/live-broadcast.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "skipped": []
+    },
+    {
+      "file": "tests/live-eligibility.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/live-end-route.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/livekit.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/location-routes.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "skipped": []
+    },
+    {
+      "file": "tests/location-ui.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "skipped": []
+    },
+    {
+      "file": "tests/london-boroughs.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "skipped": []
+    },
+    {
+      "file": "tests/maintenance-indexing.test.ts",
+      "status": "passed",
+      "passed": 33,
+      "skipped": []
+    },
+    {
+      "file": "tests/map-graphics-fallback.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/marketing-admin-database.test.ts",
+      "status": "passed",
+      "passed": 21,
+      "skipped": []
+    },
+    {
+      "file": "tests/marketing-preferences-database.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/marketing-preferences-ui.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/media-streaming.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/media.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/message-history.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/message-navigation.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/messaging.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/mfa-renewal-ui.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/multi-speciality.test.ts",
+      "status": "passed",
+      "passed": 30,
+      "skipped": []
+    },
+    {
+      "file": "tests/node-function-runtime.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/notification-live-ui.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/notification-stream.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/notification-worker-isolation.test.ts",
+      "status": "passed",
+      "passed": 13,
+      "skipped": []
+    },
+    {
+      "file": "tests/notifications.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/owner-account-visibility.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "skipped": []
+    },
+    {
+      "file": "tests/owner-email-delivery.test.ts",
+      "status": "passed",
+      "passed": 12,
+      "skipped": []
+    },
+    {
+      "file": "tests/owner-payment-status.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/owner-sign-in-entry.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "skipped": []
+    },
+    {
+      "file": "tests/page-access.test.ts",
+      "status": "passed",
+      "passed": 13,
+      "skipped": []
+    },
+    {
+      "file": "tests/page-loading.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/payment-database-config.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/payment-return-url.test.ts",
+      "status": "passed",
+      "passed": 18,
+      "skipped": []
+    },
+    {
+      "file": "tests/payment-runtime-role.test.ts",
+      "status": "passed",
+      "passed": 1,
+      "skipped": []
+    },
+    {
+      "file": "tests/payment-webhook-secrets.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/payment-webhook-signatures.test.ts",
+      "status": "passed",
+      "passed": 19,
+      "skipped": []
+    },
+    {
+      "file": "tests/payout-audit.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/payout-request-database.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/platform-fairness.test.ts",
+      "status": "passed",
+      "passed": 24,
+      "skipped": []
+    },
+    {
+      "file": "tests/postcode-search.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/posts.test.ts",
+      "status": "passed",
+      "passed": 16,
+      "skipped": []
+    },
+    {
+      "file": "tests/professional-activity-ui.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/professional-activity.test.ts",
+      "status": "passed",
+      "passed": 16,
+      "skipped": []
+    },
+    {
+      "file": "tests/professional-directions.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "skipped": []
+    },
+    {
+      "file": "tests/professional-location.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "skipped": []
+    },
+    {
+      "file": "tests/professional-notification-settings.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/professional-notifications.test.ts",
+      "status": "passed",
+      "passed": 17,
+      "skipped": []
+    },
+    {
+      "file": "tests/professional-plan-checkout.test.ts",
+      "status": "passed",
+      "passed": 16,
+      "skipped": []
+    },
+    {
+      "file": "tests/professional-policies.test.ts",
+      "status": "passed",
+      "passed": 42,
+      "skipped": []
+    },
+    {
+      "file": "tests/professional-policy-api.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "skipped": []
+    },
+    {
+      "file": "tests/professional-policy-ui.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "skipped": []
+    },
+    {
+      "file": "tests/professional-subscriptions.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/professional-verification.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "skipped": []
+    },
+    {
+      "file": "tests/professionals.test.ts",
+      "status": "passed",
+      "passed": 31,
+      "skipped": []
+    },
+    {
+      "file": "tests/profile-examples.test.ts",
+      "status": "passed",
+      "passed": 16,
+      "skipped": []
+    },
+    {
+      "file": "tests/profile-presentation.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/profile-workflow.test.ts",
+      "status": "passed",
+      "passed": 21,
+      "skipped": []
+    },
+    {
+      "file": "tests/public-catalog-cache.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/public-fee-access.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/public-runtime-config.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/public-viewer-session.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/push-device-receipt-worker.test.ts",
+      "status": "passed",
+      "passed": 13,
+      "skipped": []
+    },
+    {
+      "file": "tests/push-device-recovery.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/push-notifications.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/pwa-install-ui.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/pwa-monogram-icons.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/pwa-service-worker.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/refund-appeals.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/refund-finance.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/regulated-services-api.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "skipped": []
+    },
+    {
+      "file": "tests/regulated-services.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/request-origin.test.ts",
+      "status": "passed",
+      "passed": 14,
+      "skipped": []
+    },
+    {
+      "file": "tests/resend-webhook.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/return-to.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/review-form.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/review-photo-flow.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "skipped": []
+    },
+    {
+      "file": "tests/review-ranking.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/reward-qualification.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/runtime-login-provisioning.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/seller-hub.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "skipped": [
+        "seller controls in an isolated database serializes a concurrent cart addition behind a seller pause"
+      ]
+    },
+    {
+      "file": "tests/seller-settings-api.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/seller-tools-ui.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/serial-sql-client.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/service-needs-discovery.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/session-refresh.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "skipped": []
+    },
+    {
+      "file": "tests/shop-catalogue.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/shop-checkout.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/shop-orders.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/shop-page-failure.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "skipped": []
+    },
+    {
+      "file": "tests/shop-products.test.ts",
+      "status": "passed",
+      "passed": 9,
+      "skipped": []
+    },
+    {
+      "file": "tests/shop-refunds.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/social-portfolio-flow.test.ts",
+      "status": "passed",
+      "passed": 18,
+      "skipped": []
+    },
+    {
+      "file": "tests/supabase-runtime-client.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/support-api.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "skipped": []
+    },
+    {
+      "file": "tests/support-mail-db.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "skipped": []
+    },
+    {
+      "file": "tests/support-mail-domain.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/support-mail-owner-api.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/support-mail-webhook.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/support-mail-worker.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "skipped": []
+    },
+    {
+      "file": "tests/support-operations-api.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/support-privacy-operations.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/support-reply-api.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/support-shop.test.ts",
+      "status": "passed",
+      "passed": 10,
+      "skipped": []
+    },
+    {
+      "file": "tests/taxonomy-foundation.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/theme-preference.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/tiktok-disconnect.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "skipped": []
+    },
+    {
+      "file": "tests/tiktok-sandbox.test.ts",
+      "status": "passed",
+      "passed": 6,
+      "skipped": []
+    },
+    {
+      "file": "tests/verification-badges.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/video-upload-limit.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/viewport-video.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/website-analytics-browser.test.ts",
+      "status": "passed",
+      "passed": 4,
+      "skipped": []
+    },
+    {
+      "file": "tests/website-analytics-owner.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "skipped": []
+    },
+    {
+      "file": "tests/website-analytics-privacy.test.ts",
+      "status": "passed",
+      "passed": 5,
+      "skipped": []
+    },
+    {
+      "file": "tests/website-analytics-sql.test.ts",
+      "status": "passed",
+      "passed": 7,
+      "skipped": []
+    },
+    {
+      "file": "tests/website-analytics.test.ts",
+      "status": "passed",
+      "passed": 8,
+      "skipped": []
+    },
+    {
+      "file": "tests/website-status-preview.test.ts",
+      "status": "passed",
+      "passed": 2,
+      "skipped": []
+    },
+    {
+      "file": "tests/withdrawal-reliability-api.test.ts",
+      "status": "passed",
+      "passed": 15,
+      "skipped": []
+    }
+  ]
+}

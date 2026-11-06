@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, CalendarDays, CircleHelp, LockKeyhole } from "lucide-react";
@@ -73,7 +74,7 @@ export function BookingPicker({
     ? initialSelection?.serviceId
     : undefined;
 
-  const initialDate = /^\d{4}-\d{2}-\d{2}$/.test(initialSelection?.date || "")
+  const initialDate = z.iso.date().safeParse(initialSelection?.date).success
     ? initialSelection!.date!
     : "";
 

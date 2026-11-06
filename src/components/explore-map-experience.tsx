@@ -151,7 +151,7 @@ export function ExploreMapExperience({
       .then(async (r) => {
         if (r.ok) {
           const data = await r.json();
-          setFollow(data.states);
+          if (!controller.signal.aborted) setFollow(data.states);
         }
       })
       .catch(() => {});

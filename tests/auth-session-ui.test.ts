@@ -16,7 +16,7 @@ const mocks = vi.hoisted(() => ({
     | ((event: string, session: { user: { id: string } } | null) => void),
 }));
 const router = { refresh: mocks.refresh };
-vi.mock("next/navigation", () => ({ useRouter: () => router }));
+vi.mock("next/navigation", () => ({ useRouter: () => router, usePathname: () => "/" }));
 vi.mock("next/link", () => ({
   default: (props: object) => React.createElement("a", props),
 }));
@@ -59,6 +59,7 @@ const link = (text: string) =>
 beforeEach(() => {
   vi.clearAllMocks();
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  vi.stubGlobal("matchMedia", vi.fn(() => ({matches:false,addEventListener:vi.fn(),removeEventListener:vi.fn()})));
   mocks.signOut.mockResolvedValue({ error: null });
   container = document.createElement("div");
   document.body.append(container);

@@ -14,8 +14,7 @@ export async function GET(request: Request) {
     const date = params.get("date") || "";
     if (
       !z.uuid().safeParse(serviceId).success ||
-      !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
-      !Number.isFinite(Date.parse(`${date}T00:00:00Z`))
+      !z.iso.date().safeParse(date).success
     )
       throw new AccessError("INVALID_REQUEST", 400);
     await refreshServiceCalendars(serviceId!);

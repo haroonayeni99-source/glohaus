@@ -203,3 +203,4 @@
 .discover-app { height:auto; min-height:100dvh; overflow:visible; }
 .discover-app .discovery-main { height:auto; min-height:100dvh; overflow:visible; }
 .discover-app .feed-scroll { overscroll-behavior-y:auto; }
+.discover-app .discovery-sidebar { height:100dvh; }

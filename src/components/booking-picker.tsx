@@ -323,6 +323,8 @@ export function BookingPicker({
                   key={item.iso}
                   className={date === item.iso ? "selected" : ""}
                   aria-pressed={date === item.iso}
+                  aria-current={item.iso === today ? "date" : undefined}
+                  aria-label={`${item.iso}${item.iso === today ? ", today" : ""}`}
                   onClick={() => {
                     setDate(item.iso);
                     setSlots([]);

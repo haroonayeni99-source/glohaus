@@ -32,6 +32,7 @@ import "../components/professional-profile.css";
 import "../components/viewport-video.css";
 import "../components/professional-policies.css";
 import "./visual-refinement.css";
+import "./theme-controls.css";
 
 export const dynamic = "force-dynamic";
 

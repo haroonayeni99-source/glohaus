@@ -621,3 +621,24 @@ it("imports TikTok video covers through the authorised Display API and deduplica
   );
   expect(JSON.stringify(posts)).not.toContain("signature=fixture");
 });
+
+it("permits only the owning professional to preview draft/hidden covers without making them public", async () => {
+  const { GET: privateThumbnail } = await import("@/app/api/v1/professional/social/[id]/thumbnail/route");
+  await refresh(await connect("approval"));
+  const post=(await as("social-pro",sql=>sql.query<{id:string}>("SELECT id FROM beauty.social_portfolio WHERE professional_id=$1 LIMIT 1",[pro]))).rows[0];
+  io.thumbnail.mockResolvedValue(await sharp({create:{width:8,height:8,channels:3,background:'#be879b'}}).jpeg().toBuffer());
+  const req=new Request(`https://www.glohaus.shop/api/v1/professional/social/${post.id}/thumbnail`);
+  const ctx={params:Promise.resolve({id:post.id})};
+  const response=await privateThumbnail(req,ctx);
+  expect(response.status).toBe(200);expect(response.headers.get('Cache-Control')).toBe('private, no-store');expect(response.headers.get('Vary')).toBe('Cookie');
+  expect((await readThumbnail(req,ctx)).status).toBe(404);
+  await as('social-pro',sql=>sql.query("UPDATE beauty.social_portfolio SET publication_status='hidden' WHERE id=$1",[post.id]));
+  expect((await privateThumbnail(req,ctx)).status).toBe(200);
+  io.thumbnail.mockClear();
+  for (const caller of ['social-customer','social-admin']) { io.identity.mockResolvedValue(actor(caller)); expect((await privateThumbnail(req,ctx)).status).toBe(403); expect(io.thumbnail).not.toHaveBeenCalled(); }
+  io.identity.mockResolvedValue(actor('social-other-pro'));
+  expect((await privateThumbnail(req,ctx)).status).toBe(404);expect(io.thumbnail).not.toHaveBeenCalled();
+  io.identity.mockResolvedValue(actor('social-pro'));
+  await as('social-pro',sql=>sql.query("UPDATE beauty.social_portfolio SET source_available=false WHERE id=$1",[post.id]));
+  expect((await privateThumbnail(req,ctx)).status).toBe(404);expect(io.thumbnail).not.toHaveBeenCalled();
+});

@@ -8,6 +8,7 @@ import type {
   SocialPost,
 } from "@/modules/business-tools/domain";
 import "./business-tools.css";
+import { SocialPostPreview } from "./social-post-preview";
 const names = {
   google: "Google Calendar",
   outlook: "Microsoft Outlook",
@@ -634,6 +635,7 @@ export function BusinessConnections({
               );
             }}
           >
+            <SocialPostPreview post={p} />
             <a href={p.original_url} target="_blank" rel="noopener noreferrer">
               View original on{" "}
               {p.platform === "instagram" ? "Instagram" : "TikTok"} ↗
@@ -699,3 +701,4 @@ export function BusinessConnections({
     </div>
   );
 }
+

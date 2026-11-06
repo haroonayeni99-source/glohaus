@@ -246,3 +246,11 @@ html[data-theme="night"]
   border: 1px solid var(--ui-border);
   border-radius: 0.5rem;
 }
+
+.social-management-preview { display:grid; gap:12px; margin-bottom:16px; }
+.social-management-preview > img { width:min(270px,100%); height:auto; border-radius:14px; object-fit:cover; }
+.social-preview-placeholder { display:grid; gap:8px; place-content:center; width:min(270px,100%); min-height:210px; padding:20px; border:1px solid var(--ui-border); border-radius:14px; background:var(--ui-surface-muted); color:var(--ui-text); text-align:center; }
+.social-preview-placeholder > span { font-size:2rem; }
+.social-player-preview { min-width:0; overflow-wrap:anywhere; }
+.social-player-preview iframe { display:block; width:min(100%,400px); height:auto; aspect-ratio:9/16; min-height:340px; border:1px solid var(--ui-border); border-radius:14px; background:#111; }
+@media(max-width:480px){.social-player-preview iframe{width:100%;min-height:300px;}}

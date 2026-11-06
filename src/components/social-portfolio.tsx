@@ -6,6 +6,7 @@ import type { PublicSocialPost } from "@/modules/business-tools/domain";
 import { socialPostLink } from "@/modules/business-tools/domain";
 import { ContentReportButton } from "./content-report-button";
 import "./business-tools.css";
+import { TikTokPlayer } from "./social-post-preview";
 function SocialThumbnail({
   post,
   small = false,
@@ -92,7 +93,7 @@ function SocialCard({ post }: { post: PublicSocialPost }) {
           Manually shared post · original creation date not supplied
         </small>
       )}
-      {loaded && !failed ? (
+      {post.platform === "tiktok" ? <TikTokPlayer url={post.original_url} title={`TikTok work shared by ${post.business_name}`} /> : loaded && !failed ? (
         <>
           <iframe
             src={embed}

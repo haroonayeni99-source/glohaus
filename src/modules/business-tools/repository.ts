@@ -22,7 +22,7 @@ export async function businessTools(db: SqlClient, professionalId: string) {
   ).rows;
   const posts = (
     await db.query<SocialPost>(
-      "SELECT id,platform,original_url,caption,source_created_at,service_id,publication_status,sort_order,featured,source_available,media_type FROM beauty.social_portfolio WHERE professional_id=$1 ORDER BY featured DESC,sort_order,source_created_at DESC NULLS LAST,created_at DESC LIMIT 200",
+      "SELECT id,platform,original_url,caption,source_created_at,service_id,publication_status,sort_order,featured,source_available,media_type,(thumbnail_url<>'') AS has_thumbnail FROM beauty.social_portfolio WHERE professional_id=$1 ORDER BY featured DESC,sort_order,source_created_at DESC NULLS LAST,created_at DESC LIMIT 200",
       [professionalId],
     )
   ).rows;
@@ -356,3 +356,4 @@ export async function syncProfessional(
     failed: outcomes.filter((x) => !x).length,
   };
 }
+

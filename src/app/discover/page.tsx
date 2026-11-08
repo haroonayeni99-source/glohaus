@@ -21,6 +21,7 @@ import type { EngagementMap } from "@/modules/engagement/domain";
 import type { PublicStory } from "@/modules/stories/domain";
 import type { LastMinuteSlot } from "@/modules/last-minute/domain";
 import { z } from "zod";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -162,6 +163,13 @@ export async function FeedPage({
     } catch {
       console.error("Discover feed unavailable");
     }
+  }
+
+  // Following is a customer-only collection. Guard direct links as well as
+  // the in-page filter button, which already redirects unauthenticated users.
+  if (followingView && !data.viewerSignedIn) {
+    const returnPath = mode === "share" ? "/share?feed=following" : "/discover?feed=following";
+    redirect(`/sign-in?returnTo=${encodeURIComponent(returnPath)}`);
   }
 
   const socialPosts = process.env.DATABASE_URL && !savedView && !followingView && !postId.success && !taxonomy.specialityId && !taxonomy.templateId

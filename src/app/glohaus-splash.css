@@ -99,7 +99,16 @@
 
 /* The entrance is visible in server HTML, even when the first page is cached.
    It unmounts permanently after entry; later loading boundaries stay local. */
-.glohaus-intro { display: block; }
+/* CSS-only escape hatch: if hydration or an inline timeout is blocked,
+   never leave an invisible/visible intro intercepting the real page forever.
+   The local route skeleton remains visible when page data is still pending. */
+@keyframes glohaus-intro-safety-hide {
+  to { visibility: hidden; pointer-events: none; }
+}
+.glohaus-intro {
+  display: block;
+  animation: glohaus-intro-safety-hide 0s linear 4.5s forwards;
+}
 .glohaus-intro.is-timed-out { display: none !important; }
 .glohaus-page-pending { width:min(100% - 32px,1100px); margin:24px auto; padding:clamp(16px,3vw,28px) 0 max(96px,env(safe-area-inset-bottom)); color:var(--ink); min-height:65dvh; }
 .glohaus-page-pending > [role="status"] { color:var(--muted); font-size:.9rem; }

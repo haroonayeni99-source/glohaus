@@ -171,3 +171,24 @@
 :root[data-theme] .notification-list article time { color: var(--ui-muted); }
 :root[data-theme="night"] .pro-notification-list article :is(strong, small) { color: var(--ui-text); }
 :root[data-theme="night"] .pro-notification-list article time { color: var(--ui-muted); }
+
+
+/* The public professional booking card must pair its background with readable
+   foreground text in light/night mode instead of inheriting a dark hero style. */
+:root[data-theme] .booking-widget {
+  background: var(--ui-surface-muted);
+  border-color: var(--ui-border);
+  color: var(--ui-text);
+}
+:root[data-theme] .booking-widget :is(h2, h3, label, p, small, strong) {
+  color: var(--ui-text);
+}
+:root[data-theme] .booking-widget :is(input, select, textarea, .booking-times button) {
+  background: var(--ui-surface);
+  border-color: var(--ui-border);
+  color: var(--ui-text);
+}
+:root[data-theme] .booking-widget .booking-times button.selected {
+  background: var(--ui-accent);
+  color: var(--ui-on-accent);
+}

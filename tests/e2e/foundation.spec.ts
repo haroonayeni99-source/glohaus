@@ -148,10 +148,13 @@ test("signed-out mobile navigation preserves private return routes", async ({
   ).toHaveAttribute("href", "/sign-in?returnTo=%2Fworkspace");
 
   await page.goto("/shop");
-  await expect(page.getByRole("link", { name: "Cart" })).toHaveAttribute(
-    "href",
-    "/sign-in?returnTo=%2Fcart",
-  );
+  const cartLinks = page.getByRole("link", { name: "Cart" });
+  await expect(cartLinks.first()).toBeVisible();
+  expect(
+    await cartLinks.evaluateAll((links) =>
+      links.every((link) => link.getAttribute("href") === "/sign-in?returnTo=%2Fcart"),
+    ),
+  ).toBe(true);
 });
 
 test("private routes fail closed without credentials", async ({
@@ -234,6 +237,8 @@ test("dedicated Discover route behaves like a full-screen mobile feed", async ({
     page.locator('.glohaus-bottom-nav [aria-current="page"]'),
   ).toHaveText("Discover");
 
+  // The entrance must never cover working page actions after its safety window.
+  await expect(page.locator(".glohaus-intro")).toBeHidden({ timeout: 10000 });
   const firstShare = page.getByRole("button", { name: /^Share / }).first();
   await firstShare.click();
   await expect(page.getByLabel("Post link")).toHaveValue(/\/discover#post-/);
@@ -260,6 +265,7 @@ test("Following requires a customer session on Share", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/share");
 
+  await expect(page.locator(".glohaus-intro")).toBeHidden({ timeout: 10000 });
   await page.getByRole("link", { name: "Following feed", exact: true }).click();
   await expect(page).toHaveURL(/\/sign-in\?returnTo=.*share.*feed.*following/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(

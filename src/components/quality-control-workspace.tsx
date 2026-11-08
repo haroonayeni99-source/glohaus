@@ -67,8 +67,8 @@ export function QualityControlWorkspace() {
     <header style={{background:"linear-gradient(125deg,#4f173e,#a23f72 68%,#d184aa)",color:"#fff",padding:"clamp(22px,4vw,44px)",borderRadius:25}}>
       <small style={{letterSpacing:2}}>GLOHAUS · OWNER ONLY · QUALITY CONTROL</small>
       <h1 style={{fontSize:"clamp(28px,4vw,46px)",margin:"10px 0"}}>One place to find, fix & verify.</h1>
-      <p>Audit every detail, record bugs, prepare safe releases and hand exact fixes to Work. Evidence-based statuses only.</p>
-      <p style={{fontSize:13,opacity:.92}}>Production baseline: main · 5697426 · READY on Vercel (checked 8 Nov 2026). Preview branch changes are not proof of live release.</p>
+      <p>Audit every detail, record bugs, prepare safe releases and share exact fixes with developers. Evidence-based statuses only.</p>
+      <p style={{fontSize:13,opacity:.92}}>Production baseline: use the live deployment details above and in Vercel. A READY build does not prove complete functional verification.</p>
     </header>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(155px,1fr))",gap:10}}>
     {statuses.map(s=><div key={s} style={surface}><div style={{fontSize:28,fontWeight:800}}>{counts[s]}</div><small>{s}</small></div>)}
@@ -98,7 +98,7 @@ export function QualityControlWorkspace() {
     {tab==="Bugs"&&<section style={surface}><h2>Bug register</h2><button style={button} onClick={()=>setTab("Report a bug")}>+ Report bug</button>{!data.bugs.length&&<p>No bugs logged yet. This does not mean the platform is bug-free.</p>}
       <div style={{display:"grid",gap:12,marginTop:12}}>{data.bugs.map(b=><article key={b.id} style={{border:"1px solid #98708966",padding:14,borderRadius:14}}>
       <h3>{b.title}</h3><p>{b.priority} · {b.area} · {format(b.route)} · {b.device} · {b.resolved?"Resolved":"Open"}</p><p><strong>Steps:</strong> {format(b.steps)}</p><p><strong>Expected:</strong> {format(b.expected)} · <strong>Actual:</strong> {format(b.actual)}</p><p><strong>Evidence:</strong> {format(b.evidence)}</p><p><strong>Result:</strong> {format(b.result)} · <strong>Deployment:</strong> {format(b.deployment)}</p><p><strong>Next:</strong> {format(b.next)}</p>
-      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}><button style={button} onClick={()=>copyWork(b)}>Copy task for Work</button><button style={button} onClick={()=>setData(s=>({...s,bugs:s.bugs.map(x=>x.id===b.id?{...x,resolved:!x.resolved}:x)}))}>{b.resolved?"Reopen":"Mark resolved"}</button></div>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}><button style={button} onClick={()=>copyWork(b)}>Copy issue details</button><button style={button} onClick={()=>setData(s=>({...s,bugs:s.bugs.map(x=>x.id===b.id?{...x,resolved:!x.resolved}:x)}))}>{b.resolved?"Reopen":"Mark resolved"}</button></div>
       </article>)}</div></section>}
     {tab==="Release readiness"&&<section style={surface}><h2>Release readiness</h2><h3>{releaseReady?"All recorded gates passed":"NOT READY / NOT VERIFIED"}</h3><p>{blockers.length} open critical issues · {passed}/{regressions.length} regression checks passed · {counts["LIVE AND VERIFIED"]}/{data.checks.length} audit checks marked verified.</p>
     <p>These gates are conservative and manual: passing here is not a guarantee of secure code or working production payments. Verify build, lint, typecheck, automated tests, authorization, payments, monitoring, rollback and a fresh live smoke test before releasing.</p><button style={button} onClick={()=>setTab("Regression")}>Review regression checks</button></section>}

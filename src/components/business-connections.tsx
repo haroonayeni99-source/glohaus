@@ -440,12 +440,25 @@ export function BusinessConnections({
                 : "Connect an eligible TikTok account to import public videos."}{" "}
               Automatic access depends on platform approval and permissions.
             </p>
+            {!ready[provider] && (
+              <p className="business-feedback" id={`social-${provider}-unavailable`}>
+                {provider === "tiktok"
+                  ? "TikTok account connection is not available for this professional profile yet. Testing access is limited to authorised profiles; public connections require TikTok approval and production setup."
+                  : "Instagram account connection is not available yet. GLOHAUS must complete provider authorisation and configuration before connections can be enabled."}
+                {" "}You can still add individual public post links below without connecting an account.
+              </p>
+            )}
             <label className="business-check">
-              <input type="checkbox" required disabled={!ready[provider]} />I
-              authorise GLOHAUS to read eligible posts and prepare them for my
+              <input type="checkbox" required disabled={!ready[provider]} />
+              I authorise GLOHAUS to read eligible posts and prepare them for my
               portfolio.
             </label>
-            <button className="button" disabled={busy || !ready[provider]}>
+            <button
+              type="submit"
+              className="button"
+              disabled={busy || !ready[provider]}
+              aria-describedby={!ready[provider] ? `social-${provider}-unavailable` : undefined}
+            >
               {ready[provider]
                 ? `Connect ${names[provider]}`
                 : "Provider setup required — use post links below"}

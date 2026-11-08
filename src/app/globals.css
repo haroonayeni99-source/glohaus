@@ -13264,3 +13264,22 @@ select {
   .glohaus-mobile-trust { gap: 8px 14px; }
   .glohaus-mobile-trust span { font-size: 11px; }
 }
+
+/* Owner/Admin navigation recovery: scroll the entire desktop sidebar so
+   management controls cannot slide underneath the fixed footer area. */
+@media (min-width: 881px) {
+  .admin-workspace .admin-navigation {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior-y: contain;
+  }
+  .admin-workspace .admin-navigation nav {
+    flex: 0 0 auto !important;
+    overflow: visible !important;
+    min-height: auto !important;
+  }
+  .admin-workspace .admin-navigation-bottom {
+    margin-top: 14px !important;
+    flex: 0 0 auto;
+  }
+}

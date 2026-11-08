@@ -387,9 +387,16 @@ try {
   await fallbackPage
     .getByRole("button", { name: "Load street map", exact: true })
     .click();
-  await expect(fallbackPage.getByRole("alert")).toContainText(
-    "You can still search and browse professional listings",
-  );
+  // A supported street-map fallback is preferable to the old hard-error banner.
+  // Verify the available map stays interactive with no WebGL context.
+  await expect(
+    fallbackPage.getByRole("status").filter({
+      hasText: "Using the standard street map",
+    }),
+  ).toBeVisible();
+  await expect(
+    fallbackPage.getByRole("button", { name: /Brixton Braids, from/ }),
+  ).toBeVisible();
   await expect(
     fallbackPage.getByRole("heading", {
       name: "Something interrupted your visit.",

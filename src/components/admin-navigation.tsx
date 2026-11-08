@@ -356,7 +356,6 @@ export function AdminNavigation({ account }: { account: Account }) {
         )}
       </nav>
       <div className="admin-navigation-bottom">
-        {owner && <Link href="/admin/quality-control">Quality Control</Link>}
         {owner && <Link href="/admin/engagement">Website engagement</Link>}
         <Link href="/">Return to GLOHAUS</Link>
         <Link href="/security" title="Account security">

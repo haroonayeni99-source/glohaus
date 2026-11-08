@@ -50,7 +50,7 @@ export function QualityControlWorkspace() {
   const [query, setQuery] = useState("");
   const [draft, setDraft] = useState<Partial<Bug>>({ priority:"P2",device:"Mobile",deployment:"Not checked" });
   const [change, setChange] = useState<Partial<Change>>({});
-  useEffect(() => { try { const raw = localStorage.getItem(KEY); if(raw){ const parsed = JSON.parse(raw) as State; setData({ checks: defaultChecks.map(c=>parsed.checks?.find(x=>x.id===c.id)??c), bugs: parsed.bugs??[], changes:parsed.changes??[], regression:parsed.regression??{} }); } } catch {} setReady(true); }, []);
+  useEffect(() => { const restore = window.setTimeout(() => { try { const raw = localStorage.getItem(KEY); if(raw){ const parsed = JSON.parse(raw) as State; setData({ checks: defaultChecks.map(c=>parsed.checks?.find(x=>x.id===c.id)??c), bugs: parsed.bugs??[], changes:parsed.changes??[], regression:parsed.regression??{} }); } } catch {} setReady(true); }, 0); return () => window.clearTimeout(restore); }, []);
   useEffect(() => { if(ready) localStorage.setItem(KEY,JSON.stringify(data)); }, [data,ready]);
   const counts = useMemo(() => Object.fromEntries(statuses.map(s=>[s,data.checks.filter(c=>c.status===s).length])), [data.checks]);
   const visible = data.checks.filter(c=>(area==="All"||c.area===area)&&(filter==="All"||c.status===filter)&&((c.label+" "+c.notes+" "+c.route).toLowerCase().includes(query.toLowerCase())));

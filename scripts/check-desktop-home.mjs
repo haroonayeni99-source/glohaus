@@ -43,8 +43,13 @@ try {
         await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.request().resourceType() === "image" ? route.fulfill({ contentType: "image/png", body: placeholder }) : route.abort());
         await page.route("**/images/categories/*", async route => {
           const name = new URL(route.request().url()).pathname.split("/").pop();
-          expect(categories.some(category => name === `${category}-v2.webp`)).toBe(true);
-          await route.fulfill({ contentType: "image/webp", body: await readFile(`public/images/categories/${name}`) });
+          // The mobile home in the same fixture may request other legitimate
+          // category assets (for example SVGs); verify desktop slots below.
+          if (!/^[a-z0-9-]+\\.(webp|svg|png)$/i.test(name)) return route.abort();
+          await route.fulfill({
+            contentType: name.endsWith(".svg") ? "image/svg+xml" : name.endsWith(".png") ? "image/png" : "image/webp",
+            body: await readFile(`public/images/categories/${name}`),
+          });
         });
         await page.goto(`http://127.0.0.1:3004/?theme=${theme}${guest ? "&guest=1" : ""}`);
         // The isolated Image shim does not supply Next's inline fill styles.

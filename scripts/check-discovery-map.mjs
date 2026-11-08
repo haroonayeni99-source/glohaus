@@ -387,9 +387,10 @@ try {
   await fallbackPage
     .getByRole("button", { name: "Load street map", exact: true })
     .click();
-  await expect(fallbackPage.getByRole("alert")).toContainText(
-    "You can still search and browse professional listings",
-  );
+  // WebGL unavailable should fall back to the usable standard street map,
+  // not an error panel. Keep the professional cards and controls visible.
+  await expect(fallbackPage.getByRole("region", { name: "Interactive professional locator map" })).toBeVisible();
+  await expect(fallbackPage.getByRole("status").filter({ hasText: "standard street map" })).toBeVisible();
   await expect(
     fallbackPage.getByRole("heading", {
       name: "Something interrupted your visit.",

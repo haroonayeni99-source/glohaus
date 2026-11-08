@@ -387,9 +387,12 @@ try {
   await fallbackPage
     .getByRole("button", { name: "Load street map", exact: true })
     .click();
-  await expect(fallbackPage.getByRole("alert")).toContainText(
-    "You can still search and browse professional listings",
+  await expect(fallbackPage.getByRole("status")).toContainText(
+    "Using the standard street map",
   );
+  await expect(
+    fallbackPage.getByRole("region", { name: "Map of confirmed professional locations" }),
+  ).toBeVisible();
   await expect(
     fallbackPage.getByRole("heading", {
       name: "Something interrupted your visit.",

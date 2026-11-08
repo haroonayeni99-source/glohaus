@@ -53,7 +53,7 @@ try {
           .locator(".admin-section-picker option")
           .evaluateAll((options) => options.map((option) => option.value));
         if (width > 880) {
-          const group = page.getByRole("button", { name: /^People & access/ });
+          const group = page.getByRole("button", { name: /^People & verification/ });
           await expect(group).toHaveAttribute("aria-expanded", "false");
           await group.click();
           await expect(

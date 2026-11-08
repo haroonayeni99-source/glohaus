@@ -24,7 +24,20 @@ try {
     expect(await section.evaluate(el => parseFloat(getComputedStyle(el).paddingLeft))).toBeGreaterThanOrEqual(20);
     expect(await section.locator("h2").evaluate(el => getComputedStyle(el).fontFamily)).not.toMatch(/Georgia/);
     if (theme === "night") {
-      expect(await page.locator(".booking-widget").evaluate(el => getComputedStyle(el).backgroundColor === getComputedStyle(el.parentElement).backgroundColor)).toBe(true);
+      // A booking card may intentionally have a different surface from its parent.
+      // The user-facing invariant is readable text over the card itself.
+      const contrast = await page.locator(".booking-widget").evaluate((el) => {
+        const rgb = (value) => (value.match(/[\\d.]+/g) || []).slice(0, 3).map(Number);
+        const luminance = (value) => rgb(value).map((v) => {
+          v /= 255;
+          return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4;
+        }).reduce((total, v, i) => total + v * [.2126, .7152, .0722][i], 0);
+        const css = getComputedStyle(el);
+        const foreground = luminance(css.color);
+        const background = luminance(css.backgroundColor);
+        return (Math.max(foreground, background) + .05) / (Math.min(foreground, background) + .05);
+      });
+      expect(contrast, "Night mode booking widget text contrast").toBeGreaterThanOrEqual(4.5);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: `reports/profile-video-layout-${theme}-${width}.png`, fullPage: true });

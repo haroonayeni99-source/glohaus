@@ -116,7 +116,8 @@ it("uses the existing bounded image-load fallback before beginning the hold", as
 it("retains visible server-rendered entry, original palette and reduced-motion rules", () => {
   const css = readFileSync("src/app/glohaus-splash.css", "utf8");
   expect(css).not.toContain("body:has([data-glohaus-route-pending])");
-  expect(css).toMatch(/\\.glohaus-intro\\s*\\{[^}]*display:\\s*block;/);
+  const introRule = css.split(".glohaus-intro {")[1]?.split("}")[0] ?? "";
+  expect(introRule).toContain("display: block;");
   expect(css).toContain("glohaus-intro-safety-hide");
   expect(css).toContain("4.5s forwards");
   expect(css).toContain("--splash-bg: #f5f2ee");

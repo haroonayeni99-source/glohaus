@@ -30,11 +30,11 @@ export function OwnerQualityDiagnostics() {
   }
   useEffect(() => {
     const controller = new AbortController();
-    void refresh(controller.signal);
+    const initial = window.setTimeout(() => void refresh(controller.signal), 0);
     const interval = window.setInterval(() => {
       if (document.visibilityState === "visible") void refresh(controller.signal);
     }, 300000);
-    return () => { controller.abort(); window.clearInterval(interval); };
+    return () => { controller.abort(); window.clearTimeout(initial); window.clearInterval(interval); };
   }, []);
   return <section aria-label="Automatic public route monitoring" style={{background:"#fff7fb",color:"#382138",padding:20,borderRadius:20,border:"1px solid rgba(213,141,181,.28)"}}>
     <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap"}}>
@@ -49,7 +49,7 @@ export function OwnerQualityDiagnostics() {
           <strong>{check.path}</strong><p style={{margin:"5px 0"}}>{check.ok?"HTTP OK":"Needs investigation"} · {check.status ?? "No response"}</p><small>{check.durationMs} ms · unauthenticated GET</small>
         </div>)}
       </div>
-      <p style={{fontSize:12,marginBottom:0}}>{snapshot.caveat} The running commit is the current application's build, not necessarily the production commit when viewed from a preview.</p>
+      <p style={{fontSize:12,marginBottom:0}}>{snapshot.caveat} The running commit identifies this application build, not necessarily the production commit when viewed from a preview.</p>
     </>}
   </section>;
 }

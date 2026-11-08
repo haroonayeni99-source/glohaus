@@ -54,8 +54,8 @@ try {
           .evaluateAll((options) => options.map((option) => option.value));
         if (width > 880) {
           const columns = await page.evaluate(() => {
-            const navigation = document.querySelector(".admin-navigation")!.getBoundingClientRect();
-            const content = document.querySelector(".admin-workspace-content")!.getBoundingClientRect();
+            const navigation = document.querySelector(".admin-navigation").getBoundingClientRect();
+            const content = document.querySelector(".admin-workspace-content").getBoundingClientRect();
             return { navigationRight: navigation.right, contentLeft: content.left, contentWidth: content.width };
           });
           expect(columns.contentLeft).toBeGreaterThanOrEqual(columns.navigationRight - 1);

@@ -305,7 +305,7 @@ export function AdminNavigation({ account }: { account: Account }) {
             !!menuSearch.trim() ||
             expandedGroups.includes(group.label);
           return (
-            <div className="admin-tool-group" key={group.label}>
+            <div className="admin-tool-group" key={group.label} data-tool-ids={group.ids.join(" ")}>
               <button
                 type="button"
                 className="admin-tool-group-toggle"

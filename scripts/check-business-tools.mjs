@@ -51,11 +51,21 @@ try {
         await page.addStyleTag({ path: "src/components/business-tools.css" });
       };
       await goto("connections");
+      for (const providerName of ["Google Calendar", "Microsoft Outlook"]) {
+        const connectButton = page.getByRole("button", {
+          name: `Connect ${providerName} — unavailable`,
+          exact: true,
+        });
+        await expect(connectButton).toBeDisabled();
+        await expect(
+          page.getByText(`${providerName} connection is not available yet`, {
+            exact: false,
+          }),
+        ).toBeVisible();
+      }
       await expect(
-        page
-          .getByRole("button", { name: "Provider setup required", exact: true })
-          .first(),
-      ).toBeDisabled();
+        page.getByText("external calendar edits do not change GLOHAUS bookings.", { exact: false }).first(),
+      ).toBeVisible();
       await expect(
         page.getByText("Permissions have expired or been removed.", {
           exact: false,

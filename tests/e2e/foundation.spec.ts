@@ -148,7 +148,7 @@ test("signed-out mobile navigation preserves private return routes", async ({
   ).toHaveAttribute("href", "/sign-in?returnTo=%2Fworkspace");
 
   await page.goto("/shop");
-  await expect(page.getByRole("link", { name: "Cart" })).toHaveAttribute(
+  await expect(page.getByRole("navigation", { name: "Account navigation" }).getByRole("link", { name: "Cart" })).toHaveAttribute(
     "href",
     "/sign-in?returnTo=%2Fcart",
   );

@@ -13264,23 +13264,3 @@ select {
   .glohaus-mobile-trust { gap: 8px 14px; }
   .glohaus-mobile-trust span { font-size: 11px; }
 }
-
-/* Owner/Admin: a single desktop sidebar scroller prevents the footer from
-   covering deep accordion links. Mobile keeps its existing horizontal menu. */
-@media (min-width: 881px) {
-  .admin-workspace .admin-navigation {
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    overscroll-behavior-y: contain;
-    scrollbar-gutter: stable;
-  }
-  .admin-workspace .admin-navigation nav {
-    flex: 0 0 auto !important;
-    min-height: auto !important;
-    overflow: visible !important;
-  }
-  .admin-workspace .admin-navigation-bottom {
-    margin-top: 14px !important;
-    flex: 0 0 auto;
-  }
-}

@@ -38,9 +38,10 @@ export function OwnerQualityDiagnostics() {
   }, []);
   return <section aria-label="Automatic public route monitoring" style={{background:"#fff7fb",color:"#382138",padding:20,borderRadius:20,border:"1px solid rgba(213,141,181,.28)"}}>
     <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap"}}>
-      <div><h2 style={{margin:"0 0 4px"}}>Automatic live-site checks</h2><p style={{margin:0}}>Read-only public route checks refresh while this page is open, every five minutes.</p></div>
+      <div><h2 style={{margin:"0 0 4px"}}>Automatic live-site checks</h2><p style={{margin:0}}>Checks refresh every five minutes while this page is open. The separate scheduled monitor checks public routes every 30 minutes, even when you are logged out.</p></div>
       <button type="button" disabled={busy} onClick={() => void refresh()} style={{borderRadius:10,border:"1px solid #ad6b91",padding:"10px 15px",background:"#f9e7f1",color:"#592440",fontWeight:700}}>{busy?"Checking…":"Check again"}</button>
     </div>
+    <p style={{fontSize:13,margin:"12px 0"}}><strong>Scheduled checks and alerts:</strong> <a href="https://github.com/haroonayeni99-source/glohaus/actions/workflows/quality-control-monitor.yml" target="_blank" rel="noopener noreferrer" style={{textDecoration:"underline"}}>Monitoring runs</a> · <a href="https://github.com/haroonayeni99-source/glohaus/issues?q=is%3Aissue+%22%5BQuality+Control%5D%22" target="_blank" rel="noopener noreferrer" style={{textDecoration:"underline"}}>Incidents and recovery history</a>. This does not automatically approve a release or test customer payments.</p>
     {error && <p role="alert">{error}</p>}
     {snapshot && <>
       <p style={{fontSize:13}}>Last checked: {new Date(snapshot.checkedAt).toLocaleString("en-GB")} · Running deployment: {snapshot.runningDeployment.environment} · {snapshot.runningDeployment.commit?.slice(0,8) ?? "commit unavailable"}</p>

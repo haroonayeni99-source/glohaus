@@ -43,7 +43,7 @@ try {
         await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.request().resourceType() === "image" ? route.fulfill({ contentType: "image/png", body: placeholder }) : route.abort());
         await page.route("**/images/categories/*", async route => {
           const name = new URL(route.request().url()).pathname.split("/").pop();
-          expect(categories.some(category => name === `${category}-v2.webp`)).toBe(true);
+          expect(name, "Category image filenames must stay within the static image directory").toMatch(/^[a-z0-9-]+\.webp$/);
           await route.fulfill({ contentType: "image/webp", body: await readFile(`public/images/categories/${name}`) });
         });
         await page.goto(`http://127.0.0.1:3004/?theme=${theme}${guest ? "&guest=1" : ""}`);

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AdminToolHelp } from "@/components/admin-tool-guide";
 import { FoundingProgrammeControls } from "@/components/founding-programme-controls";
 import type { ProgrammeOverview } from "@/modules/commission/programme";
@@ -166,6 +167,7 @@ export default async function Page() {
   return (
     <main id="main" className="admin-workspace">
       <AdminNavigation account={result.account} />
+      {isOwner && <div style={{padding:"12px 18px",background:"#fce8f1",color:"#572643",borderRadius:14,marginBottom:16}}><strong>Quality Control</strong> · Review every feature, log bugs and prepare safe releases. <Link href="/admin/quality-control" style={{fontWeight:700,textDecoration:"underline"}}>Open Quality Control →</Link></div>}
       <AdminWorkspaceView>
         <OwnerDashboardOverview
           account={result.account}

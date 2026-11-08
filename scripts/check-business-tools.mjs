@@ -160,7 +160,7 @@ try {
         page
           .getByRole("article")
           .filter({ hasText: "Fixture Instagram" })
-          .getByRole("button", { name: "Sync now", exact: true }),
+          .getByRole("button", { name: "Refresh public videos / sync now", exact: true }),
       ).toBeDisabled();
       await page.getByLabel("Pin as featured work").check();
       await page.getByLabel("Display order", { exact: true }).fill("2");

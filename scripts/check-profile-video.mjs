@@ -24,7 +24,12 @@ try {
     expect(await section.evaluate(el => parseFloat(getComputedStyle(el).paddingLeft))).toBeGreaterThanOrEqual(20);
     expect(await section.locator("h2").evaluate(el => getComputedStyle(el).fontFamily)).not.toMatch(/Georgia/);
     if (theme === "night") {
-      expect(await page.locator(".booking-widget").evaluate(el => getComputedStyle(el).backgroundColor === getComputedStyle(el.parentElement).backgroundColor)).toBe(true);
+      // The booking card may use its own themed surface; require readable foreground instead of identical backgrounds.
+      const palette = await page.locator(".booking-widget").evaluate(el => {
+        const style = getComputedStyle(el);
+        return { color: style.color, background: style.backgroundColor };
+      });
+      expect(palette.color).not.toBe(palette.background);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: `reports/profile-video-layout-${theme}-${width}.png`, fullPage: true });

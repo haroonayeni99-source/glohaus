@@ -260,7 +260,7 @@ test("Following requires a customer session on Share", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/share");
 
-  await page.getByRole("button", { name: "Following", exact: true }).click();
+  await page.getByRole("link", { name: "Following feed", exact: true }).click();
   await expect(page).toHaveURL(/\/sign-in\?returnTo=.*share.*feed.*following/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "We couldn’t load your account right now.",

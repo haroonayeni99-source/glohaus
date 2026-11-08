@@ -204,3 +204,23 @@
 .discover-app .discovery-main { height:auto; min-height:100dvh; overflow:visible; }
 .discover-app .feed-scroll { overscroll-behavior-y:auto; }
 .discover-app .discovery-sidebar { height:100dvh; }
+
+
+/* Discover/Share: keep collection links below the absolute mobile header.
+   Otherwise the Website menu can overlap the Following feed link and
+   intercept the tap even though the link looks visible. */
+@media (max-width: 600px) {
+  .discover-app .discover-collection-nav {
+    position: relative;
+    z-index: 21;
+    margin: calc(72px + env(safe-area-inset-top, 0px)) 12px 12px;
+    padding: 0 2px 4px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+  .discover-app .discover-collection-nav a {
+    flex: 0 0 auto;
+  }
+}

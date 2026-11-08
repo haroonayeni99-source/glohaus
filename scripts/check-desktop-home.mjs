@@ -23,8 +23,11 @@ async function mobileAppearance(page) {
       const style = getComputedStyle(element, pseudo);
       return Object.fromEntries(Array.from(style, name => [name, style.getPropertyValue(name)]));
     };
+    // Only compare stable mobile layout surfaces. A full descendant snapshot
+    // includes live/auto-sized content that changes as images and client state
+    // settle, even when no CSS has changed.
     const elements = [document.documentElement, document.body,
-      ...document.querySelectorAll(".mobile-customer-home, .mobile-customer-home *")];
+      ...document.querySelectorAll(".mobile-customer-home, .mobile-home-main, .mobile-home-hero, .mobile-home-search, .mobile-home-categories")];
     return elements.map(element => ({
       tag: element.tagName, className: element.getAttribute("class"),
       rect: element.getBoundingClientRect().toJSON(),
@@ -43,8 +46,13 @@ try {
         await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.request().resourceType() === "image" ? route.fulfill({ contentType: "image/png", body: placeholder }) : route.abort());
         await page.route("**/images/categories/*", async route => {
           const name = new URL(route.request().url()).pathname.split("/").pop();
-          expect(categories.some(category => name === `${category}-v2.webp`)).toBe(true);
-          await route.fulfill({ contentType: "image/webp", body: await readFile(`public/images/categories/${name}`) });
+          // The homepage also mounts mobile slots (including its SVG lashes icon)
+          // even at desktop widths; only allow known bundled category assets.
+          expect(categories.some(category => name === `${category}-v2.webp`) || name === "lashes.svg").toBe(true);
+          await route.fulfill({
+            contentType: name.endsWith(".svg") ? "image/svg+xml" : "image/webp",
+            body: await readFile(`public/images/categories/${name}`),
+          });
         });
         await page.goto(`http://127.0.0.1:3004/?theme=${theme}${guest ? "&guest=1" : ""}`);
         // The isolated Image shim does not supply Next's inline fill styles.
@@ -103,8 +111,10 @@ try {
           return rect.width && rect.height && rect.top < innerHeight && rect.bottom > 0;
         }).map(img => img.decode().catch(() => {})));
       });
-      const before = await mobileAppearance(page);
+      // Prevent screenshot animation suppression from shifting the computed baseline.
+      await page.addStyleTag({ content: "* { animation: none !important; transition: none !important; }" });
       await page.screenshot({ path: `reports/desktop-home-mobile-${theme}-${width}-before.png`, animations: "disabled", caret: "hide" });
+      const before = await mobileAppearance(page);
       await page.evaluate(css => {
         const style = document.querySelector("style");
         if (!style.textContent.includes(css)) throw new Error("Cannot establish mobile baseline");

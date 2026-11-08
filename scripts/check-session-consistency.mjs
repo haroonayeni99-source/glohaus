@@ -59,17 +59,20 @@ try {
       await expect(other.locator(".glohaus-sign-in")).toHaveText("My account");
       await page.goto("http://127.0.0.1:3004/terms");
       await page.goto("http://127.0.0.1:3004/faq");
-      if (width >= 1100) await page.goto("http://127.0.0.1:3004/");
+      // Homepage owns the customer account menu on both viewport layouts.
+      // FAQ and terms use the shared public header, not MobileSiteMenu.
+      await page.goto("http://127.0.0.1:3004/");
       const menu = page.locator(
         width >= 1100 ? ".customer-desktop-topbar" : ".mobile-site-menu",
       );
-      if (width < 1100) await menu.locator("summary").click();
+      if (width < 1100) await menu.getByLabel("Website menu", { exact: true }).click();
       await page.evaluate(() => sessionStorage.setItem("fail-signout", "yes"));
       await menu.getByRole("button", { name: "Sign out", exact: true }).click();
       await expect(menu.getByRole("alert")).toContainText(
         "could not sign you out",
       );
-      if (width < 1100) await expect(account()).toHaveText("My account");
+      if (width < 1100)
+        await expect(page.locator(".mobile-home-header .glohaus-signout").first()).toBeVisible();
       else
         await expect(page.locator(".desktop-user-chip")).toContainText(
           "My account",

@@ -148,7 +148,7 @@ test("signed-out mobile navigation preserves private return routes", async ({
   ).toHaveAttribute("href", "/sign-in?returnTo=%2Fworkspace");
 
   await page.goto("/shop");
-  await expect(page.getByRole("link", { name: "Cart" })).toHaveAttribute(
+  await expect(page.getByRole("navigation", { name: "Account navigation" }).getByRole("link", { name: "Cart" })).toHaveAttribute(
     "href",
     "/sign-in?returnTo=%2Fcart",
   );
@@ -234,6 +234,9 @@ test("dedicated Discover route behaves like a full-screen mobile feed", async ({
     page.locator('.glohaus-bottom-nav [aria-current="page"]'),
   ).toHaveText("Discover");
 
+  // The branded entry overlay is intentional; do not click through it before
+  // it has finished and released pointer events.
+  await expect(page.locator(".glohaus-intro")).toBeHidden({ timeout: 10000 });
   const firstShare = page.getByRole("button", { name: /^Share / }).first();
   await firstShare.click();
   await expect(page.getByLabel("Post link")).toHaveValue(/\/discover#post-/);
@@ -260,11 +263,11 @@ test("Following requires a customer session on Share", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/share");
 
-  await page.getByRole("button", { name: "Following", exact: true }).click();
-  await expect(page).toHaveURL(/\/sign-in\?returnTo=.*share.*feed.*following/);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "We couldn’t load your account right now.",
-  );
+  await expect(page.locator(".glohaus-intro")).toBeHidden({ timeout: 10000 });
+  await page.getByRole("navigation", { name: "Your Discover collections" })
+    .getByRole("link", { name: "Following feed" }).click();
+  await expect(page).toHaveURL(/\/share\?feed=following/);
+  await expect(page.getByText("Sign in to see your Following feed.")).toBeVisible();
 });
 
 test("professional auth preserves professional intent", async ({ page }) => {

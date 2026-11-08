@@ -99,7 +99,15 @@
 
 /* The entrance is visible in server HTML, even when the first page is cached.
    It unmounts permanently after entry; later loading boundaries stay local. */
-.glohaus-intro { display: block; }
+.glohaus-intro {
+  display: block;
+  /* CSS-only escape hatch: the full-screen intro must never trap navigation
+     when a hydration error or CSP issue prevents its JS timer from firing. */
+  animation: glohaus-intro-failsafe-hide 1ms linear 6s both;
+}
+@keyframes glohaus-intro-failsafe-hide {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
+}
 .glohaus-intro.is-timed-out { display: none !important; }
 .glohaus-page-pending { width:min(100% - 32px,1100px); margin:24px auto; padding:clamp(16px,3vw,28px) 0 max(96px,env(safe-area-inset-bottom)); color:var(--ink); min-height:65dvh; }
 .glohaus-page-pending > [role="status"] { color:var(--muted); font-size:.9rem; }

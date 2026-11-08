@@ -188,7 +188,7 @@ export function BusinessConnections({
           >
             <h3>{names[provider]}</h3>
             {!ready[provider] && (
-              <p role="status" className="business-feedback" id={`calendar-${provider}-unavailable`}>
+              <p className="business-feedback" id={`calendar-${provider}-unavailable`}>
                 {names[provider]} connection is not available yet because
                 GLOHAUS has not finished setting up this provider. Your
                 existing availability and bookings are unaffected. You can

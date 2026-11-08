@@ -71,7 +71,8 @@ try {
       await expect(menu.getByRole("alert")).toContainText(
         "could not sign you out",
       );
-      if (width < 1100) await expect(account()).toHaveText("My account");
+      if (width < 1100)
+        await expect(page.locator(".mobile-home-header .glohaus-signout").first()).toBeVisible();
       else
         await expect(page.locator(".desktop-user-chip")).toContainText(
           "My account",

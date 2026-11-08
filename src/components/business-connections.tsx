@@ -187,6 +187,15 @@ export function BusinessConnections({
             }}
           >
             <h3>{names[provider]}</h3>
+            {!ready[provider] && (
+              <p role="status" className="business-feedback" id={`calendar-${provider}-unavailable`}>
+                {names[provider]} connection is not available yet because
+                GLOHAUS has not finished setting up this provider. Your
+                existing availability and bookings are unaffected. You can
+                continue managing your availability in GLOHAUS, or use the
+                iCal / ICS subscription option below if it is available.
+              </p>
+            )}
             <label className="business-check">
               <input
                 type="checkbox"
@@ -196,16 +205,21 @@ export function BusinessConnections({
               Also add GLOHAUS appointments to this calendar
             </label>
             <small>
-              Optional: add private appointment events without client names. Cancel or reschedule GLOHAUS bookings here.
+              Optional: add private appointment events without client names. Manage cancellations and rescheduling in GLOHAUS; external calendar edits do not change GLOHAUS bookings.
             </small>
             <label className="business-check">
-              <input type="checkbox" required disabled={!ready[provider]} />I
-              agree to connect this calendar and share busy times with GLOHAUS.
+              <input type="checkbox" required disabled={!ready[provider]} />
+              I agree to connect this calendar and share busy times with GLOHAUS.
             </label>
-            <button className="button" disabled={busy || !ready[provider]}>
+            <button
+              type="submit"
+              className="button"
+              disabled={busy || !ready[provider]}
+              aria-describedby={!ready[provider] ? `calendar-${provider}-unavailable` : undefined}
+            >
               {ready[provider]
                 ? `Connect ${names[provider]}`
-                : "Provider setup required"}
+                : `Connect ${names[provider]} — unavailable`}
             </button>
           </form>
         ))}

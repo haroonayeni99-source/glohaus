@@ -62,13 +62,18 @@ export function PwaShell() {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
   const [updateError, setUpdateError] = useState("");
   const reloading = useRef(false);
+  const updateReloadFallback = useRef<number | null>(null);
   useEffect(() => {
     if (!window.isSecureContext || !("serviceWorker" in navigator)) return;
     let active = true;
     let registration: ServiceWorkerRegistration | undefined;
     const cleanups: Array<() => void> = [];
     const reload = () => {
-      if (reloading.current) window.location.reload();
+      if (reloading.current) {
+        if (updateReloadFallback.current !== null)
+          window.clearTimeout(updateReloadFallback.current);
+        window.location.reload();
+      }
     };
     navigator.serviceWorker.addEventListener("controllerchange", reload);
     const checkWaiting = () => {
@@ -102,6 +107,8 @@ export function PwaShell() {
       document.removeEventListener("visibilitychange", checkUpdate);
       navigator.serviceWorker.removeEventListener("controllerchange", reload);
       cleanups.forEach((cleanup) => cleanup());
+      if (updateReloadFallback.current !== null)
+        window.clearTimeout(updateReloadFallback.current);
     };
   }, []);
   const safeEntry = ["/", "/account", "/professional"].includes(pathname);
@@ -147,6 +154,15 @@ export function PwaShell() {
                     return;
                   reloading.current = true;
                   waiting.postMessage({ type: "GLOHAUS_ACTIVATE_UPDATE" });
+                  // The user explicitly accepted losing unsaved edits. Some
+                  // browsers don't reliably deliver controllerchange if an
+                  // installed worker is slow to activate; complete the
+                  // confirmed reload rather than leaving an inert button.
+                  if (updateReloadFallback.current !== null)
+                    window.clearTimeout(updateReloadFallback.current);
+                  updateReloadFallback.current = window.setTimeout(() => {
+                    if (reloading.current) window.location.reload();
+                  }, 8000);
                 }}
               >
                 Reload to update

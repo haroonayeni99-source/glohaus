@@ -97,3 +97,77 @@
 :root[data-theme] .discover-app .feed-overline > span {
   background:#231d1f; color:#fff; border-radius:999px; padding:6px 10px;
 }
+
+
+/* Keep booking policy copy readable against its actual panel surface in both themes. */
+:root[data-theme] .booking-journey .booking-policy :is(dd, dt, p, li, strong, small) {
+  color: var(--ui-text);
+}
+:root[data-theme] .booking-journey .booking-policy :is(.professional-policies, .policy-card, .policy-material) {
+  background: var(--ui-surface-muted);
+  color: var(--ui-text);
+  border-color: var(--ui-border);
+}
+:root[data-theme] .booking-journey .booking-policy .professional-policies dd {
+  background: transparent;
+  color: var(--ui-text);
+}
+
+/* The notifications toolbar is an action row, not an icon-only notification button. */
+:root[data-theme] :is(.notification-list, .pro-notification-list) .notification-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: var(--ui-text);
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+:root[data-theme] :is(.notification-list, .pro-notification-list) .notification-toolbar button {
+  display: inline-flex;
+  width: auto;
+  min-width: max-content;
+  min-height: 44px;
+  height: auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: var(--ui-surface-muted);
+  color: var(--ui-text);
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: normal;
+  text-align: center;
+}
+:root[data-theme] :is(.notification-list, .pro-notification-list) .notification-toolbar button:hover:not(:disabled) {
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  border-color: var(--ui-focus);
+}
+:root[data-theme] :is(.notification-list, .pro-notification-list) .notification-toolbar button svg {
+  flex: 0 0 auto;
+}
+@media (max-width: 600px) {
+  :root[data-theme] :is(.notification-list, .pro-notification-list) .notification-toolbar button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+/* Paired text/background colours for notification messages inside the active theme. */
+:root[data-theme] .notification-list article {
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  border-color: var(--ui-border);
+}
+:root[data-theme] .notification-list article :is(strong, small, time) {
+  color: var(--ui-text);
+}
+:root[data-theme] .notification-list article time { color: var(--ui-muted); }
+:root[data-theme="night"] .pro-notification-list article :is(strong, small) { color: var(--ui-text); }
+:root[data-theme="night"] .pro-notification-list article time { color: var(--ui-muted); }

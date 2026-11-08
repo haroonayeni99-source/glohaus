@@ -108,8 +108,10 @@ try {
           return rect.width && rect.height && rect.top < innerHeight && rect.bottom > 0;
         }).map(img => img.decode().catch(() => {})));
       });
-      const before = await mobileAppearance(page);
+      // Prevent screenshot animation suppression from shifting the computed baseline.
+      await page.addStyleTag({ content: "* { animation: none !important; transition: none !important; }" });
       await page.screenshot({ path: `reports/desktop-home-mobile-${theme}-${width}-before.png`, animations: "disabled", caret: "hide" });
+      const before = await mobileAppearance(page);
       await page.evaluate(css => {
         const style = document.querySelector("style");
         if (!style.textContent.includes(css)) throw new Error("Cannot establish mobile baseline");

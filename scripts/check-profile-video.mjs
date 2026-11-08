@@ -26,7 +26,7 @@ try {
     // The booking panel may intentionally use a separate surface. Its text must stay
     // legible in either theme rather than matching the parent background exactly.
     const bookingContrast = await page.locator(".booking-widget").evaluate(el => {
-      const color = value => (value.match(/[\\d.]+/g) || []).slice(0, 3).map(Number);
+      const color = value => (value.match(/[0-9.]+/g) || []).slice(0, 3).map(Number);
       const luminance = value => color(value).map(n => {
         const v = n / 255;
         return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;

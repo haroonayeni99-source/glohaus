@@ -29,8 +29,7 @@ try {
             const link = page.locator(`.admin-navigation nav a[href="#${id}"]`);
             if (!(await link.isVisible()))
               await page
-                .locator(".admin-tool-group")
-                .filter({ has: page.locator(`a[href="#${id}"]`) })
+                .locator(`.admin-tool-group[data-tool-ids~="${id}"]`)
                 .getByRole("button")
                 .click();
             await link.click();

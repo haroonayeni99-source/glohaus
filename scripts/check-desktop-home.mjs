@@ -111,14 +111,10 @@ try {
       // Prevent screenshot animation suppression from shifting the computed baseline.
       await page.addStyleTag({ content: "* { animation: none !important; transition: none !important; }" });
       await page.screenshot({ path: `reports/desktop-home-mobile-${theme}-${width}-before.png`, animations: "disabled", caret: "hide" });
-      // Establish a stable mobile baseline after image and font loading.
-      // The desktop-only CSS must not affect the mobile snapshot.
-      await expect.poll(async () => {
-        const first = await mobileAppearance(page);
-        await page.waitForTimeout(150);
-        const second = await mobileAppearance(page);
-        return JSON.stringify(first) === JSON.stringify(second);
-      }, { timeout: 6000 }).toBe(true);
+      // Freeze client-side clocks while comparing the same mobile DOM with
+      // and without desktop-only CSS. Animated carousels/relative-time updates
+      // must not make a CSS isolation test fail for unrelated state changes.
+      await page.clock.pause();
       const before = await mobileAppearance(page);
       await page.evaluate(css => {
         const style = document.querySelector("style");

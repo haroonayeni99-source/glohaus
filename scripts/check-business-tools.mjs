@@ -252,7 +252,7 @@ try {
         }),
       );
       await page
-        .getByRole("button", { name: "Load TikTok video", exact: true })
+        .getByRole("button", { name: "Load TikTok player", exact: true })
         .click();
       await expect(page.locator("iframe")).toHaveAttribute(
         "src",
@@ -262,7 +262,7 @@ try {
         page.getByText("Manicure · from £45.00", { exact: false }),
       ).toBeVisible();
       await page
-        .getByRole("button", { name: "Close embedded post", exact: true })
+        .getByRole("button", { name: "Close TikTok player", exact: true })
         .click();
       await expect(page.locator("iframe")).toHaveCount(0);
       await expect(page.locator(".social-mini-gallery button")).toHaveCount(3);

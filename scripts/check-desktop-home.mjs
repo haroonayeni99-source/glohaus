@@ -43,8 +43,13 @@ try {
         await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.request().resourceType() === "image" ? route.fulfill({ contentType: "image/png", body: placeholder }) : route.abort());
         await page.route("**/images/categories/*", async route => {
           const name = new URL(route.request().url()).pathname.split("/").pop();
-          expect(categories.some(category => name === `${category}-v2.webp`)).toBe(true);
-          await route.fulfill({ contentType: "image/webp", body: await readFile(`public/images/categories/${name}`) });
+          // The homepage also mounts mobile slots (including its SVG lashes icon)
+          // even at desktop widths; only allow known bundled category assets.
+          expect(categories.some(category => name === `${category}-v2.webp`) || name === "lashes.svg").toBe(true);
+          await route.fulfill({
+            contentType: name.endsWith(".svg") ? "image/svg+xml" : "image/webp",
+            body: await readFile(`public/images/categories/${name}`),
+          });
         });
         await page.goto(`http://127.0.0.1:3004/?theme=${theme}${guest ? "&guest=1" : ""}`);
         // The isolated Image shim does not supply Next's inline fill styles.

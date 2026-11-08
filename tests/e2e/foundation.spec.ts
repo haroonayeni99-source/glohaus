@@ -236,7 +236,7 @@ test("dedicated Discover route behaves like a full-screen mobile feed", async ({
 
   // The branded entry overlay is intentional; do not click through it before
   // it has finished and released pointer events.
-  await expect(page.locator(".glohaus-intro")).toHaveCount(0, { timeout: 10000 });
+  await expect(page.locator(".glohaus-intro")).toBeHidden({ timeout: 10000 });
   const firstShare = page.getByRole("button", { name: /^Share / }).first();
   await firstShare.click();
   await expect(page.getByLabel("Post link")).toHaveValue(/\/discover#post-/);
@@ -263,6 +263,7 @@ test("Following requires a customer session on Share", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/share");
 
+  await expect(page.locator(".glohaus-intro")).toBeHidden({ timeout: 10000 });
   await page.getByRole("navigation", { name: "Your Discover collections" })
     .getByRole("link", { name: "Following feed" }).click();
   await expect(page).toHaveURL(/\/share\?feed=following/);

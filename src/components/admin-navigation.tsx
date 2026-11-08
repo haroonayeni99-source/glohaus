@@ -322,10 +322,9 @@ export function AdminNavigation({ account }: { account: Account }) {
                 <span>{group.label}</span>
                 <span aria-hidden>{expanded ? "−" : "+"}</span>
               </button>
-              <div
+              {expanded && <div
                 id={`admin-tools-${index}`}
                 className="admin-tool-group-links"
-                hidden={!expanded}
               >
                 {tools.map(([label, id, Icon]) => (
                   <a
@@ -344,7 +343,7 @@ export function AdminNavigation({ account }: { account: Account }) {
                     <span>{label}</span>
                   </a>
                 ))}
-              </div>
+              </div>}
             </div>
           );
         })}

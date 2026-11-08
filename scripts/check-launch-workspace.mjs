@@ -81,6 +81,30 @@ try {
         await expect(
           page.getByText("Fixture Support Customer", { exact: false }),
         ).toBeVisible();
+        if (width > 880 && role === "owner" && theme === "light") {
+          const geometry = await page.evaluate(() => {
+            const bounds = (selector) => {
+              const element = document.querySelector(selector);
+              if (!element) return null;
+              const r = element.getBoundingClientRect();
+              const style = getComputedStyle(element);
+              return { x: r.x, y: r.y, width: r.width, height: r.height, position: style.position, zIndex: style.zIndex, display: style.display };
+            };
+            const action = Array.from(document.querySelectorAll("button")).find((button) => button.textContent?.trim() === "Open case / reply");
+            const r = action?.getBoundingClientRect();
+            return {
+              nav: bounds(".admin-navigation"),
+              navMenu: bounds(".admin-navigation nav"),
+              footer: bounds(".admin-navigation-bottom"),
+              content: bounds(".admin-workspace-content"),
+              support: bounds("#support"),
+              action: r && { x:r.x, y:r.y, width:r.width, height:r.height },
+              elementAtAction: r && document.elementFromPoint(r.x+r.width/2, r.y+r.height/2)?.outerHTML.slice(0,220),
+              viewport: {w:innerWidth,h:innerHeight}
+            };
+          });
+          console.log("OWNER_DESKTOP_GEOMETRY", JSON.stringify(geometry));
+        }
         await page
           .getByRole("button", { name: "Open case / reply", exact: true })
           .click();

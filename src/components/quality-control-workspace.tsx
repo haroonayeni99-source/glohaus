@@ -37,7 +37,7 @@ const regressions = [
 const statuses: Status[] = ["LIVE AND VERIFIED", "IMPLEMENTED BUT UNDEPLOYED", "PARTIAL", "MISSING", "BLOCKED"];
 const defaultChecks: Check[] = Object.entries(areas).flatMap(([area, list]) => list.map((label, i) => ({ id: area+"-"+i, area, label, status: "MISSING" as Status, route: "", device: "All", notes: "Not yet assessed — MISSING here means evidence is missing, not proof this feature is absent." })));
 const fresh = (): State => ({ checks: defaultChecks, bugs: [], changes: [], regression: {} });
-const surface: React.CSSProperties = { background: "var(--surface, #251b29)", border: "1px solid rgba(213,141,181,.28)", borderRadius: 20, padding: 20 };
+const surface: React.CSSProperties = { background: "#fff7fb", color: "#382138", border: "1px solid rgba(213,141,181,.28)", borderRadius: 20, padding: 20 };
 const field: React.CSSProperties = { width: "100%", minHeight: 42, borderRadius: 10, border: "1px solid #9b7895", padding: "9px 11px", color: "#231726", background: "#fff" };
 const button: React.CSSProperties = { padding: "9px 13px", borderRadius: 11, border: "1px solid #ad6b91", background: "#f9e7f1", color: "#592440", fontWeight: 700, cursor: "pointer" };
 const format = (v:string) => v || "Not recorded";

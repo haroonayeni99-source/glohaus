@@ -4,6 +4,7 @@ import { AuthFrame } from "@/components/auth-frame";
 import { AccessMessage } from "@/components/access-message";
 import { QualityControlWorkspace } from "@/components/quality-control-workspace";
 import { OwnerQualityDiagnostics } from "@/components/owner-quality-diagnostics";
+import { OwnerQualityReleaseStatus } from "@/components/owner-quality-release-status";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Quality Control | GLOHAUS", robots: { index: false, follow: false } };
@@ -14,6 +15,7 @@ export default async function QualityControlPage() {
   if (!access.account.roles.includes("owner")) return <main style={{ padding: 32 }}><h1>Owner access required</h1><p>Quality Control is private to the GLOHAUS Owner.</p><Link href="/admin">Back to dashboard</Link></main>;
   return <main id="main" style={{ maxWidth: 1400, margin: "0 auto", padding: "clamp(16px, 3vw, 42px)" }}>
     <Link href="/admin" style={{ display: "inline-block", marginBottom: 18 }}>← Owner Control Centre</Link>
+    <OwnerQualityReleaseStatus />
     <OwnerQualityDiagnostics />
     <QualityControlWorkspace />
   </main>;

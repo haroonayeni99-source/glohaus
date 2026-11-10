@@ -104,7 +104,7 @@ export function OwnerQualityReleaseStatus() {
         Current running build: {data.runningDeployment.commit?.slice(0, 8) ?? "not confirmed"} ({data.runningDeployment.environment}).
         Checked {new Date(data.checkedAt).toLocaleString("en-GB")}.
       </p>
-      <p style={{ fontSize: 12, marginBottom: 0 }}>{data.caveat} "CHECKS PASS" is not permission to deploy automatically.</p>
+      <p style={{ fontSize: 12, marginBottom: 0 }}>{data.caveat} Passing checks is not permission to deploy automatically.</p>
     </>}
   </section>;
 }

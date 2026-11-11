@@ -279,6 +279,8 @@ export async function ownerProductFeeRule(): Promise<OwnerProductFeeRule | null>
 
 
 export type OwnerBookingFeeRule = {
+  promotionalFeePence?: number;
+  promotionEnabled?: boolean;
   id: string | null;
   fixedFeePence: number;
   effectiveFrom: string | null;

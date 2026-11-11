@@ -22,6 +22,8 @@ const schema = z
   })
   .strict();
 type Reservation = {
+  standardFeePence?: number;
+  referralDiscountPence?: number;
   id: string;
   depositPence: number;
   pricePence: number;
@@ -148,7 +150,9 @@ export async function POST(request: Request) {
                 currency: "gbp",
                 unit_amount: quote.customerPlatformFeePence,
                 product_data: {
-                  name: "GLOHAUS booking fee",
+                  name: booking.referralDiscountPence
+                    ? "GLOHAUS booking fee · first-booking referral offer"
+                    : "GLOHAUS booking fee",
                 },
               },
               quantity: 1,

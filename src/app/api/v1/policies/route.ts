@@ -1,6 +1,7 @@
 import { optionsFromSearch } from "@/modules/taxonomy/domain";
 import { z } from "zod";
 import { withIdentity } from "@/lib/db";
+import { getIdentity } from "@/lib/identity";
 import { AccessError } from "@/modules/accounts/domain";
 import { json } from "@/lib/http";
 import { servicePolicy, servicePaymentPolicy } from "@/modules/policies/repository";
@@ -13,8 +14,15 @@ export async function GET(request: Request) {
     if (!choice.success) throw new AccessError("INVALID_REQUEST", 400);
     if (!z.uuid().safeParse(id).success)
       throw new AccessError("INVALID_REQUEST", 400);
+    let authId = "";
+    try {
+      authId = (await getIdentity()).authId;
+    } catch {
+      // Guests can still inspect policies. Reservation revalidates the signed-in
+      // customer's fee and accepted token before any checkout is created.
+    }
     return json(
-      await withIdentity("", async (db) => ({
+      await withIdentity(authId, async (db) => ({
         policy: params.has("paymentChoice") ? await servicePaymentPolicy(db,id!,choice.data,options) : await servicePolicy(db, id!,options.variationId||options.extraIds?.length?options:undefined),
         earlyServiceBefore: (
           await db.query<{ cutoff: Date }>(

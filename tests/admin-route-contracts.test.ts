@@ -42,7 +42,7 @@ const cases = [
   { name: "hide account and content", handler: account, payload: { action: "hide", userId: id, reason }, sql: "owner_set_account_visibility", owner: true },
   { name: "restore account and content", handler: account, payload: { action: "show", userId: id, reason }, sql: "owner_set_account_visibility", owner: true },
   { name: "lift restriction", handler: account, payload: { action: "liftRestriction", userId: id, reason }, sql: "owner_set_user_restriction", owner: true },
-  { name: "booking fee", handler: bookingFee, payload: { amountPence: 100, reason }, sql: "set_financial_fee_rule", owner: true },
+  { name: "booking fee", handler: bookingFee, payload: { amountPence: 150, promotionalFeePence: 100, promotionEnabled: true, reason }, sql: "owner_set_booking_fees", owner: true },
   { name: "Shop fee", handler: shopFee, payload: { percentage: 10, fixedFeePence: 0, minimumFeePence: 0, maximumFeePence: null, reason }, sql: "set_financial_fee_rule", owner: true },
   { name: "professional commission", handler: commission, payload: { professionalId: id, percentage: null, expiresAt: null, reason }, sql: "owner_set_professional_commission_override", owner: true },
   { name: "refund appeal review", handler: appeal, payload: { appealId: id, approved: false, percentage: 0, reason }, sql: "resolve_refund_appeal", owner: false },

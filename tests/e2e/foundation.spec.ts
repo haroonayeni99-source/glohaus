@@ -22,7 +22,7 @@ test("public entry works on mobile and desktop", async ({ page }, testInfo) => {
     await expect(
       page
         .getByRole("navigation", { name: "Customer navigation" })
-        .getByRole("link", { name: "Explore", exact: true }),
+        .getByRole("link", { name: "Find a Professional", exact: true }),
     ).toHaveAttribute("href", "/explore");
     await expect(
       page
@@ -90,7 +90,7 @@ test("signed-out desktop navigation exposes public destinations and account entr
   });
   for (const [name, href] of [
     ["Home", "/"],
-    ["Explore", "/explore"],
+    ["Find a Professional", "/explore"],
     ["Get inspired", "/discover"],
     ["Shop", "/shop"],
     ["How it works", "/how-it-works"],

@@ -6,6 +6,7 @@ import { homepageCategorySlots, homepageCategoryHref, categoryImage, categoryNam
 import { HomeMarketplaceGuide } from "./home-marketplace-guide";
 import Image from "next/image";
 import Link from "next/link";
+import Form from "next/form";
 import {
   CalendarDays,
   ChevronRight,
@@ -118,7 +119,7 @@ export function DesktopCustomerHome({
           </Link>
           <Link href="/explore">
             <Search size={20} />
-            Explore
+            Find a Professional
           </Link>
           {signedIn && (
             <>
@@ -216,7 +217,7 @@ export function DesktopCustomerHome({
               Find and book beauty professionals near you.
               <br />A new look. A familiar favourite. Your next inspiration.
             </p>
-            <form action="/explore" className="desktop-hero-search">
+            <Form action="/explore" className="desktop-hero-search">
               <Search size={20} />
               <input
                 name="q"
@@ -224,7 +225,7 @@ export function DesktopCustomerHome({
                 placeholder="Find hair, nails, beauty & more"
               />
               <button>Search</button>
-            </form>
+            </Form>
             <div className="home-conversion-actions">
               <Link className="button" href="/explore">
                 Find a professional
@@ -332,7 +333,7 @@ export function DesktopCustomerHome({
         <section className="desktop-section desktop-trending">
           <div className="desktop-section-title">
             <h2>A little inspiration</h2>
-            <Link href="/explore">
+            <Link href="/discover">
               See all <ChevronRight size={15} />
             </Link>
           </div>

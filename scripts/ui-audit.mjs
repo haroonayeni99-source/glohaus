@@ -37,6 +37,7 @@ await build({
     "@/lib/supabase/client": resolve(process.env.GLOHAUS_UI_AUDIT_AUTH || "tests/fixtures/ui-audit/data.ts"),
     "next/navigation": resolve("tests/fixtures/next-navigation.ts"),
     "next/link": resolve("tests/fixtures/next-link.tsx"),
+    "next/form": resolve("tests/fixtures/next-form.tsx"),
     "next/image": resolve("tests/fixtures/next-image.tsx"),
   },
   loader: { ".css": "empty" },

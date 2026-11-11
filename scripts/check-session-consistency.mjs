@@ -63,7 +63,7 @@ try {
       const menu = page.locator(
         width >= 1100 ? ".customer-desktop-topbar" : ".mobile-site-menu",
       );
-      if (width < 1100) await menu.locator("summary").click();
+      if (width < 1100) await menu.locator(":scope > summary").click();
       await page.evaluate(() => sessionStorage.setItem("fail-signout", "yes"));
       await menu.getByRole("button", { name: "Sign out", exact: true }).click();
       await expect(menu.getByRole("alert")).toContainText(

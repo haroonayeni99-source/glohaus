@@ -36,7 +36,7 @@ export function PaymentSummary({
         </div>
       )}
       <div className="payment-summary-total">
-        <span>Total service price</span>
+        <span>Total including booking fee</span>
         <strong>{money(servicePricePence + (bookingFeePence ?? 0))}</strong>
       </div>
       <div>

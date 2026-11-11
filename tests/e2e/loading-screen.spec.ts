@@ -44,3 +44,10 @@ test("reduced motion shows the complete screen without animation", async ({ page
   await expect(page.locator(".glohaus-route-slogan")).toBeVisible();
   await expect(page.locator(".glohaus-route-wordmark")).toHaveCSS("animation-name", "none");
 });
+
+test("entrance releases the page when JavaScript cannot dismiss it", async ({ page }) => {
+  await page.goto("about:blank");
+  await page.setContent(`<style>${css}</style><button>Continue browsing</button><div class="glohaus-intro">${html}</div>`);
+  await expect(page.getByRole("status", { name: "Loading GLOHAUS" })).toBeHidden({ timeout: 8000 });
+  await page.getByRole("button", { name: "Continue browsing" }).click();
+});

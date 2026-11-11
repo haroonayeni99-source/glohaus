@@ -5,6 +5,7 @@ import {
   configuration,
   exchangeCode,
   validateOAuthState,
+  providerReady,
 } from "@/modules/business-tools/oauth";
 import {
   storeConnection,
@@ -43,6 +44,8 @@ export async function GET(
     const code = query.get("code");
     if (!code || code.length > 4096) throw Error("INVALID_CODE");
     phase = "exchange";
+    if (provider === "instagram" && !providerReady(provider, account.professionalId!))
+      throw Error("NOT_CONFIGURED");
     const tokens = await exchangeCode(state, code);
     phase = "store";
     const connection = await withAccount("professional", (db) =>

@@ -77,6 +77,7 @@ async function connect(
     storeConnection(sql, pro, provider, provider, {
       accessToken: "fixture-access",
       expiresAt: Date.now() + 3600000,
+      ...(provider === "instagram" ? { instagram: { appId: "123456", userIds: ["987654"], authorizationStarted: Date.now() } } : {}),
     }),
   );
   await as("social-pro", (sql) =>
@@ -183,6 +184,9 @@ beforeEach(async () => {
     vi.stubEnv(`${key}_ENABLED`, "true");
   }
   vi.stubEnv("INSTAGRAM_API_VERSION", "v25.0");
+  vi.stubEnv("INSTAGRAM_CLIENT_ID", "123456");
+  // Existing opt-in automatic-mode contracts remain covered with fictional data.
+  vi.stubEnv("INSTAGRAM_AUTO_PUBLISH_ENABLED", "true");
   io.run.mockImplementation(as);
   io.identity.mockResolvedValue(actor("social-pro"));
   io.worker.mockImplementation((work: (sql: SqlClient) => Promise<unknown>) =>
@@ -244,6 +248,16 @@ it("publishes new automatic-mode work in genuine chronological order", async () 
   expect(JSON.stringify(posts)).not.toMatch(
     /thumbnail_url|fixture-access|fixture-secret/,
   );
+});
+
+it("keeps Instagram imports private while public automatic publishing is disabled", async () => {
+  vi.stubEnv("INSTAGRAM_AUTO_PUBLISH_ENABLED", "false");
+  const id = await connect("automatic");
+  expect(await refresh(id)).toEqual({ synced: 1, failed: 0 });
+  expect(await visible()).toEqual([]);
+  const rows = (await db.query<{ publication_status: string }>("SELECT publication_status FROM beauty.social_portfolio")).rows;
+  expect(rows).toHaveLength(2);
+  expect(rows.every(row => row.publication_status === "draft")).toBe(true);
 });
 it("preserves hidden posts across deletion, privacy changes and later reappearance", async () => {
   const id = await connect("automatic");

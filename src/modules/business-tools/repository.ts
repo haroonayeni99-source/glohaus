@@ -13,6 +13,7 @@ import { calendarBusy, exportBooking, type ExportBooking } from "./calendars";
 import { socialPosts } from "./social";
 import { renewWatch } from "./watch";
 import { withIdentity } from "@/lib/db";
+import { instagramSubject } from "./instagram-lifecycle";
 export async function businessTools(db: SqlClient, professionalId: string) {
   const connections = (
     await db.query<ConnectionStatus>(
@@ -72,6 +73,11 @@ export async function storeConnection(
   tokens: Tokens,
   writeCalendar = false,
 ) {
+  if (provider === "instagram") {
+    if (!tokens.instagram || tokens.instagram.appId !== process.env.INSTAGRAM_CLIENT_ID)
+      throw Error("RECONNECT_REQUIRED");
+    await db.query("SELECT pg_advisory_xact_lock(hashtextextended('glohaus-social-sync',0))");
+  }
   const ciphertext = seal(tokens, `${professionalId}:${provider}`);
   await db.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
     professionalId,
@@ -82,12 +88,20 @@ export async function storeConnection(
   );
   if (count.rows[0].count >= 8) throw Error("TOO_MANY_CONNECTIONS");
   // Reconnecting replaces credentials on the same logical connection, retaining event mappings.
-  return (
+  const connection = (
     await db.query<{ id: string }>(
       `INSERT INTO beauty.business_connections(professional_id,provider,label,secret_ciphertext,export_bookings) VALUES($1,$2,$3,$4,$5) ON CONFLICT(professional_id,provider,label) DO UPDATE SET secret_ciphertext=EXCLUDED.secret_ciphertext,status='pending',last_error=NULL,next_sync_at=now(),lease_until=NULL,export_bookings=EXCLUDED.export_bookings RETURNING id`,
       [professionalId, provider, label, ciphertext, writeCalendar],
     )
   ).rows[0];
+  if (provider === "instagram" && tokens.instagram) {
+    await db.query("SELECT beauty.bind_instagram_connection($1,$2,$3,$4)", [
+      connection.id, tokens.instagram.appId,
+      tokens.instagram.userIds.map(id => instagramSubject(tokens.instagram!.appId, id)),
+      new Date(tokens.instagram.authorizationStarted).toISOString(),
+    ]);
+  }
+  return connection;
 }
 export async function syncProfessional(
   authId: string,
@@ -316,7 +330,7 @@ export async function syncProfessional(
                 post.url,
                 post.caption,
                 post.createdAt,
-                current.auto_publish ? "published" : "draft",
+                current.auto_publish && (lease.provider !== "instagram" || process.env.INSTAGRAM_AUTO_PUBLISH_ENABLED === "true") ? "published" : "draft",
                 post.mediaType,
                 post.thumbnailUrl,
               ],

@@ -3,6 +3,7 @@ import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import type { Provider } from "./domain";
 import { encryptionReady, seal, unseal } from "./secrets";
 export type Tokens = {
+  instagram?: { appId: string; userIds: string[]; authorizationStarted: number };
   tiktokApp?: "sandbox" | "production";
   accessToken: string;
   refreshToken?: string;
@@ -202,9 +203,19 @@ export async function exchangeCode(
     }).toString();
     const long = await providerJson(longUrl.toString());
     if (!long.access_token) throw Error("RECONNECT_REQUIRED");
+    const version = process.env.INSTAGRAM_API_VERSION || "";
+    if (!/^v\d+\.\d+$/.test(version)) throw Error("NOT_CONFIGURED");
+    const identity = await providerJson(`https://graph.instagram.com/${version}/me?fields=id,user_id`, {
+      headers: { Authorization: `Bearer ${long.access_token}` },
+    });
+    const userIds = [...new Set([identity.id, identity.user_id, response.user_id]
+      .filter((id): id is string => typeof id === "string" && /^\d{1,128}$/.test(id)))];
+    if (!userIds.length || !Number.isFinite(Number(long.expires_in)) || Number(long.expires_in) <= 0)
+      throw Error("RECONNECT_REQUIRED");
     return {
       accessToken: long.access_token,
       expiresAt: Date.now() + Number(long.expires_in) * 1000,
+      instagram: { appId: config.clientId, userIds, authorizationStarted: state.expiresAt - 600000 },
     };
   }
   return {
@@ -242,7 +253,8 @@ export async function freshTokens(
       access_token: tokens.accessToken,
     }).toString();
     const response = await providerJson(url.toString());
-    if (!response.access_token) throw Error("RECONNECT_REQUIRED");
+    if (!response.access_token || !Number.isFinite(Number(response.expires_in)) || Number(response.expires_in) <= 0)
+      throw Error("RECONNECT_REQUIRED");
     return {
       ...tokens,
       accessToken: response.access_token,

@@ -8,12 +8,14 @@ import { AccessError } from "@/modules/accounts/domain";
 export async function runBusinessToolsWorker() {
   if (!encryptionReady()) return { configured: false };
   const owners = await withPaymentWorker(
-    async (db) =>
-      (
+    async (db) => {
+      await db.query("SELECT beauty.prune_instagram_lifecycle()");
+      return (
         await db.query<{ auth_id: string; professional_id: string }>(
           "SELECT * FROM beauty.due_business_connections()",
         )
-      ).rows,
+      ).rows;
+    },
   );
   const started = Date.now();
   let synced = 0,

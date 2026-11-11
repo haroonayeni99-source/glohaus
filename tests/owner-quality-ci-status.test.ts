@@ -84,6 +84,7 @@ it("reports checks passing but retains Owner release approval requirement", () =
     run("GLOHAUS automated Quality Control", "success", 1, "schedule"),
     run("Verify GLOHAUS", "success", 2),
     run("Verify foundation", "success", 3),
+    run("Critical customer journeys QA", "success", 4, "schedule"),
   ], SHA, now);
   expect(result.readiness).toBe("CHECKS PASS");
   expect(result.releaseApproval).toBe("NOT APPROVED");
@@ -99,4 +100,24 @@ it("prevents failure-state masking if optional job details cannot be fetched", a
   const result = await response.json();
   expect(result.readiness).toBe("BLOCKED");
   expect(result.failedJobs).toEqual([]);
+});
+
+it("blocks readiness when critical fixture regression fails", () => {
+  const result = summarizeRuns([
+    run("GLOHAUS automated Quality Control", "success", 1, "schedule"),
+    run("Verify GLOHAUS", "success", 2),
+    run("Verify foundation", "success", 3),
+    run("Critical customer journeys QA", "failure", 4, "schedule"),
+  ], SHA, now);
+  expect(result.readiness).toBe("BLOCKED");
+});
+
+it("will not mark release ready when critical-journey monitoring has not run", () => {
+  const result = summarizeRuns([
+    run("GLOHAUS automated Quality Control", "success", 1, "schedule"),
+    run("Verify GLOHAUS", "success", 2),
+    run("Verify foundation", "success", 3),
+  ], SHA, now);
+  expect(result.criticalJourneys.stale).toBe(true);
+  expect(result.readiness).toBe("NEEDS REVIEW");
 });

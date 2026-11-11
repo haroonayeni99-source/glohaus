@@ -16,6 +16,8 @@ type Status = {
   monitoring: { run: Run | null; stale: boolean; healthy: boolean; expectedCadenceMinutes: number };
   verification: { run: Run | null; matchesRunningCommit: boolean };
   foundation: { run: Run | null; matchesRunningCommit: boolean };
+  criticalJourneys: { run: Run | null; stale: boolean; scheduledDaily: boolean };
+  criticalFailedJobs: string[];
   runningDeployment: { environment: string; commit: string | null };
   failedJobs: string[];
   readiness: "BLOCKED" | "NEEDS REVIEW" | "CHECKS PASS";
@@ -89,6 +91,7 @@ export function OwnerQualityReleaseStatus() {
           ["Scheduled monitor", data.monitoring.run, data.monitoring.stale ? "STALE / delayed" : "Recent run"],
           ["Main build & tests", data.verification.run, data.verification.matchesRunningCommit ? "Matches deployed build" : "Commit not confirmed"],
           ["Foundation regressions", data.foundation.run, data.foundation.matchesRunningCommit ? "Matches deployed build" : "Commit not confirmed"],
+          ["Critical journeys (fixtures)", data.criticalJourneys.run, data.criticalJourneys.stale ? "STALE / not yet run" : "Daily checks current"],
         ] as const).map(([title, run, note]) => <div key={title} style={{ border: "1px solid #d5a6bc", borderRadius: 12, padding: 12 }}>
           <strong>{title}</strong>
           <p style={{ margin: "6px 0", fontWeight: 700 }}>{label(run)}</p>
@@ -96,6 +99,7 @@ export function OwnerQualityReleaseStatus() {
           {run && <a style={link} href={run.html_url} target="_blank" rel="noopener noreferrer">View test report</a>}
         </div>)}
       </div>
+      {data.criticalFailedJobs.length > 0 && <div style={{ marginTop: 12 }}><strong>Critical journeys needing attention:</strong><p style={{ margin: "5px 0" }}>{data.criticalFailedJobs.join(" · ")}</p></div>}
       {data.failedJobs.length > 0 && <div style={{ marginTop: 12 }}>
         <strong>Foundation checks needing attention:</strong>
         <p style={{ margin: "5px 0" }}>{data.failedJobs.join(" · ")}</p>

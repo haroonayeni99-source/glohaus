@@ -40,24 +40,28 @@ export function summarizeRuns(runs: GithubRun[], currentCommit: string | null, n
   const monitor = latest("GLOHAUS automated Quality Control");
   const verify = latest("Verify GLOHAUS", "push");
   const foundation = latest("Verify foundation", "push");
+  const critical = latest("Critical customer journeys QA");
+  const criticalAgeMs = critical ? now - Date.parse(critical.created_at) : null;
+  const criticalStale = criticalAgeMs === null || !Number.isFinite(criticalAgeMs) || criticalAgeMs > 36 * 60 * 60 * 1000;
   const monitorAgeMs = monitor ? now - Date.parse(monitor.created_at) : null;
   const monitorStale = monitorAgeMs === null || !Number.isFinite(monitorAgeMs) || monitorAgeMs > SCHEDULE_MAX_AGE_MS;
   const matches = (run: GithubRun | null) => !!run && !!currentCommit && run.head_sha === currentCommit;
   const latestChecksMatch = matches(verify) && matches(foundation);
   const healthy = monitor?.conclusion === "success";
   let readiness: "BLOCKED" | "NEEDS REVIEW" | "CHECKS PASS" = "NEEDS REVIEW";
-  if (latestChecksMatch && (verify?.conclusion === "failure" || foundation?.conclusion === "failure")) readiness = "BLOCKED";
-  else if (latestChecksMatch && verify?.conclusion === "success" && foundation?.conclusion === "success" && healthy && !monitorStale)
+  if ((latestChecksMatch && (verify?.conclusion === "failure" || foundation?.conclusion === "failure")) || critical?.conclusion === "failure") readiness = "BLOCKED";
+  else if (latestChecksMatch && verify?.conclusion === "success" && foundation?.conclusion === "success" && critical?.conclusion === "success" && !criticalStale && healthy && !monitorStale)
     readiness = "CHECKS PASS";
   return {
     checkedAt: new Date(now).toISOString(),
     monitoring: { run: monitor, stale: monitorStale, healthy, expectedCadenceMinutes: 30 },
     verification: { run: verify, matchesRunningCommit: matches(verify) },
     foundation: { run: foundation, matchesRunningCommit: matches(foundation) },
+    criticalJourneys: { run: critical, stale: criticalStale, scheduledDaily: true },
     runningDeployment: { environment: process.env.VERCEL_ENV ?? "unknown", commit: currentCommit },
     readiness,
     releaseApproval: "NOT APPROVED",
-    caveat: "These are CI and public-route checks only. No production payments or authenticated journeys were exercised by this dashboard.",
+    caveat: "Critical-journey checks use isolated fixtures, not live charges or real customer accounts. Automated tests are not full production approval.",
   };
 }
 
@@ -69,6 +73,7 @@ export async function GET() {
     const result = await githubGet<{ workflow_runs: GithubRun[] }>("/actions/runs?per_page=50");
     const summary = summarizeRuns(result.workflow_runs ?? [], commit);
     const failure = summary.foundation.run?.conclusion === "failure" && summary.foundation.matchesRunningCommit;
+    const criticalFailure = summary.criticalJourneys.run?.conclusion === "failure";
     let failedJobs: string[] = [];
     if (failure) {
       try {
@@ -78,11 +83,22 @@ export async function GET() {
         // Preserve known failure state even if optional job detail cannot be retrieved.
       }
     }
+    let criticalFailedJobs: string[] = [];
+    if (criticalFailure) {
+      try {
+        const jobs = await githubGet<{ jobs: Job[] }>("/actions/runs/" + summary.criticalJourneys.run!.id + "/jobs?per_page=100");
+        criticalFailedJobs = (jobs.jobs ?? []).filter((job) => job.conclusion === "failure").map((job) => job.name).slice(0, 10);
+      } catch {
+        // Keep failed readiness even without optional job detail.
+      }
+    }
     return Response.json({
       ...summary,
       failedJobs,
+      criticalFailedJobs,
       links: {
         monitor: ROOT + "/actions/workflows/quality-control-monitor.yml",
+        critical: ROOT + "/actions/workflows/critical-journeys.yml",
         verification: ROOT + "/actions/workflows/verify.yml",
         issues: ROOT + "/issues?q=is%3Aissue+%22%5BQuality+Control%5D%22",
       },

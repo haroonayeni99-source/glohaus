@@ -1,0 +1,115 @@
+name: Critical customer journeys QA
+
+on:
+  schedule:
+    - cron: "21 4 * * *"
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/app/**"
+      - "src/components/**"
+      - "src/lib/**"
+      - "src/modules/**"
+      - "tests/**"
+      - "scripts/check-booking-payments.mjs"
+      - "scripts/check-pwa.mjs"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/critical-journeys.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: critical-journeys-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  customer-booking-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+      - run: pnpm install --frozen-lockfile
+      - name: Verify booking, checkout, payments, authorization, customer PWA
+        run: >-
+          pnpm exec vitest run
+          tests/bookings.test.ts
+          tests/booking-payment-api.test.ts
+          tests/booking-date-input.test.ts
+          tests/booking-return-page.test.ts
+          tests/checkout-resume.test.ts
+          tests/shop-checkout.test.ts
+          tests/payment-webhook-signatures.test.ts
+          tests/payment-webhook-secrets.test.ts
+          tests/authorization.test.ts
+          tests/auth-flow.test.ts
+          tests/auth-session-ui.test.ts
+          tests/customer-pwa-api.test.ts
+          tests/pwa-service-worker.test.ts
+          --maxWorkers=2
+
+  booking-checkout-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/prepare-test-browsers
+      - name: Verify deposit, full payment and booking forms across mobile/desktop themes
+        run: node scripts/check-booking-payments.mjs
+      - name: Preserve failed booking test screenshots
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: critical-booking-browser-evidence
+          path: reports/booking-payment-*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+  mobile-pwa-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+      - uses: ./.github/actions/prepare-test-browsers
+        with:
+          webkit: "true"
+      - name: Verify install and updates on desktop, Android and iPhone WebKit
+        run: node scripts/check-pwa.mjs
+      - name: Preserve failed PWA test evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: critical-pwa-browser-evidence
+          path: reports/pwa-*
+          if-no-files-found: ignore
+          retention-days: 7

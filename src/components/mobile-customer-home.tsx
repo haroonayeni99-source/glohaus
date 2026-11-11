@@ -8,6 +8,7 @@ import { homepageCategorySlots, homepageCategoryHref, categoryImage, categoryNam
 import { HomeMarketplaceGuide } from "./home-marketplace-guide";
 import Image from "next/image";
 import Link from "next/link";
+import Form from "next/form";
 import { Bell, ChevronLeft, ChevronRight, Search, ShieldCheck } from "lucide-react";
 import { HomeStory } from "./home-story";
 import { AccountControls } from "./account-controls";
@@ -86,7 +87,7 @@ export function MobileCustomerHome({
           </div>
         </header>
 
-        <form className="mobile-home-search" action="/explore" role="search">
+        <Form className="mobile-home-search" action="/explore" role="search">
           <Search size={18} aria-hidden />
           <label className="sr-only" htmlFor="mobile-home-query">
             Search services or professionals
@@ -96,7 +97,7 @@ export function MobileCustomerHome({
             name="q"
             placeholder="Search services, professionals..."
           />
-        </form>
+        </Form>
 
         <section className="mobile-home-category-carousel" aria-label="Browse beauty services">
           <div className="mobile-home-category-header">

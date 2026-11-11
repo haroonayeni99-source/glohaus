@@ -100,6 +100,14 @@
 /* The entrance is visible in server HTML, even when the first page is cached.
    It unmounts permanently after entry; later loading boundaries stay local. */
 .glohaus-intro { display: block; }
+.glohaus-intro {
+  /* Release the page even when hydration and the inline timer cannot run. */
+  animation: glohaus-intro-safety 6s step-end forwards;
+}
+@keyframes glohaus-intro-safety {
+  from { visibility: visible; }
+  to { visibility: hidden; pointer-events: none; }
+}
 .glohaus-intro.is-timed-out { display: none !important; }
 .glohaus-page-pending { width:min(100% - 32px,1100px); margin:24px auto; padding:clamp(16px,3vw,28px) 0 max(96px,env(safe-area-inset-bottom)); color:var(--ink); min-height:65dvh; }
 .glohaus-page-pending > [role="status"] { color:var(--muted); font-size:.9rem; }

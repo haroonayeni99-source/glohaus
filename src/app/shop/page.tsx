@@ -8,6 +8,7 @@ import {
 import { publicMetadata, publicPages } from "@/lib/public-seo";
 import Image from "next/image";
 import Link from "next/link";
+import Form from "next/form";
 import {
   ArrowRight,
   Heart,
@@ -89,7 +90,7 @@ export default async function ShopPage({
         <MarketplaceSidebar categories={categories} collection={collection} q={q} categoryId={categoryId} />
 
         <section className="marketplace-main">
-          <form className="marketplace-search" action="/shop" method="get">
+          <Form className="marketplace-search" action="/shop">
             {categoryId && (
               <input type="hidden" name="categoryId" value={categoryId} />
             )}
@@ -104,7 +105,7 @@ export default async function ShopPage({
               aria-label="Search marketplace"
             />
             <button type="submit">Search</button>
-          </form>
+          </Form>
 
           <section className="marketplace-hero">
             <div className="marketplace-hero-copy">

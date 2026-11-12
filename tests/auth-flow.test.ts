@@ -45,6 +45,10 @@ describe("auth confirmation flow", () => {
   });
 
   it("rejects unsafe return targets", () => {
+    expect(confirmationPlan("/\t/evil.example", {})).toEqual({
+      audience: "customer",
+      redirectTo: "/account",
+    });
     expect(confirmationPlan("//evil.example", {})).toEqual({
       audience: "customer",
       redirectTo: "/account",

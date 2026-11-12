@@ -72,3 +72,13 @@ Instagram lifecycle:
 - https://www.glohaus.shop/api/webhooks/instagram/data-deletion
 
 Owner-only information: truthful legal identity/business evidence and data-handling declarations; TikTok developer login; consent for real provider accounts. Never put passwords, tokens or app secrets in this log/chat.
+
+## 12 November 2026 — unified management preview batch
+
+Scope: Portfolio page reuses the existing BusinessConnections controls in social-only mode, alongside the unchanged upload editor. Shared consumers identified before edits: `/professional/connections`, `tests/fixtures/business-tools-entry.tsx`, and existing connection DOM tests. Default mode retains calendars and all existing controls. Social-only mode excludes calendar forms and calendar connection cards; social requests, permissions, sync, publication and upload logic are unchanged.
+
+Flag: preview environment only (`VERCEL_ENV=preview`, unless `PORTFOLIO_WORKSPACE_ENABLED=false`). Production is hard OFF for this batch. No production environment values changed. Existing OAuth callbacks still return to the original Connections page; consolidating that return destination is deferred until acceptance. No database migration required for this management step. Collections and Reels are not implemented by this batch.
+
+Evidence: 6 focused test files / 66 tests passed, including two new DOM cases covering default calendar preservation, social-only filtering, disabled provider access and the unchanged real sync request path. Typecheck and production build passed. Scoped lint and diff whitespace checks passed. Browser harness was extended to cover social-only mode across its existing size/theme matrix; local Chromium could not launch (SIGABRT / ptrace denied), so no local browser/device pass is claimed. Browser download also returned a truncated archive; system Chromium was tried once. CI/preview verification remains required.
+
+Production baseline remains the recorded deployment; this branch has not been promoted and cannot expose the new area in production. No financial, booking, schema, credential or provider-setting changes. Full-suite result will be appended after it completes. Commit: containing this entry; resolve with git log.

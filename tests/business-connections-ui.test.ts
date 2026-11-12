@@ -218,3 +218,29 @@ it.each([
   expect(host.textContent).toContain(message);
   expect(button(host, "Refresh public videos").disabled).toBe(false);
 });
+
+it("keeps calendar management on Connections and excludes it from the social workspace", async () => {
+  const calendar = { ...connection, id: "calendar-fixture", provider: "google" as const, label: "Private calendar" };
+  const { host, root } = await setup(vi.fn(), { connections: [calendar, connection] });
+  expect(host.querySelector("#calendar")).not.toBeNull();
+  expect(host.textContent).toContain("Private calendar");
+  await act(async () => root.render(React.createElement(BusinessConnections, {
+    ...props, connections: [calendar, connection], socialOnly: true,
+  })));
+  expect(host.querySelector("#calendar")).toBeNull();
+  expect(host.textContent).not.toContain("Private calendar");
+  expect(button(host, "Provider setup required").disabled).toBe(true);
+  expect(button(host, "Connect TikTok").disabled).toBe(false);
+  expect(host.textContent).toContain("Approval Mode is the default");
+  expect(host.querySelector("#posts")).not.toBeNull();
+});
+
+it("uses the existing social sync request in the portfolio workspace", async () => {
+  const fetcher = vi.fn<(url: string, options: RequestInit) => Promise<Response>>().mockResolvedValue(Response.json({ synced: 1 }));
+  const { host } = await setup(fetcher, { socialOnly: true });
+  await act(async () => button(host, "Refresh public videos").click());
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(fetcher.mock.calls[0]?.[0]).toBe("/api/v1/professional/connections");
+  expect(host.textContent).toContain("Refresh complete");
+  expect(host.textContent).toContain("Choose Published and Save post");
+});

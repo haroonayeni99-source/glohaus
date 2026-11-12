@@ -62,6 +62,7 @@ createRoot(document.getElementById("root")!).render(
       />
     ) : (
       <BusinessConnections
+        socialOnly={query.get("view") === "portfolio-workspace"}
         connections={[
           {
             id,

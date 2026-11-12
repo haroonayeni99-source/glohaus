@@ -17,6 +17,7 @@ export default async function Page({
 }) {
   const { intent, returnTo } = await searchParams;
   let code: AccessError["code"] | null = null;
+  let destination: string | null = null;
   try {
     const identity = await getIdentity();
     let account;
@@ -33,13 +34,16 @@ export default async function Page({
       const needsProfessionalSetup =
         intent === "professional" &&
         !account.roles.includes("professional");
-      if (!needsProfessionalSetup) redirect(workspacePath(account));
+      if (!needsProfessionalSetup) destination = workspacePath(account);
     }
   } catch (error) {
     if (error instanceof AccessError && error.code === "UNAUTHENTICATED")
       redirect("/sign-in");
     code = error instanceof AccessError ? error.code : "UNAVAILABLE";
   }
+  // Next redirects throw. Keep successful routing outside the database error
+  // handler so an existing account is not shown an unavailable message.
+  if (destination) redirect(destination);
   return (
     <AuthFrame audience={intent === "professional" ? "professional" : "customer"}>
       {code ? (

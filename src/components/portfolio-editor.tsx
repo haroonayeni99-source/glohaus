@@ -2,12 +2,13 @@
 import Image from "next/image";
 import { readImageFile } from "@/lib/image-file";
 import {
+  SOURCE_IMAGE_MAX_BYTES,
   VIDEO_MAX_BYTES,
   imageTypes,
   videoTypes,
 } from "@/modules/media/limits";
 import { upload } from "@vercel/blob/client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export type PortfolioAsset = {
@@ -23,6 +24,10 @@ export function PortfolioEditor({ assets,specialities=[] }: { assets: PortfolioA
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  const [uploadStage, setUploadStage] = useState("");
+  const [progress, setProgress] = useState<number | null>(null);
+  const [pendingVideoPath, setPendingVideoPath] = useState<string | null>(null);
+  const uploadingRef = useRef(false);
   const [preview, setPreview] = useState<{
     url: string;
     type: string;
@@ -43,19 +48,58 @@ export function PortfolioEditor({ assets,specialities=[] }: { assets: PortfolioA
   );
 
   async function uploadImage(file: File, altText: string) {
+    setUploadStage("Preparing photo…");
     const base64 = (await readImageFile(file)).split(",")[1];
-    const response = await fetch("/api/v1/professional/portfolio", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ base64, altText }),
+    setUploadStage("Uploading photo…");
+    await new Promise<void>((resolve, reject) => {
+      const request = new XMLHttpRequest();
+      request.open("POST", "/api/v1/professional/portfolio");
+      request.setRequestHeader("Content-Type", "application/json");
+      // Avoid an indefinitely spinning button on interrupted connections.
+      request.timeout = 90_000;
+      request.upload.onprogress = (event) => {
+        if (!event.lengthComputable) return;
+        const percentage = Math.min(
+          100,
+          Math.round((event.loaded / event.total) * 100),
+        );
+        setProgress(percentage);
+        setUploadStage(
+          percentage === 100
+            ? "Saving photo securely…"
+            : `Uploading photo… ${percentage}%`,
+        );
+      };
+      request.onload = () => {
+        if (request.status >= 200 && request.status < 300) {
+          resolve();
+          return;
+        }
+        let errorCode = "";
+        try {
+          errorCode = JSON.parse(request.responseText)?.error?.code || "";
+        } catch {
+          // A non-JSON response is still reported as an upload failure.
+        }
+        reject(
+          new Error(
+            errorCode === "UNAUTHENTICATED"
+              ? "Your session expired. Sign in again before uploading."
+              : errorCode === "INVALID_REQUEST"
+                ? "This photo was not accepted. Check the file and portfolio limit."
+                : "Photo upload failed. Please try again.",
+          ),
+        );
+      };
+      request.onerror = () =>
+        reject(new Error("Upload connection interrupted. Please try again."));
+      request.ontimeout = () =>
+        reject(new Error("Photo upload timed out. Check your connection and retry."));
+      request.send(JSON.stringify({ base64, altText }));
     });
-    if (!response.ok)
-      throw new Error(
-        "Image upload failed. Check the format and storage connection.",
-      );
   }
 
-  async function uploadVideo(file: File, altText: string) {
+  async function uploadVideo(file: File, altText: string): Promise<string> {
     if (file.size > VIDEO_MAX_BYTES)
       throw new Error("Videos must be 250 MB or smaller.");
     const extension =
@@ -64,13 +108,57 @@ export function PortfolioEditor({ assets,specialities=[] }: { assets: PortfolioA
         : file.type === "video/quicktime"
           ? "mov"
           : "mp4";
-    await upload(`portfolio/video-${crypto.randomUUID()}.${extension}`, file, {
+    setUploadStage("Starting secure video upload…");
+    const blob = await upload(`portfolio/video-${crypto.randomUUID()}.${extension}`, file, {
       access: "private",
       handleUploadUrl: "/api/v1/professional/media-upload",
       contentType: file.type,
       multipart: file.size > 10 * 1024 * 1024,
       clientPayload: JSON.stringify({ altText }),
+      onUploadProgress: ({ percentage }) => {
+        const next = Math.min(100, Math.round(percentage));
+        setProgress(next);
+        setUploadStage(
+          next === 100
+            ? "Finishing secure video upload…"
+            : `Uploading video… ${next}%`,
+        );
+      },
     });
+    return blob.pathname;
+  }
+
+  // Direct video uploads are registered by an asynchronous Blob callback.
+  // Confirm registration before claiming success or refreshing the portfolio.
+  async function waitForVideoRegistration(path: string) {
+    const deadline = Date.now() + 30_000;
+    setProgress(null);
+    setUploadStage("Adding video to your portfolio…");
+    while (Date.now() < deadline) {
+      let response: Response;
+      try {
+        response = await fetch(
+          `/api/v1/professional/portfolio?path=${encodeURIComponent(path)}`,
+          {
+            cache: "no-store",
+            signal: AbortSignal.timeout(Math.min(5000, Math.max(1, deadline - Date.now()))),
+          },
+        );
+      } catch {
+        throw new Error(
+          "The video upload finished, but its status could not be checked. Press Upload media again to finish without reuploading.",
+        );
+      }
+      if (response.ok && response.status !== 202) return;
+      if (response.status !== 202)
+        throw new Error(
+          "The video upload finished, but could not be attached yet. Press Upload media again to retry without reuploading.",
+        );
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    throw new Error(
+      "The video has uploaded but is still processing. Press Upload media again to check without reuploading.",
+    );
   }
 
   return (
@@ -79,6 +167,7 @@ export function PortfolioEditor({ assets,specialities=[] }: { assets: PortfolioA
         className="editor-form"
         onSubmit={async (event) => {
           event.preventDefault();
+          if (uploadingRef.current) return;
           const form = event.currentTarget;
           const data = new FormData(form);
           const file = data.get("media");
@@ -102,13 +191,31 @@ export function PortfolioEditor({ assets,specialities=[] }: { assets: PortfolioA
             return;
           }
 
+          if (
+            imageTypes.includes(file.type as (typeof imageTypes)[number]) &&
+            file.size > SOURCE_IMAGE_MAX_BYTES
+          ) {
+            setNotice("Images must be 20 MB or smaller.");
+            return;
+          }
+
+          uploadingRef.current = true;
           setBusy(true);
+          setProgress(null);
           setNotice("");
           try {
-            if (imageTypes.includes(file.type as (typeof imageTypes)[number]))
+            if (imageTypes.includes(file.type as (typeof imageTypes)[number])) {
               await uploadImage(file, altText);
-            else await uploadVideo(file, altText);
+            } else {
+              let path = pendingVideoPath;
+              if (!path) {
+                path = await uploadVideo(file, altText);
+                setPendingVideoPath(path);
+              }
+              await waitForVideoRegistration(path);
+            }
 
+            setPendingVideoPath(null);
             setNotice(
               "Uploaded privately. Publish it when you are ready to show it on GLOHAUS.",
             );
@@ -120,7 +227,10 @@ export function PortfolioEditor({ assets,specialities=[] }: { assets: PortfolioA
               error instanceof Error ? error.message : "Upload failed.",
             );
           } finally {
+            uploadingRef.current = false;
             setBusy(false);
+            setUploadStage("");
+            setProgress(null);
           }
         }}
       >
@@ -130,6 +240,8 @@ export function PortfolioEditor({ assets,specialities=[] }: { assets: PortfolioA
           <input
             onChange={(event) => {
               const file = event.target.files?.[0];
+              setPendingVideoPath(null);
+              setNotice("");
               setPreview(
                 file
                   ? {
@@ -181,6 +293,14 @@ export function PortfolioEditor({ assets,specialities=[] }: { assets: PortfolioA
         <button className="button" disabled={busy}>
           {busy ? "Uploading…" : "Upload media"}
         </button>
+        {busy && (
+          <div className="portfolio-upload-feedback" role="status" aria-live="polite">
+            <span>{uploadStage || "Preparing your upload…"}</span>
+            {progress !== null && (
+              <progress max={100} value={progress} aria-label="Upload progress" />
+            )}
+          </div>
+        )}
       </form>
 
       {notice && (

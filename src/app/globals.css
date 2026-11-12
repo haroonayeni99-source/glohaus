@@ -13264,3 +13264,21 @@ select {
   .glohaus-mobile-trust { gap: 8px 14px; }
   .glohaus-mobile-trust span { font-size: 11px; }
 }
+
+/* Portfolio uploads: show actual transfer progress without a blocking overlay. */
+.pro-app .pro-editor-surface .portfolio-upload-feedback {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  max-width: 32rem;
+  margin-top: 12px;
+  color: #513743;
+  font-size: 0.85rem;
+  font-weight: 650;
+}
+.pro-app .pro-editor-surface .portfolio-upload-feedback progress {
+  display: block;
+  width: 100%;
+  height: 10px;
+  accent-color: var(--plum);
+}

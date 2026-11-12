@@ -44,7 +44,7 @@ try {
   for (const theme of ["light", "night"]) {
     for (const width of [1100, 1280, 1440, 1920]) {
       for (const guest of [false, true]) {
-        const page = await browser.newPage({ viewport: { width, height: 1000 } });
+        const page = await browser.newPage({ viewport: { width, height: 1000 }, reducedMotion: "reduce" });
         const errors = [];
         page.on("pageerror", e => errors.push(e.message));
         await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.request().resourceType() === "image" ? route.fulfill({ contentType: "image/png", body: placeholder }) : route.abort());
@@ -96,7 +96,7 @@ try {
       }
     }
     for (const width of [320, 390, 760, 1099]) {
-      const page = await browser.newPage({ viewport: { width, height: 1000 } });
+      const page = await browser.newPage({ viewport: { width, height: 1000 }, reducedMotion: "reduce" });
       await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.request().resourceType() === "image" ? route.fulfill({ contentType: "image/png", body: placeholder }) : route.abort());
       await page.goto(`http://127.0.0.1:3004/?theme=${theme}`);
       // Mirror Next Image's fill positioning in this isolated Image shim too.

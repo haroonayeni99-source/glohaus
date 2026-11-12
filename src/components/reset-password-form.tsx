@@ -4,7 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-export function ResetPasswordForm({ recoveryAllowed }: { recoveryAllowed: boolean }) {
+export function ResetPasswordForm({
+  recoveryAllowed,
+}: {
+  recoveryAllowed: boolean;
+}) {
   const supabase = useMemo(() => createClient(), []);
   const [checkingSession, setCheckingSession] = useState(true);
   const [hasRecoverySession, setHasRecoverySession] = useState(false);
@@ -15,11 +19,23 @@ export function ResetPasswordForm({ recoveryAllowed }: { recoveryAllowed: boolea
   useEffect(() => {
     let active = true;
 
-    void supabase.auth.getSession().then(({ data, error: sessionError }) => {
-      if (!active) return;
-      setHasRecoverySession(recoveryAllowed && Boolean(data.session) && !sessionError);
-      setCheckingSession(false);
-    });
+    void supabase.auth
+      .getSession()
+      .then(({ data, error: sessionError }) => {
+        if (!active) return;
+        setHasRecoverySession(
+          recoveryAllowed && Boolean(data.session) && !sessionError,
+        );
+        setCheckingSession(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setHasRecoverySession(false);
+        setError(
+          "We couldn’t check your reset link. Check your connection and try again.",
+        );
+        setCheckingSession(false);
+      });
 
     return () => {
       active = false;
@@ -47,18 +63,31 @@ export function ResetPasswordForm({ recoveryAllowed }: { recoveryAllowed: boolea
       return;
     }
 
-    const result = await supabase.auth.updateUser({ password });
-    if (result.error) {
+    let updated = false;
+    try {
+      const result = await supabase.auth.updateUser({ password });
+      if (result.error) {
+        setError(
+          "We couldn’t update your password. Your reset link may have expired; request a new one and try again.",
+        );
+        return;
+      }
+      updated = true;
+      const signedOut = await supabase.auth.signOut();
+      if (signedOut.error)
+        setError(
+          "Your password was updated, but we couldn’t finish signing out. Please sign in again.",
+        );
+    } catch {
       setError(
-        "We couldn’t update your password. Your reset link may have expired; request a new one and try again.",
+        updated
+          ? "Your password was updated, but we couldn’t finish signing out. Please sign in again."
+          : "We couldn’t confirm the password update. Check your connection and try again; if you already submitted it, try signing in with your new password.",
       );
+    } finally {
       setPending(false);
-      return;
+      if (updated) setComplete(true);
     }
-
-    await supabase.auth.signOut();
-    setPending(false);
-    setComplete(true);
   }
 
   if (complete)
@@ -70,6 +99,7 @@ export function ResetPasswordForm({ recoveryAllowed }: { recoveryAllowed: boolea
           Your password has been changed. You can now sign in with your new
           password.
         </p>
+        {error && <p role="alert">{error}</p>}
         <Link className="button full-width" href="/sign-in">
           Sign in
         </Link>
@@ -91,11 +121,21 @@ export function ResetPasswordForm({ recoveryAllowed }: { recoveryAllowed: boolea
     return (
       <div className="auth-email-form">
         <p className="eyebrow">GLOHAUS</p>
-        <h1>Reset link expired</h1>
+        <h1>
+          {error ? "We couldn’t check your reset link" : "Reset link expired"}
+        </h1>
         <p className="auth-email-intro">
-          This reset link is no longer valid. Request a fresh password-reset
-          email and use the newest link.
+          {error ||
+            "This reset link is no longer valid. Request a fresh password-reset email and use the newest link."}
         </p>
+        {error && (
+          <button
+            className="button full-width"
+            onClick={() => window.location.reload()}
+          >
+            Try again
+          </button>
+        )}
         <Link className="button full-width" href="/forgot-password">
           Request a new reset link
         </Link>

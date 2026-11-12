@@ -22,7 +22,13 @@ async function mobileAppearance(page) {
   return page.evaluate(() => {
     const computed = (element, pseudo = null) => {
       const style = getComputedStyle(element, pseudo);
-      return Object.fromEntries(Array.from(style, name => [name, style.getPropertyValue(name)]));
+      // CSSOM can serialize an auto margin as its used pixel value or zero
+      // after stylesheet invalidation. Typed OM retains the authored auto;
+      // the exact rectangle comparison below independently checks placement.
+      const typed = pseudo ? null : element.computedStyleMap?.();
+      return Object.fromEntries(Array.from(style, name => [name,
+        name.startsWith("margin-") && typed?.get(name)?.toString() === "auto"
+          ? "auto" : style.getPropertyValue(name)]));
     };
     const elements = [document.documentElement, document.body,
       ...document.querySelectorAll(".mobile-customer-home, .mobile-customer-home *")];

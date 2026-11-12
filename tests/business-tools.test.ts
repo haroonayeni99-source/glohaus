@@ -5,7 +5,7 @@ import {
 } from "@/modules/business-tools/domain";
 import { reviewSchema } from "@/modules/reviews/domain";
 import { seal, unseal } from "@/modules/business-tools/secrets";
-import { beginOAuth, validateOAuthState } from "@/modules/business-tools/oauth";
+import { beginOAuth, providerReady, validateOAuthState } from "@/modules/business-tools/oauth";
 import {
   publicAddress,
   feedUrl,
@@ -85,6 +85,41 @@ describe("official account connections and safe fallbacks", () => {
       preferencesSchema.safeParse({ bufferMinutes: 60, travelBufferMinutes: 0 })
         .success,
     ).toBe(false);
+  });
+  it("limits Instagram test connections to explicitly allowed professionals without opening public access", () => {
+    vi.stubEnv("BUSINESS_TOOLS_ENCRYPTION_KEY", "ab".repeat(32));
+    vi.stubEnv("INSTAGRAM_CLIENT_ID", "123456");
+    vi.stubEnv("INSTAGRAM_CLIENT_SECRET", "fixture-secret");
+    vi.stubEnv("INSTAGRAM_API_VERSION", "v26.0");
+    vi.stubEnv("INSTAGRAM_ENABLED", "false");
+    vi.stubEnv("INSTAGRAM_TEST_PROFESSIONAL_IDS", " approved-pro , other-approved ");
+    expect(providerReady("instagram")).toBe(false);
+    expect(providerReady("instagram", "unapproved-pro")).toBe(false);
+    expect(providerReady("instagram", "approved")).toBe(false);
+    expect(() => beginOAuth("instagram", "auth", "unapproved-pro", false)).toThrow("NOT_CONFIGURED");
+    const flow = beginOAuth("instagram", "auth", "approved-pro", false);
+    const url = new URL(flow.url);
+    expect(url.searchParams.get("scope")).toBe("instagram_business_basic");
+    expect(url.searchParams.get("redirect_uri")).toBe("https://www.glohaus.shop/api/v1/professional/connections/instagram/callback");
+    expect(url.searchParams.get("client_id")).toBe("123456");
+    vi.stubEnv("INSTAGRAM_TEST_PROFESSIONAL_IDS", "");
+    expect(providerReady("instagram", "approved-pro")).toBe(false);
+    vi.stubEnv("INSTAGRAM_ENABLED", "true");
+    expect(providerReady("instagram", "unapproved-pro")).toBe(true);
+  });
+  it("still requires complete Instagram credentials for allowlisted testing and never enables other providers", () => {
+    vi.stubEnv("BUSINESS_TOOLS_ENCRYPTION_KEY", "ab".repeat(32));
+    vi.stubEnv("INSTAGRAM_TEST_PROFESSIONAL_IDS", "approved-pro");
+    vi.stubEnv("INSTAGRAM_ENABLED", "false");
+    vi.stubEnv("INSTAGRAM_CLIENT_ID", "123456");
+    vi.stubEnv("INSTAGRAM_CLIENT_SECRET", "fixture-secret");
+    vi.stubEnv("INSTAGRAM_API_VERSION", "");
+    vi.stubEnv("GOOGLE_CALENDAR_ENABLED", "false");
+    expect(providerReady("instagram", "approved-pro")).toBe(false);
+    vi.stubEnv("INSTAGRAM_API_VERSION", "v26.0");
+    vi.stubEnv("INSTAGRAM_CLIENT_SECRET", "");
+    expect(providerReady("instagram", "approved-pro")).toBe(false);
+    expect(providerReady("google", "approved-pro")).toBe(false);
   });
   it("rejects private, loopback and non-global feed destinations", () => {
     for (const ip of [

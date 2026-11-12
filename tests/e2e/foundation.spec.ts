@@ -232,9 +232,10 @@ test("dedicated Discover route behaves like a full-screen mobile feed", async ({
   expect(Math.abs(metrics.height - metrics.viewport)).toBeLessThanOrEqual(4);
 
   await expect(
-    page.locator('.glohaus-bottom-nav [aria-current="page"]'),
+    page.locator('.discover-app > .glohaus-bottom-nav [aria-current="page"]'),
   ).toHaveText("Discover");
 
+  await expect(page.locator(".glohaus-intro")).toBeHidden({ timeout: 8000 });
   const firstShare = page.getByRole("button", { name: /^Share / }).first();
   await firstShare.click();
   await expect(page.getByLabel("Post link")).toHaveValue(/\/discover#post-/);
@@ -247,7 +248,7 @@ test("Share keeps its dedicated route and a working Discover entry", async ({
   await page.goto("/share");
 
   await expect(
-    page.locator('.glohaus-bottom-nav [aria-current="page"]'),
+    page.locator('.discover-app > .glohaus-bottom-nav [aria-current="page"]'),
   ).toHaveText("Discover");
   await expect(page.getByText("SHARE. CONNECT. BOOK.")).toHaveCount(1);
   await expect(
@@ -261,6 +262,7 @@ test("Following requires a customer session on Share", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/share");
 
+  await expect(page.locator(".glohaus-intro")).toBeHidden({ timeout: 8000 });
   await page.getByRole("link", { name: "Following feed", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Sign in to see your Following feed.", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Sign in", exact: true }).click();

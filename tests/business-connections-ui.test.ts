@@ -41,7 +41,7 @@ afterEach(async () => {
   vi.unstubAllGlobals();
   vi.clearAllMocks();
 });
-async function setup(fetcher: unknown) {
+async function setup(fetcher: unknown, overrides: Partial<React.ComponentProps<typeof BusinessConnections>> = {}) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.stubGlobal("fetch", fetcher);
   const host = document.createElement("div");
@@ -52,7 +52,7 @@ async function setup(fetcher: unknown) {
     host.remove();
   };
   await act(async () =>
-    root.render(React.createElement(BusinessConnections, props)),
+    root.render(React.createElement(BusinessConnections, { ...props, ...overrides })),
   );
   return { host, root };
 }
@@ -76,6 +76,16 @@ it("announces progress immediately and prevents repeated requests until response
     "Refresh complete",
   );
   expect(m.refresh).toHaveBeenCalledOnce();
+});
+it("refreshes the Instagram connection with post-specific feedback while retaining private approval mode", async () => {
+  const fetcher = vi.fn<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>(async () => Response.json({ synced: 1, failed: 0 }));
+  const { host } = await setup(fetcher, { connections: [{ ...connection, provider: "instagram", label: "Instagram" }], ready: { ...props.ready, instagram: true } });
+  await act(async () => button(host, "Refresh Instagram posts").click());
+  expect(JSON.parse(String(fetcher.mock.calls[0][1]?.body))).toEqual({ action: "sync", id: connection.id });
+  const message = host.querySelector("[role=status]")?.textContent;
+  expect(message).toContain("Eligible Instagram posts");
+  expect(message).not.toContain("TikTok drafts");
+  expect(host.querySelector<HTMLSelectElement>('select[name="mode"]')?.value).toBe("approval");
 });
 it.each([
   [{ synced: 0, failed: 0 }, "No refresh ran"],

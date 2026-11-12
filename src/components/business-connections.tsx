@@ -55,7 +55,7 @@ export function BusinessConnections({
           ? "The connection could not finish synchronising. Reconnect or try syncing again."
           : "",
     );
-  async function action(body: unknown, path = "connections", method = "POST") {
+  async function action(body: unknown, path = "connections", method = "POST", provider?: Provider) {
     if (inFlight.current || refreshing) return;
     inFlight.current = true;
     setBusy(true);
@@ -97,7 +97,9 @@ export function BusinessConnections({
             ? "Sync needs attention. Your connection is not up to date. Check the status below."
             : typeof data.synced === "number"
               ? data.synced > 0
-                ? "Refresh complete. Eligible public videos are listed below. Choose Published and Save post to display a draft on your profile. TikTok drafts are not imported."
+                ? provider === "instagram"
+                  ? "Refresh complete. Eligible Instagram posts are listed below. Choose Published and Save post to display a draft on your profile."
+                  : "Refresh complete. Eligible public videos are listed below. Choose Published and Save post to display a draft on your profile. TikTok drafts are not imported."
                 : "No refresh ran. Another sync may already be running. Wait a moment, then refresh this page to check its status."
               : method === "DELETE"
                 ? "Removed from public display. Imported posts remain here as Hidden so later syncs preserve your choice; manually added links are removed."
@@ -608,9 +610,9 @@ export function BusinessConnections({
                       (["instagram", "tiktok"].includes(c.provider) &&
                         (!portfolio.sync_allowed || !ready[c.provider]))
                     }
-                    onClick={() => void action({ action: "sync", id: c.id })}
+                    onClick={() => void action({ action: "sync", id: c.id }, "connections", "POST", c.provider)}
                   >
-                    {busy ? "Working…" : "Refresh public videos / sync now"}
+                    {busy ? "Working…" : c.provider === "instagram" ? "Refresh Instagram posts" : "Refresh public videos / sync now"}
                   </button>
                   <button
                     className="button button-secondary"

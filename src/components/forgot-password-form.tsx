@@ -31,33 +31,38 @@ export function ForgotPasswordForm() {
     setError(null);
 
     const email = String(formData.get("email") || "").trim();
-    const supabase = createClient();
+    try {
+      const supabase = createClient();
+      const result = await supabase.auth.resetPasswordForEmail(email, {
+        // Keep password recovery on the exact production origin the browser is
+        // already using. This avoids PKCE/cookie problems caused by bouncing
+        // between www and apex domains or Vercel aliases.
+        redirectTo: passwordRecoveryCallbackUrl(),
+      });
 
-    const result = await supabase.auth.resetPasswordForEmail(email, {
-      // Keep password recovery on the exact production origin the browser is
-      // already using. This avoids PKCE/cookie problems caused by bouncing
-      // between www and apex domains or Vercel aliases.
-      redirectTo: passwordRecoveryCallbackUrl(),
-    });
+      if (result.error) {
+        const rateLimited =
+          result.error.status === 429 ||
+          result.error.message.toLowerCase().includes("rate limit");
+        setError(
+          rateLimited
+            ? "Too many reset emails have been requested. Please wait before trying again."
+            : "We couldn’t send a reset email right now. Please try again.",
+        );
+        return;
+      }
 
-    setPending(false);
-
-    if (result.error) {
-      const rateLimited =
-        result.error.status === 429 ||
-        result.error.message.toLowerCase().includes("rate limit");
-      setError(
-        rateLimited
-          ? "Too many reset emails have been requested. Please wait before trying again."
-          : "We couldn’t send a reset email right now. Please try again.",
+      setSent(true);
+      setMessage(
+        "If an account exists for that email, we’ve sent a password reset link. Use the newest email and check your spam folder if needed.",
       );
-      return;
+    } catch {
+      setError(
+        "We couldn’t connect to GLOHAUS. Check your connection and try again.",
+      );
+    } finally {
+      setPending(false);
     }
-
-    setSent(true);
-    setMessage(
-      "If an account exists for that email, we’ve sent a password reset link. Use the newest email and check your spam folder if needed.",
-    );
   }
 
   return (

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { signedInDestination } from "@/lib/auth-flow";
+import { safeReturnTo } from "@/lib/return-to";
 
 export function EmailAuthForm({
   mode,
@@ -90,7 +91,7 @@ export function EmailAuthForm({
   function confirmationDestination() {
     return audience === "professional"
       ? "/onboarding?intent=professional"
-      : redirectTo.startsWith("/account/invite?ref=") ? redirectTo : "/account";
+      : safeReturnTo(redirectTo, "/account");
   }
 
   async function submit(formData: FormData) {

@@ -74,6 +74,25 @@ async function submit(
   expect(preventDefault).toHaveBeenCalled();
 }
 describe("email authentication submission", () => {
+  it.each([
+    ["/cart", "/cart"],
+    ["/account/invite?ref=GC0123456789ABCDEF", "/account/invite?ref=GC0123456789ABCDEF"],
+    ["/p/studio?bookDate=2030-01-01", "/p/studio?bookDate=2030-01-01"],
+    ["/\t/attacker.example", "/account"],
+  ])("keeps a safe signup continuation in the confirmation email: %j", async (destination, expected) => {
+    mocks.signUp.mockResolvedValue({ data: { session: null }, error: null });
+    await submit("sign-up", "customer", destination);
+    const callback = new URL(mocks.signUp.mock.calls[0][0].options.emailRedirectTo);
+    expect(callback.origin).toBe("https://www.glohaus.shop");
+    expect(callback.searchParams.get("next")).toBe(expected);
+    expect(mocks.push).not.toHaveBeenCalled();
+  });
+  it("keeps professional email confirmation in the required onboarding flow", async () => {
+    mocks.signUp.mockResolvedValue({ data: { session: null }, error: null });
+    await submit("sign-up", "professional", "/cart");
+    const callback = new URL(mocks.signUp.mock.calls[0][0].options.emailRedirectTo);
+    expect(callback.searchParams.get("next")).toBe("/onboarding?intent=professional");
+  });
   it("returns a customer to their cart after a successful password sign-in", async () => {
     mocks.signIn.mockResolvedValue({ data: { session: {}, user: {} }, error: null });
     mocks.fetch.mockResolvedValueOnce(Response.json({ redirectTo: "/account" }))

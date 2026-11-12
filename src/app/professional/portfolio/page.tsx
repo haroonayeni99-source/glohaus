@@ -5,6 +5,9 @@ import Link from "next/link";
 import { pageAccount } from "@/lib/page-access";
 import { withIdentity } from "@/lib/db";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
+import { BusinessConnections } from "@/components/business-connections";
+import { businessTools } from "@/modules/business-tools/repository";
+import { providerReady } from "@/modules/business-tools/oauth";
 import { AccessMessage } from "@/components/access-message";
 import {
   PortfolioEditor,
@@ -19,6 +22,14 @@ export default async function Portfolio() {
       </div>
     );
   const account = result.account;
+  // Preview only until the complete journey baseline is accepted.
+  const unified = process.env.VERCEL_ENV === "preview" && process.env.PORTFOLIO_WORKSPACE_ENABLED !== "false";
+  const socialTools = unified
+    ? await withIdentity(account.authId, db => businessTools(db, account.professionalId!))
+    : null;
+  const services = unified ? await withIdentity(account.authId, async db => (await db.query<{ id: string; name: string }>(
+    "SELECT id,name FROM beauty.services WHERE professional_id=$1 AND active ORDER BY name", [account.professionalId],
+  )).rows) : [];
   const assets = await withIdentity(
     account.authId,
     async (db) =>
@@ -38,20 +49,28 @@ export default async function Portfolio() {
         <Link href="/professional" className="pro-back-link">← Dashboard</Link>
         <p className="pro-kicker">A LITTLE OF WHAT YOU DO BEST</p>
         <h1>Your portfolio, your signature.</h1>
-        <p><Link href="/professional/connections#social">Connect social media or add post links →</Link></p>
+        {!unified && <p><Link href="/professional/connections#social">Connect social media or add post links →</Link></p>}
         <p className="pro-page-lead">
           Uploads stay private until both the content and your professional profile are published.
         </p>
-        <section className="pro-editor-surface" aria-label="Linked social posts">
+        {!unified && <section className="pro-editor-surface" aria-label="Linked social posts">
           <h2>Linked social posts · {social.total}</h2>
           <p>{social.drafts} draft · {social.published} published · {social.hidden} hidden. These posts stay on TikTok or Instagram and do not count as uploaded files.</p>
           <p>Your professional profile must also be published before customers can see published social posts.</p>
           <Link className="button" href="/professional/connections#posts">Preview &amp; manage social posts</Link>
-        </section>
+        </section>}
         <section className="pro-editor-surface" aria-label="Uploaded portfolio files">
           <h2>Uploaded photos &amp; videos</h2>
           <PortfolioEditor assets={assets} specialities={specialities}/>
         </section>
+        {socialTools && <BusinessConnections
+          {...JSON.parse(JSON.stringify(socialTools))}
+          socialOnly
+          services={services}
+          ready={{google: false, outlook: false, ics: false,
+            instagram: providerReady("instagram", account.professionalId!),
+            tiktok: providerReady("tiktok", account.professionalId!)}}
+        />}
       </main>
     </div>
   );

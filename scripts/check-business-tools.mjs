@@ -338,6 +338,12 @@ try {
         path: `reports/business-tools-${engine}-${name}-${theme}-owner.png`,
         fullPage: true,
       });
+      await goto("portfolio-workspace");
+      await expect(page.locator("#calendar")).toHaveCount(0);
+      await expect(page.getByText("Fixture calendar", {exact:true})).toHaveCount(0);
+      await expect(page.getByRole("heading", {name:"Social Media & Portfolio",exact:true})).toBeVisible();
+      await expect(page.locator("#posts")).toHaveCount(1);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false);
       results.push({
         device: name,
         theme,

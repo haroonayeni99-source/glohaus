@@ -23,6 +23,7 @@ export function BusinessConnections({
   ready,
   services,
   callback,
+  socialOnly = false,
   portfolio = {
     max_visible_posts: 12,
     instagram_url: "",
@@ -36,6 +37,7 @@ export function BusinessConnections({
   ready: Record<Provider, boolean>;
   services: { id: string; name: string }[];
   callback?: string;
+  socialOnly?: boolean;
   portfolio?: {
     max_visible_posts: number;
     instagram_url: string;
@@ -44,6 +46,9 @@ export function BusinessConnections({
     public_profile_ready?: boolean;
   };
 }) {
+  const visibleConnections = socialOnly
+    ? connections.filter(c => c.provider === "instagram" || c.provider === "tiktok")
+    : connections;
   const inFlight = useRef(false);
   const [refreshing, startRefresh] = useTransition();
   const router = useRouter(),
@@ -166,7 +171,7 @@ export function BusinessConnections({
           )}
         </div>
       )}
-      <section id="calendar" className="pro-editor-surface">
+      {!socialOnly && <section id="calendar" className="pro-editor-surface">
         <h2>Calendar &amp; availability</h2>
         <p>
           Connect your calendar to share busy times while keeping your existing booking tools.
@@ -328,7 +333,7 @@ export function BusinessConnections({
         <p>
           Calendar updates can be delayed, so clashes are still possible. New slots may pause if a calendar is out of date or has an error, until it syncs or you disconnect it.
         </p>
-      </section>
+      </section>}
       <section id="social" className="pro-editor-surface">
         <h2>Social Media &amp; Portfolio</h2>
         {portfolio.public_profile_ready === false && (
@@ -507,8 +512,8 @@ export function BusinessConnections({
       </section>
       <section className="pro-editor-surface">
         <h2>Your connections</h2>
-        {!connections.length && <p>No external accounts connected yet.</p>}
-        {connections.map((c) => (
+        {!visibleConnections.length && <p>No external accounts connected yet.</p>}
+        {visibleConnections.map((c) => (
           <article
             key={`${c.id}:${c.social_mode}:${c.sync_enabled}`}
             className="business-connection"

@@ -148,10 +148,11 @@ test("signed-out mobile navigation preserves private return routes", async ({
   ).toHaveAttribute("href", "/sign-in?returnTo=%2Fworkspace");
 
   await page.goto("/shop");
-  await expect(page.getByRole("link", { name: "Cart" })).toHaveAttribute(
-    "href",
-    "/sign-in?returnTo=%2Fcart",
-  );
+  const carts = page.getByRole("link", { name: "Cart", exact: true });
+  await expect(carts).toHaveCount(2);
+  for (const cart of await carts.all()) {
+    await expect(cart).toHaveAttribute("href", "/sign-in?returnTo=%2Fcart");
+  }
 });
 
 test("private routes fail closed without credentials", async ({
@@ -260,12 +261,31 @@ test("Following requires a customer session on Share", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/share");
 
-  await page.getByRole("button", { name: "Following", exact: true }).click();
+  await page.getByRole("link", { name: "Following feed", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Sign in to see your Following feed.", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/sign-in\?returnTo=.*share.*feed.*following/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "We couldn’t load your account right now.",
   );
 });
+
+for (const collection of ["feed=following", "view=saved"]) {
+  test(`Discover filters retain ${collection} without reloading the document`, async ({ page }) => {
+    await page.goto(`/share?${collection}`);
+    await expect(page.locator(".glohaus-intro")).toBeHidden({ timeout: 8000 });
+    const documents: string[] = [];
+    page.on("request", request => {
+      if (request.resourceType() === "document") documents.push(request.url());
+    });
+    await page.getByText("Filter by speciality", { exact: true }).click();
+    await page.getByRole("button", { name: "Filter Discover", exact: true }).click();
+    await expect(page).toHaveURL(/categoryId=/);
+    expect(new URL(page.url()).searchParams.get(collection.split("=")[0])).toBe(collection.split("=")[1]);
+    expect(documents).toEqual([]);
+    await expect(page.locator(".glohaus-intro")).toHaveCount(0);
+  });
+}
 
 test("professional auth preserves professional intent", async ({ page }) => {
   await page.goto("/sign-in?intent=professional&returnTo=/professional");

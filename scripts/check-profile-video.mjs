@@ -24,7 +24,20 @@ try {
     expect(await section.evaluate(el => parseFloat(getComputedStyle(el).paddingLeft))).toBeGreaterThanOrEqual(20);
     expect(await section.locator("h2").evaluate(el => getComputedStyle(el).fontFamily)).not.toMatch(/Georgia/);
     if (theme === "night") {
-      expect(await page.locator(".booking-widget").evaluate(el => getComputedStyle(el).backgroundColor === getComputedStyle(el.parentElement).backgroundColor)).toBe(true);
+      const contrast = await page.locator(".booking-widget").evaluate(el => {
+        const canvas = document.createElement("canvas"); canvas.width = canvas.height = 1;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "white"; ctx.fillRect(0, 0, 1, 1);
+        const ancestors = []; for (let node = el; node; node = node.parentElement) ancestors.unshift(node);
+        for (const node of ancestors) { ctx.fillStyle = getComputedStyle(node).backgroundColor; ctx.fillRect(0, 0, 1, 1); }
+        const background = [...ctx.getImageData(0, 0, 1, 1).data].slice(0, 3);
+        ctx.fillStyle = getComputedStyle(el.querySelector("h2")).color; ctx.fillRect(0, 0, 1, 1);
+        const foreground = [...ctx.getImageData(0, 0, 1, 1).data].slice(0, 3);
+        const luminance = rgb => rgb.map(x => x / 255).map(x => x <= .04045 ? x / 12.92 : ((x + .055) / 1.055) ** 2.4).reduce((sum, x, i) => sum + x * [.2126, .7152, .0722][i], 0);
+        const a = luminance(background), b = luminance(foreground);
+        return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
+      });
+      expect(contrast).toBeGreaterThanOrEqual(4.5);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: `reports/profile-video-layout-${theme}-${width}.png`, fullPage: true });

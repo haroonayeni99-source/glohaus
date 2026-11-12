@@ -12,6 +12,7 @@ if (desktopStart < 0 || desktopEnd < 0) throw new Error("Desktop CSS boundary no
 // desktop homepage block when checking that its media query leaves mobile intact.
 const desktopCss = styles.slice(desktopStart, desktopEnd);
 const categories = ["hair", "nails", "barber", "injectables"];
+const categoryAssets = new Set([...categories.map(category => `${category}-v2.webp`), "lashes.svg"]);
 const placeholder = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a3ioAAAAASUVORK5CYII=", "base64");
 const results = [];
 // The invariant is that desktop CSS cannot change mobile layout or styling.
@@ -43,8 +44,8 @@ try {
         await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.request().resourceType() === "image" ? route.fulfill({ contentType: "image/png", body: placeholder }) : route.abort());
         await page.route("**/images/categories/*", async route => {
           const name = new URL(route.request().url()).pathname.split("/").pop();
-          expect(categories.some(category => name === `${category}-v2.webp`)).toBe(true);
-          await route.fulfill({ contentType: "image/webp", body: await readFile(`public/images/categories/${name}`) });
+          expect(categoryAssets.has(name)).toBe(true);
+          await route.fulfill({ contentType: name.endsWith(".svg") ? "image/svg+xml" : "image/webp", body: await readFile(`public/images/categories/${name}`) });
         });
         await page.goto(`http://127.0.0.1:3004/?theme=${theme}${guest ? "&guest=1" : ""}`);
         // The isolated Image shim does not supply Next's inline fill styles.

@@ -74,7 +74,7 @@ export function QualityControlWorkspace() {
     {statuses.map(s=><div key={s} style={surface}><div style={{fontSize:28,fontWeight:800}}>{counts[s]}</div><small>{s}</small></div>)}
     </div>
     <nav aria-label="Quality control tools" style={{display:"flex",flexWrap:"wrap",gap:8}}>{["Audit","Bugs","Report a bug","Release readiness","Regression","Change log","Live vs pending"].map(t=><button key={t} type="button" onClick={()=>setTab(t)} style={{...button,background:tab===t?"#812c60":"#f9e7f1",color:tab===t?"white":"#592440"}}>{t}</button>)}</nav>
-    <p style={{fontSize:13,opacity:.83}}>Storage: this browser only. Export JSON regularly; screenshots are stored as links, not uploaded. Automated tests and cross-device syncing are not connected yet.</p>
+    <p style={{fontSize:13,opacity:.83}}>Audit notes are saved in this browser only. Export JSON as a backup. Live automated checks appear above; audit notes do not sync between devices. Screenshots are stored as links, not uploaded.</p>
     {tab==="Audit"&&<section style={surface}><h2>Detailed website audit</h2><div style={{display:"flex",gap:9,flexWrap:"wrap",marginBottom:15}}>
       <select style={{...field,width:"auto"}} aria-label="Area" value={area} onChange={e=>setArea(e.target.value)}><option>All</option>{Object.keys(areas).map(a=><option key={a}>{a}</option>)}</select>
       <select style={{...field,width:"auto"}} aria-label="Status" value={filter} onChange={e=>setFilter(e.target.value)}><option>All</option>{statuses.map(s=><option key={s}>{s}</option>)}</select>

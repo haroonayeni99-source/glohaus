@@ -19,7 +19,7 @@ vi.mock("next/navigation", () => ({
 let root: Root;
 let container: HTMLDivElement;
 let selected: File;
-let description = "Finished portfolio work";
+const description = "Finished portfolio work";
 
 beforeEach(async () => {
   vi.clearAllMocks();
@@ -89,8 +89,8 @@ it("shows upload progress, uses a bounded image request, and clears the loading 
     ontimeout: (() => void) | null = null;
     body = "";
     constructor() { FakeRequest.last = this; }
-    open(_method: string, _url: string) {}
-    setRequestHeader(_key: string, _value: string) {}
+    open = vi.fn();
+    setRequestHeader = vi.fn();
     send(body: string) {
       this.body = body;
       this.upload.onprogress?.({ lengthComputable: true, loaded: 100, total: 100 });

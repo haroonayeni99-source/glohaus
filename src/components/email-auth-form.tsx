@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { signedInDestination } from "@/lib/auth-flow";
+import { emailAuthCallbackUrl } from "@/lib/email-auth-callback";
 import { safeReturnTo } from "@/lib/return-to";
 
 export function EmailAuthForm({
@@ -13,11 +14,13 @@ export function EmailAuthForm({
   redirectTo,
   audience = "customer",
   ownerEntry = false,
+  isolatedPreview = false,
 }: {
   mode: "sign-in" | "sign-up";
   redirectTo: string;
   audience?: "customer" | "professional";
   ownerEntry?: boolean;
+  isolatedPreview?: boolean;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -78,14 +81,7 @@ export function EmailAuthForm({
   }
 
   function authCallbackUrl(next: string) {
-    const productionHosts = new Set(["glohaus.shop", "www.glohaus.shop"]);
-    const current = new URL(window.location.href);
-    const origin = productionHosts.has(current.hostname)
-      ? current.origin
-      : "https://www.glohaus.shop";
-    const url = new URL("/auth/callback", origin);
-    url.searchParams.set("next", next);
-    return url.toString();
+    return emailAuthCallbackUrl(window.location.href, next, isolatedPreview);
   }
 
   function confirmationDestination() {

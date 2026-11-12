@@ -387,7 +387,7 @@ try {
   await fallbackPage
     .getByRole("button", { name: "Load street map", exact: true })
     .click();
-  await expect(fallbackPage.getByText("3D is unavailable on this device. The standard street map is available below.")).toBeVisible();
+  await expect(fallbackPage.getByRole("status").filter({ hasText: "Using the standard street map." })).toBeVisible();
   await expect(fallbackPage.getByRole("button", { name: "Zoom in street map", exact: true })).toBeEnabled();
   await expect(
     fallbackPage.getByRole("heading", {

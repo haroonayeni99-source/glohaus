@@ -4,7 +4,7 @@ import { LoadingDots } from "./loading-dots";
 import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { CartOverview } from "@/modules/shop/domain";
 import { cartErrorMessage } from "@/modules/shop/cart-feedback";
 
@@ -17,6 +17,7 @@ function money(pence: number) {
 
 export function CartManager({ initialCart }: { initialCart: CartOverview }) {
   const [cart, setCart] = useState(initialCart);
+  const checkoutInFlight = useRef(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
 
@@ -48,7 +49,9 @@ export function CartManager({ initialCart }: { initialCart: CartOverview }) {
   }
 
   async function checkout() {
-    if (busyId !== null || hasUnavailable) return;
+    if (checkoutInFlight.current || busyId !== null || hasUnavailable) return;
+    checkoutInFlight.current = true;
+    let redirecting = false;
     setBusyId("checkout");
     setNotice("");
     try {
@@ -67,10 +70,14 @@ export function CartManager({ initialCart }: { initialCart: CartOverview }) {
         return;
       }
       window.location.assign(data.url);
+      redirecting = true;
     } catch {
       setNotice("Secure checkout is temporarily unavailable.");
     } finally {
-      setBusyId(null);
+      if (!redirecting) {
+        checkoutInFlight.current = false;
+        setBusyId(null);
+      }
     }
   }
 
@@ -215,6 +222,7 @@ export function CartManager({ initialCart }: { initialCart: CartOverview }) {
         <button
           type="button"
           disabled={hasUnavailable || busyId !== null}
+          aria-busy={busyId === "checkout"}
           data-analytics-action="checkout"
           onClick={checkout}
         >

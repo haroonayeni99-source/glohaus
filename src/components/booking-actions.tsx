@@ -1,6 +1,6 @@
 "use client";
 import { LoadingDots } from "./loading-dots";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -18,6 +18,7 @@ export function BookingActions({
   cancellable: boolean;
 }) {
   const [reason, setReason] = useState("");
+  const paymentInFlight = useRef(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const router = useRouter();
@@ -57,7 +58,10 @@ export function BookingActions({
             <button
               className="button"
               disabled={busy}
+              aria-busy={busy}
               onClick={async () => {
+                if (paymentInFlight.current || busy) return;
+                paymentInFlight.current = true;
                 setBusy(true);
                 setNotice("");
                 try {
@@ -82,6 +86,7 @@ export function BookingActions({
                       ? error.message
                       : "Could not open checkout.",
                   );
+                  paymentInFlight.current = false;
                   setBusy(false);
                   router.refresh();
                 }

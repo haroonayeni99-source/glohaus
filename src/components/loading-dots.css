@@ -26,3 +26,16 @@
 @media (prefers-reduced-motion: reduce) {
   .glohaus-loading-dots > span { animation: none; }
 }
+
+/* Only route fallbacks: keep the header/navigation outside this content area. */
+.glohaus-page-pending.glohaus-page-pending--dots {
+  display: grid;
+  place-items: center;
+  padding: 24px 0;
+}
+.glohaus-page-pending-centre {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+}

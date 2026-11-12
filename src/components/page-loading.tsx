@@ -18,26 +18,15 @@ export function PageLoading({ area = "home" }: { area?: Area }) {
       <PublicHeader />
       <main
         id="main"
-        className={`glohaus-page-pending glohaus-page-pending--${area}`}
+        className={`glohaus-page-pending glohaus-page-pending--dots glohaus-page-pending--${area}`}
         data-glohaus-route-pending
         aria-busy="true"
       >
-        <p role="status">
+        <div className="glohaus-page-pending-centre">
           <LoadingDots />
-          Loading {area === "home" ? "this page" : titles[area].toLowerCase()}…
-        </p>
-        <div aria-hidden="true" className="glohaus-page-placeholder">
-          <div className="glohaus-page-placeholder-heading" />
-          <div className="glohaus-page-placeholder-line" />
-          {area === "discover" ? (
-            <div className="glohaus-page-placeholder-video" />
-          ) : (
-            <div className="glohaus-page-placeholder-grid">
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="glohaus-page-placeholder-card" />
-              ))}
-            </div>
-          )}
+          <span className="sr-only">
+            Loading {area === "home" ? "this page" : titles[area].toLowerCase()}…
+          </span>
         </div>
       </main>
       <BottomNavigation

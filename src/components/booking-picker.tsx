@@ -1,7 +1,7 @@
 "use client";
 import { LoadingDots } from "./loading-dots";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import Image from "next/image";
 import Link from "next/link";
@@ -94,6 +94,7 @@ export function BookingPicker({
   const [notice, setNotice] = useState("");
   const [loadingSlots, setLoadingSlots] = useState(Boolean(initialDate));
   const [submitting, setSubmitting] = useState(false);
+  const bookingInFlight = useRef(false);
   const [accepted, setAccepted] = useState(false);
   const [earlyServiceRequested,setEarlyServiceRequested] = useState(false);
   const [earlyServiceBefore,setEarlyServiceBefore] = useState(0);
@@ -184,7 +185,8 @@ export function BookingPicker({
     : "";
 
   async function submitBooking() {
-    if (!service || !selected || !accepted || !policy || loadingPolicy || (earlyServiceNeeded&&!earlyServiceRequested)) return;
+    if (bookingInFlight.current || !service || !selected || !accepted || !policy || loadingPolicy || (earlyServiceNeeded&&!earlyServiceRequested)) return;
+    bookingInFlight.current = true;
     setSubmitting(true);
     setNotice("");
     try {
@@ -209,6 +211,7 @@ export function BookingPicker({
           result.error?.code === "ONBOARDING_REQUIRED"
         ) {
           setNeedsAccount(true);
+          bookingInFlight.current = false;
           setSubmitting(false);
           return;
         }
@@ -241,6 +244,7 @@ export function BookingPicker({
       window.location.href = result.url;
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Could not book.");
+      bookingInFlight.current = false;
       setSubmitting(false);
     }
   }
@@ -524,6 +528,7 @@ export function BookingPicker({
             className="button full-width booking-pay-button"
             type="button"
             disabled={!ready || !accepted || !policy || loadingPolicy || submitting || (earlyServiceNeeded&&!earlyServiceRequested)}
+            aria-busy={submitting}
             data-analytics-action="checkout"
             onClick={() => void submitBooking()}
           >

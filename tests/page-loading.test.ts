@@ -9,7 +9,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }));
 vi.mock("@/lib/supabase/client", () => ({ createClient: vi.fn() }));
-it("renders data-free local placeholders and usable navigation without replaying branding", () => {
+it("renders a centred content loader and usable navigation without replaying branding", () => {
   for (const area of [
     "home",
     "discover",
@@ -22,6 +22,9 @@ it("renders data-free local placeholders and usable navigation without replaying
       React.createElement(PageLoading, { area }),
     );
     expect(html).toContain("data-glohaus-route-pending");
+    expect(html).toContain("glohaus-page-pending--dots");
+    expect(html).toContain("glohaus-page-pending-centre");
+    expect(html).not.toContain("glohaus-page-placeholder");
     expect(html).toContain('aria-busy="true"');
     expect(html).toContain('aria-label="Mobile navigation"');
     expect(html).toContain('href="/shop"');

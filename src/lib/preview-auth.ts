@@ -4,7 +4,8 @@ const DEFAULT_PRODUCTION_ORIGIN = "https://glohaus.shop";
 // The existing disposable validation project, never the production database.
 const VALIDATION_PROJECT = "rqsyakggwmpkqzzogvll";
 
-function isolatedValidationPreview() {
+export function isolatedValidationPreview() {
+  if (process.env.VERCEL_ENV !== "preview") return false;
   if (process.env.GLOHAUS_ISOLATED_PREVIEW_AUTH !== "true") return false;
   if (process.env.NEXT_PUBLIC_SUPABASE_URL !== `https://${VALIDATION_PROJECT}.supabase.co`)
     return false;

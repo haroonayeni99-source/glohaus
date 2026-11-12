@@ -209,7 +209,7 @@
    collection links pushed the full-height feed below its fixed navigation. */
 @media (max-width:600px) {
   .discover-app .discover-collection-nav {
-    position:absolute; z-index:21; top:64px; left:0; right:0;
+    position:absolute; z-index:19; top:64px; left:0; right:0;
     display:flex; flex-wrap:nowrap; gap:6px; height:52px; box-sizing:border-box;
     margin:0; padding:4px 12px; overflow-x:auto; scrollbar-width:none;
   }
@@ -217,4 +217,5 @@
   .discover-app .discovery-tabs { top:118px; }
   .discover-app .taxonomy-discover-controls { top:172px; }
   .discover-app .feed-overline { top:224px; }
+  .discover-app .taxonomy-discover-filter { max-height:calc(100dvh - 308px - env(safe-area-inset-bottom)); }
 }

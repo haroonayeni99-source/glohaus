@@ -171,3 +171,14 @@
 :root[data-theme] .notification-list article time { color: var(--ui-muted); }
 :root[data-theme="night"] .pro-notification-list article :is(strong, small) { color: var(--ui-text); }
 :root[data-theme="night"] .pro-notification-list article time { color: var(--ui-muted); }
+
+/* Availability view tabs keep their own paired surface in either theme. */
+:root[data-theme] .pro-app .management-tabs {
+  background:var(--ui-surface-muted); border:1px solid var(--ui-border);
+}
+:root[data-theme] .pro-app .management-tabs button {
+  background:var(--ui-surface); color:var(--ui-text); border-color:var(--ui-border);
+}
+:root[data-theme] .pro-app .management-tabs button[aria-pressed="true"] {
+  background:var(--ui-accent); color:var(--ui-on-accent); border-color:var(--ui-accent);
+}

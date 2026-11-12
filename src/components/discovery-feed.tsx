@@ -20,6 +20,7 @@ import {
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import Form from "next/form";
 import {
   ArrowDown,
   ArrowUp,
@@ -417,10 +418,12 @@ export function DiscoveryFeed({
         {taxonomy && (
           <details className="taxonomy-discover-controls">
             <summary>Filter by speciality</summary>
-            <form action={routeBase} className="taxonomy-discover-filter">
+            <Form action={routeBase} className="taxonomy-discover-filter">
+              {followingView ? <input type="hidden" name="feed" value="following" />
+                : savedView ? <input type="hidden" name="view" value="saved" /> : null}
               <TaxonomyFilters catalog={taxonomy} {...taxonomySelection} />
               <button className="button small">Filter Discover</button>
-            </form>
+            </Form>
           </details>
         )}
         <div className="discovery-tabs" aria-label="Filter inspiration">

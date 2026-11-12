@@ -19,52 +19,34 @@ export default async function Availability() {
       </div>
     );
   const account = result.account;
-  const rules = await withIdentity(
+  // One authorised transaction avoids repeating pool/role/session setup four times.
+  const { rules, services, lastMinuteSlots, blocks } = await withIdentity(
     account.authId,
-    async (db) =>
-      (
-        await db.query<Rule>(
-          'SELECT weekday,start_minute AS "startMinute",end_minute AS "endMinute" FROM beauty.availability_rules WHERE professional_id=$1 ORDER BY weekday',
-          [account.professionalId],
-        )
-      ).rows,
-  );
-  const services = await withIdentity(
-    account.authId,
-    async (db) =>
-      (
-        await db.query<Service>(
-          "SELECT * FROM beauty.services WHERE professional_id=$1 AND active=true ORDER BY name",
-          [account.professionalId],
-        )
-      ).rows,
-  );
-  const lastMinuteSlots = await withIdentity(
-    account.authId,
-    async (db) =>
-      (
-        await db.query<{ id: string; service_id: string; starts_at: string; ends_at: string; caption: string; service_name: string }>(
-          `SELECT slot.id,slot.service_id,slot.starts_at,slot.ends_at,slot.caption,service.name AS service_name
-           FROM beauty.last_minute_slots slot
-           JOIN beauty.services service ON service.id=slot.service_id
-           WHERE slot.professional_id=$1
-             AND slot.status='active'
-             AND slot.expires_at>now()
-             AND slot.starts_at>now()
-           ORDER BY slot.starts_at`,
-          [account.professionalId],
-        )
-      ).rows,
-  );
-  const blocks = await withIdentity(
-    account.authId,
-    async (db) =>
-      (
-        await db.query<TimeOff>(
-          'SELECT id,starts_at AS "startsAt",ends_at AS "endsAt",label FROM beauty.availability_blocks WHERE professional_id=$1 AND ends_at>now() ORDER BY starts_at LIMIT 100',
-          [account.professionalId],
-        )
-      ).rows,
+    async (db) => ({
+      rules: (await db.query<Rule>(
+        'SELECT weekday,start_minute AS "startMinute",end_minute AS "endMinute" FROM beauty.availability_rules WHERE professional_id=$1 ORDER BY weekday',
+        [account.professionalId],
+      )).rows,
+      services: (await db.query<Service>(
+        "SELECT * FROM beauty.services WHERE professional_id=$1 AND active=true ORDER BY name",
+        [account.professionalId],
+      )).rows,
+      lastMinuteSlots: (await db.query<{ id: string; service_id: string; starts_at: string; ends_at: string; caption: string; service_name: string }>(
+        `SELECT slot.id,slot.service_id,slot.starts_at,slot.ends_at,slot.caption,service.name AS service_name
+         FROM beauty.last_minute_slots slot
+         JOIN beauty.services service ON service.id=slot.service_id
+         WHERE slot.professional_id=$1
+           AND slot.status='active'
+           AND slot.expires_at>now()
+           AND slot.starts_at>now()
+         ORDER BY slot.starts_at`,
+        [account.professionalId],
+      )).rows,
+      blocks: (await db.query<TimeOff>(
+        'SELECT id,starts_at AS "startsAt",ends_at AS "endsAt",label FROM beauty.availability_blocks WHERE professional_id=$1 AND ends_at>now() ORDER BY starts_at LIMIT 100',
+        [account.professionalId],
+      )).rows,
+    }),
   );
   return (
     <div className="pro-app">

@@ -60,11 +60,14 @@ export function providerReady(provider: Provider, professionalId?: string) {
   )
     return false;
   const config = configuration(provider, professionalId);
+  const instagramTestAccount = provider === "instagram" && Boolean(professionalId) &&
+    (process.env.INSTAGRAM_TEST_PROFESSIONAL_IDS || "").split(",")
+      .map(id => id.trim()).filter(Boolean).includes(professionalId!);
   // Credentials alone do not imply approved public access.
   return Boolean(
     config.clientId &&
     config.secret &&
-    (config.sandbox || process.env[`${names[provider]}_ENABLED`] === "true"),
+    (config.sandbox || instagramTestAccount || process.env[`${names[provider]}_ENABLED`] === "true"),
   );
 }
 const authEndpoints = {

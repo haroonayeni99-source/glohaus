@@ -102,7 +102,7 @@
 .glohaus-intro { display: block; }
 .glohaus-intro {
   /* Release the page even when hydration and the inline timer cannot run. */
-  animation: glohaus-intro-safety 6s step-end forwards;
+  animation: glohaus-intro-safety 6s step-end forwards !important;
 }
 @keyframes glohaus-intro-safety {
   from { visibility: visible; }

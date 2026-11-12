@@ -40,7 +40,7 @@ export default async function Connections({
     google: providerReady("google"),
     outlook: providerReady("outlook"),
     ics: providerReady("ics"),
-    instagram: providerReady("instagram"),
+    instagram: providerReady("instagram", a.professionalId!),
     tiktok: providerReady("tiktok", a.professionalId!),
   };
   return (

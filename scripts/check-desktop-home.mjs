@@ -12,6 +12,7 @@ if (desktopStart < 0 || desktopEnd < 0) throw new Error("Desktop CSS boundary no
 // desktop homepage block when checking that its media query leaves mobile intact.
 const desktopCss = styles.slice(desktopStart, desktopEnd);
 const categories = ["hair", "nails", "barber", "injectables"];
+const categoryAssets = new Set([...categories.map(category => `${category}-v2.webp`), "lashes.svg"]);
 const placeholder = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a3ioAAAAASUVORK5CYII=", "base64");
 const results = [];
 // The invariant is that desktop CSS cannot change mobile layout or styling.
@@ -21,7 +22,13 @@ async function mobileAppearance(page) {
   return page.evaluate(() => {
     const computed = (element, pseudo = null) => {
       const style = getComputedStyle(element, pseudo);
-      return Object.fromEntries(Array.from(style, name => [name, style.getPropertyValue(name)]));
+      // CSSOM can serialize an auto margin as its used pixel value or zero
+      // after stylesheet invalidation. Typed OM retains the authored auto;
+      // the exact rectangle comparison below independently checks placement.
+      const typed = pseudo ? null : element.computedStyleMap?.();
+      return Object.fromEntries(Array.from(style, name => [name,
+        name.startsWith("margin-") && typed?.get(name)?.toString() === "auto"
+          ? "auto" : style.getPropertyValue(name)]));
     };
     const elements = [document.documentElement, document.body,
       ...document.querySelectorAll(".mobile-customer-home, .mobile-customer-home *")];
@@ -37,14 +44,14 @@ try {
   for (const theme of ["light", "night"]) {
     for (const width of [1100, 1280, 1440, 1920]) {
       for (const guest of [false, true]) {
-        const page = await browser.newPage({ viewport: { width, height: 1000 } });
+        const page = await browser.newPage({ viewport: { width, height: 1000 }, reducedMotion: "reduce" });
         const errors = [];
         page.on("pageerror", e => errors.push(e.message));
         await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.request().resourceType() === "image" ? route.fulfill({ contentType: "image/png", body: placeholder }) : route.abort());
         await page.route("**/images/categories/*", async route => {
           const name = new URL(route.request().url()).pathname.split("/").pop();
-          expect(categories.some(category => name === `${category}-v2.webp`)).toBe(true);
-          await route.fulfill({ contentType: "image/webp", body: await readFile(`public/images/categories/${name}`) });
+          expect(categoryAssets.has(name)).toBe(true);
+          await route.fulfill({ contentType: name.endsWith(".svg") ? "image/svg+xml" : "image/webp", body: await readFile(`public/images/categories/${name}`) });
         });
         await page.goto(`http://127.0.0.1:3004/?theme=${theme}${guest ? "&guest=1" : ""}`);
         // The isolated Image shim does not supply Next's inline fill styles.
@@ -89,7 +96,7 @@ try {
       }
     }
     for (const width of [320, 390, 760, 1099]) {
-      const page = await browser.newPage({ viewport: { width, height: 1000 } });
+      const page = await browser.newPage({ viewport: { width, height: 1000 }, reducedMotion: "reduce" });
       await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.request().resourceType() === "image" ? route.fulfill({ contentType: "image/png", body: placeholder }) : route.abort());
       await page.goto(`http://127.0.0.1:3004/?theme=${theme}`);
       // Mirror Next Image's fill positioning in this isolated Image shim too.

@@ -15,8 +15,10 @@ export function AvailabilityEditor({ initial }: { initial: Rule[] }) {
   return (
     <form
       className="editor-form"
+      aria-busy={busy}
       onSubmit={async (event) => {
         event.preventDefault();
+        if (busy) return;
         const parsed = scheduleSchema.safeParse({ rules });
         if (!parsed.success) {
           setNotice(parsed.error.issues[0].message);
@@ -52,6 +54,7 @@ export function AvailabilityEditor({ initial }: { initial: Rule[] }) {
             <label className="hours-day">
               <input
                 type="checkbox"
+                disabled={busy}
                 checked={Boolean(rule)}
                 onChange={(event) =>
                   setRules((current) =>
@@ -73,6 +76,7 @@ export function AvailabilityEditor({ initial }: { initial: Rule[] }) {
                   <input
                     aria-label={`${days[weekday]} opening time`}
                     type="time"
+                    disabled={busy}
                     step={900}
                     required
                     value={clockTime(rule.startMinute)}
@@ -95,6 +99,7 @@ export function AvailabilityEditor({ initial }: { initial: Rule[] }) {
                   <input
                     aria-label={`${days[weekday]} closing time`}
                     type="time"
+                    disabled={busy}
                     step={900}
                     required
                     value={clockTime(rule.endMinute)}

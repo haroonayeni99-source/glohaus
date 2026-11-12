@@ -13264,3 +13264,29 @@ select {
   .glohaus-mobile-trust { gap: 8px 14px; }
   .glohaus-mobile-trust span { font-size: 11px; }
 }
+
+/* Services & prices: keep deposit guidance readable and contained in both themes. */
+.deposit-selector {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  color: #35232b;
+}
+.deposit-selector legend {
+  max-width: 100%;
+  color: #35232b;
+  white-space: normal;
+}
+.deposit-selector .deposit-selector-intro,
+.pro-app .pro-editor-surface .deposit-selector-intro {
+  max-width: 100%;
+  color: #5b4350;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.deposit-selector .deposit-field input,
+.deposit-selector .deposit-field select {
+  color: #35232b;
+}

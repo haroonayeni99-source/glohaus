@@ -1,4 +1,5 @@
 "use client";
+import { LoadingDots } from "./loading-dots";
 
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
@@ -526,6 +527,7 @@ export function BookingPicker({
             data-analytics-action="checkout"
             onClick={() => void submitBooking()}
           >
+            <LoadingDots busy={submitting} />
             {submitting
               ? "Confirming…"
               : "Continue to pay " + money(policy?policy.depositPence+policy.bookingFeePence:amountDueNowPence)}

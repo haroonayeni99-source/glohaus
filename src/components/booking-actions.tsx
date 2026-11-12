@@ -1,4 +1,5 @@
 "use client";
+import { LoadingDots } from "./loading-dots";
 import { useState } from "react";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
@@ -86,6 +87,7 @@ export function BookingActions({
                 }
               }}
             >
+              <LoadingDots busy={busy} />
               Continue secure deposit payment
             </button>
           )}

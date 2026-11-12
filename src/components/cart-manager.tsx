@@ -1,4 +1,5 @@
 "use client";
+import { LoadingDots } from "./loading-dots";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -217,6 +218,7 @@ export function CartManager({ initialCart }: { initialCart: CartOverview }) {
           data-analytics-action="checkout"
           onClick={checkout}
         >
+          <LoadingDots busy={busyId === "checkout"} />
           {busyId === "checkout" ? "Opening secure checkout…" : "Checkout securely"}
         </button>
         <p>

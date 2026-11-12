@@ -21,6 +21,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { themeBootstrap } from "@/lib/theme-preference";
 import { appThemeColors } from "@/lib/app-theme-colors";
 import "./globals.css";
+import "@/components/loading-dots.css";
 import "./glohaus-splash.css";
 import "./ui-upgrades.css";
 import "./theme-compat.css";

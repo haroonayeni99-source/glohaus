@@ -1,3 +1,4 @@
+import { LoadingDots } from "./loading-dots";
 import { PublicHeader } from "./public-header";
 import { BottomNavigation } from "./bottom-navigation";
 
@@ -22,6 +23,7 @@ export function PageLoading({ area = "home" }: { area?: Area }) {
         aria-busy="true"
       >
         <p role="status">
+          <LoadingDots />
           Loading {area === "home" ? "this page" : titles[area].toLowerCase()}…
         </p>
         <div aria-hidden="true" className="glohaus-page-placeholder">

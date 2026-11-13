@@ -27,7 +27,7 @@ function imageFromUrl(url: string): Promise<HTMLImageElement> {
 
 export async function readImageFile(
   file: File,
-  options: { logo?: boolean } = {},
+  options: { logo?: boolean; profile?: boolean } = {},
 ): Promise<string> {
   if (
     !file.size ||
@@ -58,16 +58,20 @@ export async function readImageFile(
         height,
       );
     } else {
+      // A display picture does not need a multi-megapixel upload.
+      // Resize it before encoding so small mobile uploads finish sooner.
+      const maxWidth = options.profile ? 960 : 1600;
+      const maxHeight = options.profile ? 960 : 2000;
       const scale = Math.min(
         1,
-        1600 / image.naturalWidth,
-        2000 / image.naturalHeight,
+        maxWidth / image.naturalWidth,
+        maxHeight / image.naturalHeight,
       );
       canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
       canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
       context.drawImage(image, 0, 0, canvas.width, canvas.height);
     }
-    for (const quality of [0.9, 0.8, 0.65]) {
+    for (const quality of [0.84, 0.72, 0.6]) {
       const blob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob(resolve, "image/webp", quality),
       );

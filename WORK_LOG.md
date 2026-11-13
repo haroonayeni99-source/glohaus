@@ -192,3 +192,49 @@ Redeployed unchanged implementation 9471391ae427070263abf10707c2cb3a7cf0ae6d to 
 Read-only role check: isolated glohaus_runtime exists, can login, belongs to beauty_app and has valid-until 19 Nov 2026. This does not establish that the current DATABASE_URL supplies that role's correct password/username. No role/password rotation performed; sensitive stored DATABASE_URL is unreadable by design. Owner action: securely correct the EXISTING branch-scoped Preview DATABASE_URL to the original valid isolated runtime/pooler connection (including properly encoded password and project-qualified username), then redeploy. Do not recreate deleted credentials, copy production URLs or replace production secrets. Current customer Preview password stays unchanged. Need secure original isolated credential or explicit approved resynchronisation of the existing isolated runtime login if it cannot be recovered.
 
 Current Supabase email Site URL/allowlist still intentionally target prior working registration origin h740ywppc; newer immutable Preview needs an additional reviewed exact-host callback entry before fresh signup/recovery there. Sign-in does not use email callbacks and was genuinely verified on the new deployment. No successful booking/upload/Stripe or professional acceptance claimed. Reuse prior #236 CI evidence; no code changes or repeated broad tests. Production untouched.
+
+
+## 13 November 2026 — final public launch push, configuration verification batch
+
+Current user instruction supersedes older standing production approval: **no main merge or production change without new explicit approval**. Scope is confirmed bugs only; no redesign, Reels, collections, new features or repeated audits. Marketplace release does not wait for social/calendar approval.
+
+Read main WORK_LOG first, then latest docs/launch-evidence-20261112 entries and current #233–#236 metadata. Reused recorded CI; no tests/builds rerun except one necessary unchanged Preview redeployment after the owner's DATABASE_URL update.
+
+### Verified current state
+
+- Vercel alias lookup confirms www.glohaus.shop on READY production dpl_9kzqmmoAguu6ZsmqgWAqRJX6bhY5, commit 119d2a55611b85173f9ac7953f50b355165b4837. Thus #234 calendar serializer and #235 Quality Control route export repair are already deployed, not pending approval. No production mutation this session.
+- #233 remains draft/unmerged and currently mergeable=false; optional unified portfolio UI is outside this minimum launch push. Do not rebuild it or treat it as a marketplace launch prerequisite.
+- #236 remains draft/unmerged, head 9471391ae427070263abf10707c2cb3a7cf0ae6d, mergeable=true. Existing recorded 35 passing exact-head checks and 56 focused auth tests reused. This is isolated Preview callback behavior, not proof of marketplace acceptance.
+- Narrow read-only isolated auth check confirms both authorised test emails are confirmed. Customer has signed in; professional has not yet signed in. Do not create new accounts or ask for confirmation again.
+- Preview env metadata confirms existing base auth/DB, isolated-auth opt-in and CA bindings. DATABASE_URL was updated at 2026-11-13 00:01:36 UTC, AFTER previous Preview was created. Secret value was not decrypted or exposed.
+- Redeployed unchanged #236 commit once to pick up that update: dpl_GpMSn8hJUNvWeYTKGDtvrQQgViMY, READY, https://glohaus1-r265s2i6w-haroon-glohaus.vercel.app, target null (Preview), correct glohaus1 project. Initial API target=preview was rejected without a deployment; corrected by omitting target per API behavior. No production deployment.
+- Read-only GET /explore returned HTTP 200 WITH explicit professionals-load failure; not a pass. Runtime request zmh2x-1794528587127-a7c688bf750a confirms DATABASE connection reason AUTHENTICATION / PostgreSQL 28P01 (~749ms) on the NEW deployment. Owner's recent URL edit has therefore been tested and still fails. No new sign-in requested because public DB read already proves the same blocker.
+- Existing old Preview signed-in /account tab still displays error boundary; preserved for continuity. No passwords, tokens, customer records, database roles, schema, provider flags, storage or Stripe configuration changed.
+
+### Minimum acceptance ledger — reuse, do not repeat passing steps
+
+| Requirement | Current evidence | Outstanding |
+| --- | --- | --- |
+| Customer auth | Genuine registration, confirmation and Auth sign-in previously verified; confirmed again read-only | Account DB page; password-reset email/token journey |
+| Professional auth | Genuine registration/confirmation verified read-only | Secure sign-in, application role/dashboard and password reset |
+| Profile/photo/video and cross-user isolation | Existing focused upload/social fixture evidence retained | Real isolated uploads and two-identity API/RLS/storage denial checks |
+| Availability/conflict/cancellation | Prior CI fixture evidence retained | Isolated signed-in journey |
+| Deposit/checkout/webhook/refund | Prior CI evidence only; no transaction made | Separate Stripe sandbox and payment DB/webhook settings, then genuine sandbox acceptance |
+| Professional and Owner/Admin restrictions | Prior owner MFA gate and CI evidence retained | Isolated privileged/non-privileged acceptance; do not grant production roles |
+| iPhone/Android widths/PWA | Prior Chromium/WebKit fixture matrix retained | App-backed responsive/PWA acceptance; physical devices not claimed |
+
+### Blockers and next concrete work
+
+1. Current stored isolated DB login is rejected (28P01), independent of Supabase Auth. Do not repeat the previous instruction to recreate base Preview settings or redo user registration. Recover the original valid isolated glohaus_runtime credential. If unrecoverable, owner must deliberately resynchronise the existing isolated runtime login and its EXISTING branch-scoped URL securely; this is credential maintenance, not an app code defect. No credential rotation or speculative password change authorised/performed by this batch. Keep password out of chat/logs.
+2. Separate non-production Blob and Stripe/payment-worker bindings remain absent from inspected branch metadata. Exact keys, callback endpoints and setup steps are already in docs/provider-review-packet-20261112.md; use that packet once, reuse any existing isolated resources, never copy production credentials. Do not claim live-only Stripe connector can certify sandbox.
+3. Any fresh recovery link on the new immutable Preview needs reviewed exact-host callback allowance in isolated Supabase. Existing h740ywppc registration origin remains configured and both confirmations are complete; don't disturb working confirmation setup or request repeat signup.
+4. After DB is genuinely usable, resume only missing minimum tests above. Stop retries on known invalid DB credentials. Do not change security/RLS to work around login failure.
+5. Provider packet already contains truthful TikTok/Instagram scopes, callbacks, draft review copy and real demo script; no additional draft or fabricated recording needed. Legal declarations/real consent and public OAuth approvals remain separate. Apple is a one-time .ics export, not verified sync; Google/Outlook real integration acceptance remains pending.
+
+### Release/rollback package
+
+No NEW application PR is ready for production approval in this batch. #234/#235 are already live. #236 has passing CI but deployed DB acceptance blocked; #233 is optional and remains draft. No unverified change should be included in a launch approval request.
+
+Current production rollback point for a future new application release: dpl_9kzqmmoAguu6ZsmqgWAqRJX6bhY5 / 119d2a55611b85173f9ac7953f50b355165b4837. Earlier rollback candidates remain in previous entries. Preview rollback is previous dpl_CwvkZZDQVynW9QEDMtVnhG4HotTn; restoring it does not repair the invalid DB login.
+
+This batch changes documentation only. No broad CI rerun needed. All work possible without missing credentials/provider access has been recorded; resume from this ledger after the DB credential is securely made usable.

@@ -266,3 +266,8 @@ Google console attempt returned Site Unavailable (no configuration available); M
 Shell publishing could not authenticate; connected GitHub API used for authorised branch destination. Calendar commit 98c3dc169bff8b17a777e975daea9eca369b842b published on fix/calendar-social-readiness-20261113, not main. Combined small PR contains independently revertible calendar and social guard commits. No production merge/deployment. No extra storage or sandbox Stripe setup requested.
 
 Next owner dependency: Google OAuth app access/config and Microsoft Azure sign-in; Meta truthful declarations/provider consent; TikTok real authorised demo after private-import release. Preview dependency stays one action: provide isolated Connect pooler host/port/project-qualified username (non-secret) so target can be proven before any role rotation. No more Preview DB retries in this batch.
+
+
+### PR #238 verification follow-up
+
+PR https://github.com/haroonayeni99-source/glohaus/pull/238 published, head 9926ae2abbf98885611f8cf217446ee03e8d1a86; Preview dpl_BAmkgN4ngZShA1kKN1Y9KuTAj59N READY at https://glohaus1-3npmxjcrb-haroon-glohaus.vercel.app. No app-backed/provider acceptance claimed. CI calendar network, booking/security/payment-browser and other checks passed; business-tools-browser failed because its Google revoked-access fixture still expected the old social error wording. Updated that assertion to require the new calendar-specific revoked message; no product workaround or removed coverage. Final exact-head CI remains required after this harness-only correction. Default-OFF publication gate regression/UI tests pass; TypeScript, scoped lint and conventional Stripe-secret pattern check pass.

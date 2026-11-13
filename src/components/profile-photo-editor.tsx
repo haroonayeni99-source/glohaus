@@ -1,8 +1,9 @@
 "use client";
 import Image from "next/image";
-import { readImageFile } from "@/lib/image-file";
+import { imageInputAccept, isSupportedImageFile, readImageFile } from "@/lib/image-file";
+import { imageUploadError } from "@/lib/image-upload-feedback";
 import { useRef, useState } from "react";
-import { SOURCE_IMAGE_MAX_BYTES, imageTypes } from "@/modules/media/limits";
+import { SOURCE_IMAGE_MAX_BYTES } from "@/modules/media/limits";
 import { useRouter } from "next/navigation";
 export function ProfilePhotoEditor({
   photo,
@@ -85,11 +86,11 @@ export function ProfilePhotoEditor({
               !(file instanceof File) ||
               !file.size ||
               file.size > SOURCE_IMAGE_MAX_BYTES ||
-              !imageTypes.includes(file.type as (typeof imageTypes)[number]) ||
+              !isSupportedImageFile(file) ||
               !preview
             ) {
               setNotice(
-                "Choose a JPEG, PNG or WebP image up to 20 MB and wait for the preview.",
+                "Choose a supported photo up to 20 MB and wait for the preview to finish.",
               );
               return;
             }
@@ -108,10 +109,10 @@ export function ProfilePhotoEditor({
                   }),
                 },
               );
-              if (!response.ok)
-                throw new Error(
-                  "Could not upload. Your preview is kept so you can try saving again.",
-                );
+              if (!response.ok) {
+                const result = await response.json().catch(() => null);
+                throw new Error(imageUploadError(response.status, result?.error?.code));
+              }
               const saved = await response.json();
               setCurrentPhoto({ id: saved.id, alt_text: description });
               setPreview("");
@@ -153,7 +154,7 @@ export function ProfilePhotoEditor({
               name="photo"
               aria-label="Profile image"
               type="file"
-              accept="image/jpeg,image/png,image/webp"
+              accept={imageInputAccept}
               required
               disabled={busy}
               onChange={(event) =>
@@ -161,8 +162,8 @@ export function ProfilePhotoEditor({
               }
             />
             <small>
-              JPEG, PNG or WebP · up to 20 MB. Large images are optimized and
-              location metadata removed.
+              JPEG, PNG or WebP (plus supported HEIC/AVIF phone photos) · up to 20 MB.
+              Images are optimised and location metadata removed.
             </small>
           </label>
           <label>

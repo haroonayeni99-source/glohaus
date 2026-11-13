@@ -43,7 +43,7 @@ Record an uninterrupted demonstration using an authorised sandbox/test professio
 1. Open GLOHAUS professional Connections and show the current provider status.
 2. Click Connect. Show the genuine provider consent screen and requested permissions. Pause recording for credentials; resume after authentication without implying consent was simulated.
 3. Complete the real callback. Show the connected identity and successful sync status.
-4. Import eligible work. Show the result as a private draft, absent from the public profile before publication. **This is an unfulfilled software acceptance gate: existing automatic mode can publish work. Do not record or describe a draft-only journey as complete until fixed and tested.**
+4. Import eligible work. Show the result as a private draft, absent from the public profile before publication. **#238 now implements the default-OFF automatic-publication guard and is deployed at ed248a88fc63dff5a7a06a375769a353f6bbe582. Its CI coverage passed; real provider draft-only acceptance remains pending. Record only the actual verified journey.**
 5. Explicitly publish one item, link it to an existing service, then open its public profile in a separate signed-out session. Show source attribution and the existing booking entry point; do not pay.
 6. Hide the item and verify it disappears publicly; restore it to a draft and verify it stays private.
 7. Refresh and show duplicate prevention. Disconnect and demonstrate the actual resulting visibility and connection state.
@@ -90,3 +90,9 @@ Save credentials through Vercel's secure UI only, never chat. Production environ
 Sources checked: https://developers.google.com/identity/protocols/oauth2/web-server ; https://developers.google.com/workspace/calendar/api/auth ; https://learn.microsoft.com/en-us/security/zero-trust/develop/identity-supported-account-types .
 
 Private import fix proposed in current PR: SOCIAL_AUTO_PUBLISH_ENABLED is OFF when absent. Worker imports new social work as drafts even for legacy automatic connections; API rejects enabling automatic publication; UI offers approval/manual modes while off. Existing public/hidden choices remain preserved. No DB migration and no production flag change. Genuine review recording must follow release of this fix and actual authorised provider connection; no demo or submission has been fabricated. Meta legal declarations and TikTok app review remain owner/provider-dependent.
+
+## 13 November — reconciled review preparation
+
+#238 is merged and serving production (READY dpl_HDssWRPMnB6FxGxmSDFvNgtbdkcg). Private-import software guard is implemented; real social provider recordings and lifecycle acceptance remain outstanding. Reuse the purpose text and recording script above rather than create duplicate review packets. No submission/approval claimed. Meta controller/processor/request-handling declarations require truthful owner answers. TikTok developer authentication remains pending.
+
+Microsoft authentication: current code-entry page did NOT confirm email dispatch. It conditionally referenced the entered Microsoft account email rather than the masked recovery Gmail. Official 'Didn’t get a code?' → 'Show more options' exposes password, face/fingerprint/PIN/security key, code to existing masked Gmail, and code to existing phone ending 98. Owner chooses and completes verification; do not automatically resend or change recovery methods. No Gmail inbox access.

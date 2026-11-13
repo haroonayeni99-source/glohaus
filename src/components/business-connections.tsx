@@ -42,6 +42,7 @@ export function BusinessConnections({
     tiktok_url: string;
     sync_allowed: boolean;
     public_profile_ready?: boolean;
+    automatic_publication_enabled?: boolean;
   };
 }) {
   const inFlight = useRef(false);
@@ -97,7 +98,9 @@ export function BusinessConnections({
             ? "Sync needs attention. Your connection is not up to date. Check the status below."
             : typeof data.synced === "number"
               ? data.synced > 0
-                ? provider === "instagram"
+                ? ["google", "outlook", "ics"].includes(provider || "")
+                  ? "Calendar sync complete. Availability has been refreshed. Manage booking changes in GLOHAUS."
+                  : provider === "instagram"
                   ? "Refresh complete. Eligible Instagram posts are listed below. Choose Published and Save post to display a draft on your profile."
                   : "Refresh complete. Eligible public videos are listed below. Choose Published and Save post to display a draft on your profile. TikTok drafts are not imported."
                 : "No refresh ran. Another sync may already be running. Wait a moment, then refresh this page to check its status."
@@ -231,7 +234,7 @@ export function BusinessConnections({
             Read-only, supported HTTPS feeds only. The link is stored encrypted.
             Floating and all-day times use the UK clock; named timezones must be
             included in the feed. Unsupported feeds show an error. Subscription
-            changes can take time to reach GLOHAUS.
+            changes can take hours to reach GLOHAUS. This is a one-way import of busy times; it does not send GLOHAUS bookings to Outlook or Apple Calendar. Edits in an external calendar do not update GLOHAUS bookings.
           </p>
           <form
             onSubmit={(event) => {
@@ -538,7 +541,9 @@ export function BusinessConnections({
             {c.last_error && (
               <p role="alert">
                 {c.last_error === "RECONNECT_REQUIRED"
-                  ? "Permissions have expired, are missing or have been removed. Reconnect this provider in Social Media & Portfolio above."
+                  ? ["google", "outlook", "ics"].includes(c.provider)
+                    ? "Calendar access has expired or been removed. Reconnect in Calendar connections above. New slots may pause until calendar access is restored or you disconnect it."
+                    : "Permissions have expired, are missing or have been removed. Reconnect this provider in Social Media & Portfolio above."
                   : c.last_error === "FEED_UNSUPPORTED"
                     ? "This calendar format or timezone is not supported. Use manual time off while you check the feed."
                     : "We could not finish the last sync. Try again or reconnect."}
@@ -564,16 +569,16 @@ export function BusinessConnections({
                       <select
                         name="mode"
                         defaultValue={
-                          c.social_mode ||
-                          (c.auto_publish ? "automatic" : "approval")
+                          c.social_mode === "manual" ? "manual" :
+                          portfolio.automatic_publication_enabled && (c.social_mode === "automatic" || c.auto_publish) ? "automatic" : "approval"
                         }
                       >
                         <option value="approval">
                           Approval Mode — import as drafts
                         </option>
-                        <option value="automatic">
-                          Automatic Mode — publish new eligible work
-                        </option>
+                        {portfolio.automatic_publication_enabled && (
+                          <option value="automatic">Automatic Mode — publish new eligible work</option>
+                        )}
                         <option value="manual">
                           Manual Mode — refresh or add links yourself
                         </option>
@@ -588,7 +593,7 @@ export function BusinessConnections({
                       Enable periodic portfolio syncing
                     </label>
                     <small>
-                      Approval Mode is the default. Manual Mode does not fetch
+                      New imports require publication approval unless automatic publication is enabled by GLOHAUS and selected by you. Manual Mode does not fetch
                       in the background. Scheduled checks are normally hourly,
                       subject to provider limits and retries. Existing hidden
                       posts stay hidden. Imports cover up to the latest 1,000
@@ -612,7 +617,7 @@ export function BusinessConnections({
                     }
                     onClick={() => void action({ action: "sync", id: c.id }, "connections", "POST", c.provider)}
                   >
-                    {busy ? "Working…" : c.provider === "instagram" ? "Refresh Instagram posts" : "Refresh public videos / sync now"}
+                    {busy ? "Working…" : ["google", "outlook", "ics"].includes(c.provider) ? "Sync calendar now" : c.provider === "instagram" ? "Refresh Instagram posts" : "Refresh public videos / sync now"}
                   </button>
                   <button
                     className="button button-secondary"

@@ -67,7 +67,7 @@ try {
         page.getByText("external calendar edits do not change GLOHAUS bookings.", { exact: false }).first(),
       ).toBeVisible();
       await expect(
-        page.getByText("Permissions have expired", {
+        page.getByText("Calendar access has expired or been removed.", {
           exact: false,
         }),
       ).toBeVisible();

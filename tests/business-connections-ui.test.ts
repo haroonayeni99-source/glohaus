@@ -218,3 +218,19 @@ it.each([
   expect(host.textContent).toContain(message);
   expect(button(host, "Refresh public videos").disabled).toBe(false);
 });
+
+
+it("uses calendar feedback and directs revoked Outlook access to calendar controls", async () => {
+  const { host } = await setup(vi.fn(async () => Response.json({ synced: 1, failed: 0 })), { connections: [{ ...connection, provider: "outlook", label: "Outlook", last_error: "RECONNECT_REQUIRED" }], ready: { ...props.ready, outlook: true } });
+  expect(host.textContent).toContain("Reconnect in Calendar connections above");
+  await act(async () => button(host, "Sync calendar now").click());
+  expect(host.querySelector("[role=status]")?.textContent).toContain("Calendar sync complete");
+  expect(host.querySelector("[role=status]")?.textContent).not.toContain("videos");
+});
+
+
+it("does not offer automatic publication while the global gate is off, including legacy connections", async () => {
+  const { host } = await setup(vi.fn(), { connections: [{ ...connection, social_mode: "automatic", auto_publish: true }] });
+  expect(host.querySelector('select[name="mode"] option[value="automatic"]')).toBeNull();
+  expect(host.querySelector<HTMLSelectElement>('select[name="mode"]')?.value).toBe("approval");
+});

@@ -56,6 +56,10 @@ export async function POST(request: Request) {
     const parsed = schema.safeParse(await smallJson(request, 6000));
     if (!parsed.success) throw new AccessError("INVALID_REQUEST", 400);
     const input = parsed.data;
+    if (process.env.SOCIAL_AUTO_PUBLISH_ENABLED !== "true" &&
+      ((input.action === "socialSettings" && input.mode === "automatic") ||
+       (input.action === "displayMode" && input.automatic)))
+      throw new AccessError("INVALID_REQUEST", 400);
     const account = await withAccount("professional", async (_db, a) => a);
     const professionalId = account.professionalId!;
     if (input.action === "connect") {

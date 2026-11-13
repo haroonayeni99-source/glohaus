@@ -35,7 +35,7 @@ export function ProfilePhotoEditor({
     setPreparing(true);
     setNotice("Preparing your image…");
     try {
-      const result = await readImageFile(file, { logo: style === "logo" });
+      const result = await readImageFile(file, { logo: style === "logo", profile: true });
       if (sequence !== preparation.current) return;
       setPreview(result);
       setNotice(
@@ -58,8 +58,8 @@ export function ProfilePhotoEditor({
         {preview || currentPhoto ? (
           <Image
             src={preview || `/api/media/${currentPhoto!.id}`}
-            width={160}
-            height={160}
+            width={240}
+            height={240}
             unoptimized
             alt={description}
           />
@@ -94,7 +94,7 @@ export function ProfilePhotoEditor({
               return;
             }
             setBusy(true);
-            setNotice("");
+            setNotice("Uploading your optimised profile photo…");
             try {
               const base64 = preview.split(",")[1];
               const response = await fetch(

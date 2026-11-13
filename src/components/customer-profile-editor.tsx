@@ -1,8 +1,9 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { readImageFile } from "@/lib/image-file";
+import { imageInputAccept, readImageFile } from "@/lib/image-file";
+import { imageUploadError } from "@/lib/image-upload-feedback";
 import type { CustomerProfile } from "@/modules/accounts/customer-profile";
 export function CustomerProfileEditor({
   profile,
@@ -17,6 +18,8 @@ export function CustomerProfileEditor({
   const [hasPhoto, setHasPhoto] = useState(profile.has_photo);
   const [version, setVersion] = useState(0);
   const [preview, setPreview] = useState("");
+  const [preparing, setPreparing] = useState(false);
+  const preparation = useRef(0);
   async function save(
     url: string,
     method: string,
@@ -31,8 +34,13 @@ export function CustomerProfileEditor({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      if (!response.ok)
+      if (!response.ok) {
+        if (url.endsWith("/photo")) {
+          const result = await response.json().catch(() => null);
+          throw new Error(imageUploadError(response.status, result?.error?.code));
+        }
         throw new Error("Could not save. Check your details and try again.");
+      }
       setNotice(success);
       router.refresh();
       return true;
@@ -95,10 +103,10 @@ export function CustomerProfileEditor({
         onSubmit={async (event) => {
           event.preventDefault();
           const form = event.currentTarget;
-          const file = new FormData(form).get("photo");
-          if (!(file instanceof File) || !file.size) return;
+          if (!preview || preparing || busy) return;
           try {
-            const base64 = (await readImageFile(file)).split(",")[1];
+            // Reuse the prepared preview; avoid decoding the original again.
+            const base64 = preview.split(",")[1];
             if (
               await save(
                 "/api/v1/account/profile/photo",
@@ -142,27 +150,35 @@ export function CustomerProfileEditor({
           <input
             name="photo"
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept={imageInputAccept}
             required
-            disabled={busy}
+            disabled={busy || preparing}
             onChange={async (event) => {
               const file = event.currentTarget.files?.[0];
+              const sequence = ++preparation.current;
               setPreview("");
-              if (!file) return;
+              if (!file) {
+                setPreparing(false);
+                return;
+              }
+              setPreparing(true);
+              setNotice("Preparing your photo…");
               try {
-                setPreview(await readImageFile(file));
+                const result = await readImageFile(file, { profile: true });
+                if (sequence !== preparation.current) return;
+                setPreview(result);
                 setNotice("Preview ready. Save your photo below.");
               } catch (error) {
-                setNotice(
-                  error instanceof Error
-                    ? error.message
-                    : "Could not read this image.",
-                );
+                if (sequence === preparation.current)
+                  setNotice(error instanceof Error ? error.message : "Could not read this image.");
+              } finally {
+                if (sequence === preparation.current) setPreparing(false);
               }
             }}
           />
           <small>
-            JPEG, PNG or WebP, up to 20 MB. Location metadata is removed.
+            JPEG, PNG or WebP (plus supported HEIC/AVIF phone photos), up to 20 MB.
+            Location metadata is removed.
           </small>
         </label>
         <label className="policy-check">
@@ -170,7 +186,7 @@ export function CustomerProfileEditor({
           This is my photo and I have permission to use it.
         </label>
         <div className="editor-actions">
-          <button className="button" disabled={busy || !preview}>
+          <button className="button" disabled={busy || preparing || !preview}>
             {busy ? "Saving…" : "Save photo"}
           </button>
           {hasPhoto && (

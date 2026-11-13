@@ -45,6 +45,7 @@ export function BusinessConnections({
     automatic_publication_enabled?: boolean;
   };
 }) {
+  const [outlookWarningVisible, setOutlookWarningVisible] = useState(true);
   const inFlight = useRef(false);
   const [refreshing, startRefresh] = useTransition();
   const router = useRouter(),
@@ -192,14 +193,19 @@ export function BusinessConnections({
             }}
           >
             <h3>{names[provider]}</h3>
-            {!ready[provider] && (
-              <p className="business-feedback" id={`calendar-${provider}-unavailable`}>
+            {!ready[provider] && (provider !== "outlook" || outlookWarningVisible) && (
+              <div className="business-feedback business-provider-warning" id={`calendar-${provider}-unavailable`}>
+                <p>
                 {names[provider]} connection is not available yet because
                 GLOHAUS has not finished setting up this provider. Your
                 existing availability and bookings are unaffected. You can
                 continue managing your availability in GLOHAUS, or use the
                 iCal / ICS subscription option below if it is available.
-              </p>
+                </p>
+                {provider === "outlook" && (
+                  <button type="button" aria-label="Dismiss Outlook connection warning" onClick={() => setOutlookWarningVisible(false)}>×</button>
+                )}
+              </div>
             )}
             <label className="business-check">
               <input
@@ -217,10 +223,11 @@ export function BusinessConnections({
               I agree to connect this calendar and share busy times with GLOHAUS.
             </label>
             <button
-              type="submit"
+              type={provider === "outlook" && !ready[provider] ? "button" : "submit"}
               className="button"
-              disabled={busy || !ready[provider]}
-              aria-describedby={!ready[provider] ? `calendar-${provider}-unavailable` : undefined}
+              disabled={busy || (!ready[provider] && provider !== "outlook")}
+              onClick={provider === "outlook" && !ready[provider] ? () => setOutlookWarningVisible(true) : undefined}
+              aria-describedby={!ready[provider] && (provider !== "outlook" || outlookWarningVisible) ? `calendar-${provider}-unavailable` : undefined}
             >
               {ready[provider]
                 ? `Connect ${names[provider]}`
@@ -446,7 +453,7 @@ export function BusinessConnections({
               Automatic access depends on platform approval and permissions.
             </p>
             {!ready[provider] && (
-              <p className="business-feedback" id={`social-${provider}-unavailable`}>
+              <p className="business-feedback business-provider-warning" id={`social-${provider}-unavailable`}>
                 {provider === "tiktok"
                   ? "TikTok account connection is not available for this professional profile yet. Testing access is limited to authorised profiles; public connections require TikTok approval and production setup."
                   : "Instagram account connection is not available yet. GLOHAUS must complete provider authorisation and configuration before connections can be enabled."}

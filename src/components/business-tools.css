@@ -254,3 +254,10 @@ html[data-theme="night"]
 .social-player-preview { min-width:0; overflow-wrap:anywhere; }
 .social-player-preview iframe { display:block; width:min(100%,400px); height:auto; aspect-ratio:9/16; min-height:340px; border:1px solid var(--ui-border); border-radius:14px; background:#111; }
 @media(max-width:480px){.social-player-preview iframe{width:100%;min-height:300px;}}
+
+/* Provider setup guidance belongs to its card, never over page controls. */
+.business-feedback.business-provider-warning {
+  position: static;
+  width: auto;
+  z-index: auto;
+}

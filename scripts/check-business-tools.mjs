@@ -56,13 +56,22 @@ try {
           name: `Connect ${providerName} — unavailable`,
           exact: true,
         });
-        await expect(connectButton).toBeDisabled();
+        if (providerName === "Google Calendar") await expect(connectButton).toBeDisabled();
+        else await expect(connectButton).toBeEnabled();
         await expect(
           page.getByText(`${providerName} connection is not available yet`, {
             exact: false,
           }),
         ).toBeVisible();
       }
+      const outlookWarning = page.locator("#calendar-outlook-unavailable");
+      await page.getByRole("button", { name: "Dismiss Outlook connection warning", exact: true }).click();
+      await expect(outlookWarning).toHaveCount(0);
+      await page.getByRole("button", { name: "Connect Microsoft Outlook — unavailable", exact: true }).click();
+      await expect(outlookWarning).toBeVisible();
+      expect(writes).toHaveLength(0);
+      await page.getByRole("button", { name: "Dismiss Outlook connection warning", exact: true }).click();
+      await expect(outlookWarning).toHaveCount(0);
       await expect(
         page.getByText("external calendar edits do not change GLOHAUS bookings.", { exact: false }).first(),
       ).toBeVisible();

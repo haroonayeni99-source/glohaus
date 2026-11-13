@@ -234,3 +234,21 @@ it("does not offer automatic publication while the global gate is off, including
   expect(host.querySelector('select[name="mode"] option[value="automatic"]')).toBeNull();
   expect(host.querySelector<HTMLSelectElement>('select[name="mode"]')?.value).toBe("approval");
 });
+
+it("dismisses unavailable Outlook guidance and shows it again on retry without a request", async () => {
+  const fetcher = vi.fn();
+  const { host } = await setup(fetcher);
+  const warning = () => host.querySelector('#calendar-outlook-unavailable');
+  expect(warning()?.textContent).toContain("has not finished setting up");
+  expect(warning()?.classList.contains("business-provider-warning")).toBe(true);
+  await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Dismiss Outlook connection warning"]')!.click());
+  expect(warning()).toBeNull();
+  expect(button(host, "Refresh public videos").disabled).toBe(false);
+  expect(host.querySelector('#social-instagram-unavailable')).not.toBeNull();
+  expect(host.querySelector('[aria-modal="true"]')).toBeNull();
+  await act(async () => button(host, "Connect Microsoft Outlook").click());
+  expect(warning()?.textContent).toContain("has not finished setting up");
+  expect(fetcher).not.toHaveBeenCalled();
+  await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Dismiss Outlook connection warning"]')!.click());
+  expect(warning()).toBeNull();
+});

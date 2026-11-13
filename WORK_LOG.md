@@ -253,3 +253,16 @@ Focused verification: 29 tests across business-tools and BusinessConnections DOM
 Preview DB bounded attempt: supported get_project_env for existing branch DATABASE_URL returns sensitive/secret with no readable value. Cannot safely verify project target, pooler user/host/port or encoding; therefore stop before rotation. Scope is correct and previous redeployment postdates last edit, but those do NOT prove isolated target. No rotation/redeploy made. One owner action: securely provide the isolated Connect pooler template's non-secret host/port/project-qualified username (no password); target must be proven before any authorised one-time isolated role rotation. Not a production defect.
 
 Rollback: revert this batch commit; production baseline remains dpl_9kzqmmoAguu6ZsmqgWAqRJX6bhY5 /119d2a55611b85173f9ac7953f50b355165b4837. Real provider acceptance blocked by absent OAuth app configuration and owner consent.
+
+
+## 13 November 2026 — private imports and provider setup batch
+
+Added default-OFF SOCIAL_AUTO_PUBLISH_ENABLED guard for both social import workers, including legacy automatic connections. Existing published/hidden choices retained by unchanged upsert. API denies automatic-mode activation while OFF; Connections UI hides that option and presents legacy automatic as approval. Explicit item publication and manual imports remain unchanged. No schema, production data, OAuth flags, Stripe or upload configuration changed.
+
+Focused social+UI run: 33 tests passed before two additional API denial tests; final social run passed 24 tests, including both API denial regressions. A test-only unknown result type was corrected after typecheck; no runtime defect. Scoped ESLint/TypeScript/whitespace passed. Actual Meta/TikTok calls, demo recordings and provider approval not claimed. Public OAuth remains disabled by existing readiness gates.
+
+Google console attempt returned Site Unavailable (no configuration available); Microsoft Entra reached owner Azure sign-in. No credential entry attempted; all independent source fixes finished before asking owner. Provider packet now includes exact callbacks, scopes, multi-tenant/personal audience, secure variable names, test-user/consent requirements and acceptance limitations. Existing callbacks only allow live GLOHAUS hostnames; current Preview cannot certify a real calendar OAuth callback. No misrepresentation as two-way sync or an outbound ICS feed.
+
+Shell publishing could not authenticate; connected GitHub API used for authorised branch destination. Calendar commit 98c3dc169bff8b17a777e975daea9eca369b842b published on fix/calendar-social-readiness-20261113, not main. Combined small PR contains independently revertible calendar and social guard commits. No production merge/deployment. No extra storage or sandbox Stripe setup requested.
+
+Next owner dependency: Google OAuth app access/config and Microsoft Azure sign-in; Meta truthful declarations/provider consent; TikTok real authorised demo after private-import release. Preview dependency stays one action: provide isolated Connect pooler host/port/project-qualified username (non-secret) so target can be proven before any role rotation. No more Preview DB retries in this batch.

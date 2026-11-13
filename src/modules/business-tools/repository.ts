@@ -45,7 +45,7 @@ export async function businessTools(db: SqlClient, professionalId: string) {
       [professionalId],
     )
   ).rows[0];
-  return { connections, posts, preferences, portfolio };
+  return { connections, posts, preferences, portfolio: portfolio && { ...portfolio, automatic_publication_enabled: process.env.SOCIAL_AUTO_PUBLISH_ENABLED === "true" } };
 }
 export async function publicSocialPosts(
   db: SqlClient,
@@ -330,7 +330,7 @@ export async function syncProfessional(
                 post.url,
                 post.caption,
                 post.createdAt,
-                current.auto_publish && (lease.provider !== "instagram" || process.env.INSTAGRAM_AUTO_PUBLISH_ENABLED === "true") ? "published" : "draft",
+                process.env.SOCIAL_AUTO_PUBLISH_ENABLED === "true" && current.auto_publish && (lease.provider !== "instagram" || process.env.INSTAGRAM_AUTO_PUBLISH_ENABLED === "true") ? "published" : "draft",
                 post.mediaType,
                 post.thumbnailUrl,
               ],

@@ -42,6 +42,7 @@ export function BusinessConnections({
     tiktok_url: string;
     sync_allowed: boolean;
     public_profile_ready?: boolean;
+    automatic_publication_enabled?: boolean;
   };
 }) {
   const inFlight = useRef(false);
@@ -568,16 +569,16 @@ export function BusinessConnections({
                       <select
                         name="mode"
                         defaultValue={
-                          c.social_mode ||
-                          (c.auto_publish ? "automatic" : "approval")
+                          c.social_mode === "manual" ? "manual" :
+                          portfolio.automatic_publication_enabled && (c.social_mode === "automatic" || c.auto_publish) ? "automatic" : "approval"
                         }
                       >
                         <option value="approval">
                           Approval Mode — import as drafts
                         </option>
-                        <option value="automatic">
-                          Automatic Mode — publish new eligible work
-                        </option>
+                        {portfolio.automatic_publication_enabled && (
+                          <option value="automatic">Automatic Mode — publish new eligible work</option>
+                        )}
                         <option value="manual">
                           Manual Mode — refresh or add links yourself
                         </option>
@@ -592,7 +593,7 @@ export function BusinessConnections({
                       Enable periodic portfolio syncing
                     </label>
                     <small>
-                      Approval Mode is the default. Manual Mode does not fetch
+                      New imports require publication approval unless automatic publication is enabled by GLOHAUS and selected by you. Manual Mode does not fetch
                       in the background. Scheduled checks are normally hourly,
                       subject to provider limits and retries. Existing hidden
                       posts stay hidden. Imports cover up to the latest 1,000

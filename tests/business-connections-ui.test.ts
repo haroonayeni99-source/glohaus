@@ -227,3 +227,10 @@ it("uses calendar feedback and directs revoked Outlook access to calendar contro
   expect(host.querySelector("[role=status]")?.textContent).toContain("Calendar sync complete");
   expect(host.querySelector("[role=status]")?.textContent).not.toContain("videos");
 });
+
+
+it("does not offer automatic publication while the global gate is off, including legacy connections", async () => {
+  const { host } = await setup(vi.fn(), { connections: [{ ...connection, social_mode: "automatic", auto_publish: true }] });
+  expect(host.querySelector('select[name="mode"] option[value="automatic"]')).toBeNull();
+  expect(host.querySelector<HTMLSelectElement>('select[name="mode"]')?.value).toBe("approval");
+});

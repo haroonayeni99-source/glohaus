@@ -4,6 +4,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { ProfilePhotoEditor } from "@/components/profile-photo-editor";
 import { CustomerProfileEditor } from "@/components/customer-profile-editor";
+import type { CustomerProfile } from "@/modules/accounts/customer-profile";
 
 const mocks = vi.hoisted(() => ({
   readImageFile: vi.fn(),
@@ -51,7 +52,7 @@ it("saves the customer's prepared photo without decoding it a second time", asyn
   await act(async () =>
     root.render(
       React.createElement(CustomerProfileEditor, {
-        profile: { first_name: "Test", last_name: "", has_photo: false } as any,
+        profile: { first_name: "Test", last_name: "", has_photo: false } as CustomerProfile,
         userId: "test-user",
       }),
     ),

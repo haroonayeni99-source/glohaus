@@ -218,3 +218,12 @@ it.each([
   expect(host.textContent).toContain(message);
   expect(button(host, "Refresh public videos").disabled).toBe(false);
 });
+
+
+it("uses calendar feedback and directs revoked Outlook access to calendar controls", async () => {
+  const { host } = await setup(vi.fn(async () => Response.json({ synced: 1, failed: 0 })), { connections: [{ ...connection, provider: "outlook", label: "Outlook", last_error: "RECONNECT_REQUIRED" }], ready: { ...props.ready, outlook: true } });
+  expect(host.textContent).toContain("Reconnect in Calendar connections above");
+  await act(async () => button(host, "Sync calendar now").click());
+  expect(host.querySelector("[role=status]")?.textContent).toContain("Calendar sync complete");
+  expect(host.querySelector("[role=status]")?.textContent).not.toContain("videos");
+});

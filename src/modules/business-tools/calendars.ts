@@ -164,7 +164,7 @@ export async function exportBooking(
         signal: AbortSignal.timeout(8000),
       });
       if (!response.ok && ![404, 410].includes(response.status))
-        throw Error("SYNC_FAILED");
+        throw Error([401, 403].includes(response.status) ? "RECONNECT_REQUIRED" : "SYNC_FAILED");
     }
     return null;
   }

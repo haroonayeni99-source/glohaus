@@ -29,15 +29,16 @@ const night = ':root[data-theme="night"] ' + scope;
 const light = ':root:not([data-theme="night"]) ' + scope;
 
 it("renders the Upcoming, History and All appointment tabs with the correct current state", () => {
-  const html = renderToStaticMarkup(React.createElement(BookingNavigation, {
+  const props: React.ComponentProps<typeof BookingNavigation> = {
     view: "upcoming",
     base: "/professional/bookings",
     next: null,
     after: false,
     children: React.createElement("div", null, "No appointments"),
-  }));
+  };
+  const html = renderToStaticMarkup(React.createElement(BookingNavigation, props));
   expect(html).toContain('aria-label="Appointment views"');
-  expect(html).toContain('aria-current="page">Upcoming');
+  expect(html).toMatch(/<a\b[^>]*aria-current="page"[^>]*>Upcoming<\/a>/);
   expect(html).toContain("History");
   expect(html).toContain("All appointments");
 });

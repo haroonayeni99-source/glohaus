@@ -39,6 +39,7 @@ export type ProfilePresentation = {
   live?: ReactNode;
   policies?: ReactNode;
   socialPortfolio?: ReactNode;
+  ourWork?: ReactNode;
   follow: { following: boolean; followerCount: number; signedIn: boolean };
   messageHref: string | null;
   bookingFeePence: number;
@@ -63,6 +64,7 @@ export function ProfessionalProfile({
   live,
   policies,
   socialPortfolio,
+  ourWork,
   follow,
   messageHref,
   bookingFeePence,
@@ -239,189 +241,7 @@ export function ProfessionalProfile({
               </div>
             </div>
             {!!socials.length && (
-              <div className="professional-socials">
-                {socials.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.url!}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow ugc"
-                  >
-                    {item.icon}
-                    {item.name}
-                    <ArrowUpRight size={14} aria-hidden />
-                  </a>
-                ))}
-              </div>
-            )}
-          </section>
-          <section id="portfolio" className="professional-section">
-            <p className="eyebrow">THE WORK SPEAKS</p>
-            <h2>A closer look.</h2>
-            {specialityTabs("portfolio")}
-            {assets.length ? (
-              <div className={`professional-gallery portfolio-layout-${presentation.portfolio_layout}`}>
-                {assets.map((asset) =>
-                  asset.media_type === "video" ? (
-                    <ViewportVideo
-                      key={asset.id}
-                      src={mediaSource(asset.id)}
-                      label={asset.alt_text}
-                    />
-                  ) : (
-                    <Image
-                      key={asset.id}
-                      src={mediaSource(asset.id)}
-                      width={600}
-                      height={750}
-                      unoptimized
-                      alt={asset.alt_text}
-                      loading="lazy"
-                    />
-                  ),
-                )}
-              </div>
-            ) : (
-              <p className="profile-empty">
-                No portfolio media has been published yet.
-              </p>
-            )}
-          </section>
-          <section id="services" className="professional-section">
-            <p className="eyebrow">MAKE A LITTLE TIME FOR YOU</p>
-            <h2>Services & prices.</h2>
-            {specialityTabs("services")}
-            <div className="service-list">
-              {services.map((service,index) => (
-                <div key={service.id}>{(index===0||service.speciality_id!==services[index-1].speciality_id)&&<h3>{service.speciality_name??"Other services"}</h3>}
-                <article
-                  id={`service-${service.id}`} data-selected={selectedService===service.id||undefined}
-                  className={
-                    service.asset_id ? "service-with-image" : undefined
-                  }
-                >
-                  {service.asset_id && (service.asset_media_type==="video"?<ViewportVideo src={mediaSource(service.asset_id)} label={service.image_alt||service.name}/>:<Image
-                      src={mediaSource(service.asset_id)}
-                      alt={service.image_alt || service.name}
-                      width={96}
-                      height={96}
-                      unoptimized
-                      style={{
-                        objectFit: "cover",
-                        borderRadius: 12,
-                        flexShrink: 0,
-                      }}
-                    />
-                  )}
-                  <div>
-                    <Link href={example ? `?service=${encodeURIComponent(service.id)}#booking` : `/p/${p.slug}/services/${service.id}`}>{example ? "Preview service & options" : "Service details & policies"}</Link>
-                    <h3>{service.name}</h3>
-                    <p>{service.description}</p>
-                    <span>
-                      <Clock3 size={14} aria-hidden />
-                      {service.duration_minutes} minutes
-                    </span>
-                  </div>
-                  <div className="profile-service-price">
-                    <strong>{money(service.price_pence + bookingFeePence)} total</strong>
-                    <span className="service-deposit-note">
-                      Service {money(service.price_pence)} + GLOHAUS fee {money(bookingFeePence)}
-                    </span>
-                    <span className="service-deposit-note">
-                      {service.deposit_pence
-                        ? `${money(service.deposit_pence)} deposit`
-                        : "No deposit"}
-                    </span>
-                    <a
-                      className="profile-service-book"
-                      href={`?${example ? "service" : "bookService"}=${encodeURIComponent(service.id)}#booking`}
-                    >
-                      {example ? "Preview" : service.has_variations?"Choose options":"Book"} <ArrowUpRight size={14} />
-                    </a>
-                  </div>
-                </article></div>
-              ))}
-            </div>
-            {!services.length && (
-              <p className="profile-empty">
-                The service menu is being prepared.
-              </p>
-            )}
-          </section>
-          {policies}
-          {socialPortfolio}
-          <section id="reviews" className="professional-section">
-            <p className="eyebrow">REAL VISITS. REAL EXPERIENCES.</p>
-            <h2>Kind words.</h2>
-            {specialityTabs("reviews")}
-            {!example && <form action={profilePath}><input type="hidden" name="speciality" value={selectedSpeciality??""}/><label>Reviews for service<select name="reviewService" defaultValue={reviewService??""}><option value="">All services</option>{allServices.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label><button type="submit">Filter reviews</button></form>}
-            {rating !== null && (
-              <p className="profile-rating-summary">
-                <Star size={20} aria-hidden />
-                <strong>{rating.toFixed(1)} / 5</strong> from {reviewCount}{" "}
-                verified {reviewCount === 1 ? "review" : "reviews"}
-              </p>
-            )}
-            {reviews.length ? (
-              reviews.map((review) => (
-                <article className="review-card" key={review.id}>
-                  <strong>
-                    {review.public_name} · {review.rating}/5
-                  </strong>
-                  <p>{review.body}</p>
-                  {review.photo_id && <Image src={`/api/v1/review-photos/${review.photo_id}`} alt={review.photo_alt || "Customer appointment result"} width={480} height={480} unoptimized style={{maxWidth:"100%",height:"auto"}}/>}
-                  {review.response_body&&<div><strong>Professional response</strong><p>{review.response_body}</p></div>}
-                  {!example&&<ContentReportButton targetType="review" targetId={review.id} label="Report review or response"/>}
-                  <small>Verified completed appointment{review.service_name?` · ${review.service_name}`:""}{review.speciality_name?` · ${review.speciality_name}`:""}</small>
-                </article>
-              ))
-            ) : (
-              <p className="profile-empty">
-                {example ? "This fictional profile has no customer reviews. Real profiles collect reviews after completed appointments." : "No reviews yet. Reviews appear after completed appointments."}
-              </p>
-            )}
-          </section>
-        </div>
-        <aside className="professional-aside">
-          <section
-            id="booking"
-            className="professional-section booking-anchor"
-            aria-label={example ? "Example appointment" : "Book an appointment"}
-          >
-            {allServices.length ? (
-              booking
-            ) : (
-              <div className="booking-widget">
-                <h2>Appointments, coming soon.</h2>
-                <p>This professional has not published services yet.</p>
-              </div>
-            )}
-          </section>
-          <section id="hours" className="professional-section hours-card">
-            <p className="eyebrow">PLAN YOUR VISIT</p>
-            <h2>Opening hours.</h2>
-            {hours.length ? (
-              <dl>
-                {[1, 2, 3, 4, 5, 6, 0].map((day) => {
-                  const rule = hours.find((r) => r.weekday === day);
-                  return (
-                    <div key={day}>
-                      <dt>{days[day]}</dt>
-                      <dd>
-                        {rule
-                          ? `${clockTime(rule.startMinute)} – ${rule.endMinute === 1440 ? "Midnight" : clockTime(rule.endMinute)}`
-                          : "Closed"}
-                      </dd>
-                    </div>
-                  );
-                })}
-              </dl>
-            ) : (
-              <p>Opening hours have not been added yet.</p>
-            )}
-            <small>
-              London time · Adjusts for British Summer Time. Available
-              appointments also account for time off and existing bookings.
+              <div className="professional-socials">…2245 tokens truncated…account for time off and existing bookings.
             </small>
           </section>
         </aside>

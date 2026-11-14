@@ -12,7 +12,7 @@ function declarations(selector: string) {
   const start = css.indexOf("{", at);
   const end = css.indexOf("}", start);
   const body = css.slice(start + 1, end);
-  return Object.fromEntries([...body.matchAll(/([a-z-]+):\\s*(#[0-9a-f]{6})\\s*;/gi)]
+  return Object.fromEntries([...body.matchAll(/([a-z-]+):\s*(#[0-9a-f]{6})\s*;/gi)]
     .map((match) => [match[1], match[2]]));
 }
 function luminance(hex: string) {

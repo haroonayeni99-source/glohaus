@@ -1,9 +1,9 @@
 # GLOHAUS — Independent Implementation & Owner-Assistance Work Order
 
-**Date:** 18 November 2026  
-**Project:** GLOHAUS  
-**Production:** https://www.glohaus.shop  
-**GitHub:** `haroonayeni99-source/glohaus`  
+**Date:** 18 November 2026
+**Project:** GLOHAUS
+**Production:** https://www.glohaus.shop
+**GitHub:** `haroonayeni99-source/glohaus`
 **Vercel:** `haroon-glohaus/glohaus1`
 
 **Authorisation:** Continue under my existing implementation, testing, merging and deployment authorisation, subject to the safety and verification requirements below.

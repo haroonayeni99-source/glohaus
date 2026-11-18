@@ -5,6 +5,7 @@ import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { AccessMessage } from "@/components/access-message";
 import { BusinessConnections } from "@/components/business-connections";
 import { businessTools } from "@/modules/business-tools/repository";
+import { portfolioWorkspaceEnabled } from "@/lib/portfolio-workspace";
 import { providerReady } from "@/modules/business-tools/oauth";
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -57,6 +58,7 @@ export default async function Connections({
         </p>
         <BusinessConnections
           {...JSON.parse(JSON.stringify(data))}
+          calendarOnly={portfolioWorkspaceEnabled()}
           services={services}
           ready={ready}
           callback={(await searchParams).connection}

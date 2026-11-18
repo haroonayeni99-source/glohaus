@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { imageInputAccept, readImageFile } from "@/lib/image-file";
-import { imageUploadError } from "@/lib/image-upload-feedback";
+import { imageUploadError, imageUploadFailure, PROFILE_PHOTO_UPLOAD_TIMEOUT_MS } from "@/lib/image-upload-feedback";
 import type { CustomerProfile } from "@/modules/accounts/customer-profile";
 export function CustomerProfileEditor({
   profile,
@@ -34,6 +34,7 @@ export function CustomerProfileEditor({
     try {
       const response = await fetch(url, {
         method,
+        ...(url.endsWith("/photo") ? { signal: AbortSignal.timeout(PROFILE_PHOTO_UPLOAD_TIMEOUT_MS) } : {}),
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
@@ -48,7 +49,7 @@ export function CustomerProfileEditor({
       router.refresh();
       return true;
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Could not save.");
+      setNotice(url.endsWith("/photo") ? imageUploadFailure(error) : error instanceof Error ? error.message : "Could not save.");
       return false;
     } finally {
       inFlight.current = false;

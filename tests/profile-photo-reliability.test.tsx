@@ -126,3 +126,24 @@ for (const kind of ["customer", "professional"] as const) {
     await act(async () => finish(Response.json({ id: "saved-photo" }, { status: 201 })));
   });
 }
+
+for (const kind of ["customer", "professional"] as const) {
+  it(`releases ${kind} photo controls after an unconfirmed timeout and retains the preview`, async () => {
+    await act(async () => root.render(kind === "professional"
+      ? React.createElement(ProfilePhotoEditor, { photo: null, published: false })
+      : React.createElement(CustomerProfileEditor, { profile: { first_name: "Test", last_name: "", has_photo: false } as CustomerProfile, userId: "test-user" })));
+    await choosePhoto();
+    vi.mocked(fetch).mockRejectedValueOnce(new DOMException("timeout", "TimeoutError"));
+    await submitPhotoForm();
+    expect(container.textContent).toContain("Check your profile before retrying");
+    expect(vi.mocked(fetch).mock.calls[0][1]?.signal).toBeInstanceOf(AbortSignal);
+    const fileInput = container.querySelector<HTMLInputElement>('input[type="file"]')!;
+    expect(fileInput.disabled).toBe(false);
+    const save = Array.from(fileInput.closest("form")!.querySelectorAll("button")).find(button => button.textContent?.includes("Save"))!;
+    expect(save.disabled).toBe(false);
+    vi.mocked(fetch).mockResolvedValueOnce(Response.json({ id: "saved-after-check" }, { status: 201 }));
+    await submitPhotoForm();
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(mocks.readImageFile).toHaveBeenCalledTimes(1);
+  });
+}

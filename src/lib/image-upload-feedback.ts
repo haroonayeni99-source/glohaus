@@ -15,3 +15,14 @@ export function imageUploadError(status: number, code?: string): string {
     return "Photo uploads are temporarily unavailable. Keep this page open and retry shortly.";
   return "Could not save your photo. Your preview is still here so you can try again.";
 }
+
+export const PROFILE_PHOTO_UPLOAD_TIMEOUT_MS = 45_000;
+
+export function imageUploadFailure(error: unknown): string {
+  const name = error && typeof error === "object" && "name" in error ? error.name : null;
+  if (name === "TimeoutError" || name === "AbortError")
+    return "This photo update took too long to confirm. Check your profile before retrying; your preview is still here.";
+  if (name === "TypeError")
+    return "Could not reach GLOHAUS. Check your connection and retry your photo.";
+  return error instanceof Error ? error.message : "Could not save your photo. Please try again.";
+}

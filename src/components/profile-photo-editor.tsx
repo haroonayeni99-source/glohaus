@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { imageInputAccept, isSupportedImageFile, readImageFile } from "@/lib/image-file";
-import { imageUploadError } from "@/lib/image-upload-feedback";
+import { imageUploadError, imageUploadFailure, PROFILE_PHOTO_UPLOAD_TIMEOUT_MS } from "@/lib/image-upload-feedback";
 import { useRef, useState } from "react";
 import { SOURCE_IMAGE_MAX_BYTES } from "@/modules/media/limits";
 import { useRouter } from "next/navigation";
@@ -105,6 +105,7 @@ export function ProfilePhotoEditor({
                 "/api/v1/professional/profile/photo",
                 {
                   method: "POST",
+                  signal: AbortSignal.timeout(PROFILE_PHOTO_UPLOAD_TIMEOUT_MS),
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     base64,
@@ -125,7 +126,7 @@ export function ProfilePhotoEditor({
               router.refresh();
             } catch (error) {
               setNotice(
-                error instanceof Error ? error.message : "Upload failed.",
+                imageUploadFailure(error),
               );
             } finally {
               inFlight.current = false;

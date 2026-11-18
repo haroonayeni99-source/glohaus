@@ -10,11 +10,11 @@ Source inputs: #240 photo reliability head db63b79 (including main #241 and secu
 - Preserve the automatic-publication OFF gate and current private-draft copy; the older #233 default-mode assertion now checks the actual approval selection, private-until-published explanation and absence of automatic publication while disabled.
 - Use one shared server-side Preview gate for Portfolio and Connections. In this candidate, Portfolio has uploads plus social management, while Connections keeps calendar controls and a link to the social workspace. It no longer duplicates social post editing/connection settings in the Preview workspace. Legacy production behaviour remains until actual hosted acceptance and deliberate source/config rollout.
 - Keep imported hidden/draft work private, existing service associations, featured social ordering, professional permission checks, calendar callbacks and provider readiness flags.
-- Reuse the #242 public grid/viewer and #240 optimisation/retry/duplicate-submit guards. Do not enable public Instagram/TikTok, sending, payouts, fees or new commissions.
+- Reuse the #242 public grid/viewer and #240 optimisation/retry/duplicate-submit guards. Photo updates now have a 45-second confirmation timeout, actionable connection/timeout feedback, preserved previews and retry controls; a timeout does not falsely claim the server failed. Do not enable public Instagram/TikTok, sending, payouts, fees or new commissions.
 
 ## Evidence and remaining gates
 
-Combined local checks: 41 focused tests passed across business connections, workspace gate, photo reliability/formats and profile examples. Scoped lint, TypeScript and production build passed on the combined source. Final published-head CI/browser checks remain required.
+Combined local checks: 43 focused tests passed across business connections, workspace gate, photo reliability/formats and profile examples. Scoped lint, TypeScript and production build passed on the combined source. Final published-head CI/browser checks remain required.
 
 Hosted acceptance remains blocked on the isolated PostgreSQL connection (28P01) and the existing private Blob store's Preview-only binding. Do not mistake HTTP 200 with streamed error digest for a working profile. Test with genuinely signed-in existing isolated customer/professional accounts and synthetic uploads only; never use production credentials/files or live charges.
 

@@ -182,3 +182,63 @@
 :root[data-theme] .pro-app .management-tabs button[aria-pressed="true"] {
   background:var(--ui-accent); color:var(--ui-on-accent); border-color:var(--ui-accent);
 }
+
+
+/* Professional appointment views: match every text colour to its actual card
+   and tab surface. These rules are intentionally scoped to the PRO Bookings
+   panel so customer bookings and other professional tools stay unchanged. */
+:root:not([data-theme="night"]) .pro-app .pro-bookings-list-panel .booking-view-tabs a {
+  background: #ffffff;
+  color: #46353e;
+  border-color: #ad9ba4;
+}
+:root:not([data-theme="night"]) .pro-app .pro-bookings-list-panel .booking-view-tabs a[aria-current="page"] {
+  background: #703b4c;
+  color: #ffffff;
+  border-color: #703b4c;
+}
+:root:not([data-theme="night"]) .pro-app .pro-bookings-list-panel .appointment-card {
+  background: #ffffff;
+  color: #251c21;
+  border-color: #cdbcc5;
+}
+:root:not([data-theme="night"]) .pro-app .pro-bookings-list-panel .appointment-card :is(h3, strong) {
+  color: #251c21;
+}
+:root:not([data-theme="night"]) .pro-app .pro-bookings-list-panel .appointment-card :is(p, small, .appointment-time, .appointment-detail-label) {
+  color: #5a4b55;
+}
+:root[data-theme="night"] .pro-app .pro-bookings-list-panel .booking-view-tabs a {
+  background: #2c242b;
+  color: #f3e5ee;
+  border-color: #77636f;
+}
+:root[data-theme="night"] .pro-app .pro-bookings-list-panel .booking-view-tabs a[aria-current="page"] {
+  background: #ff91bd;
+  color: #301522;
+  border-color: #ff91bd;
+  font-weight: 750;
+}
+:root[data-theme="night"] .pro-app .pro-bookings-list-panel .appointment-card {
+  background: #251f24;
+  color: #fff8fb;
+  border-color: #675662;
+}
+:root[data-theme="night"] .pro-app .pro-bookings-list-panel .appointment-card :is(h3, strong) {
+  color: #fff8fb;
+}
+:root[data-theme="night"] .pro-app .pro-bookings-list-panel .appointment-card :is(p, small, .appointment-time, .appointment-detail-label) {
+  color: #e4d5df;
+}
+:root[data-theme="night"] .pro-app .pro-bookings-list-panel .appointment-date {
+  background: #412e38;
+  color: #ffd3e4;
+}
+:root[data-theme="night"] .pro-app .pro-bookings-list-panel .catalog-empty {
+  background: #251f24;
+  color: #fff8fb;
+  border: 1px solid #675662;
+}
+:root[data-theme="night"] .pro-app .pro-bookings-list-panel .catalog-empty :is(h2, p, a) {
+  color: #fff8fb;
+}

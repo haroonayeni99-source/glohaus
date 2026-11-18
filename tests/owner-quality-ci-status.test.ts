@@ -1,5 +1,6 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import { GET, summarizeRuns } from "@/app/api/v1/admin/quality-control/ci-status/route";
+import { GET } from "@/app/api/v1/admin/quality-control/ci-status/route";
+import { summarizeRuns } from "@/modules/admin/quality-control-ci";
 
 const mock = vi.hoisted(() => ({ owner: true, fetch: vi.fn() }));
 vi.mock("@/modules/admin/repository", () => ({

@@ -1,0 +1,38 @@
+name: Booking theme browser check
+on:
+  pull_request:
+    paths:
+      - 'src/app/theme-controls.css'
+      - 'src/components/deposit-selector.tsx'
+      - 'tests/fixtures/deposit-theme-entry.tsx'
+      - 'scripts/check-deposit-theme.mjs'
+      - 'src/components/booking-*.tsx'
+      - 'tests/fixtures/bookings-theme-entry.tsx'
+      - 'scripts/check-bookings-theme.mjs'
+      - '.github/workflows/booking-theme.yml'
+permissions:
+  contents: read
+jobs:
+  booking-theme-browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/prepare-test-browsers
+      - run: node scripts/check-bookings-theme.mjs
+      - run: node scripts/check-deposit-theme.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bookings-theme
+          path: |
+            reports/bookings-*.png
+            reports/deposit-*.png

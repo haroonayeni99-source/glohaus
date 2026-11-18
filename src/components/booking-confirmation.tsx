@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { bookingCalendarDownload } from "@/modules/bookings/calendar-download";
 import { CalendarPlus, Check, MessageCircle, ArrowRight } from "lucide-react";
 import { money } from "@/modules/professionals/domain";
 
@@ -22,23 +23,13 @@ export function BookingConfirmation({
   remainingPence: number;
 }) {
   function addToCalendar() {
-    const escape = (value: string) =>
-      value.replace(/\\/g, "\\\\").replace(/,/g, "\\,").replace(/;/g, "\\;").replace(/\n/g, "\\n");
-    const calendarDate = (value: string) =>
-      new Date(value).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-    const event = [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "PRODID:-//GLOHAUS//Booking//EN",
-      "BEGIN:VEVENT",
-      `UID:glohaus-${bookingId}`,
-      `DTSTART:${calendarDate(startsAt)}`,
-      `DTEND:${calendarDate(endsAt)}`,
-      `SUMMARY:${escape(`${serviceName} with ${professionalName}`)}`,
-      `DESCRIPTION:${escape(`Booked through GLOHAUS. ${remainingPence === 0 ? "Service payment" : "Deposit"} paid: ${money(depositPence)}. Remaining service balance: ${money(remainingPence)}.`)}`,
-      "END:VEVENT",
-      "END:VCALENDAR",
-    ].join("\r\n");
+    const event = bookingCalendarDownload({
+      id: bookingId,
+      startsAt,
+      endsAt,
+      summary: `${serviceName} with ${professionalName}`,
+      description: `Booked through GLOHAUS. ${remainingPence === 0 ? "Service payment" : "Deposit"} paid: ${money(depositPence)}. Remaining service balance: ${money(remainingPence)}.`,
+    });
     const url = URL.createObjectURL(
       new Blob([event], { type: "text/calendar;charset=utf-8" }),
     );

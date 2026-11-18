@@ -187,6 +187,7 @@ beforeEach(async () => {
   vi.stubEnv("INSTAGRAM_CLIENT_ID", "123456");
   // Existing opt-in automatic-mode contracts remain covered with fictional data.
   vi.stubEnv("INSTAGRAM_AUTO_PUBLISH_ENABLED", "true");
+  vi.stubEnv("SOCIAL_AUTO_PUBLISH_ENABLED", "true");
   io.run.mockImplementation(as);
   io.identity.mockResolvedValue(actor("social-pro"));
   io.worker.mockImplementation((work: (sql: SqlClient) => Promise<unknown>) =>
@@ -655,4 +656,30 @@ it("permits only the owning professional to preview draft/hidden covers without 
   io.identity.mockResolvedValue(actor('social-pro'));
   await as('social-pro',sql=>sql.query("UPDATE beauty.social_portfolio SET source_available=false WHERE id=$1",[post.id]));
   expect((await privateThumbnail(req,ctx)).status).toBe(404);expect(io.thumbnail).not.toHaveBeenCalled();
+});
+
+
+it.each(["instagram", "tiktok"] as const)("keeps new %s work private with automatic publication off, including legacy automatic connections", async (provider) => {
+  vi.stubEnv("SOCIAL_AUTO_PUBLISH_ENABLED", "");
+  const id = await connect("automatic", provider);
+  if (provider === "tiktok") network.mockImplementation(async () => Response.json({ error: { code: "ok" }, data: { videos: [{ id: "12345678", share_url: "https://www.tiktok.com/@fictional/video/12345678", create_time: 1793016000 }], has_more: false } }));
+  expect(await refresh(id)).toEqual({ synced: 1, failed: 0 });
+  expect(await visible()).toEqual([]);
+  const rows = (await db.query<{ publication_status: string }>("SELECT publication_status FROM beauty.social_portfolio")).rows;
+  expect(rows.length).toBeGreaterThan(0);
+  expect(rows.every(row => row.publication_status === "draft")).toBe(true);
+});
+
+it.each([
+  { action: "socialSettings", mode: "automatic", syncEnabled: true },
+  { action: "displayMode", automatic: true },
+])("rejects attempts to enable automatic publication while the global gate is off", async (settings) => {
+  vi.stubEnv("SOCIAL_AUTO_PUBLISH_ENABLED", "");
+  const id = await connect("approval");
+  const { POST } = await import("@/app/api/v1/professional/connections/route");
+  const response = await POST(new Request("https://www.glohaus.shop/api/v1/professional/connections", {
+    method: "POST", headers: { Origin: "https://www.glohaus.shop", "Content-Type": "application/json" }, body: JSON.stringify({ ...settings, id }),
+  }));
+  expect(response.status).toBe(400);
+  expect((await db.query<{ auto_publish: boolean }>("SELECT auto_publish FROM beauty.business_connections WHERE id=$1", [id])).rows[0].auto_publish).toBe(false);
 });

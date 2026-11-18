@@ -383,3 +383,9 @@ it("honours an aborted pagination budget before an external request can complete
     }),
   ).rejects.toThrow("aborted fixture");
 });
+
+
+it.each(["google", "outlook"] as const)("marks revoked %s access as reconnect-required on cancellation", async (provider) => {
+  vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 401 })));
+  await expect(exportBooking(provider, token, { id: "11111111-1111-4111-8111-111111111111", starts_at: from, ends_at: to, status: "cancelled" }, "event-id")).rejects.toThrow("RECONNECT_REQUIRED");
+});

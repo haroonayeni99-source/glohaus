@@ -13,7 +13,7 @@ createRoot(document.getElementById("root")!).render(<main className="professiona
   <OurWork businessName="Example beauty" assets={[
     {id: "hair-photo", alt_text: "Hair photo", media_type: "image", speciality_ids: ["hair"]},
     {id: "hair-video", alt_text: "Hair video", media_type: "video", speciality_ids: ["hair"]},
-  ]} posts={[post, {...post, id:"draft", caption:"PRIVATE DRAFT", publication_status:"draft"}]}
+  ]} posts={[post, {...post, id:"tiktok", platform:"tiktok", media_type:"video", original_url:"https://www.tiktok.com/@fictional/video/1234567890123456789", caption:"Published TikTok"}, {...post, id:"draft", caption:"PRIVATE DRAFT", publication_status:"draft"}]}
     services={[{id:"makeup-service", speciality_id:"makeup"}]}
     collections={[{id:"hair",name:"Hair"},{id:"makeup",name:"Makeup"}]} />
 </main>);

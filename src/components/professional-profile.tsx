@@ -39,6 +39,7 @@ export type ProfilePresentation = {
   live?: ReactNode;
   policies?: ReactNode;
   socialPortfolio?: ReactNode;
+  ourWork?: ReactNode;
   follow: { following: boolean; followerCount: number; signedIn: boolean };
   messageHref: string | null;
   bookingFeePence: number;
@@ -63,6 +64,7 @@ export function ProfessionalProfile({
   live,
   policies,
   socialPortfolio,
+  ourWork,
   follow,
   messageHref,
   bookingFeePence,
@@ -255,7 +257,7 @@ export function ProfessionalProfile({
               </div>
             )}
           </section>
-          <section id="portfolio" className="professional-section">
+          {ourWork ?? (<section id="portfolio" className="professional-section">
             <p className="eyebrow">THE WORK SPEAKS</p>
             <h2>A closer look.</h2>
             {specialityTabs("portfolio")}
@@ -287,6 +289,7 @@ export function ProfessionalProfile({
               </p>
             )}
           </section>
+          )}
           <section id="services" className="professional-section">
             <p className="eyebrow">MAKE A LITTLE TIME FOR YOU</p>
             <h2>Services & prices.</h2>

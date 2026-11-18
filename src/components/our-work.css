@@ -1,0 +1,45 @@
+.our-work-anchor { display:block; scroll-margin-top:130px; }
+.our-work-collections { display:flex; gap:8px; overflow-x:auto; padding:4px 0 14px; }
+.our-work-collections button { flex:0 0 auto; min-height:44px; border:1px solid var(--line); border-radius:999px; padding:8px 16px; background:var(--paper,#fff); color:var(--ink,#30232a); }
+.our-work-collections button[aria-pressed="true"] { background:#703b4c; color:#fff; border-color:#703b4c; }
+.our-work-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+.our-work-grid .our-work-tile { position:relative; display:block; aspect-ratio:9/16; min-width:0; padding:0; border:0; border-radius:12px; overflow:hidden; background:#30232a; color:#fff; text-align:left; cursor:pointer; }
+.our-work-tile > img,.our-work-tile > video,.our-work-tile .social-thumbnail,.our-work-tile .social-thumbnail img { width:100%; height:100%; object-fit:cover; margin:0; border-radius:0; }
+.our-work-tile .social-thumbnail-placeholder { height:100%; min-height:0; padding:8px; font-size:.7rem; background:#30232a; color:#fff; }
+.our-work-tile .social-thumbnail-placeholder small { display:none; }
+.our-work-source,.our-work-pin { position:absolute; top:8px; left:6px; max-width:calc(100% - 12px); background:#1a101de6; color:#fff; border-radius:6px; padding:4px 6px; font-size:clamp(.55rem,1.7vw,.75rem); }
+.our-work-pin { top:38px; display:flex; align-items:center; gap:3px; }
+.our-work-play { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); filter:drop-shadow(0 1px 4px #000); }
+.our-work-caption { position:absolute; bottom:0; left:0; right:0; padding:22px 8px 10px; background:linear-gradient(transparent,#160b19ed); color:#fff; font-size:.75rem; line-height:1.4; max-height:45%; overflow:hidden; }
+.our-work-tile:focus-visible,.our-work button:focus-visible { outline:3px solid #ff91bd; outline-offset:3px; }
+.our-work-viewer { position:fixed; inset:0; width:100%; max-width:none; height:100dvh; max-height:none; margin:0; padding:env(safe-area-inset-top,0px) max(12px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(12px,env(safe-area-inset-left,0px)); box-sizing:border-box; border:0; background:#160f17; color:#fff; overflow:hidden; }
+.our-work-viewer[open] { display:flex; flex-direction:column; }
+.our-work-viewer::backdrop { background:#160f17; }
+.our-work-viewer header,.our-work-viewer footer { width:min(100%,640px); margin:0 auto; flex:none; }
+.our-work-viewer header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 0; }
+.our-work-viewer button { min-height:44px; min-width:44px; padding:8px 12px; border:1px solid #8f7589; border-radius:12px; background:#30232f; color:#fff; cursor:pointer; }
+.our-work-viewer button:disabled { opacity:.5; cursor:default; }
+.our-work-stage { flex:1; min-height:0; width:min(100%,640px); margin:0 auto; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-x; }
+.our-work-stage > img,.our-work-video,.our-work-video video { width:100%; height:100%; object-fit:contain; }
+.our-work-video { position:relative; }
+.our-work-video > button { position:absolute; top:12px; right:12px; display:flex; align-items:center; gap:5px; }
+.our-work-viewer footer { padding:10px 0; }
+.our-work-viewer footer p { margin:0 0 8px; max-height:4.2em; overflow-y:auto; color:#fff; touch-action:pan-y; }
+.our-work-viewer-nav { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; }
+.our-work-viewer-nav button { display:flex; align-items:center; gap:4px; }
+.our-work-stage .social-portfolio-card { background:#251b25; color:#fff; border-color:#8f7589; min-height:100%; box-sizing:border-box; }
+.our-work-stage .social-portfolio-card :is(p,small,strong,a) { color:#fff; }
+.our-work-stage .social-thumbnail { aspect-ratio:9/16; max-height:55dvh; }
+@media(max-width:600px) { .our-work-grid { gap:4px; } .our-work-grid .our-work-tile { border-radius:8px; } .our-work-caption { font-size:.65rem; } }
+
+/* Scoped native social viewing; provider controls stay inside the selected viewer. */
+.our-work-stage:has(.our-work-social-player) { touch-action:pan-y; }
+.our-work-social-player { box-sizing:border-box; min-width:0; width:100%; padding:0 0 12px; overflow-wrap:anywhere; }
+.our-work-social-player :is(p,a,strong) { color:#fff; }
+.our-work-social-player .social-thumbnail { width:100%; aspect-ratio:9/16; max-height:50dvh; overflow:hidden; border-radius:12px; }
+.our-work-social-player .social-thumbnail img { display:block; width:100%; height:100%; object-fit:contain; }
+.our-work-social-player .social-thumbnail-placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:240px; padding:16px; }
+.our-work-social-player iframe { display:block; box-sizing:border-box; width:100%; height:min(65dvh,720px); min-height:300px; border:1px solid #8f7589; border-radius:12px; background:#111; }
+.our-work-social-player button { margin:0 8px 8px 0; }
+.our-work-social-player .our-work-original { display:inline-flex; align-items:center; min-height:44px; padding:6px 0; text-decoration:underline; }
+.our-work-social-attribution { margin:8px 0; }

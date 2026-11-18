@@ -1,3 +1,4 @@
+import { deliverRebookingEmails } from "@/modules/rebooking/worker";
 import { deliverSupportForwarding } from "@/modules/support-mail/worker";
 import { deliverSupportNotifications } from "@/modules/support/notifications";
 import "server-only";
@@ -172,7 +173,16 @@ export async function runNotificationWorker() {
         });
       }
     }
-    let sent = 0;
+    let rebooking: Awaited<ReturnType<typeof deliverRebookingEmails>> | {error:string};
+    try {
+      rebooking = await deliverRebookingEmails((message,options)=>resend.emails.send(message,options),appUrl,from);
+      if(rebooking.retrying)preparationFailures.push("rebooking");
+    } catch {
+      rebooking={error:"REBOOKING_WORKER_FAILED"};
+      preparationFailures.push("rebooking");
+      console.error("Notification preparation failed",{stage:"rebooking"});
+    }
+    let sent = "sent" in rebooking ? rebooking.sent : 0;
     for (const job of jobs) {
       try {
         const message = notificationEmail(job, appUrl);
@@ -339,12 +349,14 @@ export async function runNotificationWorker() {
       }
     }
     const summary = {
+      rebooking,
       supportEmail,
       push,
       journeyRouting,
       preparationFailures,
       professionalJobs: professionalJobs.length,
       processed:
+        ("claimed" in rebooking ? rebooking.claimed : 0) +
         jobs.length +
         productJobs.length +
         marketingJobs.length +

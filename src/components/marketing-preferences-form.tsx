@@ -38,7 +38,7 @@ const customerOptions = [
   [
     "rebooking",
     "Rebooking reminders",
-    "Optional reminders when it may be time to book again.",
+    "Optional reminders after completed appointments, at most once every seven days. Unsubscribe at any time.",
   ],
 ] as const;
 

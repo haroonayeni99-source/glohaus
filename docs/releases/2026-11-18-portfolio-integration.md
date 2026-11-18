@@ -23,3 +23,7 @@ Actual acceptance: upload/save/retry/format/size/crop/logo; one social workspace
 #242 still does not provide arbitrary named collection creation or pin/reorder controls for uploaded files; treatment collections use existing speciality assignments, and featured ordering uses existing social-post fields. Resolve those remaining agreed requirements through a reviewed additive data model and backup/recovery gate before declaring the complete Concept C work order fulfilled.
 
 Rollback: this branch has no production effects or migrations. After a future authorised, verified release, use its recorded preceding glohaus1 deployment and selective source revert. Keep the independent security patch unless a verified regression requires otherwise.
+
+## Native viewing integration, 18 November
+
+Merged #242 native player source b433e5d with this candidate, retaining #233's gated single management workspace and #240's duplicate-save/timeout/photo fixes. WORK_LOG append conflict resolved by retaining both evidence histories; application source merged cleanly. Full local suite: **226 files passed; 1,801 tests passed, 2 skipped**. Scoped lint and TypeScript passed. Provider-frame fixture CI and real hosted acceptance are tracked separately. Public social launch flags remain unchanged/OFF; no database migration, payment or provider-account changes.

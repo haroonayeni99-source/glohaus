@@ -5,7 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, Pin, Play, Volume2, VolumeX, X } from "lucide-react";
 import type { PublicSocialPost } from "@/modules/business-tools/domain";
-import { SocialCard, SocialThumbnail } from "./social-portfolio";
+import { SocialThumbnail } from "./social-portfolio";
+import { SocialWorkPlayer } from "./social-work-player";
 import "./our-work.css";
 
 type Asset = { id: string; alt_text: string; media_type?: "image" | "video"; speciality_ids?: string[]; speciality_names?: string[] };
@@ -105,7 +106,7 @@ export function OurWork({ assets, posts, businessName, services, collections }: 
               const dy = end.clientY - start.y;
               if (Math.abs(dy) > 70 && Math.abs(dy) > Math.abs(end.clientX - start.x) * 1.5) move(dy < 0 ? 1 : -1);
             }}>
-            {current.post ? <SocialCard key={current.id} post={current.post} /> : current.asset?.media_type === "video" ?
+            {current.post ? <SocialWorkPlayer key={current.id} post={current.post} /> : current.asset?.media_type === "video" ?
               <WorkVideo key={current.id} id={current.asset.id} label={current.caption} /> :
               <Image key={current.id} src={`/api/media/${current.asset!.id}`} alt={current.caption} width={900} height={1600} unoptimized />}
           </div>

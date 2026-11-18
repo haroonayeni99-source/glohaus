@@ -23,8 +23,8 @@ try {
     let bytes = Buffer.from(dataUrl.split(",")[1], "base64");
     expect(bytes.length).toBeLessThanOrEqual(3 * 1024 * 1024);
     let metadata = await sharp(bytes).metadata();
-    expect(metadata.width).toBe(1600);
-    expect(metadata.height).toBe(1280);
+    expect(metadata.width).toBe(960);
+    expect(metadata.height).toBe(768);
     await editor.getByLabel("Profile image style").selectOption("logo");
     await expect(editor.getByRole("status")).toContainText("Full logo preview ready");
     await editor.getByLabel("Profile image", { exact: true }).setInputFiles({ name: "wide-logo.png", mimeType: "image/png", buffer: logo });

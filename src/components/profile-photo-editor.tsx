@@ -22,6 +22,7 @@ export function ProfilePhotoEditor({
   const [notice, setNotice] = useState("");
   const [imageStyle, setImageStyle] = useState<"photo" | "logo">("photo");
   const [preparing, setPreparing] = useState(false);
+  const inFlight = useRef(false);
   const selectedFile = useRef<File | null>(null);
   const preparation = useRef(0);
 
@@ -79,6 +80,7 @@ export function ProfilePhotoEditor({
         <form
           onSubmit={async (event) => {
             event.preventDefault();
+            if (inFlight.current || busy || preparing) return;
             const form = event.currentTarget;
             const data = new FormData(form);
             const file = data.get("photo");
@@ -94,6 +96,7 @@ export function ProfilePhotoEditor({
               );
               return;
             }
+            inFlight.current = true;
             setBusy(true);
             setNotice("Uploading your optimised profile photo…");
             try {
@@ -125,6 +128,7 @@ export function ProfilePhotoEditor({
                 error instanceof Error ? error.message : "Upload failed.",
               );
             } finally {
+              inFlight.current = false;
               setBusy(false);
             }
           }}

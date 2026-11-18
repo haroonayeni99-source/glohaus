@@ -24,6 +24,16 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.stubGlobal("fetch", vi.fn());
+  // jsdom does not propagate a programmatically assigned FileList into
+  // FormData(form). Reproduce the browser's selected-file behaviour only.
+  const BrowserFormData = window.FormData;
+  vi.stubGlobal("FormData", class extends BrowserFormData {
+    constructor(form?: HTMLFormElement) {
+      super(form);
+      const file = form?.querySelector<HTMLInputElement>('input[type="file"]')?.files?.[0];
+      if (file) this.set("photo", file);
+    }
+  });
   mocks.readImageFile.mockResolvedValue("data:image/webp;base64,YWJj");
   container = document.createElement("div");
   document.body.append(container);
@@ -98,3 +108,21 @@ it("allows a professional to retry saving the existing preview after a server fa
   expect(mocks.readImageFile).toHaveBeenCalledTimes(1);
   expect(mocks.refresh).toHaveBeenCalled();
 });
+
+for (const kind of ["customer", "professional"] as const) {
+  it(`prevents duplicate ${kind} photo requests while a save is pending`, async () => {
+    await act(async () => root.render(kind === "professional"
+      ? React.createElement(ProfilePhotoEditor, { photo: null, published: false })
+      : React.createElement(CustomerProfileEditor, { profile: { first_name: "Test", last_name: "", has_photo: false } as CustomerProfile, userId: "test-user" })));
+    await choosePhoto();
+    let finish!: (response: Response) => void;
+    vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
+    const form = container.querySelector<HTMLInputElement>('input[type="file"]')!.closest("form")!;
+    await act(async () => {
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    await act(async () => finish(Response.json({ id: "saved-photo" }, { status: 201 })));
+  });
+}

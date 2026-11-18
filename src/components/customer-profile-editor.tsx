@@ -20,12 +20,15 @@ export function CustomerProfileEditor({
   const [preview, setPreview] = useState("");
   const [preparing, setPreparing] = useState(false);
   const preparation = useRef(0);
+  const inFlight = useRef(false);
   async function save(
     url: string,
     method: string,
     body: unknown,
     success: string,
   ) {
+    if (inFlight.current) return false;
+    inFlight.current = true;
     setBusy(true);
     setNotice("");
     try {
@@ -48,6 +51,7 @@ export function CustomerProfileEditor({
       setNotice(error instanceof Error ? error.message : "Could not save.");
       return false;
     } finally {
+      inFlight.current = false;
       setBusy(false);
     }
   }

@@ -355,3 +355,9 @@ Update the existing work log and task registers so another ChatGPT Work session 
 **Final instruction:** Maximise safe, independent progress. If one integration requires my involvement, continue other authorised development rather than stopping the entire project.
 
 Do not report work as completed or deployed unless it has actually been verified.
+
+## Native social viewing addendum — Owner instruction
+
+Concept C must allow visitors to watch supported TikTok/Instagram videos in the existing full-screen GLOHAUS viewer, with instant authorised thumbnails, on-demand approved players, source attribution, consent and optional manual original links. Normal playback must not navigate away from GLOHAUS. Unsupported/restricted content retains a clear external viewing option; unauthorised playback is excluded. Public integrations remain disabled pending provider approval and readiness checks.
+
+The complete requirements and genuine playback acceptance test are in [Native GLOHAUS viewing](2026-11-18-native-social-viewing.md). Apply to #242 and coordinate #233 through common #245. Continue independent verified work without routine permission requests.

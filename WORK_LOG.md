@@ -358,3 +358,7 @@ The initial branch test include excluded TSX; renamed the new case to the suppor
 ## 18 November 2026 — common native viewing candidate
 
 Integrated #242 b433e5d into #245, preserving #233's gated one-workspace management and #240's photo reliability changes. The sole merge conflict was appended WORK_LOG evidence; both histories retained. Full combined local suite: 226 files / 1,801 tests passed, two skipped. Scoped lint and TypeScript passed. Genuine hosted/provider acceptance remains blocked; no production activation and no claim that provider fixtures represent genuine playback.
+
+## 19 November 2026 — combined browser assertion correction
+
+Final #245 71c6ce8 CI passed lint/typecheck/full tests/build, media/logo/pricing and initial customer identity checks, then stopped at an obsolete exact invalid-photo message in check-client-blocking.mjs. The UI correctly rejected bad.txt, showed the updated supported-phone-formats message and left Save photo disabled. Updated only the expected message; no product validation changed. Reused the QC candidate's workflow efficiency fix (all 17 foundation jobs retained, PR/main triggers, existing encoder fallback) so the corrected head does not schedule duplicate feature-push checks. Existing application test/build evidence remains applicable; exact new-head CI still required. Local browser remains socket-blocked. No production changes.

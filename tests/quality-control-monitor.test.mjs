@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { paths, inspect, incidentBody } from "../scripts/quality-control-monitor.mjs";
 
-const response = (status = 200) => ({ ok: status >= 200 && status < 400, status, body: { cancel: async () => {} } });
+const response = (status = 200) => new Response("<main>Public fixture</main>",{status,headers:{"Content-Type":"text/html"}});
 
 test("only checks public GLOHAUS URLs via GET without credentials", async () => {
   const requests = [];
@@ -37,4 +37,11 @@ test("persistent failure creates a safe incident summary", async () => {
   assert.deepEqual(report.checks.map(x => x.ok), [true, false, true]);
   assert.match(incidentBody(report), /\/shop: FAILED/);
   assert.doesNotMatch(incidentBody(report), /sensitive network debug/);
+});
+
+
+test("retries HTTP-200 streamed render failures and reports a fixed safe reason", async()=>{
+ const report=await inspect(async url=>url.endsWith('/shop')?new Response('<main>Shell</main>1:E{"digest":"private-fixture-detail"}',{headers:{'Content-Type':'text/html'}}):response(),async()=>{});
+ assert.equal(report.healthy,false);assert.equal(report.checks[1].status,200);assert.equal(report.checks[1].reason,'render_error');assert.equal(report.checks[1].attempts,2);
+ assert.doesNotMatch(incidentBody(report),/private-fixture-detail|<main>/);
 });

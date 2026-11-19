@@ -1,3 +1,4 @@
+import { publicPageHealth } from "../src/lib/public-page-health.mjs";
 import { writeFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
@@ -15,10 +16,10 @@ export async function probe(path, fetcher = fetch) {
       method: "GET", redirect: "follow", cache: "no-store",
       headers: { Accept: "text/html" }, signal: AbortSignal.timeout(10000)
     });
-    await response.body?.cancel();
-    return { path, ok: response.ok, status: response.status, durationMs: Date.now() - started };
+    const document = await publicPageHealth(response);
+    return { path, ...document, status: response.status, durationMs: Date.now() - started };
   } catch {
-    return { path, ok: false, status: null, durationMs: Date.now() - started };
+    return { path, ok: false, reason: "request_failed", status: null, durationMs: Date.now() - started };
   }
 }
 
@@ -30,7 +31,7 @@ export async function inspect(fetcher = fetch, pause = sleep) {
     return { ...await probe(path, fetcher), attempts: 2 };
   }));
   return { checkedAt: new Date().toISOString(), origin, healthy: checks.every(c => c.ok), checks,
-    limitation: "Public HTTP status only. Booking, payments and authenticated journeys remain unverified." };
+    limitation: "Public HTML and streamed error checks only. Interactive behaviour, booking, payments and authenticated journeys remain unverified." };
 }
 
 export function incidentBody(result) {
@@ -40,7 +41,7 @@ export function incidentBody(result) {
     "Production: " + origin,
     "",
     ...result.checks.map(c => "- " + c.path + ": " + (c.ok ? "OK" : "FAILED") +
-      ", HTTP " + (c.status ?? "no response") + ", " + c.durationMs + "ms, attempts " + c.attempts),
+      ", " + c.reason + ", HTTP " + (c.status ?? "no response") + ", " + c.durationMs + "ms, attempts " + c.attempts),
     "",
     "Check the deployed production release and error logs before changing anything.",
     result.limitation,

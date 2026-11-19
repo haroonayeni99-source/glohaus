@@ -47,7 +47,7 @@ export function OwnerQualityDiagnostics() {
       <p style={{fontSize:13}}>Last checked: {new Date(snapshot.checkedAt).toLocaleString("en-GB")} · Running deployment: {snapshot.runningDeployment.environment} · {snapshot.runningDeployment.commit?.slice(0,8) ?? "commit unavailable"}</p>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:10}}>
         {snapshot.checks.map(check=><div key={check.path} style={{borderRadius:12,border:"1px solid #d5a6bc",padding:12}}>
-          <strong>{check.path}</strong><p style={{margin:"5px 0"}}>{check.ok?"HTTP OK":"Needs investigation"} · {check.status ?? "No response"}</p><small>{check.durationMs} ms · unauthenticated GET</small>
+          <strong>{check.path}</strong><p style={{margin:"5px 0"}}>{check.ok?"Public document received":"Needs investigation"} · {check.status ?? "No response"}</p><small>{check.durationMs} ms · unauthenticated GET</small>
         </div>)}
       </div>
       <p style={{fontSize:12,marginBottom:0}}>{snapshot.caveat} The running commit identifies this application build, not necessarily the production commit when viewed from a preview.</p>

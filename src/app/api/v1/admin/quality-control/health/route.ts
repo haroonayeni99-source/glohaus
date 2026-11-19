@@ -1,3 +1,4 @@
+import { publicPageHealth } from "@/lib/public-page-health.mjs";
 import { withOwner } from "@/modules/admin/repository";
 import { apiError } from "@/lib/http";
 
@@ -15,10 +16,10 @@ async function check(path: string) {
       signal: AbortSignal.timeout(7000),
       headers: { Accept: "text/html" },
     });
-    await response.body?.cancel();
-    return { path, ok: response.ok, status: response.status, durationMs: Date.now() - started };
+    const document = await publicPageHealth(response);
+    return { path, ...document, status: response.status, durationMs: Date.now() - started };
   } catch {
-    return { path, ok: false, status: null, durationMs: Date.now() - started };
+    return { path, ok: false, reason: "request_failed", status: null, durationMs: Date.now() - started };
   }
 }
 
@@ -29,14 +30,14 @@ export async function GET() {
     const checks = await Promise.all(paths.map(check));
     return Response.json({
       checkedAt: new Date().toISOString(),
-      source: "Public, unauthenticated HTTP checks only",
+      source: "Public, unauthenticated document and render-error checks",
       checks,
       runningDeployment: {
         environment: process.env.VERCEL_ENV ?? "unknown",
         commit: process.env.VERCEL_GIT_COMMIT_SHA ?? null,
         branch: process.env.VERCEL_GIT_COMMIT_REF ?? null,
       },
-      caveat: "HTTP success does not verify booking, payments, logged-in tools or complete release readiness.",
+      caveat: "Public HTML and streamed error checks do not verify interactive behaviour, booking, payments, logged-in tools or complete release readiness.",
     }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     return apiError(error);

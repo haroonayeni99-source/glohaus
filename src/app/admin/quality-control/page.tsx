@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { qualityDeployment } from "@/lib/quality-control-deployment";
 import { pageAccount } from "@/lib/page-access";
 import { AuthFrame } from "@/components/auth-frame";
 import { AccessMessage } from "@/components/access-message";
@@ -17,6 +18,6 @@ export default async function QualityControlPage() {
     <Link href="/admin" style={{ display: "inline-block", marginBottom: 18 }}>← Owner Control Centre</Link>
     <OwnerQualityReleaseStatus />
     <OwnerQualityDiagnostics />
-    <QualityControlWorkspace />
+    <QualityControlWorkspace deployment={qualityDeployment()} />
   </main>;
 }

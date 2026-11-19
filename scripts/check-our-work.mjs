@@ -1,6 +1,10 @@
+import {readFile} from "node:fs/promises";
+import {execFileSync} from "node:child_process";
 import { chromium, expect } from "@playwright/test";
 process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/our-work-entry.tsx";
 const { server } = await import("./ui-audit.mjs");
+execFileSync("ffmpeg",["-y","-f","lavfi","-i","testsrc2=s=180x320:d=5","-an","-c:v","libx264","-pix_fmt","yuv420p","-movflags","+faststart","reports/our-work-fixture.mp4"],{stdio:"ignore"});
+const clip=await readFile("reports/our-work-fixture.mp4");
 const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined, args: ["--no-sandbox"] });
 try {
   for (const theme of ["light", "night"]) for (const width of [390, 1440]) {
@@ -8,19 +12,20 @@ try {
     const errors = [], outside = [];
     page.on("pageerror", error => errors.push(error.message));
     await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => { outside.push(route.request().url()); return route.abort(); });
-    await page.route("**/api/media/**", route => route.fulfill({status:404,body:"fixture media unavailable"}));
+    await page.route("**/api/media/**", route => route.request().url().includes("video")?route.fulfill({contentType:"video/mp4",body:clip}):route.fulfill({contentType:"image/svg+xml",body:'<svg xmlns="http://www.w3.org/2000/svg" width="180" height="320"><rect width="180" height="320" fill="pink"/></svg>'}));
     await page.route("**/api/v1/social-thumbnails/**", route => route.fulfill({status:404,body:"fixture preview unavailable"}));
     await page.goto(`http://127.0.0.1:3004/?theme=${theme}`);
     const tiles = page.locator(".our-work-tile"), viewer = page.getByRole("dialog");
-    await expect(tiles).toHaveCount(4);
+    await expect(tiles).toHaveCount(5);
     await expect(tiles.first()).toContainText("Pinned");
     await expect(page.getByText("PRIVATE DRAFT")).toHaveCount(0);
+    await expect(page.getByText("REMOVED POST")).toHaveCount(0);
     const geometry = await tiles.first().evaluate(el => ({width:el.offsetWidth,height:el.offsetHeight,columns:getComputedStyle(el.parentElement).gridTemplateColumns.split(" ").length}));
     expect(geometry.columns).toBe(3);
     expect(Math.abs(geometry.width / geometry.height - 9 / 16)).toBeLessThan(.015);
     expect(await page.locator(".our-work-grid video[autoplay]").count()).toBe(0);
     await page.getByRole("button",{name:"Hair",exact:true}).click();
-    await expect(tiles).toHaveCount(2);
+    await expect(tiles).toHaveCount(3);
     await tiles.first().click();
     await expect(viewer).toBeVisible();
     await expect(viewer.getByRole("link",{name:"Book this look"})).toHaveCount(0);
@@ -28,8 +33,20 @@ try {
     await viewer.getByRole("button",{name:"Next work",exact:true}).click();
     await expect(viewer.locator("video")).toHaveCount(1);
     expect(await viewer.locator("video").evaluate(el=>el.muted)).toBe(true);
+    await expect.poll(()=>viewer.locator('video').evaluate(v=>!v.paused&&v.currentTime>0)).toBe(true);
+    await viewer.locator('.our-work-video-surface').click();await expect.poll(()=>viewer.locator('video').evaluate(v=>v.paused)).toBe(true);
+    await viewer.locator('.our-work-video-surface').click();await expect.poll(()=>viewer.locator('video').evaluate(v=>!v.paused)).toBe(true);
+    await page.keyboard.press('ArrowDown');await expect(viewer.getByText('3 / 3',{exact:true})).toBeVisible();await expect(viewer.locator('video')).toHaveCount(1);
+    const stage=viewer.locator('.our-work-stage');
+    await stage.evaluate(el=>{el.dispatchEvent(new TouchEvent('touchstart',{bubbles:true,touches:[new Touch({identifier:1,target:el,clientX:120,clientY:160})]}));el.dispatchEvent(new TouchEvent('touchend',{bubbles:true,changedTouches:[new Touch({identifier:1,target:el,clientX:120,clientY:360})]}));});
+    await expect(viewer.getByText('2 / 3',{exact:true})).toBeVisible();
+    await page.waitForTimeout(400);
+
     await viewer.getByRole("button",{name:"Turn sound on"}).click();
     expect(await viewer.locator("video").evaluate(el=>el.muted)).toBe(false);
+    await stage.hover();await page.mouse.wheel(0,-150);await expect(viewer.getByText('1 / 3',{exact:true})).toBeVisible();
+    await expect(viewer.locator('video')).toHaveCount(0);
+    await page.keyboard.press('ArrowDown');await expect(viewer.locator('video')).toHaveCount(1);
     await page.keyboard.press("Escape");
     await expect(viewer).not.toBeVisible();
     await expect(tiles.first()).toBeFocused();
@@ -47,6 +64,7 @@ try {
     const frameHtml = `<html><body style="margin:0;background:#111;color:white"><p>Provider player fixture</p><button id="play">Play</button><button id="pause">Pause</button><button id="sound">Sound on</button><p id="state">Paused</p><script>
       const send=(type,value)=>parent.postMessage({'x-tiktok-player':true,type,value},'http://127.0.0.1:3004');
       send('onPlayerReady');
+      addEventListener('message',e=>{if(e.origin!=='http://127.0.0.1:3004'||e.source!==parent)return;const type=e.data?.type;if(type==='play'||type==='pause'){document.querySelector('#state').textContent=type==='play'?'Playing':'Paused';send('onStateChange',type==='play'?1:2);}if(type==='mute'||type==='unMute')send('onMute',type==='mute');});
       document.querySelector('#play').onclick=()=>{document.querySelector('#state').textContent='Playing';send('onStateChange',1)};
       document.querySelector('#pause').onclick=()=>{document.querySelector('#state').textContent='Paused';send('onStateChange',2)};
       document.querySelector('#sound').onclick=()=>document.querySelector('#sound').textContent='Sound off';
@@ -84,4 +102,5 @@ try {
     console.log(JSON.stringify({theme,width,grid:true,collections:true,privateDraftExcluded:true,viewer:true,history:true,sound:true,linkedBooking:true,socialConsent:true,inSiteProviderFixtures:true,selectedPlayerOnly:true}));
     await page.close();
   }
+  const reduced=await browser.newPage({reducedMotion:'reduce'});await reduced.route('**/api/media/**',r=>r.fulfill({contentType:'video/mp4',body:clip}));await reduced.goto('http://127.0.0.1:3004/');await reduced.getByRole('button',{name:'Hair',exact:true}).click();await reduced.locator('.our-work-tile').nth(1).click();const reducedViewer=reduced.getByRole('dialog');await expect(reducedViewer.getByRole('button',{name:'Play video',exact:true})).toBeVisible();expect(await reducedViewer.locator('video').evaluate(v=>v.paused)).toBe(true);expect(await reducedViewer.locator('.our-work-frame').evaluate(el=>getComputedStyle(el).animationName)).toBe('none');await reduced.close();
 } finally { await browser.close(); await new Promise(resolve=>server.close(resolve)); }

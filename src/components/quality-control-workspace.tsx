@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import type { QualityDeployment } from "@/lib/quality-control-deployment";
 
 type Status = "LIVE AND VERIFIED" | "IMPLEMENTED BUT UNDEPLOYED" | "PARTIAL" | "MISSING" | "BLOCKED";
 type Check = { id: string; area: string; label: string; status: Status; route: string; device: string; notes: string; verifiedAt?: string };
@@ -41,7 +43,9 @@ const surface: React.CSSProperties = { background: "#fff7fb", color: "#382138", 
 const field: React.CSSProperties = { width: "100%", minHeight: 42, borderRadius: 10, border: "1px solid #9b7895", padding: "9px 11px", color: "#231726", background: "#fff" };
 const button: React.CSSProperties = { padding: "9px 13px", borderRadius: 11, border: "1px solid #ad6b91", background: "#f9e7f1", color: "#592440", fontWeight: 700, cursor: "pointer" };
 const format = (v:string) => v || "Not recorded";
-export function QualityControlWorkspace() {
+export function QualityControlWorkspace({ deployment = { environment: "unknown", commit: null, branch: null } }: { deployment?: QualityDeployment }) {
+  const persistenceAllowed = useRef(true);
+  const [storageWarning, setStorageWarning] = useState("");
   const [data, setData] = useState<State>(fresh);
   const [ready, setReady] = useState(false);
   const [tab, setTab] = useState("Audit");
@@ -50,8 +54,16 @@ export function QualityControlWorkspace() {
   const [query, setQuery] = useState("");
   const [draft, setDraft] = useState<Partial<Bug>>({ priority:"P2",device:"Mobile",deployment:"Not checked" });
   const [change, setChange] = useState<Partial<Change>>({});
-  useEffect(() => { const restore = window.setTimeout(() => { try { const raw = localStorage.getItem(KEY); if(raw){ const parsed = JSON.parse(raw) as State; setData({ checks: defaultChecks.map(c=>parsed.checks?.find(x=>x.id===c.id)??c), bugs: parsed.bugs??[], changes:parsed.changes??[], regression:parsed.regression??{} }); } } catch {} setReady(true); }, 0); return () => window.clearTimeout(restore); }, []);
-  useEffect(() => { if(ready) localStorage.setItem(KEY,JSON.stringify(data)); }, [data,ready]);
+  useEffect(() => { const restore = window.setTimeout(() => { try { const raw = localStorage.getItem(KEY); if(raw){ const parsed = JSON.parse(raw) as State; setData({ checks: defaultChecks.map(c=>parsed.checks?.find(x=>x.id===c.id)??c), bugs: parsed.bugs??[], changes:parsed.changes??[], regression:parsed.regression??{} }); } } catch { persistenceAllowed.current = false; setStorageWarning("The saved audit could not be read. It has not been overwritten. Changes stay in this tab; export an audit backup before leaving."); } setReady(true); }, 0); return () => window.clearTimeout(restore); }, []);
+  useEffect(() => {
+    if (!ready || !persistenceAllowed.current) return;
+    try { localStorage.setItem(KEY, JSON.stringify(data)); }
+    catch {
+      persistenceAllowed.current = false;
+      const warning = window.setTimeout(() => setStorageWarning("Browser storage is unavailable or full. Changes stay in this tab; export an audit backup before leaving."), 0);
+      return () => window.clearTimeout(warning);
+    }
+  }, [data, ready]);
   const counts = useMemo(() => Object.fromEntries(statuses.map(s=>[s,data.checks.filter(c=>c.status===s).length])), [data.checks]);
   const visible = data.checks.filter(c=>(area==="All"||c.area===area)&&(filter==="All"||c.status===filter)&&((c.label+" "+c.notes+" "+c.route).toLowerCase().includes(query.toLowerCase())));
   const blockers = data.bugs.filter(b=>!b.resolved&&(b.priority==="P0"||b.priority==="P1"));
@@ -64,6 +76,7 @@ export function QualityControlWorkspace() {
   const labelStyle:React.CSSProperties={display:"grid",gap:5,fontSize:13,fontWeight:650};
   const textArea = (key:keyof Bug, label:string) => <label style={labelStyle}>{label}<textarea style={field} rows={2} value={String(draft[key]||"")} onChange={e=>setDraft(s=>({...s,[key]:e.target.value}))}/></label>;
   return <div style={{display:"grid",gap:18}}>
+    {storageWarning && <p role="alert" style={surface}>{storageWarning}</p>}
     <header style={{background:"linear-gradient(125deg,#4f173e,#a23f72 68%,#d184aa)",color:"#fff",padding:"clamp(22px,4vw,44px)",borderRadius:25}}>
       <small style={{letterSpacing:2}}>GLOHAUS · OWNER ONLY · QUALITY CONTROL</small>
       <h1 style={{fontSize:"clamp(28px,4vw,46px)",margin:"10px 0"}}>One place to find, fix & verify.</h1>
@@ -108,8 +121,11 @@ export function QualityControlWorkspace() {
       {(["title","date","commit","deployment","verification"] as const).map(k=><label key={k} style={labelStyle}>{k}<input style={field} value={change[k]||""} onChange={e=>setChange(s=>({...s,[k]:e.target.value}))} placeholder={k==="date"?"YYYY-MM-DD":k}/></label>)}
       <button style={button} onClick={()=>{if(!change.title?.trim())return;setData(s=>({...s,changes:[{id:crypto.randomUUID(),date:change.date||new Date().toISOString().slice(0,10),title:change.title||"",commit:change.commit||"",deployment:change.deployment||"",verification:change.verification||""},...s.changes]}));setChange({});}}>Add change</button>
       {data.changes.map(c=><article key={c.id} style={{padding:12,border:"1px solid #98708966",borderRadius:12}}><strong>{c.title}</strong><p>{c.date} · Commit {format(c.commit)} · {format(c.deployment)}</p><p>Verification: {format(c.verification)}</p></article>)}</section>}
-    {tab==="Live vs pending"&&<section style={surface}><h2>Production vs unfinished work</h2><p><strong>Production:</strong> haroon-glohaus/glohaus1 · main · 569742675ede0f44c42843eb0b28a89b9620020b · READY (snapshot, 8 Nov 2026).</p><p><strong>Preview:</strong> fix/foundation-regressions-chat-20261108 · 1a9764f (READY preview; not proof of promotion).</p><p>Use Vercel deployment metadata and GitHub commit comparison to update this snapshot. This page does not currently query Vercel or GitHub automatically.</p>
-    <p><a href="https://vercel.com/haroon-glohaus/glohaus1" target="_blank" rel="noopener noreferrer">Open production deployments</a> · <a href="https://github.com/haroonayeni99-source/glohaus/compare/main...fix/foundation-regressions-chat-20261108" target="_blank" rel="noopener noreferrer">Compare source branches</a></p>
+    {tab==="Live vs pending"&&<section style={surface}><h2>Production vs unfinished work</h2>
+    <p><strong>Running deployment:</strong> {deployment.environment} · {deployment.branch ?? "Branch not supplied"} · {deployment.commit ? <code style={{overflowWrap:"anywhere"}}>{deployment.commit}</code> : "Commit not supplied"}.</p>
+    <p>This identifies the build serving this page. It does not certify production promotion or feature acceptance. Use the automated checks above for current verification and the registers below for release evidence and blockers.</p>
+    <p><a href="https://vercel.com/haroon-glohaus/glohaus1" target="_blank" rel="noopener noreferrer">Open glohaus1 deployments</a> · <a href="https://github.com/haroonayeni99-source/glohaus/pulls" target="_blank" rel="noopener noreferrer">Review pending pull requests</a></p>
+    <p><a href="https://github.com/haroonayeni99-source/glohaus/blob/main/docs/task-registers/INDEPENDENT-WORK.md" target="_blank" rel="noopener noreferrer">Independent work and release evidence</a> · <a href="https://github.com/haroonayeni99-source/glohaus/blob/main/docs/task-registers/OWNER-ACTION-REQUIRED.md" target="_blank" rel="noopener noreferrer">Owner actions and external blockers</a></p>
     <h3>Outstanding checks</h3>{data.checks.filter(c=>c.status!=="LIVE AND VERIFIED").slice(0,80).map(c=><p key={c.id}>{c.area} · {c.label} — {c.status}</p>)}</section>}
     <footer style={{display:"flex",gap:10,flexWrap:"wrap"}}><button style={button} onClick={exportData}>Export audit backup (JSON)</button><label style={{...button,cursor:"pointer"}}>Import audit backup<input type="file" accept="application/json" style={{display:"none"}} onChange={async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=JSON.parse(await f.text()) as State;if(!Array.isArray(d.checks)||!Array.isArray(d.bugs)||!Array.isArray(d.changes))throw new Error("Invalid backup");setData({checks:defaultChecks.map(c=>d.checks.find(x=>x.id===c.id)??c),bugs:d.bugs,changes:d.changes,regression:d.regression||{}});}catch{alert("Unable to import this audit backup.");}e.target.value="";}}/></label></footer>
   </div>;

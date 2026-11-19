@@ -2,7 +2,7 @@
 import {chromium,expect} from '@playwright/test';
 process.env.GLOHAUS_UI_AUDIT_ENTRY='tests/fixtures/portfolio-organisation-entry.tsx';
 const {server}=await import('./ui-audit.mjs');
-const browser=await chromium.launch({args:['--no-sandbox']});
+const browser=await chromium.launch({executablePath:process.env.GLOHAUS_CHROMIUM_PATH||undefined,args:['--no-sandbox']});
 try{
  for(const width of [320,390,768,1440])for(const theme of ['light','night']){
   const page=await browser.newPage({viewport:{width,height:1000}});

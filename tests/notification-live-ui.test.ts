@@ -102,3 +102,39 @@ it("closes the private live stream and clears unread count when signing out", as
   );
   expect(FakeSource.instances[0].close).toHaveBeenCalled();
 });
+
+const notification = (id: string) => ({ id, booking_id: null, product_order_id: null, kind: 'customer_message' as const, title: `Message ${id}`, body: 'Fictional inbox fixture', href: '/messages', read_at: null, created_at: new Date('2026-11-19T12:00:00Z') });
+async function inbox() {
+  await act(async () => root.render(React.createElement(NotificationInbox, {professional: true, initialNotifications: [notification('first')]})));
+}
+function allButton() { return Array.from(container.querySelectorAll('button')).find(b => b.textContent?.includes('Mark all as read'))!; }
+it('keeps notifications arriving during a mark-all request unread until confirmed by the live server', async () => {
+  await inbox(); let complete!: (r: Response) => void;
+  vi.mocked(fetch).mockImplementationOnce(() => new Promise(r => {complete = r;}));
+  await act(async () => allButton().click());
+  await act(async () => window.dispatchEvent(new CustomEvent('glohaus:notifications', {detail: {notifications: [notification('first'), notification('new')]}})));
+  await act(async () => complete(Response.json({saved: true})));
+  const articles=container.querySelectorAll('article');
+  expect(articles[0].dataset.read).toBe('true');expect(articles[1].dataset.read).toBe('false');expect(container.textContent).toContain('1 unread');
+});
+it('serialises per-item and mark-all writes, including repeated link activation before render', async () => {
+  await inbox();container.addEventListener('click',e=>e.preventDefault());let complete!: (r: Response) => void;
+  vi.mocked(fetch).mockImplementationOnce(() => new Promise(r => {complete = r;}));
+  const link=container.querySelector('article a')!;
+  await act(async () => {link.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}));link.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}));});
+  expect(fetch).toHaveBeenCalledTimes(1);expect(allButton().disabled).toBe(true);
+  await act(async () => complete(Response.json({saved:true})));
+  expect(container.querySelector('article')!.dataset.read).toBe('true');
+});
+it('releases controls after a timed-out update and preserves unread state for retry', async () => {
+  await inbox();vi.mocked(fetch).mockRejectedValueOnce(new DOMException('timeout','TimeoutError'));
+  await act(async () => allButton().click());
+  expect(container.querySelector('[role=alert]')?.textContent).toContain('Please try again');expect(container.querySelector('article')!.dataset.read).toBe('false');expect(allButton().disabled).toBe(false);
+  expect(vi.mocked(fetch).mock.calls[0][1]?.signal).toBeInstanceOf(AbortSignal);
+  await act(async () => allButton().click());expect(container.querySelector('article')!.dataset.read).toBe('true');
+});
+it('does not send another read request for an already read notification', async () => {
+  await inbox();container.addEventListener('click',e=>e.preventDefault());const mark=container.querySelector<HTMLButtonElement>('button[title="Mark as read"]')!;await act(async () => mark.click());
+  await act(async () => container.querySelector('article a')!.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})));
+  expect(fetch).toHaveBeenCalledTimes(1);
+});

@@ -34,3 +34,9 @@ Do not repeat successful unchanged checks. Re-check the exact head after a chang
 2. Preserve released #231/#241/#243/#246 work. Continue common #245 894ba72, completing organisation controls and hosted/provider acceptance after prerequisites are available.
 3. Progress I-005 or I-010 without provider login while I-001 is blocked.
 4. Do not modify £1 booking fees, proposed £1.50/referral fees, reward payouts, commissions, live Stripe credentials or provider activation.
+
+## 19 November — independent notification read-state fix
+
+| Feature | Current status | Next action | PR/branch | Testing results | Deployment status |
+| --- | --- | --- | --- | --- | --- |
+| Notification read-state recovery | READY FOR TESTING | Verify browser live-arrival/quiet server regression, merge after exact-head release gates and check production | fix/notification-read-recovery-20261119 | 13 focused inbox/backend cases, scoped lint and TypeScript passed; browser scenario added; build/CI pending | Not deployed at this checkpoint; no schema or provider dependency |

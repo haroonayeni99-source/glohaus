@@ -58,6 +58,7 @@ const css = (await readFile("node_modules/maplibre-gl/dist/maplibre-gl.css", "ut
       "explore/discovery-map",
       "../components/professional-profile",
       "../components/viewport-video",
+      "../components/our-work",
       "../components/commission-control-centre",
       "../components/professional-policies",
       "../components/professional-activity",

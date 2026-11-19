@@ -7,7 +7,7 @@ import { socialPostLink } from "@/modules/business-tools/domain";
 import { ContentReportButton } from "./content-report-button";
 import "./business-tools.css";
 import { TikTokPlayer } from "./social-post-preview";
-function SocialThumbnail({
+export function SocialThumbnail({
   post,
   small = false,
 }: {
@@ -54,7 +54,7 @@ function SocialThumbnail({
     </div>
   );
 }
-function SocialCard({ post }: { post: PublicSocialPost }) {
+export function SocialCard({ post }: { post: PublicSocialPost }) {
   const [loaded, setLoaded] = useState(false),
     [failed, setFailed] = useState(false);
   let embed = "";

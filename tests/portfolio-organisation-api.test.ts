@@ -1,0 +1,18 @@
+import {afterEach,expect,it,vi} from 'vitest';
+import {AccessError} from '@/modules/accounts/domain';
+const io=vi.hoisted(()=>({enabled:true,denied:false,run:vi.fn(),save:vi.fn(),read:vi.fn()}));
+vi.mock('@/lib/portfolio-organisation-gate',()=>({portfolioOrganisationEnabled:()=>io.enabled}));
+vi.mock('@/lib/api-account',()=>({withAccount:async(role:string,fn:(db:unknown,a:unknown)=>unknown)=>{io.run(role);if(io.denied)throw new AccessError('UNAUTHENTICATED',401);return fn({}, {professionalId:'00000000-0000-4000-8000-000000000001'});}}));
+vi.mock('@/modules/portfolio-organisation/repository',()=>({savePortfolioOrganisation:io.save,portfolioOrganisation:io.read}));
+import {GET,POST} from '@/app/api/v1/professional/portfolio/organisation/route';
+const request=(body:unknown,origin='https://www.glohaus.shop')=>new Request('https://www.glohaus.shop/api/v1/professional/portfolio/organisation',{method:'POST',headers:{origin,'Content-Type':'application/json'},body:JSON.stringify(body)});
+const input={action:'saveCollection',name:'Looks',publicationStatus:'draft',sortOrder:0};
+afterEach(()=>{io.enabled=true;io.denied=false;vi.clearAllMocks();});
+it('defaults new endpoints unavailable before opt-in without calling account/database code',async()=>{io.enabled=false;expect((await GET()).status).toBe(503);expect((await POST(request(input))).status).toBe(503);expect(io.run).not.toHaveBeenCalled();});
+it('rejects cross-origin writes before accessing metadata',async()=>{expect((await POST(request(input,'https://evil.example'))).status).toBe(403);expect(io.save).not.toHaveBeenCalled();});
+it('requires the existing professional account authorisation',async()=>{io.denied=true;expect((await POST(request(input))).status).toBe(401);expect(io.run).toHaveBeenCalledWith('professional');expect(io.save).not.toHaveBeenCalled();});
+it.each([{...input,professionalId:'forged'},{...input,name:''},{...input,sortOrder:-1},{...input,sortOrder:10001},{...input,publicationStatus:'automatic'},{action:'saveSocialCollections',id:'bad',collectionIds:[]}])('rejects malformed or untrusted input %o',async value=>{expect((await POST(request(value))).status).toBe(400);expect(io.save).not.toHaveBeenCalled();});
+it('rejects duplicate collection IDs rather than performing a partial save',async()=>{const id='00000000-0000-4000-8000-000000000002';expect((await POST(request({action:'saveUpload',id,featured:true,sortOrder:1,collectionIds:[id,id]}))).status).toBe(400);expect(io.save).not.toHaveBeenCalled();});
+it('uses server account identity and private no-store responses',async()=>{const r=await POST(request(input));expect(r.status).toBe(200);expect(r.headers.get('cache-control')).toContain('private, no-store');expect(io.save.mock.calls[0][1]).toBe('00000000-0000-4000-8000-000000000001');});
+it('does not reveal database duplicate details',async()=>{io.save.mockRejectedValueOnce({code:'23505',message:'private SQL record details'});const r=await POST(request(input));expect(r.status).toBe(400);expect(await r.text()).not.toContain('private SQL');});
+it('returns the owned collection snapshot using the professional guard',async()=>{io.read.mockResolvedValueOnce({collections:[],memberships:[],presentation:[]});const r=await GET();expect(r.status).toBe(200);expect(io.run).toHaveBeenCalledWith('professional');expect(r.headers.get('cache-control')).toBe('private, no-store');});

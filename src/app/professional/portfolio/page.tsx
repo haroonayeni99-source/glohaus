@@ -7,6 +7,9 @@ import { withIdentity } from "@/lib/db";
 import { ProfessionalNavigation } from "@/components/professional-navigation";
 import { BusinessConnections } from "@/components/business-connections";
 import { businessTools } from "@/modules/business-tools/repository";
+import { PortfolioOrganisation } from "@/components/portfolio-organisation";
+import { portfolioOrganisationEnabled } from "@/lib/portfolio-organisation-gate";
+import { portfolioOrganisation } from "@/modules/portfolio-organisation/repository";
 import { portfolioWorkspaceEnabled } from "@/lib/portfolio-workspace";
 import { providerReady } from "@/modules/business-tools/oauth";
 import { AccessMessage } from "@/components/access-message";
@@ -31,6 +34,7 @@ export default async function Portfolio() {
   const services = unified ? await withIdentity(account.authId, async db => (await db.query<{ id: string; name: string }>(
     "SELECT id,name FROM beauty.services WHERE professional_id=$1 AND active ORDER BY name", [account.professionalId],
   )).rows) : [];
+  const organisation = unified && portfolioOrganisationEnabled() ? await withIdentity(account.authId,db=>portfolioOrganisation(db,account.professionalId!)) : null;
   const assets = await withIdentity(
     account.authId,
     async (db) =>
@@ -72,6 +76,7 @@ export default async function Portfolio() {
             instagram: providerReady("instagram", account.professionalId!),
             tiktok: providerReady("tiktok", account.professionalId!)}}
         />}
+        {organisation && <PortfolioOrganisation initial={organisation} uploads={assets.map(a=>({id:a.id,caption:a.alt_text,publication_status:a.publication_status}))} social={socialTools?.posts.map(p=>({id:p.id,caption:p.caption,publication_status:p.publication_status}))??[]} />}
       </main>
     </div>
   );

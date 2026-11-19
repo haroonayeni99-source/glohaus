@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - 'src/app/theme-controls.css'
+      - 'src/components/deposit-selector.tsx'
+      - 'tests/fixtures/deposit-theme-entry.tsx'
+      - 'scripts/check-deposit-theme.mjs'
       - 'src/components/booking-*.tsx'
       - 'tests/fixtures/bookings-theme-entry.tsx'
       - 'scripts/check-bookings-theme.mjs'
@@ -25,8 +28,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
       - run: node scripts/check-bookings-theme.mjs
+      - run: node scripts/check-deposit-theme.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: bookings-theme
-          path: reports/bookings-*.png
+          path: |
+            reports/bookings-*.png
+            reports/deposit-*.png

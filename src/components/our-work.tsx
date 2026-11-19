@@ -9,14 +9,14 @@ import { SocialThumbnail } from "./social-portfolio";
 import { SocialWorkPlayer } from "./social-work-player";
 import "./our-work.css";
 
-type Asset = { id: string; alt_text: string; media_type?: "image" | "video"; speciality_ids?: string[]; speciality_names?: string[] };
+type Asset = { id: string; alt_text: string; media_type?: "image" | "video"; speciality_ids?: string[]; speciality_names?: string[]; featured?:boolean; sort_order?:number; collection_ids?:string[] };
 type Collection = { id: string; name: string };
-type Item = { id: string; caption: string; collectionIds: string[]; featured: boolean; asset?: Asset; post?: PublicSocialPost };
+type Item = { id: string; caption: string; collectionIds: string[]; featured: boolean; order:number; asset?: Asset; post?: PublicSocialPost };
 
 /** Only published media supplied by the existing public repositories belongs here. */
 export function OurWork({ assets, posts, businessName, services, collections }: {
   assets: Asset[];
-  posts: PublicSocialPost[];
+  posts: (PublicSocialPost & {collection_ids?:string[]})[];
   businessName: string;
   services: { id: string; speciality_id?: string | null }[];
   collections: Collection[];
@@ -28,12 +28,12 @@ export function OurWork({ assets, posts, businessName, services, collections }: 
   const historyEntry = useRef(false);
   const touch = useRef<{ x: number; y: number } | null>(null);
   const items: Item[] = [
-    ...assets.map(asset => ({ id: `upload-${asset.id}`, caption: asset.alt_text, collectionIds: asset.speciality_ids ?? [], featured: false, asset })),
+    ...assets.map(asset => ({ id: `upload-${asset.id}`, caption: asset.alt_text, collectionIds: [...(asset.speciality_ids ?? []),...(asset.collection_ids??[])], featured: Boolean(asset.featured), order:asset.sort_order??0, asset })),
     ...posts.filter(post => post.publication_status === "published").map(post => ({
-      id: `social-${post.id}`, caption: post.caption, featured: Boolean(post.featured), post,
-      collectionIds: services.filter(service => service.id === post.service_id && service.speciality_id).map(service => service.speciality_id!),
+      id: `social-${post.id}`, caption: post.caption, featured: Boolean(post.featured), order:post.sort_order, post,
+      collectionIds: [...services.filter(service => service.id === post.service_id && service.speciality_id).map(service => service.speciality_id!),...(post.collection_ids??[])],
     })),
-  ].sort((a, b) => Number(b.featured) - Number(a.featured));
+  ].sort((a, b) => Number(b.featured) - Number(a.featured) || a.order-b.order);
   const visible = items.filter(item => collection === "all" || item.collectionIds.includes(collection));
   const index = visible.findIndex(item => item.id === selected);
   const current = visible[index];

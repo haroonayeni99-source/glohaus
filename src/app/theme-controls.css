@@ -242,3 +242,21 @@
 :root[data-theme="night"] .pro-app .pro-bookings-list-panel .catalog-empty :is(h2, p, a) {
   color: #fff8fb;
 }
+
+/* Services & prices deposit guidance remains a pale, contained notice in both themes. */
+:root[data-theme] .pro-app .pro-editor-surface .deposit-selector {
+  box-sizing:border-box; width:100%; min-width:0; max-width:100%;
+  background:#fff8fb; color:#35232b;
+}
+:root[data-theme] .pro-app .pro-editor-surface .deposit-selector legend {
+  max-width:100%; color:#35232b; white-space:normal; overflow-wrap:anywhere;
+}
+:root[data-theme] .pro-app .pro-editor-surface .deposit-selector-intro {
+  max-width:100%; color:#5b4350; font-size:.88rem; line-height:1.6;
+  white-space:normal; overflow-wrap:anywhere;
+}
+:root[data-theme] .pro-app .pro-editor-surface .deposit-selector :is(label,strong) { color:#35232b; }
+:root[data-theme] .pro-app .pro-editor-surface .deposit-selector .deposit-mode-options label.is-selected { color:#9b2957; }
+:root[data-theme] .pro-app .pro-editor-surface .deposit-selector .deposit-field :is(input,select) {
+  box-sizing:border-box; width:100%; min-width:0; max-width:100%; background:#fff; color:#35232b; color-scheme:light;
+}

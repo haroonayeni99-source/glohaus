@@ -42,3 +42,7 @@ No purchase is currently authorised. No specific new paid service has been quote
 - Do not request Meta/TikTok approval as a prerequisite for uploads, saved content, navigation or other independent features.
 - Do not activate real rebooking sending, public provider access, rewards or financial changes merely because an account is connected.
 - PR-specific release restrictions must be traced to their actual owner instruction and reconciled; an old assistant-written approval sentence is not automatically a new Owner requirement.
+
+## 19 November continuation
+
+No new owner dependency was introduced. Collection schema is prepared and tested only in disposable local/CI databases. Production application and hosted acceptance still require O-001 isolated database connectivity, O-002 verified recovery evidence before any migration, and O-008 connecting the existing empty private Preview store. Public social connections and automatic customer sending remain disabled. Do not share passwords, full connection strings or tokens in chat.

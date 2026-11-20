@@ -72,3 +72,15 @@ it("uses the current production host and announces only the privacy-safe provide
     expect.stringContaining("If an account exists"),
   );
 });
+
+it("sends an isolated reset request back to its own preview", async () => {
+  vi.stubGlobal("window", { location: { href: "https://validation.vercel.app/forgot-password" } });
+  mocks.reset.mockResolvedValue({ error: null });
+  const form = ForgotPasswordForm({ isolatedPreview: true });
+  const data = new FormData();
+  data.set("email", "customer@example.test");
+  await form.props.action(data);
+  expect(mocks.reset).toHaveBeenCalledWith("customer@example.test", {
+    redirectTo: "https://validation.vercel.app/auth/callback?next=%2Freset-password",
+  });
+});

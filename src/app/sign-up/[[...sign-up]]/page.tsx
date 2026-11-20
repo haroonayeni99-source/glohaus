@@ -1,7 +1,7 @@
 import {FoundingProgrammeOffer} from "@/components/founding-programme-offer";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { productionAuthUrl } from "@/lib/preview-auth";
+import { productionAuthUrl, isolatedValidationPreview } from "@/lib/preview-auth";
 import { BriefcaseBusiness, ChevronRight, UserRound } from "lucide-react";
 import { authConfigured } from "@/lib/config";
 import { AuthFrame } from "@/components/auth-frame";
@@ -91,6 +91,7 @@ export default async function Page({
       {professional&&<FoundingProgrammeOffer/>}
       {authConfigured() ? (
         <EmailAuthForm
+          isolatedPreview={isolatedValidationPreview()}
           mode="sign-up"
           redirectTo={target}
           audience={professional ? "professional" : "customer"}

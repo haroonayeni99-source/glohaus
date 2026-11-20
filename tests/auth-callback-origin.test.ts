@@ -47,3 +47,31 @@ it("finishes recovery on the public host without redirecting back to the same ca
   expect(response.cookies.get("glohaus_password_recovery")?.value).toBe("1");
   expect(mocks.identity).not.toHaveBeenCalled();
 });
+
+function isolatedRecovery(enabled = true) {
+  vi.stubEnv("VERCEL_ENV", "preview");
+  vi.stubEnv("VERCEL_URL", "validation.vercel.app");
+  vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://validation.vercel.app");
+  vi.stubEnv("GLOHAUS_ISOLATED_PREVIEW_AUTH", enabled ? "true" : "false");
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://rqsyakggwmpkqzzogvll.supabase.co");
+  vi.stubEnv("DATABASE_URL", "postgresql://validation:synthetic@db.rqsyakggwmpkqzzogvll.supabase.co/postgres");
+  return new NextRequest("https://validation.vercel.app/auth/callback?code=fictional-code&next=%2Freset-password");
+}
+it("completes recovery locally on the explicitly isolated preview", async () => {
+  const response = await GET(isolatedRecovery());
+  expect(mocks.exchange).toHaveBeenCalledWith("fictional-code");
+  expect(response.headers.get("location")).toBe("https://validation.vercel.app/reset-password");
+  expect(response.cookies.get("glohaus_password_recovery")?.value).toBe("1");
+});
+it("preserves the production recovery handoff for ordinary previews", async () => {
+  const response = await GET(isolatedRecovery(false));
+  expect(mocks.exchange).not.toHaveBeenCalled();
+  expect(response.headers.get("location")).toContain("https://www.glohaus.shop/auth/callback?");
+});
+it("rejects a production database behind an isolated recovery flag", async () => {
+  const request = isolatedRecovery();
+  vi.stubEnv("DATABASE_URL", "postgresql://validation:synthetic@db.tyycrmmczsgnowditnii.supabase.co/postgres");
+  const response = await GET(request);
+  expect(mocks.exchange).not.toHaveBeenCalled();
+  expect(response.headers.get("location")).toContain("https://www.glohaus.shop/auth/callback?");
+});

@@ -410,22 +410,18 @@ PR #253: the retry completed WebKit installation after 692 seconds, leaving only
 #253 merged 9e8797c after all five latest-head workflows passed; smart-arrival passed its single infrastructure retry, keeping all checks. Canary HEVhUtCgYCVBjy6o6pQus6iu56HD passed real uploaded 4K muted playback/surface pause/resume/sound/one-player/keyboard/Back scroll+focus restoration and actual TikTok playback/replay/sound plus Instagram carousel embed. Wide production FvR7GJfEUNtsDCyexu3QR4XaKKRz READY on www.glohaus.shop with display-only flag true. Fresh playback and public main/Shop/Discover content/error scans passed. Public social connections remain off; no schema, financial or publication mutations. Full evidence and honest provider/mobile/management limitations recorded in release doc and both task registers. Rollback aeab270 / dpl_7yNrBSKXFdGF1PSju5GqhH6vGLcs retained.
 
 
-### 2026-11-20 — Compose #245 management with released immersive viewer
-
-Reconciled the common #245 candidate with current main 3064679, retaining the deployed immersive video lifecycle, provider consent, public-view eligibility markers, service booking context, scroll restoration, security and notification fixes. Added only the candidate's upload pin/order and custom collection metadata to the latest viewer; the profile preserves immersive rollout and profile slug. Default All Work still contains every eligible source, while custom filters include only their memberships. Added a direct mixed-source/component regression and actual-browser custom-collection cases across both fixture viewports/themes. No public provider activation or production schema access: organisation remains explicit Preview-only.
-
-Focused integration: 57 tests passed across six files; TypeScript and scoped lint passed. The local browser process was blocked by the execution environment's socket policy before any page assertion, so browser acceptance must use the existing GitHub runner workflow. Build and exact-head CI remain pending at this checkpoint. Production remains the verified #253/#254 release, not this gated management candidate.
-
-
-### 2026-11-20 — Deterministic playable media for #245 CI
-
-Apply the test-only encoder-download repair from #255: use a tracked synthetic five-second H.264 clip, validated by ffprobe, instead of installing FFmpeg and generating the same fictional media on every runner. All profile, Discover/Story and custom-collection browser assertions remain. The preceding cb517af application source passed 1,873 tests (two existing skips), native portfolio privacy and both organisation/viewer browser workflows; its foundation profile-video job was cancelled downloading Ubuntu resolute packages before any assertion. This correction leaves application source identical to cb517af. Exact corrected-head CI remains required; no production/schema or public-provider activation.
-
-
 ### 2026-11-20 — Selected-video buffering feedback
 
 Following the real first-frame blank period observed in #253 acceptance, reuse the existing delayed three-pink-dot indicator inside the selected uploaded-video area. Playback/waiting/first-frame/pause/error events drive it; rejected autoplay clears it, reduced motion still waits for explicit play, and closing unmounts it. The controls, grid, social consent/provider players and page navigation remain unchanged. The local video wrapper supplies the approved pink and a scoped contrast backing. Fast readiness before 200 ms produces no indicator.
 
 Ten focused viewer/loading tests pass, including slow start/rebuffer, pause/error recovery, blocked autoplay and reduced-motion explicit playback. Scoped lint and TypeScript pass. Added slow-media actual-browser cases in both themes and included the existing loading stylesheet in the local test harness. Local browser process remains unavailable because socket creation is refused; exact-head runner acceptance/build and production verification are required before release. No database, financial or public account-connection changes.
 
-The #245 candidate now composes this independent #255 loading change with upload pin/order and collection metadata. Both sets of component and browser regressions are preserved. Production remains separate; combined-head CI and existing hosted management gates remain required.
+
+CI infrastructure correction: current ubuntu-latest jobs downloaded Ubuntu resolute media packages slowly and cancelled before playback assertions. Replace repeated on-runner encoding/apt installation with one tracked synthetic five-second H.264 fixture, validated locally by ffprobe. All existing browser decode/playback/control/one-player and upload assertions remain; no runtime application media or personal data is used. The source/display code is unchanged from f3a74bb.
+
+
+### 2026-11-20 — Resumed portfolio work verified and released
+
+#245 now composes current immersive viewing, upload pin/order/custom memberships and #255 loading recovery at b84aaf3. All six exact-head workflows pass; 1,876 tests passed/two existing skips; 61 focused cases, TypeScript/scoped lint, native portfolio privacy and responsive mixed-viewer/loading browser checks pass. Genuine hosted management release remains blocked by recorded O-001/O-002/O-008, so no production schema or full-management activation occurred.
+
+Independent #255 merged c84248c after all four workflows passed, with 1,821 tests/two existing skips and actual slow-media/browser acceptance. Deterministic synthetic H.264 media removed cold encoder-download failures without removing playback/upload assertions. Production glohaus1 dpl_GXL8ZFraSbcrBF3CMtVWDpmdh5DX READY on custom domains. Live uploaded-video decode/autoplay/pause/sound/one-player/navigation/light-night checks and exact scroll/focus return passed; no stale loading feedback. Public main/Shop/Discover/profile and initial error/fatal scan clean. Rollback 3064679 / dpl_4vNRc9g9CBkb5S2PfE564MmCahCU preserved. Public providers, account data, database, payments/fees and sending unchanged. Both task registers updated. This checkpoint changes Markdown evidence only; app source remains identical to verified c84248c.

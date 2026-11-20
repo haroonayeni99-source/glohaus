@@ -110,13 +110,16 @@ try {
     expect(errors).toEqual([]);console.log(JSON.stringify({theme,width,customCollectionImmersive:true,pinnedUpload:true,mixedSources:true,serviceContext:true}));
     await page.close();
   }
-  for(const theme of ['light','night']){
-    const slow=await browser.newPage({viewport:{width:390,height:844}});let release;const ready=new Promise(resolve=>{release=resolve;});
+  for(const theme of ['light','night']) for(const width of [390,768,1440]){
+    const slow=await browser.newPage({viewport:{width,height:844}});let release;const ready=new Promise(resolve=>{release=resolve;});
     await slow.route('**/api/media/**',async route=>{await ready;return route.fulfill({contentType:'video/mp4',body:clip});});
     await slow.goto(`http://127.0.0.1:3004/?theme=${theme}`);await slow.getByRole('button',{name:'Hair',exact:true}).click();await slow.locator('.our-work-tile').nth(1).click();
     const waiting=slow.getByRole('dialog').getByRole('status',{name:'Loading',exact:true});await expect(waiting).toBeVisible();await expect(waiting.locator('span')).toHaveCount(3);
     expect(await waiting.locator('span').first().evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(232, 67, 138)');
-    await slow.getByRole('button',{name:'Close work viewer',exact:true}).click();await expect(waiting).toHaveCount(0);release();
+    const geometry=await waiting.evaluate(el=>{const dot=el.firstElementChild;const box=el.getBoundingClientRect();const parent=el.parentElement.getBoundingClientRect();return {width:dot.offsetWidth,height:dot.offsetHeight,gap:getComputedStyle(el).gap,room:box.height,centre:Math.abs((box.left+box.right-parent.left-parent.right)/2),fits:box.left>=0&&box.right<=innerWidth};});
+    expect(geometry).toMatchObject({width:12,height:12,gap:'8px',fits:true});expect(geometry.room).toBeGreaterThanOrEqual(26);expect(geometry.centre).toBeLessThan(2);
+    await slow.emulateMedia({reducedMotion:'reduce'});expect(await waiting.locator('span').first().evaluate(el=>getComputedStyle(el).animationName)).toBe('none');
+    await slow.getByRole('button',{name:'Close work viewer',exact:true}).click();await expect(waiting).toHaveCount(0);release();await slow.emulateMedia({reducedMotion:'no-preference'});
     await slow.locator('.our-work-tile').nth(1).click();await expect.poll(()=>slow.getByRole('dialog').locator('video').evaluate(v=>!v.paused&&v.currentTime>0)).toBe(true);await expect(waiting).toHaveCount(0);
     await slow.close();console.log(JSON.stringify({theme,slowVideoFeedback:true,closeWhileLoading:true,recoveredPlayback:true}));
   }

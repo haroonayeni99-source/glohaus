@@ -1,6 +1,6 @@
 # INDEPENDENT WORK — ChatGPT Can Complete
 
-Updated: 19 November 2026. Repository: haroonayeni99-source/glohaus. Production: haroon-glohaus/glohaus1 only.
+Updated: 20 November 2026. Repository: haroonayeni99-source/glohaus. Production: haroon-glohaus/glohaus1 only.
 
 Authority and constraints: [current work order](../work-orders/2026-11-18-independent-implementation.md). Owner dependencies are tracked separately in [OWNER-ACTION-REQUIRED.md](OWNER-ACTION-REQUIRED.md). A blocked entry retains only the technical work; personal account consent, spending decisions and provider decisions belong in the Owner register.
 
@@ -56,15 +56,17 @@ Custom collection/pin/order controls remain in #245; merge its management data i
 20 November: real public All Work now includes the existing upload, Instagram carousel and TikTok post. Actual TikTok playback/replay/sound and Instagram carousel embed verified after consent without leaving GLOHAUS. Instagram video and physical phones remain unclaimed. Details/rollback: docs/releases/2026-11-19-immersive-our-work.md. Custom collection CRUD/pinning/order, before-after pairing and real hosted management acceptance remain separate #245 work, not part of this live claim.
 
 
-## 20 November — #245 current-viewer integration
-
-Unified portfolio management remains IN DEVELOPMENT / release BLOCKED. Next independent step: verify the refreshed #245 head's six workflows, including new custom-collection immersive playback cases; retain all successful evidence for unchanged controls. Integrated current main 3064679 and preserved live playback/consent/privacy/service links while composing upload pin/order and collection membership. Fifty-seven focused tests, TypeScript and scoped lint passed. Local browser startup was refused by the execution environment's socket policy; runner acceptance is pending. No production or database change. Existing O-001/O-002/O-008 remain the hosted-management release dependencies.
-
-
 ## Selected-video buffering — 20 November
 
 | Feature | Current status | Next action | PR/branch | Testing results | Deployment status |
 | --- | --- | --- | --- | --- | --- |
-| Three-pink-dot feedback while selected uploaded video waits | TESTING | Exact-head CI/browser slow-media acceptance, then scoped production verification | fix/portfolio-video-loading-20261120 | 10 focused viewer/loading cases, TypeScript and scoped lint pass; slow-media browser cases added | Not deployed; no external credential/schema dependency |
+| Three-pink-dot feedback while selected uploaded video waits | LIVE & VERIFIED | Preserve; investigate only new regressions | #255 / c84248c | 10 focused cases; 1,821 full-suite pass, two existing skips; all four workflows and live light/night playback pass | glohaus1 dpl_GXL8ZFraSbcrBF3CMtVWDpmdh5DX READY on www.glohaus.shop |
 
-#245 also contains this candidate fix so a future management release preserves current viewer improvements; its production gate remains closed.
+
+## 20 November — current unified portfolio checkpoint
+
+| Feature | Current status | Next action | PR/branch | Testing results | Deployment status |
+| --- | --- | --- | --- | --- | --- |
+| Collections/pinning/order composed with current immersive viewer and loading recovery | BLOCKED for production; code and fixture acceptance complete | Genuine isolated signed-in customer/professional/Owner upload and management acceptance, then recovery/schema readiness | #245 / b84aaf3dfda68c2d7d6c8c062e4f086849568c87 | 61 focused cases; 235 files / 1,876 CI tests passed, two existing skips; all six workflows pass, including native PostgreSQL ownership/privacy and organisation/mixed-viewer/loading browser cases | Not deployed; explicit Preview-only organisation gate retained. Existing O-001/O-002/O-008 dependencies; no production SQL or private-token copy |
+
+Preserved the live #253/#254 experience and composed #255 into #245, so future management work does not restore older viewer behaviour. The fixture uses synthetic media only, and mocked control writes do not establish genuine hosted account acceptance. No repeat audit of unchanged 28P01/storage/provider dependencies was performed. The next independent implementation can continue separately; do not activate public provider accounts or automatic sending, or change financial settings.

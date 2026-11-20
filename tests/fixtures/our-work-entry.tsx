@@ -10,7 +10,7 @@ const post: PublicSocialPost = {
   business_name: "Example beauty", service_name: "Makeup", price_pence: 5000,
 };
 createRoot(document.getElementById("root")!).render(<main className="professional-public">
-  <OurWork immersive profileSlug="fictional" businessName="Example beauty" assets={[
+  <OurWork immersive={new URLSearchParams(location.search).get("legacy")!=="1"} profileSlug="fictional" businessName="Example beauty" assets={[
     {id: "hair-photo", alt_text: "Hair photo", media_type: "image", speciality_ids: ["hair"]},
     {id: "hair-video-two", alt_text: "Second hair video", media_type: "video", speciality_ids: ["hair"]},
     {id: "hair-video", alt_text: "Hair video", media_type: "video", speciality_ids: ["hair"]},

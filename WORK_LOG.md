@@ -396,3 +396,5 @@ The first #253 browser run correctly caught wheel navigation being ignored when 
 
 
 The corrected wheel browser run passes. Inspection then confirmed that publicSocialPosts read an RLS-restricted view that omits publication_status; the viewer's strict published guard therefore excluded genuine public social rows. The repository now explicitly labels only rows from that approved public view as published/source-available. Private management reads and all underlying consent/connection/publication/source policies remain unchanged. Existing real database flow coverage now asserts this viewer contract as well as hidden/draft exclusion. No private-table fallback or publication mutation was introduced.
+
+Final fallback check preserves scrollable social content and native paused video controls when the immersive kill switch is off. The browser harness now explicitly checks this existing mode alongside the new viewer and reduced motion.

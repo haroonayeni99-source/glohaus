@@ -56,3 +56,7 @@
 .our-work-gesture-rail {position:absolute;right:0;top:0;bottom:0;width:28px;touch-action:none;display:flex;align-items:center;justify-content:center;color:#fbb5d0;background:#30232f;border-radius:10px;}
 @media(prefers-reduced-motion:reduce) {.our-work-stage[data-immersive=true] .our-work-frame {animation:none;}}
 .our-work-video-legacy > button { position:absolute;top:12px;right:12px;display:flex;align-items:center;gap:5px; }
+
+/* Retain scrolling and provider controls in both the existing and immersive viewer. */
+.our-work-stage:has(.our-work-social-player) { touch-action:pan-y; }
+.our-work-stage:has(.our-work-social-player) .our-work-frame { overflow-y:auto;touch-action:pan-y; }

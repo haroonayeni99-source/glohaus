@@ -49,6 +49,8 @@ Portfolio organisation remains gated, not live. All six common candidate workflo
 
 | Feature | Current status | Next action | PR/branch | Testing results | Deployment status |
 | --- | --- | --- | --- | --- | --- |
-| Immersive mixed-media viewer | IN DEVELOPMENT | Exact-head browser/CI; production canary with existing real videos; then verified wide display rollout | feat/concept-c-immersive-20261119 | 21 focused component/provider/rollout cases; lint/TypeScript pass; real-MP4 responsive fixtures added | Production default OFF, exact-slug canary/explicit rollout only; public provider connections remain OFF |
+| Immersive mixed-media viewer | LIVE & VERIFIED (display release) | Preserve; integrate gated #245 metadata into this viewer without replacing its interactions | #253 / 9e8797c | 58 focused tests; 1,818 full-suite pass, two skip; all five workflows pass; responsive/motion/legacy fixtures plus real uploaded-video and TikTok production acceptance | glohaus1 dpl_FvR7GJfEUNtsDCyexu3QR4XaKKRz READY on www.glohaus.shop; immersive display flag ON; public account connections remain OFF |
 
 Custom collection/pin/order controls remain in #245; merge its management data into the latest immersive viewer rather than replacing that viewer with the older branch version. Existing draft previews remain private. Before/after pairing metadata remains separate development; no inferred pairing or private-media publication is introduced.
+
+20 November: real public All Work now includes the existing upload, Instagram carousel and TikTok post. Actual TikTok playback/replay/sound and Instagram carousel embed verified after consent without leaving GLOHAUS. Instagram video and physical phones remain unclaimed. Details/rollback: docs/releases/2026-11-19-immersive-our-work.md. Custom collection CRUD/pinning/order, before-after pairing and real hosted management acceptance remain separate #245 work, not part of this live claim.

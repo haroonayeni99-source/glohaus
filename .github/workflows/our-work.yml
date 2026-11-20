@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'src/components/our-work.*'
+      - 'src/components/loading-dots.css'
       - 'src/lib/our-work-rollout.ts'
       - 'src/lib/our-work-immersive-rollout.ts'
       - 'tests/our-work-immersive-rollout.test.ts'

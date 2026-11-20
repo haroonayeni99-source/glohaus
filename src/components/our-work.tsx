@@ -7,6 +7,7 @@ import { ChevronDown, ChevronUp, Pin, Play, Pause, Volume2, VolumeX, X } from "l
 import type { PublicSocialPost } from "@/modules/business-tools/domain";
 import { SocialThumbnail } from "./social-portfolio";
 import { SocialWorkPlayer } from "./social-work-player";
+import { LoadingDots } from "./loading-dots";
 import "./our-work.css";
 
 type Asset = { id: string; alt_text: string; media_type?: "image" | "video"; speciality_ids?: string[]; speciality_names?: string[] };
@@ -157,12 +158,13 @@ function VideoCover({ id, label }: { id: string; label: string }) {
 }
 export function WorkVideo({ id, label }: { id: string; label: string }) {
   const ref = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(true),[playing,setPlaying]=useState(false),[failed,setFailed]=useState(false);
-  useEffect(()=>{const video=ref.current!;if(!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches)void video.play().catch(()=>setPlaying(false));return()=>{video.pause();video.removeAttribute('src');video.load();};},[id]);
-  function toggle(){const video=ref.current!;if(video.paused)void video.play().catch(()=>setPlaying(false));else video.pause();}
+  const [muted, setMuted] = useState(true),[playing,setPlaying]=useState(false),[failed,setFailed]=useState(false),[buffering,setBuffering]=useState(false);
+  useEffect(()=>{const video=ref.current!;if(!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches){void video.play().catch(()=>{setPlaying(false);setBuffering(false);});}return()=>{video.pause();video.removeAttribute('src');video.load();};},[id]);
+  function toggle(){const video=ref.current!;if(video.paused){setBuffering(true);void video.play().catch(()=>{setPlaying(false);setBuffering(false);});}else video.pause();}
   return <div className="our-work-video">
-    <video ref={ref} src={`/api/media/${id}`} muted={muted} onVolumeChange={event => setMuted(event.currentTarget.muted)} onPlay={()=>setPlaying(true)} onPause={()=>setPlaying(false)} onError={()=>setFailed(true)} playsInline loop preload="metadata" aria-label={label} />
+    <video ref={ref} src={`/api/media/${id}`} muted={muted} onVolumeChange={event => setMuted(event.currentTarget.muted)} onPlay={event=>{setPlaying(true);setBuffering(event.currentTarget.readyState<2);}} onPause={()=>{setPlaying(false);setBuffering(false);}} onWaiting={()=>setBuffering(true)} onLoadedData={()=>setBuffering(false)} onPlaying={()=>setBuffering(false)} onError={()=>{setFailed(true);setBuffering(false);}} playsInline loop preload="metadata" aria-label={label} />
     {!failed&&<button type="button" className="our-work-video-surface" aria-label={playing?"Pause video surface":"Play video surface"} onClick={toggle}>{!playing&&<Play aria-hidden size={48}/>}</button>}
+    {!failed&&<div className="our-work-video-loading"><LoadingDots busy={buffering}/></div>}
     {failed?<p role="status" className="our-work-video-error">This video is unavailable. Continue to the next item.</p>:<div className="our-work-video-controls"><button type="button" aria-label={playing?"Pause video":"Play video"} onClick={toggle}>{playing?<Pause aria-hidden/>:<Play aria-hidden/>}{playing?'Pause':'Play'}</button><button type="button" aria-label={muted ? "Turn sound on" : "Mute sound"} onClick={() => setMuted(!muted)}>{muted ? <VolumeX aria-hidden /> : <Volume2 aria-hidden />}{muted ? "Sound off" : "Sound on"}</button></div>}
   </div>;
 }

@@ -1,3 +1,4 @@
+import { isolatedValidationPreview } from "@/lib/preview-auth";
 import { readPublicEnvironment } from "@/lib/public-runtime-config";
 import { customerNameFromMetadata } from "@/modules/accounts/customer-profile-domain";
 import { NextResponse, type NextRequest } from "next/server";
@@ -27,7 +28,8 @@ export async function GET(request: NextRequest) {
   // Both apex and www are valid production origins. Do not redirect between
   // them or Vercel's domain canonicalisation can create a loop. Only move
   // recovery callbacks off deployment/preview aliases.
-  if (next === "/reset-password" && !PRODUCTION_HOSTS.has(url.hostname)) {
+  if (next === "/reset-password" && !PRODUCTION_HOSTS.has(url.hostname) &&
+      !(isolatedValidationPreview() && url.protocol === "https:" && url.hostname.endsWith(".vercel.app"))) {
     const canonical = new URL(url.pathname + url.search, FALLBACK_PRODUCTION_ORIGIN);
     const redirect = NextResponse.redirect(canonical);
     redirect.headers.set("Cache-Control", "private, no-store");

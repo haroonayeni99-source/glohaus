@@ -1,0 +1,66 @@
+name: Portfolio organisation acceptance
+on:
+  pull_request:
+    paths:
+      - 'src/modules/portfolio-organisation/**'
+      - 'src/components/portfolio-organisation.*'
+      - 'src/lib/portfolio-organisation-gate.ts'
+      - 'src/app/api/v1/professional/portfolio/organisation/**'
+      - 'db/candidates/**'
+      - 'tests/portfolio-organisation*'
+      - 'tests/fixtures/portfolio-organisation-entry.tsx'
+      - 'scripts/check-portfolio-organisation.mjs'
+      - '.github/workflows/portfolio-organisation.yml'
+permissions:
+  contents: read
+jobs:
+  portfolio-native-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: local-ci-fixture
+          POSTGRES_DB: glohaus_seller_validation
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d glohaus_seller_validation"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+      - run: pnpm install --frozen-lockfile
+      - name: Verify candidate collection schema, ownership and public privacy on PostgreSQL
+        run: pnpm exec vitest run tests/portfolio-organisation-database.test.ts --maxWorkers=1
+        env:
+          GLOHAUS_NATIVE_DATABASE: "1"
+
+  portfolio-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/prepare-test-browsers
+      - run: node scripts/check-portfolio-organisation.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: portfolio-organisation-browser
+          path: reports/portfolio-organisation-*.png

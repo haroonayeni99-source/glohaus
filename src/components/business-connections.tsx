@@ -23,6 +23,8 @@ export function BusinessConnections({
   ready,
   services,
   callback,
+  socialOnly = false,
+  calendarOnly = false,
   portfolio = {
     max_visible_posts: 12,
     instagram_url: "",
@@ -36,6 +38,8 @@ export function BusinessConnections({
   ready: Record<Provider, boolean>;
   services: { id: string; name: string }[];
   callback?: string;
+  socialOnly?: boolean;
+  calendarOnly?: boolean;
   portfolio?: {
     max_visible_posts: number;
     instagram_url: string;
@@ -46,6 +50,11 @@ export function BusinessConnections({
   };
 }) {
   const [outlookWarningVisible, setOutlookWarningVisible] = useState(true);
+  const visibleConnections = calendarOnly
+    ? connections.filter(c => c.provider !== "instagram" && c.provider !== "tiktok")
+    : socialOnly
+      ? connections.filter(c => c.provider === "instagram" || c.provider === "tiktok")
+      : connections;
   const inFlight = useRef(false);
   const [refreshing, startRefresh] = useTransition();
   const router = useRouter(),
@@ -170,7 +179,8 @@ export function BusinessConnections({
           )}
         </div>
       )}
-      <section id="calendar" className="pro-editor-surface">
+      {calendarOnly && <p><Link className="button button-secondary" href="/professional/portfolio#social">Manage social media &amp; portfolio →</Link></p>}
+      {!socialOnly && <section id="calendar" className="pro-editor-surface">
         <h2>Calendar &amp; availability</h2>
         <p>
           Connect your calendar to share busy times while keeping your existing booking tools.
@@ -338,8 +348,8 @@ export function BusinessConnections({
         <p>
           Calendar updates can be delayed, so clashes are still possible. New slots may pause if a calendar is out of date or has an error, until it syncs or you disconnect it.
         </p>
-      </section>
-      <section id="social" className="pro-editor-surface">
+      </section>}
+      {!calendarOnly && <section id="social" className="pro-editor-surface">
         <h2>Social Media &amp; Portfolio</h2>
         {portfolio.public_profile_ready === false && (
           <p role="note">
@@ -514,11 +524,11 @@ export function BusinessConnections({
             Add post link
           </button>
         </form>
-      </section>
+      </section>}
       <section className="pro-editor-surface">
         <h2>Your connections</h2>
-        {!connections.length && <p>No external accounts connected yet.</p>}
-        {connections.map((c) => (
+        {!visibleConnections.length && <p>No external accounts connected yet.</p>}
+        {visibleConnections.map((c) => (
           <article
             key={`${c.id}:${c.social_mode}:${c.sync_enabled}`}
             className="business-connection"
@@ -646,7 +656,7 @@ export function BusinessConnections({
           </article>
         ))}
       </section>
-      <section id="posts" className="pro-editor-surface">
+      {!calendarOnly && <section id="posts" className="pro-editor-surface">
         <h2>Portfolio &amp; social posts</h2>
         <p>
           Publish a post to show it publicly; lower display numbers appear first. Link a service to show its current starting price and booking options.
@@ -738,7 +748,7 @@ export function BusinessConnections({
             </button>
           </form>
         ))}
-      </section>
+      </section>}
     </div>
   );
 }

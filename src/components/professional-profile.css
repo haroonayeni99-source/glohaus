@@ -134,3 +134,47 @@
     text-align: left;
   }
 }
+
+/* Larger, responsive profile portraits, with no change to listing card imagery. */
+.professional-public .professional-hero {
+  grid-template-columns: 180px minmax(0, 1fr) auto;
+}
+.professional-public .professional-portrait {
+  width: 180px;
+  height: 180px;
+}
+.profile-photo-editor {
+  grid-template-columns: 192px minmax(0, 1fr);
+}
+.profile-photo-editor .profile-photo-preview {
+  width: 192px;
+  height: 192px;
+}
+@media (max-width: 1000px) {
+  .professional-public .professional-hero {
+    grid-template-columns: 150px minmax(0, 1fr);
+  }
+  .professional-public .professional-portrait {
+    width: 150px;
+    height: 150px;
+  }
+}
+@media (max-width: 760px) {
+  .profile-photo-editor,
+  .pro-management-page .profile-photo-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .profile-photo-editor .profile-photo-preview {
+    width: 176px;
+    height: 176px;
+  }
+}
+@media (max-width: 700px) {
+  .professional-public .professional-hero {
+    display: flex;
+  }
+  .professional-public .professional-portrait {
+    width: 140px;
+    height: 140px;
+  }
+}

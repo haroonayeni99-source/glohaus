@@ -7,6 +7,9 @@ import { publicSocialPosts } from "@/modules/business-tools/repository";
 import { ourWorkImmersiveEnabled } from "@/lib/our-work-immersive-rollout";
 import { OurWork } from "@/components/our-work";
 import { SocialPortfolio } from "@/components/social-portfolio";
+import { portfolioOrganisationEnabled } from "@/lib/portfolio-organisation-gate";
+import { portfolioOrganisation } from "@/modules/portfolio-organisation/repository";
+import { organisedWork } from "@/modules/portfolio-organisation/presentation";
 import { ourWorkViewerEnabled } from "@/lib/our-work-rollout";
 import { publicMetadata, publicOrigin, jsonLd } from "@/lib/public-seo";
 import { notFound } from "next/navigation";
@@ -206,6 +209,8 @@ export default async function Profile({
   const validSelection=Boolean(pairedService&&pairedProduct);
   const focusService=data.services.find(s=>s.id===(booking.service||booking.bookService||(validSelection?pairedService?.id:undefined)));
   const selectedSpeciality=focusService?.speciality_id??(data.specialities.some(s=>s.speciality_id===booking.speciality)?booking.speciality:null);
+  const organisation = portfolioOrganisationEnabled() ? await withIdentity(viewerAuthId,db=>portfolioOrganisation(db,data.professional.id,true)) : null;
+  const work = organisation ? organisedWork(data.assets,socialPosts,organisation) : {assets:data.assets,posts:socialPosts,collections:[]};
   return (
     <>
       <script
@@ -247,7 +252,7 @@ export default async function Profile({
       {data.canTrackVisit && <details style={{maxWidth:850,margin:"8px auto",padding:"0 16px"}}><summary style={{cursor:"pointer",fontSize:13}}>Optional profile visit analytics</summary><form action={recordConsentedView}><input type="hidden" name="professionalId" value={data.professional.id}/><input type="hidden" name="slug" value={slug}/><p>Help this professional understand whether GLOHAUS profile visits lead to bookings. Optional; only your account and booking activity are used for attribution, for up to seven days. No reward is triggered.</p><label><input type="checkbox" name="consent" value="yes" required/> I agree to record this profile visit for conversion analytics.</label> <button className="button small" type="submit">Count my visit</button>{booking.tracking==="recorded"&&<p role="status">Your consented visit was recorded.</p>}{booking.tracking==="unavailable"&&<p role="alert">Tracking is temporarily unavailable.</p>}</form></details>}
       <ProfessionalProfile
         socialPortfolio={!ourWorkViewerEnabled(slug) ? <SocialPortfolio posts={socialPosts}/> : undefined}
-        ourWork={ourWorkViewerEnabled(slug) ? <OurWork immersive={ourWorkImmersiveEnabled(slug)} profileSlug={slug} assets={data.assets} posts={socialPosts} businessName={data.professional.business_name} services={data.services} collections={data.specialities.map(s => ({ id: s.speciality_id, name: s.name }))} /> : undefined}
+        ourWork={ourWorkViewerEnabled(slug) ? <OurWork immersive={ourWorkImmersiveEnabled(slug)} profileSlug={slug} assets={work.assets} posts={work.posts} businessName={data.professional.business_name} services={data.services} collections={[...data.specialities.map(s => ({ id: s.speciality_id, name: s.name })),...work.collections]} /> : undefined}
         professional={data.professional}
         policies={<section id="professional-policies" className="professional-section"><h2>Rules & booking policies</h2><p>Choose a service to inspect its applicable general and service-specific terms before booking.</p>{data.policies.map(p=><details key={p.id}><summary>{data.services.find(s=>s.id===p.id)?.name}</summary><ProfessionalPolicySummary policy={p.policy}/></details>)}</section>}
         details={data.details}

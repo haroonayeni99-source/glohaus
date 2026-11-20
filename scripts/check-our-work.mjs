@@ -98,6 +98,16 @@ try {
     expect(errors).toEqual([]);
     await page.screenshot({path:`reports/our-work-${theme}-${width}.png`,fullPage:true});
     console.log(JSON.stringify({theme,width,grid:true,collections:true,privateDraftExcluded:true,viewer:true,history:true,sound:true,linkedBooking:true,socialConsent:true,inSiteProviderFixtures:true,selectedPlayerOnly:true}));
+    // Collection/pin metadata must compose with the released immersive viewer.
+    await page.goto(`http://127.0.0.1:3004/?theme=${theme}&custom=1`);
+    await expect(tiles).toHaveCount(5);await expect(tiles.first()).toContainText('Hair video');
+    await page.getByRole('button',{name:'Signature collection',exact:true}).click();await expect(tiles).toHaveCount(3);
+    await tiles.first().click();await expect.poll(()=>viewer.locator('video').evaluate(v=>!v.paused&&v.currentTime>0)).toBe(true);
+    await expect(viewer.getByRole('link',{name:'Book Locs',exact:true})).toHaveAttribute('href','/p/fictional/services/hair-service');
+    await page.keyboard.press('ArrowDown');await expect(viewer.getByRole('button',{name:'Load Instagram post',exact:true})).toBeVisible();await expect(viewer.locator('iframe')).toHaveCount(0);await expect(viewer.locator('video')).toHaveCount(0);
+    await page.keyboard.press('ArrowDown');await expect(viewer.getByRole('img',{name:'Hair photo',exact:true})).toBeVisible();await expect(viewer.getByRole('button',{name:'Play video',exact:true})).toHaveCount(0);
+    await page.keyboard.press('Escape');await page.getByRole('button',{name:'All Work',exact:true}).click();await expect(tiles).toHaveCount(5);
+    expect(errors).toEqual([]);console.log(JSON.stringify({theme,width,customCollectionImmersive:true,pinnedUpload:true,mixedSources:true,serviceContext:true}));
     await page.close();
   }
   for(const theme of ['light','night']) for(const width of [390,768,1440]){

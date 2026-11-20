@@ -62,8 +62,10 @@ async function submit(
   mode: "sign-in" | "sign-up",
   audience: "customer" | "professional" = "customer",
   requestedDestination?: string,
+  isolatedPreview = false,
 ) {
   const tree = EmailAuthForm({
+    isolatedPreview,
     mode,
     audience,
     redirectTo: requestedDestination ?? (audience === "professional" ? "/professional" : "/account"),
@@ -217,4 +219,11 @@ describe("sign-in entry copy", () => {
     expect(mocks.signIn).not.toHaveBeenCalled();
     expect(mocks.signUp).not.toHaveBeenCalled();
   });
+});
+
+it("sends isolated signup confirmation back to its own preview", async () => {
+  vi.stubGlobal("window", { setTimeout, location: { href: "https://validation.vercel.app/sign-up" } });
+  mocks.signUp.mockResolvedValue({ data: { session: null }, error: null });
+  await submit("sign-up", "customer", "/account", true);
+  expect(mocks.signUp.mock.calls[0][0].options.emailRedirectTo).toBe("https://validation.vercel.app/auth/callback?next=%2Faccount");
 });

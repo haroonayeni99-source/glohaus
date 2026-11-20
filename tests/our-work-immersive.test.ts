@@ -47,6 +47,16 @@ it('does not apply portfolio scroll restoration to a newly opened service page',
  await render();await click('.our-work-tile:first-child');await act(async()=>root.render(React.createElement('main',null,'Selected service')));expect(scrollTo).not.toHaveBeenCalled();expect(document.body.style.overflow).not.toBe('hidden');
 });
 
+it('preserves mixed All Work and immersive playback when custom collections and upload pin/order metadata are present',async()=>{
+ await act(async()=>root.render(React.createElement(OurWork,{immersive:true,profileSlug:'fixture',businessName:'Fixture',assets:[{id:'later',alt_text:'Later photo',media_type:'image',sort_order:8},{id:'video',alt_text:'Pinned video',media_type:'video',featured:true,sort_order:4,collection_ids:['custom:looks']},{id:'earlier',alt_text:'Earlier photo',media_type:'image',sort_order:1,collection_ids:['custom:looks']}],posts:[{...post,sort_order:2,collection_ids:['custom:looks']},{...post,id:'private',publication_status:'hidden',featured:true,collection_ids:['custom:looks']}],services:[{id:'service',asset_id:'video',name:'Braiding'}],collections:[{id:'custom:looks',name:'My looks'}]})));
+ const tiles=()=>Array.from(host.querySelectorAll('.our-work-tile')).map(tile=>tile.getAttribute('aria-label'));
+ expect(tiles()).toEqual(['Open work 1: Pinned video','Open work 2: Earlier photo','Open work 3: Instagram work','Open work 4: Later photo']);
+ await click('.our-work-collections button:nth-child(2)');expect(tiles()).toHaveLength(3);expect(host.textContent).not.toContain('Later photo');
+ await click('.our-work-tile:first-child');expect(host.querySelector('dialog video')).toBeTruthy();expect(host.querySelector('dialog a')?.getAttribute('href')).toBe('/p/fixture/services/service');
+ await act(async()=>host.querySelector('dialog')!.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true})));expect(host.querySelector('dialog video')).toBeNull();expect(host.querySelector('dialog img')?.getAttribute('alt')).toBe('Earlier photo');
+ await act(async()=>window.dispatchEvent(new PopStateEvent('popstate')));await click('.our-work-collections button:first-child');expect(tiles()).toHaveLength(4);expect(host.textContent).not.toContain('PRIVATE');
+});
+
 it('shows delayed local video loading feedback and clears it on playback, pause and media error',async()=>{
  vi.useFakeTimers();try{
  await render();await click('.our-work-tile:nth-child(2)');const video=host.querySelector('dialog video')!;

@@ -252,3 +252,42 @@ it("dismisses unavailable Outlook guidance and shows it again on retry without a
   await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Dismiss Outlook connection warning"]')!.click());
   expect(warning()).toBeNull();
 });
+
+it("keeps calendar management on Connections and excludes it from the social workspace", async () => {
+  const calendar = { ...connection, id: "calendar-fixture", provider: "google" as const, label: "Private calendar" };
+  const { host, root } = await setup(vi.fn(), { connections: [calendar, connection] });
+  expect(host.querySelector("#calendar")).not.toBeNull();
+  expect(host.textContent).toContain("Private calendar");
+  await act(async () => root.render(React.createElement(BusinessConnections, {
+    ...props, connections: [calendar, connection], socialOnly: true,
+  })));
+  expect(host.querySelector("#calendar")).toBeNull();
+  expect(host.textContent).not.toContain("Private calendar");
+  expect(button(host, "Provider setup required").disabled).toBe(true);
+  expect(button(host, "Connect TikTok").disabled).toBe(false);
+  expect(host.textContent).toContain("Approval Mode keeps new work private until you publish it.");
+  expect(host.querySelector<HTMLSelectElement>('select[name="mode"]')?.value).toBe("approval");
+  expect(host.querySelector('select[name="mode"] option[value="automatic"]')).toBeNull();
+  expect(host.querySelector("#posts")).not.toBeNull();
+});
+
+it("uses the existing social sync request in the portfolio workspace", async () => {
+  const fetcher = vi.fn<(url: string, options: RequestInit) => Promise<Response>>().mockResolvedValue(Response.json({ synced: 1 }));
+  const { host } = await setup(fetcher, { socialOnly: true });
+  await act(async () => button(host, "Refresh public videos").click());
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(fetcher.mock.calls[0]?.[0]).toBe("/api/v1/professional/connections");
+  expect(host.textContent).toContain("Refresh complete");
+  expect(host.textContent).toContain("Choose Published and Save post");
+});
+
+it("keeps one social management area when Connections is calendar-only", async () => {
+  const calendar = { ...connection, id: "calendar-fixture", provider: "google" as const, label: "Private calendar" };
+  const { host } = await setup(vi.fn(), { connections: [calendar, connection], calendarOnly: true });
+  expect(host.querySelector("#calendar")).not.toBeNull();
+  expect(host.textContent).toContain("Private calendar");
+  expect(host.querySelector("#social")).toBeNull();
+  expect(host.querySelector("#posts")).toBeNull();
+  expect(host.querySelector('select[name="mode"]')).toBeNull();
+  expect(host.querySelector('a[href="/professional/portfolio#social"]')).not.toBeNull();
+});

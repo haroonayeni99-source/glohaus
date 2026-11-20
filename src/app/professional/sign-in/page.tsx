@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { productionAuthUrl } from "@/lib/preview-auth";
+import { productionAuthUrl, isolatedValidationPreview } from "@/lib/preview-auth";
 import { authConfigured } from "@/lib/config";
 import { AuthFrame } from "@/components/auth-frame";
 import { AccessMessage } from "@/components/access-message";
@@ -35,6 +35,7 @@ export default async function Page({
             <Link href="/sign-in">Customer? Use customer sign in</Link>
           </nav>
           <EmailAuthForm
+            isolatedPreview={isolatedValidationPreview()}
             mode="sign-in"
             redirectTo={safeReturnTo(returnTo, "/professional")}
             audience="professional"

@@ -1,10 +1,8 @@
 import {readFile} from "node:fs/promises";
-import {execFileSync} from "node:child_process";
 import { chromium, expect } from "@playwright/test";
 process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/our-work-entry.tsx";
 const { server } = await import("./ui-audit.mjs");
-execFileSync("ffmpeg",["-y","-f","lavfi","-i","testsrc2=s=180x320:d=5","-an","-c:v","libx264","-pix_fmt","yuv420p","-movflags","+faststart","reports/our-work-fixture.mp4"],{stdio:"ignore"});
-const clip=await readFile("reports/our-work-fixture.mp4");
+const clip = await readFile(new URL("../tests/fixtures/media/portfolio.mp4", import.meta.url));
 const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined, args: ["--no-sandbox"] });
 try {
   for (const theme of ["light", "night"]) for (const width of [390, 1440]) {

@@ -56,3 +56,20 @@ it('preserves mixed All Work and immersive playback when custom collections and 
  await act(async()=>host.querySelector('dialog')!.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true})));expect(host.querySelector('dialog video')).toBeNull();expect(host.querySelector('dialog img')?.getAttribute('alt')).toBe('Earlier photo');
  await act(async()=>window.dispatchEvent(new PopStateEvent('popstate')));await click('.our-work-collections button:first-child');expect(tiles()).toHaveLength(4);expect(host.textContent).not.toContain('PRIVATE');
 });
+
+it('shows delayed local video loading feedback and clears it on playback, pause and media error',async()=>{
+ vi.useFakeTimers();try{
+ await render();await click('.our-work-tile:nth-child(2)');const video=host.querySelector('dialog video')!;
+ expect(host.querySelector('.our-work-video-loading [role=status]')).toBeNull();await act(async()=>vi.advanceTimersByTime(199));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeNull();await act(async()=>vi.advanceTimersByTime(1));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeTruthy();
+ await act(async()=>video.dispatchEvent(new Event('playing')));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeNull();
+ await act(async()=>video.dispatchEvent(new Event('waiting')));await act(async()=>vi.advanceTimersByTime(200));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeTruthy();await click('.our-work-video-surface');expect(host.querySelector('.our-work-video-loading [role=status]')).toBeNull();
+ await click('.our-work-video-surface');await act(async()=>vi.advanceTimersByTime(200));await act(async()=>video.dispatchEvent(new Event('error')));expect(host.querySelector('.our-work-video-loading')).toBeNull();expect(host.querySelector('dialog [role=status]')?.textContent).toContain('unavailable');
+ }finally{vi.useRealTimers();}
+});
+it('never leaves loading feedback after rejected autoplay',async()=>{
+ vi.useFakeTimers();try{vi.mocked(HTMLMediaElement.prototype.play).mockRejectedValueOnce(new DOMException('blocked','NotAllowedError'));await render();await click('.our-work-tile:nth-child(2)');await act(async()=>vi.advanceTimersByTime(500));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeNull();expect(host.querySelector('[aria-label="Play video"]')).toBeTruthy();}finally{vi.useRealTimers();}
+});
+
+it('waits for explicit playback under reduced motion and clears loading when the first frame arrives',async()=>{
+ vi.useFakeTimers();try{vi.stubGlobal('matchMedia',()=>({matches:true}));await render();await click('.our-work-tile:nth-child(2)');await act(async()=>vi.advanceTimersByTime(500));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeNull();expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();await click('.our-work-video-surface');await act(async()=>vi.advanceTimersByTime(200));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeTruthy();await act(async()=>host.querySelector('dialog video')!.dispatchEvent(new Event('loadeddata')));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeNull();}finally{vi.useRealTimers();}
+});

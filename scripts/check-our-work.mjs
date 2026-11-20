@@ -110,6 +110,16 @@ try {
     expect(errors).toEqual([]);console.log(JSON.stringify({theme,width,customCollectionImmersive:true,pinnedUpload:true,mixedSources:true,serviceContext:true}));
     await page.close();
   }
+  for(const theme of ['light','night']){
+    const slow=await browser.newPage({viewport:{width:390,height:844}});let release;const ready=new Promise(resolve=>{release=resolve;});
+    await slow.route('**/api/media/**',async route=>{await ready;return route.fulfill({contentType:'video/mp4',body:clip});});
+    await slow.goto(`http://127.0.0.1:3004/?theme=${theme}`);await slow.getByRole('button',{name:'Hair',exact:true}).click();await slow.locator('.our-work-tile').nth(1).click();
+    const waiting=slow.getByRole('dialog').getByRole('status',{name:'Loading',exact:true});await expect(waiting).toBeVisible();await expect(waiting.locator('span')).toHaveCount(3);
+    expect(await waiting.locator('span').first().evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(232, 67, 138)');
+    await slow.getByRole('button',{name:'Close work viewer',exact:true}).click();await expect(waiting).toHaveCount(0);release();
+    await slow.locator('.our-work-tile').nth(1).click();await expect.poll(()=>slow.getByRole('dialog').locator('video').evaluate(v=>!v.paused&&v.currentTime>0)).toBe(true);await expect(waiting).toHaveCount(0);
+    await slow.close();console.log(JSON.stringify({theme,slowVideoFeedback:true,closeWhileLoading:true,recoveredPlayback:true}));
+  }
   const legacy=await browser.newPage();await legacy.route('**/api/media/**',r=>r.fulfill({contentType:'video/mp4',body:clip}));await legacy.goto('http://127.0.0.1:3004/?legacy=1');await legacy.getByRole('button',{name:'Hair',exact:true}).click();await legacy.locator('.our-work-tile').nth(1).click();expect(await legacy.getByRole('dialog').locator('video').evaluate(v=>v.controls&&v.paused)).toBe(true);await legacy.keyboard.press('Escape');await legacy.getByRole('button',{name:'Makeup',exact:true}).click();await legacy.locator('.our-work-tile').first().click();expect(await legacy.locator('.our-work-stage .our-work-frame').evaluate(el=>getComputedStyle(el).overflowY)).toBe('auto');await legacy.close();
   const reduced=await browser.newPage({reducedMotion:'reduce'});await reduced.route('**/api/media/**',r=>r.fulfill({contentType:'video/mp4',body:clip}));await reduced.goto('http://127.0.0.1:3004/');await reduced.getByRole('button',{name:'Hair',exact:true}).click();await reduced.locator('.our-work-tile').nth(1).click();const reducedViewer=reduced.getByRole('dialog');await expect(reducedViewer.getByRole('button',{name:'Play video',exact:true})).toBeVisible();expect(await reducedViewer.locator('video').evaluate(v=>v.paused)).toBe(true);expect(await reducedViewer.locator('.our-work-frame').evaluate(el=>getComputedStyle(el).animationName)).toBe('none');await reduced.close();
 } finally { await browser.close(); await new Promise(resolve=>server.close(resolve)); }

@@ -59,3 +59,12 @@ Custom collection/pin/order controls remain in #245; merge its management data i
 ## 20 November — #245 current-viewer integration
 
 Unified portfolio management remains IN DEVELOPMENT / release BLOCKED. Next independent step: verify the refreshed #245 head's six workflows, including new custom-collection immersive playback cases; retain all successful evidence for unchanged controls. Integrated current main 3064679 and preserved live playback/consent/privacy/service links while composing upload pin/order and collection membership. Fifty-seven focused tests, TypeScript and scoped lint passed. Local browser startup was refused by the execution environment's socket policy; runner acceptance is pending. No production or database change. Existing O-001/O-002/O-008 remain the hosted-management release dependencies.
+
+
+## Selected-video buffering — 20 November
+
+| Feature | Current status | Next action | PR/branch | Testing results | Deployment status |
+| --- | --- | --- | --- | --- | --- |
+| Three-pink-dot feedback while selected uploaded video waits | TESTING | Exact-head CI/browser slow-media acceptance, then scoped production verification | fix/portfolio-video-loading-20261120 | 10 focused viewer/loading cases, TypeScript and scoped lint pass; slow-media browser cases added | Not deployed; no external credential/schema dependency |
+
+#245 also contains this candidate fix so a future management release preserves current viewer improvements; its production gate remains closed.

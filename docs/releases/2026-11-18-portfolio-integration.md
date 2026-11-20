@@ -27,3 +27,10 @@ Rollback: this branch has no production effects or migrations. After a future au
 ## Native viewing integration, 18 November
 
 Merged #242 native player source b433e5d with this candidate, retaining #233's gated single management workspace and #240's duplicate-save/timeout/photo fixes. WORK_LOG append conflict resolved by retaining both evidence histories; application source merged cleanly. Full local suite: **226 files passed; 1,801 tests passed, 2 skipped**. Scoped lint and TypeScript passed. Provider-frame fixture CI and real hosted acceptance are tracked separately. Public social launch flags remain unchanged/OFF; no database migration, payment or provider-account changes.
+
+
+## 20 November — compose with the released immersive viewer
+
+Current-main integration preserves #253/#254 rather than restoring the older viewer. Upload featured/order and custom collection memberships now compose with muted selected-video playback, mixed-media navigation, native social consent/player teardown, named-service booking links and scroll/focus restoration. The public repository's restricted-view published markers and removed upload limit remain intact. Default All Work remains mixed-source, and hidden/unavailable social rows remain excluded. The source-only display release is already live; this management candidate remains Preview-gated and not production-ready.
+
+Added a component regression for pinned order, collection filtering, All Work reset, photo/video navigation and linked service context, plus four custom-collection viewer browser cases. Local focused tests: 57 passed; TypeScript/scoped lint passed. Local Chromium could not start because the execution environment refused socket creation; no browser assertion failed or was skipped. Use the unchanged runner browser infrastructure to execute acceptance. Genuine signed-in Preview/database/private-storage/recovery gates remain required; do not activate public account connections or apply candidate SQL in production.

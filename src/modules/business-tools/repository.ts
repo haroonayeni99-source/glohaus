@@ -60,6 +60,9 @@ export async function publicSocialPosts(
   ).rows;
   return posts.map((post) => ({
     ...post,
+    // This restricted public view already enforces publication, consent and source eligibility.
+    publication_status: "published" as const,
+    source_available: true,
     source_created_at: post.source_created_at
       ? new Date(post.source_created_at).toISOString()
       : null,

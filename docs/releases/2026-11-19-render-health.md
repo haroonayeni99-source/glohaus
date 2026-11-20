@@ -1,0 +1,9 @@
+# Public-page render health
+
+Owner diagnostics and scheduled public monitoring previously treated HTTP 200 as healthy without consuming the document. Next.js can return that status with a shell and a later streamed render error. Both checks now share a bounded public HTML reader: require a main document, reject explicit Next error pages and non-redirect streamed errors, and stop after 2 MiB. Reports expose fixed reasons only, never HTML, digests, exception details or credentials. Existing Owner authorisation, private/no-store diagnostics, fixed public paths, request timeouts and scheduled retry behaviour remain intact.
+
+This checks document delivery and known render failures. It does not verify interactions, authentication, bookings or payments. No database, sending, provider or financial changes.
+
+Validation: 13 focused module/Owner API tests and four scheduled-monitor tests passed; scoped lint and TypeScript passed. Public production Shop currently returned 121,231 characters with a main document and no render-error record. Local build and all three exact-head workflows passed. The actual shared helper accepted that real Shop document and rejected the real failing isolated Preview document despite HTTP 200. Merged 1724bbfc2113f87c236ca2290b48172f608bfa40; production glohaus1 dpl_74Yk6EiScSDR4aeJZmrM3xcKLVAE is READY with www.glohaus.shop assigned. Production Home/Shop/Discover render without streamed errors; initial error/fatal counts are empty. The protected API fetch returned an empty 401 at the tool authentication stage, so genuine Owner-session acceptance is not claimed. Combined post-merge validation: 26 focused Vitest cases, four monitor cases and TypeScript passed.
+
+Immediate rollback: notification release ff07d50a2d92956d0e5335b336f42c339b428655 / glohaus1 dpl_491vUoM9Hy2L2NCg6QGYud5dXW7N. The earlier 73a1e81 / dpl_5wsjVGpfLeRmoeNRCVxGC3SPYWbp also remains available. Revert only this change after subsequent independent releases.

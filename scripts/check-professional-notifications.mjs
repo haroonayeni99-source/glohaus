@@ -36,6 +36,13 @@ try{
   expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(1);expect(errors).toEqual([]);
   await page.screenshot({path:`reports/professional-notifications-${theme}-${width}.png`,fullPage:true});results.push({theme,width,passed:true,checks:['essential email locked','separate preferences','saved after reload','device revoke','mark read','mobile bell','no overflow']});await context.close();
  }
+ const live=await browser.newPage();await live.goto('http://127.0.0.1:3004/');
+ await live.evaluate(()=>{const original=window.fetch;window.fetch=(url,options)=>String(url)==='/api/v1/notifications'&&options?.method==='PATCH'?new Promise(resolve=>{window.finishRead=resolve;}):original(url,options);});
+ await live.getByRole('button',{name:'Mark all as read',exact:true}).click();
+ await expect(live.getByRole('button',{name:'Mark all as read',exact:false})).toBeDisabled();
+ await live.evaluate(()=>{const item=(id,title)=>({id,booking_id:null,product_order_id:null,kind:'customer_message',title,body:'Fictional live inbox fixture',href:'/messages',read_at:null,created_at:new Date().toISOString()});window.dispatchEvent(new CustomEvent('glohaus:notifications',{detail:{notifications:[item('notification','New customer message'),item('arrived-during-save','New during save')]}}));window.finishRead(Response.json({saved:true}));});
+ await expect(live.locator('article[data-read="true"]')).toHaveCount(1);await expect(live.locator('article[data-read="false"]')).toContainText('New during save');
+ results.push({name:'live arrivals remain unread during mark-all save',passed:true});await live.close();
  const page=await browser.newPage();await page.goto('http://127.0.0.1:3004/?fail=1');await page.getByLabel('Customer messages push',{exact:true}).click();await expect(page.getByRole('alert')).toContainText('Could not save');await expect(page.getByLabel('Customer messages push',{exact:true})).not.toBeChecked();results.push({name:'failed save retains preference',passed:true});
  await writeFile('reports/professional-notifications-results.json',JSON.stringify(results,null,2));console.log(JSON.stringify(results,null,2));
 }catch(error){

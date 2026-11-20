@@ -15,9 +15,7 @@ vi.mock("@/lib/http", () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.allowed = true;
-  mocks.fetch = vi.fn().mockResolvedValue({
-    ok: true, status: 200, body: { cancel: vi.fn().mockResolvedValue(undefined) },
-  });
+  mocks.fetch = vi.fn().mockImplementation(async () => new Response("<main>Public fixture</main>", {headers:{"Content-Type":"text/html"}}));
   vi.stubGlobal("fetch", mocks.fetch);
 });
 
@@ -44,10 +42,16 @@ it("checks only fixed public routes without user credentials", async () => {
 it("reports a failed route without hiding successful checks", async () => {
   mocks.fetch.mockImplementation(async (url: string) => {
     if (url.endsWith("/shop")) throw new Error("network unavailable");
-    return { ok: true, status: 200, body: { cancel: async () => {} } };
+    return new Response("<main>Public fixture</main>",{headers:{"Content-Type":"text/html"}});
   });
   const response = await GET();
   const result = await response.json();
   expect(result.checks.map((c: { ok: boolean }) => c.ok)).toEqual([true, false, true]);
   expect(result.checks[1].status).toBeNull();
+});
+
+it("does not report streamed HTTP-200 render failures as healthy", async()=>{
+ mocks.fetch.mockImplementation(async(url:string)=>new Response(url.endsWith('/shop')?'<main>Shell</main><script>1:E{\\"digest\\":\\"safe-fixture\\"}</script>':'<main>Public fixture</main>',{headers:{'Content-Type':'text/html'}}));
+ const result=await(await GET()).json();expect(result.checks.map((c:{ok:boolean})=>c.ok)).toEqual([true,false,true]);expect(result.checks[1].reason).toBe('render_error');
+ expect(JSON.stringify(result)).not.toContain('safe-fixture');
 });

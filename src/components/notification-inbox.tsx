@@ -10,7 +10,8 @@ import {
   RotateCcw,
   Star,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { LoadingDots } from "./loading-dots";
 import type { InAppNotification } from "@/modules/notifications/repository";
 
 function date(value: Date) {
@@ -43,6 +44,7 @@ export function NotificationInbox({
   const [notifications, setNotifications] = useState(initialNotifications);
   const [updating, setUpdating] = useState<string | null>(null);
   const [updateError, setUpdateError] = useState("");
+  const saving = useRef(false);
   const unreadCount = notifications.filter((item) => !item.read_at).length;
   useEffect(() => {
     const receive = (event: Event) =>
@@ -73,6 +75,8 @@ export function NotificationInbox({
     };
   }, [professional]);
   async function markRead(id: string) {
+    if (saving.current || notifications.find(item => item.id === id)?.read_at) return;
+    saving.current = true;
     setUpdating(id);
     setUpdateError("");
     try {
@@ -80,6 +84,7 @@ export function NotificationInbox({
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
+        signal: AbortSignal.timeout(15000),
       });
       if (!response.ok) {
         setUpdateError(
@@ -99,11 +104,14 @@ export function NotificationInbox({
         "GLOHAUS could not update your notifications. Please try again.",
       );
     } finally {
+      saving.current = false;
       setUpdating(null);
     }
   }
   async function markAllRead() {
-    if (!unreadCount || updating) return;
+    if (!unreadCount || saving.current) return;
+    saving.current = true;
+    const submitted = new Set(notifications.filter(item => !item.read_at).map(item => item.id));
     setUpdating("all");
     setUpdateError("");
     try {
@@ -111,6 +119,7 @@ export function NotificationInbox({
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ all: true }),
+        signal: AbortSignal.timeout(15000),
       });
       if (!response.ok) {
         setUpdateError(
@@ -120,13 +129,14 @@ export function NotificationInbox({
       }
       const now = new Date();
       setNotifications((items) =>
-        items.map((item) => (item.read_at ? item : { ...item, read_at: now })),
+        items.map((item) => (item.read_at || !submitted.has(item.id) ? item : { ...item, read_at: now })),
       );
     } catch {
       setUpdateError(
         "GLOHAUS could not update your notifications. Please try again.",
       );
     } finally {
+      saving.current = false;
       setUpdating(null);
     }
   }
@@ -164,11 +174,11 @@ export function NotificationInbox({
           <span>{unreadCount} unread</span>
           <button
             type="button"
-            disabled={updating === "all"}
+            disabled={Boolean(updating)}
             onClick={() => void markAllRead()}
           >
             <CheckCheck size={16} aria-hidden />
-            {updating === "all" ? "Updating…" : "Mark all as read"}
+            Mark all as read<LoadingDots busy={updating === "all"} />
           </button>
         </div>
       )}
@@ -194,11 +204,11 @@ export function NotificationInbox({
             <button
               type="button"
               onClick={() => void markRead(notification.id)}
-              disabled={updating === notification.id}
+              disabled={Boolean(updating)}
               aria-label={`Mark ${notification.title} as read`}
               title="Mark as read"
             >
-              <CheckCheck size={17} aria-hidden />
+              <CheckCheck size={17} aria-hidden /><LoadingDots busy={updating === notification.id} />
             </button>
           )}
         </article>

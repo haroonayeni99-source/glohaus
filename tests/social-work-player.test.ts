@@ -13,12 +13,12 @@ const fixture = (platform: "tiktok" | "instagram"): PublicSocialPost => ({
   source_created_at: null, service_id: null, sort_order: 0, media_type: "video", has_thumbnail: true,
   professional_id: "fixture", slug: "fixture", business_name: "Fixture studio", service_name: null, price_pence: null,
 });
-async function render(post: PublicSocialPost) {
+async function render(post: PublicSocialPost, autoplay = false) {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const host = document.createElement("div"); document.body.append(host);
   const root = createRoot(host);
   clean = async () => { await act(async () => root.unmount()); host.remove(); };
-  await act(async () => root.render(React.createElement(SocialWorkPlayer, { post })));
+  await act(async () => root.render(React.createElement(SocialWorkPlayer, { post, autoplay })));
   return host;
 }
 async function click(host: HTMLElement, text: string) {
@@ -97,4 +97,18 @@ it.each([
 it.each([{ source_available: false }, { publication_status: "hidden" }])("does not embed unavailable or unpublished work: %o", async patch => {
   const host = await render({ ...fixture("tiktok"), ...patch });
   expect(host.querySelector("iframe")).toBeNull(); expect(host.querySelector("button")).toBeNull();
+});
+
+it("attempts consented muted TikTok autoplay and retains Play after provider autoplay rejection",async()=>{
+ const host=await render(fixture('tiktok'),true);expect(host.querySelector('iframe')).toBeNull();await click(host,'Load TikTok video');
+ const frame=host.querySelector('iframe')!;expect(frame.src).toContain('autoplay=1&controls=1&muted=1');expect(frame.getAttribute("allow")).toContain('autoplay');
+ await act(async()=>window.dispatchEvent(new MessageEvent('message',{origin:'https://www.tiktok.com',source:frame.contentWindow,data:{'x-tiktok-player':true,type:'onPlayerError',value:{errorCode:3002}}})));
+ expect(host.querySelector('iframe')).toBe(frame);expect(host.textContent).toContain('Automatic playback was blocked');
+ await act(async()=>window.dispatchEvent(new MessageEvent('message',{origin:'https://www.tiktok.com',source:frame.contentWindow,data:{'x-tiktok-player':true,type:'onStateChange',value:1}})));
+ expect(host.textContent).not.toContain('Automatic playback was blocked');
+ await act(async()=>window.dispatchEvent(new MessageEvent('message',{origin:'https://www.tiktok.com',source:frame.contentWindow,data:{'x-tiktok-player':true,type:'onStateChange',value:2}})));
+ const message=vi.spyOn(frame.contentWindow!,'postMessage');await click(host,'Play TikTok video');expect(message).toHaveBeenCalledWith({'x-tiktok-player':true,type:'play'},'https://www.tiktok.com');
+});
+it("does not request provider autoplay when reduced motion is preferred",async()=>{
+ vi.stubGlobal('matchMedia',()=>({matches:true}));const host=await render(fixture('tiktok'),true);await click(host,'Load TikTok video');expect(host.querySelector('iframe')!.src).toContain('autoplay=0');
 });

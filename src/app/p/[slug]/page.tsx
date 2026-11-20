@@ -4,6 +4,7 @@ import {AddToCartButton} from "@/components/add-to-cart-button";
 import {money} from "@/modules/professionals/domain";
 import { recordConsentedView } from "./growth-action";
 import { publicSocialPosts } from "@/modules/business-tools/repository";
+import { ourWorkImmersiveEnabled } from "@/lib/our-work-immersive-rollout";
 import { OurWork } from "@/components/our-work";
 import { SocialPortfolio } from "@/components/social-portfolio";
 import { portfolioOrganisationEnabled } from "@/lib/portfolio-organisation-gate";
@@ -120,7 +121,7 @@ export default async function Profile({
         alt_text: string;
         media_type: "image" | "video";speciality_ids:string[];speciality_names:string[];
       }>(
-        `SELECT a.id,a.alt_text,a.media_type,ARRAY(SELECT speciality_id FROM beauty.public_portfolio_specialities WHERE asset_id=a.id) AS speciality_ids,ARRAY(SELECT speciality_name FROM beauty.public_portfolio_specialities WHERE asset_id=a.id) AS speciality_names FROM beauty.public_media_assets a WHERE professional_id=$1 ORDER BY created_at DESC LIMIT 100`,
+        `SELECT a.id,a.alt_text,a.media_type,ARRAY(SELECT speciality_id FROM beauty.public_portfolio_specialities WHERE asset_id=a.id) AS speciality_ids,ARRAY(SELECT speciality_name FROM beauty.public_portfolio_specialities WHERE asset_id=a.id) AS speciality_names FROM beauty.public_media_assets a WHERE professional_id=$1 ORDER BY created_at DESC`,
         [id],
       )
     ).rows;
@@ -251,7 +252,7 @@ export default async function Profile({
       {data.canTrackVisit && <details style={{maxWidth:850,margin:"8px auto",padding:"0 16px"}}><summary style={{cursor:"pointer",fontSize:13}}>Optional profile visit analytics</summary><form action={recordConsentedView}><input type="hidden" name="professionalId" value={data.professional.id}/><input type="hidden" name="slug" value={slug}/><p>Help this professional understand whether GLOHAUS profile visits lead to bookings. Optional; only your account and booking activity are used for attribution, for up to seven days. No reward is triggered.</p><label><input type="checkbox" name="consent" value="yes" required/> I agree to record this profile visit for conversion analytics.</label> <button className="button small" type="submit">Count my visit</button>{booking.tracking==="recorded"&&<p role="status">Your consented visit was recorded.</p>}{booking.tracking==="unavailable"&&<p role="alert">Tracking is temporarily unavailable.</p>}</form></details>}
       <ProfessionalProfile
         socialPortfolio={!ourWorkViewerEnabled(slug) ? <SocialPortfolio posts={socialPosts}/> : undefined}
-        ourWork={ourWorkViewerEnabled(slug) ? <OurWork assets={work.assets} posts={work.posts} businessName={data.professional.business_name} services={data.services} collections={[...data.specialities.map(s => ({ id: s.speciality_id, name: s.name })),...work.collections]} /> : undefined}
+        ourWork={ourWorkViewerEnabled(slug) ? <OurWork immersive={ourWorkImmersiveEnabled(slug)} profileSlug={slug} assets={work.assets} posts={work.posts} businessName={data.professional.business_name} services={data.services} collections={[...data.specialities.map(s => ({ id: s.speciality_id, name: s.name })),...work.collections]} /> : undefined}
         professional={data.professional}
         policies={<section id="professional-policies" className="professional-section"><h2>Rules & booking policies</h2><p>Choose a service to inspect its applicable general and service-specific terms before booking.</p>{data.policies.map(p=><details key={p.id}><summary>{data.services.find(s=>s.id===p.id)?.name}</summary><ProfessionalPolicySummary policy={p.policy}/></details>)}</section>}
         details={data.details}

@@ -294,27 +294,6 @@ Meta demonstration remains blocked on usable isolated Preview OAuth configuratio
 
 Final local verification: scoped ESLint passed; 3 bookings tests passed; full TypeScript check passed. Earlier focused social/lifecycle run passed all 42 social tests (45 including bookings). No further broad build/test run needed for these test-only changes. GitHub exact-new-head CI remains required; existing loader failure and signed-in Preview acceptance remain open.
 
-## 18 November 2026 — #240 upload acceptance corrections
-
-Reconciled #240 with deployed main and the focused Next.js 16.4.5 security candidate (#243), without changing fees, data, roles, provider flags or production configuration. Customer and professional photo forms now synchronously reject a second submission while the first request is in flight; the guard releases after both success and error so retry remains available.
-
-Fixed the jsdom-only selected-FileList/FormData mismatch in the fixture, preserving product-side file validation. Corrected real-browser image assertions to the intended 960x768 optimised portrait; logo fit, byte bounds and encoded-image checks remain. Eight focused format/photo tests passed, including both duplicate-submit paths. Full local suite on the application changes passed 224 files / 1,782 tests with two explicit skips. Scoped lint and TypeScript passed. The initial build compiled but was blocked by two Next.js security advisories; #243 patches those independently and has a clean production audit/build. The updated combined source still needs exact-head CI and hosted upload acceptance.
-
-No production upload or measured handset performance claimed. The empty private store store_VaeDaG3eJptDjO5w is created but not yet connected. Genuine signed-in Preview DB acceptance remains blocked by 28P01 and unreadable stored target. Preserve this PR as draft until those gates and any actual Owner-authored PR-specific restriction are reconciled against the 18 November work order. Sending/public OAuth/reward activation remain OFF.
-
-## 18 November 2026 — combined portfolio acceptance source
-
-Integrated #240 db63b79, #233 a56ed50 and #242 4574d19 into verify/portfolio-experience-20261118. Resolved actual conflicts without losing the deployed Outlook warning or any regression tests. Updated only an obsolete approval-mode expectation to current private-draft wording and asserted the real selected mode/OFF gate.
-
-Added a shared server-side Preview workspace gate. In the acceptance candidate, Portfolio is the single upload/social management area; Connections retains calendars and points to that workspace instead of duplicating social management. Production activation remains deliberately gated until hosted acceptance. No account, provider, calendar permission, publication API or financial rule changes.
-
-Combined focused suite: 41 tests passed. Scoped lint, TypeScript and production build passed after correcting the narrow environment type. Final exact-head browser/CI checks and genuinely signed-in hosted acceptance remain necessary. The existing 28P01/Preview Blob connection dependencies remain in the Owner register; do not claim completion/deployment of this combined experience. Remaining uploaded-work pin/ordering/custom named collection data requirements are explicitly documented in docs/releases/2026-11-18-portfolio-integration.md rather than claimed as implemented.
-
-### Final bounded photo-network handling
-
-Added a 45-second photo-update confirmation timeout to the combined candidate's existing request paths. Timeout/network messages are actionable and preserve preview/retry controls; the timeout copy explicitly asks the user to check their profile because the server may have completed despite a lost acknowledgement. No fake upload percentages or new server/payment operations. Error classification handles DOMException across browser/test realms by its standard name. New regression tests cover both customer and professional timeout recovery and retained preview without another image decode.
-
-Final combined focused suite now passes 43 tests. TypeScript, scoped lint and production build passed on this exact source. Publish the final candidate and require its final-head CI/hosted upload checks; do not substitute the prior #245 head's results. Production activation of the unified workspace remains gated.
 ## 18 November 2026 — independent work order and persistent queues
 
 Read the attached owner work order and preserved its complete text under docs/work-orders/2026-11-18-independent-implementation.md. It explicitly keeps £1 booking fees and proposed promotions unchanged, forbids financial/reward activation, defers provider login tasks and requires independent work to continue around genuine blockers.
@@ -384,23 +363,55 @@ Public display candidate verification: frozen-lockfile online installation, scop
 Enabled only OUR_WORK_VIEWER_ENABLED=true and redeployed unchanged source as dpl_EhbrEuB7xUH3jBzNoP4i2nTZdqAe, READY with custom domains assigned. Test and non-canary public profiles serve the grid; Home/Shop/Discover and both profiles return rendered content without streamed errors. Initial error/fatal and text Error scans empty. Final browser re-opened the wider-release viewer. Scoped checks: 47 local tests, lint/type/build, zero-vulnerability production audit; current viewer/main/critical/professional-tools workflows passed, foundation still running at rollout. No claim that all foundation checks passed or that provider fixtures prove genuine playback.
 
 Public provider launch flags remain OFF; no provider connection/import activation. Full #245 upload/account acceptance, actual TikTok/Instagram playback signoff and uploaded pin/order/custom collections remain unfinished. Keep future integration from overwriting the now-live rollout guard; isolated DB/storage repair is not needed for this display-only read path. Immediate rollback: verified pre-viewer dpl_B7tZD2HmsQxikfFoSdfrFDikLDtJ / 6610c6b; alternatively false display flag plus redeployment. No secrets changed.
-## 18 November 2026 — native Concept C social viewing
-
-Owner explicitly extended #242/#233 acceptance: supported TikTok/Instagram playback must remain in GLOHAUS's full-screen viewer. Added dedicated selected-post player, consent-before-provider iframe, canonical source URLs, source attribution, provider-native controls and optional external originals, no auto redirect or downloaded social media fallback. Only selected player mounts and is unmounted by close/navigation. Sandbox omits top-level navigation; TikTok readiness/state/error messages verify origin and exact frame. Instagram frame loading is not counted as video playback. Thumbnail/error/unavailable/15-second-unconfirmed/retry states are explicit. Discover and provider launch flags are unchanged.
-
-The initial branch test include excluded TSX; renamed the new case to the supported .test.ts form. Actual execution then exposed an iframe native-error handler gap; registered/cleaned up the listener explicitly. Final security/state/recovery and social import/domain/booking contrast suites: 63 passed, including all 12 new player cases. Scoped lint and TypeScript passed. Browser harness was extended across 390/1440 and light/night with mocked provider frames, selection consent, in-viewer play/pause/sound fixture interaction, previous-player cleanup, profile URL/focus restoration. Local Chromium was denied socket creation before app assertions; use final-head CI, without conflating fixtures and genuine provider acceptance. Updated provider documentation checked; no permission scope or API credential changed.
-
-## 18 November 2026 — common native viewing candidate
-
-Integrated #242 b433e5d into #245, preserving #233's gated one-workspace management and #240's photo reliability changes. The sole merge conflict was appended WORK_LOG evidence; both histories retained. Full combined local suite: 226 files / 1,801 tests passed, two skipped. Scoped lint and TypeScript passed. Genuine hosted/provider acceptance remains blocked; no production activation and no claim that provider fixtures represent genuine playback.
-
-## 19 November 2026 — combined browser assertion correction
-
-Final #245 71c6ce8 CI passed lint/typecheck/full tests/build, media/logo/pricing and initial customer identity checks, then stopped at an obsolete exact invalid-photo message in check-client-blocking.mjs. The UI correctly rejected bad.txt, showed the updated supported-phone-formats message and left Save photo disabled. Updated only the expected message; no product validation changed. Reused the QC candidate's workflow efficiency fix (all 17 foundation jobs retained, PR/main triggers, existing encoder fallback) so the corrected head does not schedule duplicate feature-push checks. Existing application test/build evidence remains applicable; exact new-head CI still required. Local browser remains socket-blocked. No production changes.
 
 
-## 2026-11-19 — independent portfolio organisation development
+## 2026-11-19 — independent notification read-state recovery
 
-Continued #245 on current main 73a1e81, preserving the deployed #248 viewer rollout guard and existing release evidence. Added custom collection create/edit/delete/order, uploaded featured pin/order, and mixed upload/social membership controls. Kept existing social publication/featured controls as the single source of truth. Added explicit ownership, row policies, published-profile/source-only public views and transactional membership replacement. Candidate SQL remains outside the production migration runner. A strict Preview-only opt-in prevents any new table query or API mutation in production.
+Confirmed a client race: mark-all optimistically marked every item in the latest state, including notifications arriving after the submitted snapshot. Limited the local acknowledgement to submitted unread IDs; server stream remains authoritative. Serialised item/all writes with a synchronous guard, bounded requests at 15 seconds, retained unread state and retry on errors, skipped already-read item writes, and reused the agreed delayed pink dots inside existing buttons. No notification sending, backend/schema, account permissions or financial changes.
 
-Added duplicate-submit guards and mandatory refresh after an unconfirmed/committed-but-unrefreshed save. Confirmed 36 focused domain/API/database/component tests locally, including forged ownership, hidden-profile metadata privacy, source preservation on collection deletion and uncertain-save recovery; targeted lint and TypeScript pass. Native PostgreSQL and eight responsive/theme browser combinations are defined in the dedicated acceptance workflow. Full regression/build/remote checks pending this checkpoint. No remote schema, production secrets, account connections, booking fees, financial rewards or automatic messages changed.
+Focused inbox/backend tests: 13 passed. Scoped lint and TypeScript pass. Added actual-browser live-arrival acceptance to the existing notification responsive/theme workflow; exact-head CI and production acceptance remain required. Release is independent of isolated Preview database/storage and portfolio schema blockers.
+
+
+## 2026-11-19 — verified independent continuation checkpoint
+
+Completed custom collection CRUD/order, uploaded featured pin/order and mixed membership in common #245 bbf4d48 on current main, preserving the live public viewer guard. Candidate SQL is excluded from production migrations and organisation requires an explicit Preview-only flag. All six exact-head workflows pass, including native PostgreSQL ownership/privacy and actual browser controls across eight theme/viewport combinations. Local suite: 232 files / 1,847 passed, 2 skipped; lint, TypeScript and build pass. Applied the candidate schema to isolated rqsyakggwmpkqzzogvll only; verified all three new tables have enabled/forced RLS and two policies each. No existing source/customer record was changed. Genuine hosted application/upload/provider acceptance remains blocked; the full management/photo candidate is not deployed to production.
+
+Independent notification recovery #250 merged ff07d50a2d92956d0e5335b336f42c339b428655; production dpl_491vUoM9Hy2L2NCg6QGYud5dXW7N READY and public acceptance checks verified. Fixes concurrent read writes, marks only the submitted snapshot locally, preserves live arrivals, bounds stalled requests and uses delayed pink dots. Thirteen focused tests and all three exact-head workflows pass, including actual browser live-arrival/mobile/theme checks.
+
+Independent render-health #251 merged 1724bbfc2113f87c236ca2290b48172f608bfa40; production dpl_74Yk6EiScSDR4aeJZmrM3xcKLVAE READY and deployment checks verified. Bounded public HTML checks detect streamed HTTP-200 render failures and never return page bodies/digests. Thirteen focused API/module and four monitor tests, lint/type/build, all three workflows pass. The actual helper accepted genuine Shop HTML and rejected genuine failing Preview HTML. No claim of authenticated/payment acceptance.
+
+Confirmed and repaired isolated rqsyakggwmpkqzzogvll runtime login expiry through 26 November 23:59:59 UTC only; no password or privilege change. A single fresh existing Preview request still has runtime 28P01. O-001 target/credential configuration, O-002 recovery evidence, O-008 private Preview storage connection and provider readiness remain in the separate Owner register. No production schema/credentials, fees, commissions, payouts, public connections or automatic messaging changed. Immediate rollback evidence is the preceding verified deployment recorded for each release.
+
+Combined release main 1724bbf additionally passed 26 focused Vitest cases, four monitor cases and TypeScript. Isolated metadata checks confirm anon/authenticated have no private-table access and all three public views are security barriers owned by beauty_catalog. Isolated migration records: extend_isolated_validation_runtime_login_20261119 and isolated_portfolio_organisation_candidate_20261119. Immediate rollback for #250 is dpl_5wsjVGpfLeRmoeNRCVxGC3SPYWbp; for #251 it is dpl_491vUoM9Hy2L2NCg6QGYud5dXW7N. The protected QC API tool fetch returned empty 401, not evidence of genuine Owner application acceptance.
+
+## 2026-11-19 — Concept C immersive visual upgrade candidate
+
+Owner prioritised customer-facing viewing over QC/admin. Preserved grid/Discover and implemented selected uploaded-video autoplay/tap pause/sound, mixed-media vertical touch/wheel/keyboard transitions, focus/scroll restoration, rejected-autoplay fallback and reduced-motion support. Retained social consent; TikTok uses official muted autoplay and messaging, with 3002 Play fallback. Instagram keeps supported native controls; provider input has a separate side gesture rail. Public service-image associations now support existing uploaded-work booking links. Removed only the arbitrary profile upload query cutoff; public eligibility/privacy remains.
+
+Preview/production-canary display gate is independent of public social connection and #245 management gates. Twenty-one focused tests pass; lint/TypeScript pass. Real decodable browser fixture, full exact-head CI and actual production canary remain release requirements. No production activation, database, financial, provider connection or account changes claimed.
+
+## 2026-11-20 — immersive viewer browser correction
+
+The first #253 browser run correctly caught wheel navigation being ignored when the pointer was over the full video surface button. Removed the overly broad button exclusion while keeping caption/link scrolling separate, and added a direct regression for surface-origin wheel events and momentum deduplication. Earlier core/critical CI passed; foundation had one setup-budget cancellation. Corrected-head CI and real canary acceptance are required before activation. No production activation occurred.
+
+
+The corrected wheel browser run passes. Inspection then confirmed that publicSocialPosts read an RLS-restricted view that omits publication_status; the viewer's strict published guard therefore excluded genuine public social rows. The repository now explicitly labels only rows from that approved public view as published/source-available. Private management reads and all underlying consent/connection/publication/source policies remain unchanged. Existing real database flow coverage now asserts this viewer contract as well as hidden/draft exclusion. No private-table fallback or publication mutation was introduced.
+
+Final fallback check preserves scrollable social content and native paused video controls when the immersive kill switch is off. The browser harness now explicitly checks this existing mode alongside the new viewer and reduced motion.
+
+
+### 2026-11-20 — Preserve browser assertions through cold WebKit setup
+
+PR #253: the retry completed WebKit installation after 692 seconds, leaving only 15 seconds in the platform job before cancellation. Increase its job allowance from 12 to 20 minutes and the smart-arrival browser preparation step from 10 to 15 minutes (its job already allows 20). All assertions, browser engines and release checks remain required. Application source unchanged from d843087.
+
+
+### 2026-11-20 — Immersive Concept C deployed
+
+#253 merged 9e8797c after all five latest-head workflows passed; smart-arrival passed its single infrastructure retry, keeping all checks. Canary HEVhUtCgYCVBjy6o6pQus6iu56HD passed real uploaded 4K muted playback/surface pause/resume/sound/one-player/keyboard/Back scroll+focus restoration and actual TikTok playback/replay/sound plus Instagram carousel embed. Wide production FvR7GJfEUNtsDCyexu3QR4XaKKRz READY on www.glohaus.shop with display-only flag true. Fresh playback and public main/Shop/Discover content/error scans passed. Public social connections remain off; no schema, financial or publication mutations. Full evidence and honest provider/mobile/management limitations recorded in release doc and both task registers. Rollback aeab270 / dpl_7yNrBSKXFdGF1PSju5GqhH6vGLcs retained.
+
+
+### 2026-11-20 — Compose #245 management with released immersive viewer
+
+Reconciled the common #245 candidate with current main 3064679, retaining the deployed immersive video lifecycle, provider consent, public-view eligibility markers, service booking context, scroll restoration, security and notification fixes. Added only the candidate's upload pin/order and custom collection metadata to the latest viewer; the profile preserves immersive rollout and profile slug. Default All Work still contains every eligible source, while custom filters include only their memberships. Added a direct mixed-source/component regression and actual-browser custom-collection cases across both fixture viewports/themes. No public provider activation or production schema access: organisation remains explicit Preview-only.
+
+Focused integration: 57 tests passed across six files; TypeScript and scoped lint passed. The local browser process was blocked by the execution environment's socket policy before any page assertion, so browser acceptance must use the existing GitHub runner workflow. Build and exact-head CI remain pending at this checkpoint. Production remains the verified #253/#254 release, not this gated management candidate.

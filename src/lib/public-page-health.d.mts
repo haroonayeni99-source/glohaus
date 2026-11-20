@@ -1,0 +1,1 @@
+export function publicPageHealth(response: Response): Promise<{ok:boolean;reason:'http_error'|'unexpected_content'|'empty_document'|'document_limit'|'render_error'|'missing_main'|'document_received'}>;

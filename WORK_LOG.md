@@ -418,3 +418,10 @@ Ten focused viewer/loading tests pass, including slow start/rebuffer, pause/erro
 
 
 CI infrastructure correction: current ubuntu-latest jobs downloaded Ubuntu resolute media packages slowly and cancelled before playback assertions. Replace repeated on-runner encoding/apt installation with one tracked synthetic five-second H.264 fixture, validated locally by ffprobe. All existing browser decode/playback/control/one-player and upload assertions remain; no runtime application media or personal data is used. The source/display code is unchanged from f3a74bb.
+
+
+### 2026-11-20 — Resumed portfolio work verified and released
+
+#245 now composes current immersive viewing, upload pin/order/custom memberships and #255 loading recovery at b84aaf3. All six exact-head workflows pass; 1,876 tests passed/two existing skips; 61 focused cases, TypeScript/scoped lint, native portfolio privacy and responsive mixed-viewer/loading browser checks pass. Genuine hosted management release remains blocked by recorded O-001/O-002/O-008, so no production schema or full-management activation occurred.
+
+Independent #255 merged c84248c after all four workflows passed, with 1,821 tests/two existing skips and actual slow-media/browser acceptance. Deterministic synthetic H.264 media removed cold encoder-download failures without removing playback/upload assertions. Production glohaus1 dpl_GXL8ZFraSbcrBF3CMtVWDpmdh5DX READY on custom domains. Live uploaded-video decode/autoplay/pause/sound/one-player/navigation/light-night checks and exact scroll/focus return passed; no stale loading feedback. Public main/Shop/Discover/profile and initial error/fatal scan clean. Rollback 3064679 / dpl_4vNRc9g9CBkb5S2PfE564MmCahCU preserved. Public providers, account data, database, payments/fees and sending unchanged. Both task registers updated. This checkpoint changes Markdown evidence only; app source remains identical to verified c84248c.

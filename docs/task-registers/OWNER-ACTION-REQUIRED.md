@@ -51,3 +51,8 @@ O-001 remains necessary: the isolated runtime login was confirmed expired and ex
 ## 20 November — visual release needs no new Owner action
 
 #253 immersive viewing deployed after real production canary and five passing workflows. Existing published TikTok playback and Instagram carousel embedding were verified without enabling public account connections. No new credentials, purchase, declaration or approval is needed for this display release. Existing O-001/O-002/O-008 still constrain #245 hosted management/storage/schema release; O-003/O-004 constrain public provider activation. An actual Instagram video sample and physical-phone testing remain verification limitations, not new account-connection requests or reasons to stop independent work.
+
+
+## 20 November — resumed portfolio session
+
+No new Owner action is required for deployed #255 loading feedback or the completed #245 code integration. Existing release dependencies remain: O-001 securely verify/correct the isolated Preview Connect target and matching credential configuration (no password in chat, no production secret copy); O-008 connect the existing private validation Blob store to glohaus1 Preview only; O-002 provide verified recoverable production backup evidence before candidate collection schema deployment. These unblock real hosted upload/management acceptance and a later reviewed additive schema release. No purchase/upgrade or repeated deployment approval is requested. Provider declarations/approval remain separate O-003/O-004; public account connections stay disabled.

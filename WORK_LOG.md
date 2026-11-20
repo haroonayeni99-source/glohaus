@@ -398,3 +398,8 @@ The first #253 browser run correctly caught wheel navigation being ignored when 
 The corrected wheel browser run passes. Inspection then confirmed that publicSocialPosts read an RLS-restricted view that omits publication_status; the viewer's strict published guard therefore excluded genuine public social rows. The repository now explicitly labels only rows from that approved public view as published/source-available. Private management reads and all underlying consent/connection/publication/source policies remain unchanged. Existing real database flow coverage now asserts this viewer contract as well as hidden/draft exclusion. No private-table fallback or publication mutation was introduced.
 
 Final fallback check preserves scrollable social content and native paused video controls when the immersive kill switch is off. The browser harness now explicitly checks this existing mode alongside the new viewer and reduced motion.
+
+
+### 2026-11-20 — Preserve browser assertions through cold WebKit setup
+
+PR #253: the retry completed WebKit installation after 692 seconds, leaving only 15 seconds in the platform job before cancellation. Increase its job allowance from 12 to 20 minutes and the smart-arrival browser preparation step from 10 to 15 minutes (its job already allows 20). All assertions, browser engines and release checks remain required. Application source unchanged from d843087.

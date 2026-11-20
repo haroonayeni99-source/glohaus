@@ -3,15 +3,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  height: 16px;
+  gap: 8px;
+  height: 28px;
   margin-inline: 8px;
   vertical-align: middle;
 }
 .glohaus-loading-dots > span {
-  width: 5px;
-  height: 5px;
-  flex: 0 0 5px;
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
   border-radius: 50%;
   background: var(--plum, #e8438a);
   box-shadow: 0 0 0 1px var(--paper, #fff);
@@ -21,7 +21,7 @@
 .glohaus-loading-dots > span:nth-child(3) { animation-delay: 240ms; }
 @keyframes glohaus-dot-bounce {
   0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-4px); }
+  30% { transform: translateY(-7px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .glohaus-loading-dots > span { animation: none; }

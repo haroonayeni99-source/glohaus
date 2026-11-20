@@ -45,7 +45,7 @@ export function SocialWorkPlayer({ post, autoplay = false }: { post: PublicSocia
           frame.current.contentWindow.postMessage({type:'play','x-tiktok-player':true},origin);
         }
       }
-      else if (event.data.type === "onStateChange" && event.data.value === 1) setPhase("playing");
+      else if (event.data.type === "onStateChange" && event.data.value === 1) { setPhase("playing"); setAutoplayBlocked(false); }
       else if (event.data.type === "onStateChange" && [0, 2].includes(event.data.value)) setPhase("ready");
       else if(event.data.type==='onMute' && typeof event.data.value==='boolean')setMuted(event.data.value);
       else if (event.data.type === "onPlayerError" || event.data.type === "onError") {
@@ -101,7 +101,7 @@ export function SocialWorkPlayer({ post, autoplay = false }: { post: PublicSocia
       {(unavailable || !link || phase === "error") && <p role="status">{status}</p>}
       {!unavailable && link && <>
         <p>Load {name} to watch here on GLOHAUS. This connects to {name}, which may use cookies and process device information. Use its play/pause and sound controls where supported.</p>
-        <button type="button" onClick={() => { setPhase("loading"); setLoaded(true); setAttempt(value => value + 1); }}>
+        <button type="button" onClick={() => { setAutoplayBlocked(false); setPhase("loading"); setLoaded(true); setAttempt(value => value + 1); }}>
           {phase === "error" ? `Retry ${name} player` : `Load ${name} ${post.media_type === "video" || post.platform === "tiktok" ? "video" : "post"}`}
         </button>
       </>}

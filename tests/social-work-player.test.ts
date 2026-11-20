@@ -104,6 +104,9 @@ it("attempts consented muted TikTok autoplay and retains Play after provider aut
  const frame=host.querySelector('iframe')!;expect(frame.src).toContain('autoplay=1&controls=1&muted=1');expect(frame.getAttribute("allow")).toContain('autoplay');
  await act(async()=>window.dispatchEvent(new MessageEvent('message',{origin:'https://www.tiktok.com',source:frame.contentWindow,data:{'x-tiktok-player':true,type:'onPlayerError',value:{errorCode:3002}}})));
  expect(host.querySelector('iframe')).toBe(frame);expect(host.textContent).toContain('Automatic playback was blocked');
+ await act(async()=>window.dispatchEvent(new MessageEvent('message',{origin:'https://www.tiktok.com',source:frame.contentWindow,data:{'x-tiktok-player':true,type:'onStateChange',value:1}})));
+ expect(host.textContent).not.toContain('Automatic playback was blocked');
+ await act(async()=>window.dispatchEvent(new MessageEvent('message',{origin:'https://www.tiktok.com',source:frame.contentWindow,data:{'x-tiktok-player':true,type:'onStateChange',value:2}})));
  const message=vi.spyOn(frame.contentWindow!,'postMessage');await click(host,'Play TikTok video');expect(message).toHaveBeenCalledWith({'x-tiktok-player':true,type:'play'},'https://www.tiktok.com');
 });
 it("does not request provider autoplay when reduced motion is preferred",async()=>{

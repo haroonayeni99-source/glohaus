@@ -46,3 +46,8 @@ No purchase is currently authorised. No specific new paid service has been quote
 ## 19 November verified dependency update
 
 O-001 remains necessary: the isolated runtime login was confirmed expired and extended to 26 November 2026 23:59:59 UTC, with login-only/non-superuser/non-bypass permissions preserved. One fresh request on the existing isolated Preview still produced 28P01. No password was read/rotated, no target was guessed, and no production credential was changed. Supply only the non-secret Connect host/port/project-qualified runtime username or correct the existing branch-scoped Sensitive URL securely. O-002 recovery evidence remains required before the new collection schema reaches production. O-008 remains required for real hosted uploads. Provider decisions/declarations remain O-003/O-004. No purchase is required by the completed code releases.
+
+
+## 20 November — visual release needs no new Owner action
+
+#253 immersive viewing deployed after real production canary and five passing workflows. Existing published TikTok playback and Instagram carousel embedding were verified without enabling public account connections. No new credentials, purchase, declaration or approval is needed for this display release. Existing O-001/O-002/O-008 still constrain #245 hosted management/storage/schema release; O-003/O-004 constrain public provider activation. An actual Instagram video sample and physical-phone testing remain verification limitations, not new account-connection requests or reasons to stop independent work.

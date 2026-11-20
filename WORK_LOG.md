@@ -403,3 +403,8 @@ Final fallback check preserves scrollable social content and native paused video
 ### 2026-11-20 — Preserve browser assertions through cold WebKit setup
 
 PR #253: the retry completed WebKit installation after 692 seconds, leaving only 15 seconds in the platform job before cancellation. Increase its job allowance from 12 to 20 minutes and the smart-arrival browser preparation step from 10 to 15 minutes (its job already allows 20). All assertions, browser engines and release checks remain required. Application source unchanged from d843087.
+
+
+### 2026-11-20 — Immersive Concept C deployed
+
+#253 merged 9e8797c after all five latest-head workflows passed; smart-arrival passed its single infrastructure retry, keeping all checks. Canary HEVhUtCgYCVBjy6o6pQus6iu56HD passed real uploaded 4K muted playback/surface pause/resume/sound/one-player/keyboard/Back scroll+focus restoration and actual TikTok playback/replay/sound plus Instagram carousel embed. Wide production FvR7GJfEUNtsDCyexu3QR4XaKKRz READY on www.glohaus.shop with display-only flag true. Fresh playback and public main/Shop/Discover content/error scans passed. Public social connections remain off; no schema, financial or publication mutations. Full evidence and honest provider/mobile/management limitations recorded in release doc and both task registers. Rollback aeab270 / dpl_7yNrBSKXFdGF1PSju5GqhH6vGLcs retained.

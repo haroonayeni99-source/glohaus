@@ -35,3 +35,10 @@ it('respects reduced motion and displays photographs without video controls',asy
  vi.stubGlobal('matchMedia',()=>({matches:true}));await render();await click('.our-work-tile:first-child');expect(host.querySelector('.our-work-viewer video')).toBeNull();expect(host.querySelector('[aria-label="Play video"]')).toBeNull();
  await act(async()=>host.querySelector('dialog')!.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true})));expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();expect(host.querySelector('[aria-label="Play video"]')).toBeTruthy();
 });
+it('navigates when scrolling over the video surface and prevents momentum from skipping another item',async()=>{
+ await render();await click('.our-work-tile:nth-child(2)');vi.spyOn(performance,'now').mockReturnValue(1000);
+ await act(async()=>host.querySelector('.our-work-video-surface')!.dispatchEvent(new WheelEvent('wheel',{deltaY:100,bubbles:true})));
+ expect(host.querySelector('.our-work-viewer video')).toBeNull();expect(host.querySelector('.our-work-social-player')?.getAttribute('aria-label')).toContain('Instagram');
+ await act(async()=>host.querySelector('.our-work-stage')!.dispatchEvent(new WheelEvent('wheel',{deltaY:100,bubbles:true})));
+ expect(host.querySelector('.our-work-social-player')?.getAttribute('aria-label')).toContain('Instagram');
+});

@@ -383,3 +383,23 @@ Independent render-health #251 merged 1724bbfc2113f87c236ca2290b48172f608bfa40; 
 Confirmed and repaired isolated rqsyakggwmpkqzzogvll runtime login expiry through 26 November 23:59:59 UTC only; no password or privilege change. A single fresh existing Preview request still has runtime 28P01. O-001 target/credential configuration, O-002 recovery evidence, O-008 private Preview storage connection and provider readiness remain in the separate Owner register. No production schema/credentials, fees, commissions, payouts, public connections or automatic messaging changed. Immediate rollback evidence is the preceding verified deployment recorded for each release.
 
 Combined release main 1724bbf additionally passed 26 focused Vitest cases, four monitor cases and TypeScript. Isolated metadata checks confirm anon/authenticated have no private-table access and all three public views are security barriers owned by beauty_catalog. Isolated migration records: extend_isolated_validation_runtime_login_20261119 and isolated_portfolio_organisation_candidate_20261119. Immediate rollback for #250 is dpl_5wsjVGpfLeRmoeNRCVxGC3SPYWbp; for #251 it is dpl_491vUoM9Hy2L2NCg6QGYud5dXW7N. The protected QC API tool fetch returned empty 401, not evidence of genuine Owner application acceptance.
+
+## 2026-11-19 — Concept C immersive visual upgrade candidate
+
+Owner prioritised customer-facing viewing over QC/admin. Preserved grid/Discover and implemented selected uploaded-video autoplay/tap pause/sound, mixed-media vertical touch/wheel/keyboard transitions, focus/scroll restoration, rejected-autoplay fallback and reduced-motion support. Retained social consent; TikTok uses official muted autoplay and messaging, with 3002 Play fallback. Instagram keeps supported native controls; provider input has a separate side gesture rail. Public service-image associations now support existing uploaded-work booking links. Removed only the arbitrary profile upload query cutoff; public eligibility/privacy remains.
+
+Preview/production-canary display gate is independent of public social connection and #245 management gates. Twenty-one focused tests pass; lint/TypeScript pass. Real decodable browser fixture, full exact-head CI and actual production canary remain release requirements. No production activation, database, financial, provider connection or account changes claimed.
+
+## 2026-11-20 — immersive viewer browser correction
+
+The first #253 browser run correctly caught wheel navigation being ignored when the pointer was over the full video surface button. Removed the overly broad button exclusion while keeping caption/link scrolling separate, and added a direct regression for surface-origin wheel events and momentum deduplication. Earlier core/critical CI passed; foundation had one setup-budget cancellation. Corrected-head CI and real canary acceptance are required before activation. No production activation occurred.
+
+
+The corrected wheel browser run passes. Inspection then confirmed that publicSocialPosts read an RLS-restricted view that omits publication_status; the viewer's strict published guard therefore excluded genuine public social rows. The repository now explicitly labels only rows from that approved public view as published/source-available. Private management reads and all underlying consent/connection/publication/source policies remain unchanged. Existing real database flow coverage now asserts this viewer contract as well as hidden/draft exclusion. No private-table fallback or publication mutation was introduced.
+
+Final fallback check preserves scrollable social content and native paused video controls when the immersive kill switch is off. The browser harness now explicitly checks this existing mode alongside the new viewer and reduced motion.
+
+
+### 2026-11-20 — Preserve browser assertions through cold WebKit setup
+
+PR #253: the retry completed WebKit installation after 692 seconds, leaving only 15 seconds in the platform job before cancellation. Increase its job allowance from 12 to 20 minutes and the smart-arrival browser preparation step from 10 to 15 minutes (its job already allows 20). All assertions, browser engines and release checks remain required. Application source unchanged from d843087.

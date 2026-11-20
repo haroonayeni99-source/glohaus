@@ -4,6 +4,8 @@ on:
     paths:
       - 'src/components/our-work.*'
       - 'src/lib/our-work-rollout.ts'
+      - 'src/lib/our-work-immersive-rollout.ts'
+      - 'tests/our-work-immersive-rollout.test.ts'
       - 'tests/our-work-rollout.test.ts'
       - 'src/components/social-work-player.tsx'
       - 'tests/social-work-player.test.ts'
@@ -30,6 +32,7 @@ jobs:
           node-version-file: '.nvmrc'
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
+      - run: command -v ffmpeg >/dev/null 2>&1 || (sudo apt-get update && sudo apt-get install -y ffmpeg)
       - run: node scripts/check-our-work.mjs
       - uses: actions/upload-artifact@v4
         if: always()

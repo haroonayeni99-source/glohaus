@@ -10,10 +10,11 @@ const post: PublicSocialPost = {
   business_name: "Example beauty", service_name: "Makeup", price_pence: 5000,
 };
 createRoot(document.getElementById("root")!).render(<main className="professional-public">
-  <OurWork businessName="Example beauty" assets={[
+  <OurWork immersive={new URLSearchParams(location.search).get("legacy")!=="1"} profileSlug="fictional" businessName="Example beauty" assets={[
     {id: "hair-photo", alt_text: "Hair photo", media_type: "image", speciality_ids: ["hair"]},
+    {id: "hair-video-two", alt_text: "Second hair video", media_type: "video", speciality_ids: ["hair"]},
     {id: "hair-video", alt_text: "Hair video", media_type: "video", speciality_ids: ["hair"]},
-  ]} posts={[post, {...post, id:"tiktok", platform:"tiktok", media_type:"video", original_url:"https://www.tiktok.com/@fictional/video/1234567890123456789", caption:"Published TikTok"}, {...post, id:"draft", caption:"PRIVATE DRAFT", publication_status:"draft"}]}
-    services={[{id:"makeup-service", speciality_id:"makeup"}]}
+  ]} posts={[{...post,id:"removed",caption:"REMOVED POST",source_available:false},post, {...post, id:"tiktok", platform:"tiktok", media_type:"video", original_url:"https://www.tiktok.com/@fictional/video/1234567890123456789", caption:"Published TikTok"}, {...post, id:"draft", caption:"PRIVATE DRAFT", publication_status:"draft"}]}
+    services={[{id:"makeup-service", speciality_id:"makeup"},{id:"hair-service",asset_id:"hair-video",name:"Locs",speciality_id:"hair"}]}
     collections={[{id:"hair",name:"Hair"},{id:"makeup",name:"Makeup"}]} />
 </main>);

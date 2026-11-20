@@ -44,3 +44,11 @@ Do not repeat successful unchanged checks. Re-check the exact head after a chang
 ## 19 November continuation checkpoint
 
 Portfolio organisation remains gated, not live. All six common candidate workflows passed; do not repeat unchanged checks. No production schema, booking fee, commission, reward, provider connection or automatic customer-message activation occurred. The isolated runtime login expiry was repaired without reading or rotating a password; the separate 28P01 connection-target dependency persists.
+
+## Concept C visual priority — 19 November
+
+| Feature | Current status | Next action | PR/branch | Testing results | Deployment status |
+| --- | --- | --- | --- | --- | --- |
+| Immersive mixed-media viewer | IN DEVELOPMENT | Exact-head browser/CI; production canary with existing real videos; then verified wide display rollout | feat/concept-c-immersive-20261119 | 21 focused component/provider/rollout cases; lint/TypeScript pass; real-MP4 responsive fixtures added | Production default OFF, exact-slug canary/explicit rollout only; public provider connections remain OFF |
+
+Custom collection/pin/order controls remain in #245; merge its management data into the latest immersive viewer rather than replacing that viewer with the older branch version. Existing draft previews remain private. Before/after pairing metadata remains separate development; no inferred pairing or private-media publication is introduced.

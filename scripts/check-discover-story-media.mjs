@@ -1,13 +1,12 @@
 import { chromium, expect } from "@playwright/test";
 import sharp from "sharp";
 import { readFile, writeFile } from "node:fs/promises";
-import { execFileSync } from "node:child_process";
 process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/discover-story-media-entry.tsx";
 process.env.GLOHAUS_UI_AUDIT_MOCK_BLOB = "1";
 const { server } = await import("./ui-audit.mjs");
 // Small playable local clip; the upload's size is simulated for the multipart check.
-execFileSync("ffmpeg", ["-y", "-f", "lavfi", "-i", "color=c=pink:s=160x160:d=1", "-an", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "reports/media-fixture.mp4"], { stdio: "ignore" });
-const video = await readFile("reports/media-fixture.mp4");
+const video = await readFile(new URL("../tests/fixtures/media/portfolio.mp4", import.meta.url));
+await writeFile("reports/media-fixture.mp4",video);
 const image = await sharp({ create: { width: 2000, height: 1600, channels: 3, background: "#cb728e" } }).png({ compressionLevel: 0 }).toBuffer();
 const browser = await chromium.launch({ executablePath: process.env.GLOHAUS_TEST_BROWSER || undefined, args: ["--no-sandbox"] }); const results = [];
 try {

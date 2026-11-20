@@ -60,3 +60,7 @@
 /* Retain scrolling and provider controls in both the existing and immersive viewer. */
 .our-work-stage:has(.our-work-social-player) { touch-action:pan-y; }
 .our-work-stage:has(.our-work-social-player) .our-work-frame { overflow-y:auto;touch-action:pan-y; }
+
+/* Selected-video buffering feedback only; never covers controls or the profile. */
+.our-work-video-loading { position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;--plum:#e8438a; }
+.our-work-video-loading:has(.glohaus-loading-dots) { padding:10px;border-radius:12px;background:#160f17ed; }

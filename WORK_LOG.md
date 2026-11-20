@@ -408,3 +408,13 @@ PR #253: the retry completed WebKit installation after 692 seconds, leaving only
 ### 2026-11-20 — Immersive Concept C deployed
 
 #253 merged 9e8797c after all five latest-head workflows passed; smart-arrival passed its single infrastructure retry, keeping all checks. Canary HEVhUtCgYCVBjy6o6pQus6iu56HD passed real uploaded 4K muted playback/surface pause/resume/sound/one-player/keyboard/Back scroll+focus restoration and actual TikTok playback/replay/sound plus Instagram carousel embed. Wide production FvR7GJfEUNtsDCyexu3QR4XaKKRz READY on www.glohaus.shop with display-only flag true. Fresh playback and public main/Shop/Discover content/error scans passed. Public social connections remain off; no schema, financial or publication mutations. Full evidence and honest provider/mobile/management limitations recorded in release doc and both task registers. Rollback aeab270 / dpl_7yNrBSKXFdGF1PSju5GqhH6vGLcs retained.
+
+
+### 2026-11-20 — Selected-video buffering feedback
+
+Following the real first-frame blank period observed in #253 acceptance, reuse the existing delayed three-pink-dot indicator inside the selected uploaded-video area. Playback/waiting/first-frame/pause/error events drive it; rejected autoplay clears it, reduced motion still waits for explicit play, and closing unmounts it. The controls, grid, social consent/provider players and page navigation remain unchanged. The local video wrapper supplies the approved pink and a scoped contrast backing. Fast readiness before 200 ms produces no indicator.
+
+Ten focused viewer/loading tests pass, including slow start/rebuffer, pause/error recovery, blocked autoplay and reduced-motion explicit playback. Scoped lint and TypeScript pass. Added slow-media actual-browser cases in both themes and included the existing loading stylesheet in the local test harness. Local browser process remains unavailable because socket creation is refused; exact-head runner acceptance/build and production verification are required before release. No database, financial or public account-connection changes.
+
+
+CI infrastructure correction: current ubuntu-latest jobs downloaded Ubuntu resolute media packages slowly and cancelled before playback assertions. Replace repeated on-runner encoding/apt installation with one tracked synthetic five-second H.264 fixture, validated locally by ffprobe. All existing browser decode/playback/control/one-player and upload assertions remain; no runtime application media or personal data is used. The source/display code is unchanged from f3a74bb.

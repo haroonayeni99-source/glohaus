@@ -14,6 +14,7 @@ on:
       - 'src/app/p/**'
       - 'tests/fixtures/our-work-entry.tsx'
       - 'scripts/check-our-work.mjs'
+      - 'tests/fixtures/media/**'
       - '.github/workflows/our-work.yml'
 permissions:
   contents: read
@@ -32,7 +33,6 @@ jobs:
           node-version-file: '.nvmrc'
       - run: pnpm install --frozen-lockfile
       - uses: ./.github/actions/prepare-test-browsers
-      - run: command -v ffmpeg >/dev/null 2>&1 || (sudo apt-get update && sudo apt-get install -y ffmpeg)
       - run: node scripts/check-our-work.mjs
       - uses: actions/upload-artifact@v4
         if: always()

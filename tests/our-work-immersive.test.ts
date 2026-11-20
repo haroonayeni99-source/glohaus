@@ -46,3 +46,20 @@ it('navigates when scrolling over the video surface and prevents momentum from s
 it('does not apply portfolio scroll restoration to a newly opened service page',async()=>{
  await render();await click('.our-work-tile:first-child');await act(async()=>root.render(React.createElement('main',null,'Selected service')));expect(scrollTo).not.toHaveBeenCalled();expect(document.body.style.overflow).not.toBe('hidden');
 });
+
+it('shows delayed local video loading feedback and clears it on playback, pause and media error',async()=>{
+ vi.useFakeTimers();try{
+ await render();await click('.our-work-tile:nth-child(2)');const video=host.querySelector('dialog video')!;
+ expect(host.querySelector('.our-work-video-loading [role=status]')).toBeNull();await act(async()=>vi.advanceTimersByTime(199));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeNull();await act(async()=>vi.advanceTimersByTime(1));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeTruthy();
+ await act(async()=>video.dispatchEvent(new Event('playing')));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeNull();
+ await act(async()=>video.dispatchEvent(new Event('waiting')));await act(async()=>vi.advanceTimersByTime(200));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeTruthy();await click('.our-work-video-surface');expect(host.querySelector('.our-work-video-loading [role=status]')).toBeNull();
+ await click('.our-work-video-surface');await act(async()=>vi.advanceTimersByTime(200));await act(async()=>video.dispatchEvent(new Event('error')));expect(host.querySelector('.our-work-video-loading')).toBeNull();expect(host.querySelector('dialog [role=status]')?.textContent).toContain('unavailable');
+ }finally{vi.useRealTimers();}
+});
+it('never leaves loading feedback after rejected autoplay',async()=>{
+ vi.useFakeTimers();try{vi.mocked(HTMLMediaElement.prototype.play).mockRejectedValueOnce(new DOMException('blocked','NotAllowedError'));await render();await click('.our-work-tile:nth-child(2)');await act(async()=>vi.advanceTimersByTime(500));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeNull();expect(host.querySelector('[aria-label="Play video"]')).toBeTruthy();}finally{vi.useRealTimers();}
+});
+
+it('waits for explicit playback under reduced motion and clears loading when the first frame arrives',async()=>{
+ vi.useFakeTimers();try{vi.stubGlobal('matchMedia',()=>({matches:true}));await render();await click('.our-work-tile:nth-child(2)');await act(async()=>vi.advanceTimersByTime(500));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeNull();expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();await click('.our-work-video-surface');await act(async()=>vi.advanceTimersByTime(200));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeTruthy();await act(async()=>host.querySelector('dialog video')!.dispatchEvent(new Event('loadeddata')));expect(host.querySelector('.our-work-video-loading [role=status]')).toBeNull();}finally{vi.useRealTimers();}
+});

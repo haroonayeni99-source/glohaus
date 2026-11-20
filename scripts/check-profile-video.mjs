@@ -1,11 +1,9 @@
 // Isolated, playable media and fictional profiles. No production mutations.
 import { chromium, expect } from "@playwright/test";
 import { readFile, writeFile } from "node:fs/promises";
-import { execFileSync } from "node:child_process";
 process.env.GLOHAUS_UI_AUDIT_ENTRY = "tests/fixtures/profile-video-entry.tsx";
 const { server } = await import("./ui-audit.mjs");
-execFileSync("ffmpeg", ["-y", "-f", "lavfi", "-i", "testsrc2=s=320x400:d=4", "-an", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "reports/profile-video-fixture.mp4"], { stdio: "ignore" });
-const clip = await readFile("reports/profile-video-fixture.mp4");
+const clip = await readFile(new URL("../tests/fixtures/media/portfolio.mp4", import.meta.url));
 const browser = await chromium.launch({
   ...(process.env.GLOHAUS_TEST_BROWSER ? { executablePath: process.env.GLOHAUS_TEST_BROWSER } : {}),
   args: ["--no-sandbox", "--disable-dev-shm-usage"],

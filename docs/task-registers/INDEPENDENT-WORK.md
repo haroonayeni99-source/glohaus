@@ -54,3 +54,10 @@ Portfolio organisation remains gated, not live. All six common candidate workflo
 Custom collection/pin/order controls remain in #245; merge its management data into the latest immersive viewer rather than replacing that viewer with the older branch version. Existing draft previews remain private. Before/after pairing metadata remains separate development; no inferred pairing or private-media publication is introduced.
 
 20 November: real public All Work now includes the existing upload, Instagram carousel and TikTok post. Actual TikTok playback/replay/sound and Instagram carousel embed verified after consent without leaving GLOHAUS. Instagram video and physical phones remain unclaimed. Details/rollback: docs/releases/2026-11-19-immersive-our-work.md. Custom collection CRUD/pinning/order, before-after pairing and real hosted management acceptance remain separate #245 work, not part of this live claim.
+
+
+## Selected-video buffering — 20 November
+
+| Feature | Current status | Next action | PR/branch | Testing results | Deployment status |
+| --- | --- | --- | --- | --- | --- |
+| Three-pink-dot feedback while selected uploaded video waits | TESTING | Exact-head CI/browser slow-media acceptance, then scoped production verification | fix/portfolio-video-loading-20261120 | 10 focused viewer/loading cases, TypeScript and scoped lint pass; slow-media browser cases added | Not deployed; no external credential/schema dependency |

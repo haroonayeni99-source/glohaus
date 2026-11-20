@@ -42,3 +42,7 @@ it('navigates when scrolling over the video surface and prevents momentum from s
  await act(async()=>host.querySelector('.our-work-stage')!.dispatchEvent(new WheelEvent('wheel',{deltaY:100,bubbles:true})));
  expect(host.querySelector('.our-work-social-player')?.getAttribute('aria-label')).toContain('Instagram');
 });
+
+it('does not apply portfolio scroll restoration to a newly opened service page',async()=>{
+ await render();await click('.our-work-tile:first-child');await act(async()=>root.render(React.createElement('main',null,'Selected service')));expect(scrollTo).not.toHaveBeenCalled();expect(document.body.style.overflow).not.toBe('hidden');
+});

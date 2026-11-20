@@ -64,8 +64,10 @@ export function OurWork({ assets, posts, businessName, services, collections, pr
       window.removeEventListener("popstate", back);
       element.close();
       document.body.style.overflow = previousOverflow;
-      window.scrollTo(gridScroll.current.x,gridScroll.current.y);
-      opener.current?.focus({preventScroll:true});
+      if(opener.current?.isConnected){
+        window.scrollTo(gridScroll.current.x,gridScroll.current.y);
+        opener.current.focus({preventScroll:true});
+      }
     };
     // Keep one dialog and history entry while navigating between items.
   }, [isOpen]);

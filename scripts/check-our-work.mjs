@@ -36,7 +36,7 @@ try {
     await expect.poll(()=>viewer.locator('video').evaluate(v=>!v.paused&&v.currentTime>0)).toBe(true);
     await viewer.locator('.our-work-video-surface').click();await expect.poll(()=>viewer.locator('video').evaluate(v=>v.paused)).toBe(true);
     await viewer.locator('.our-work-video-surface').click();await expect.poll(()=>viewer.locator('video').evaluate(v=>!v.paused)).toBe(true);
-    await page.keyboard.press('ArrowDown');await expect(viewer.getByText('3 / 3',{exact:true})).toBeVisible();await expect(viewer.locator('video')).toHaveCount(1);
+    await page.keyboard.press('ArrowDown');await expect(viewer.getByText('3 / 3',{exact:true})).toBeVisible();await expect(viewer.locator('video')).toHaveCount(1);await expect(viewer.getByRole('link',{name:'Book Locs',exact:true})).toHaveAttribute('href','/p/fictional/services/hair-service');
     const stage=viewer.locator('.our-work-stage');
     await stage.evaluate(el=>{el.dispatchEvent(new TouchEvent('touchstart',{bubbles:true,touches:[new Touch({identifier:1,target:el,clientX:120,clientY:160})]}));el.dispatchEvent(new TouchEvent('touchend',{bubbles:true,changedTouches:[new Touch({identifier:1,target:el,clientX:120,clientY:360})]}));});
     await expect(viewer.getByText('2 / 3',{exact:true})).toBeVisible();

@@ -15,6 +15,6 @@ createRoot(document.getElementById("root")!).render(<main className="professiona
     {id: "hair-video-two", alt_text: "Second hair video", media_type: "video", speciality_ids: ["hair"]},
     {id: "hair-video", alt_text: "Hair video", media_type: "video", speciality_ids: ["hair"]},
   ]} posts={[{...post,id:"removed",caption:"REMOVED POST",source_available:false},post, {...post, id:"tiktok", platform:"tiktok", media_type:"video", original_url:"https://www.tiktok.com/@fictional/video/1234567890123456789", caption:"Published TikTok"}, {...post, id:"draft", caption:"PRIVATE DRAFT", publication_status:"draft"}]}
-    services={[{id:"makeup-service", speciality_id:"makeup"}]}
+    services={[{id:"makeup-service", speciality_id:"makeup"},{id:"hair-service",asset_id:"hair-video",name:"Locs",speciality_id:"hair"}]}
     collections={[{id:"hair",name:"Hair"},{id:"makeup",name:"Makeup"}]} />
 </main>);

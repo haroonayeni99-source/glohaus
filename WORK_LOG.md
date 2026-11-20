@@ -393,3 +393,6 @@ Preview/production-canary display gate is independent of public social connectio
 ## 2026-11-20 — immersive viewer browser correction
 
 The first #253 browser run correctly caught wheel navigation being ignored when the pointer was over the full video surface button. Removed the overly broad button exclusion while keeping caption/link scrolling separate, and added a direct regression for surface-origin wheel events and momentum deduplication. Earlier core/critical CI passed; foundation had one setup-budget cancellation. Corrected-head CI and real canary acceptance are required before activation. No production activation occurred.
+
+
+The corrected wheel browser run passes. Inspection then confirmed that publicSocialPosts read an RLS-restricted view that omits publication_status; the viewer's strict published guard therefore excluded genuine public social rows. The repository now explicitly labels only rows from that approved public view as published/source-available. Private management reads and all underlying consent/connection/publication/source policies remain unchanged. Existing real database flow coverage now asserts this viewer contract as well as hidden/draft exclusion. No private-table fallback or publication mutation was introduced.

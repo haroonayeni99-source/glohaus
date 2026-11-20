@@ -321,6 +321,8 @@ describe("business tools database boundaries", () => {
         ),
       );
       const posts = await as(tx, "", () => publicSocialPosts(tx, pro));
+      expect(posts[0].publication_status).toBe("published");
+      expect(posts[0].source_available).toBe(true);
       expect(posts[0].price_pence).toBe(4500);
       expect(posts[0].source_created_at).toBeNull();
       await as(tx, "tools-pro", () =>

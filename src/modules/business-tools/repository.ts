@@ -141,7 +141,7 @@ export async function syncProfessional(
     let currentCipher = originalCipher;
     try {
       if (
-        ["instagram", "tiktok"].includes(lease.provider) &&
+        lease.provider !== "ics" &&
         !providerReady(lease.provider, professionalId)
       ) {
         await withIdentity(authId, (db) =>

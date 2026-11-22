@@ -9,6 +9,7 @@ import type {
 } from "@/modules/business-tools/domain";
 import "./business-tools.css";
 import { SocialPostPreview } from "./social-post-preview";
+import { CalendarSubscription } from "./calendar-subscription";
 const names = {
   google: "Google Calendar",
   outlook: "Microsoft Outlook",
@@ -23,6 +24,7 @@ export function BusinessConnections({
   ready,
   services,
   callback,
+  subscriptionEnabled = false,
   portfolio = {
     max_visible_posts: 12,
     instagram_url: "",
@@ -36,6 +38,7 @@ export function BusinessConnections({
   ready: Record<Provider, boolean>;
   services: { id: string; name: string }[];
   callback?: string;
+  subscriptionEnabled?: boolean;
   portfolio?: {
     max_visible_posts: number;
     instagram_url: string;
@@ -172,6 +175,7 @@ export function BusinessConnections({
       )}
       <section id="calendar" className="pro-editor-surface">
         <h2>Calendar &amp; availability</h2>
+        {subscriptionEnabled && <CalendarSubscription />}
         <p>
           Connect your calendar to share busy times while keeping your existing booking tools.
         </p>

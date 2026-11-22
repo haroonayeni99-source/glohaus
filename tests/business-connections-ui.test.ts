@@ -252,3 +252,16 @@ it("dismisses unavailable Outlook guidance and shows it again on retry without a
   await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Dismiss Outlook connection warning"]')!.click());
   expect(warning()).toBeNull();
 });
+
+it("creates a private subscription in the existing calendar area and clears a revoked link even when confirmation fails", async () => {
+  const fetcher = vi.fn().mockResolvedValueOnce({ ok: true, json: async () => ({ url: 'https://www.glohaus.shop/api/calendar/subscription/private-fixture' }) }).mockRejectedValueOnce(Error('offline'));
+  const { host } = await setup(fetcher, { subscriptionEnabled: true });
+  const section = host.querySelector('[aria-label="Apple Calendar subscription"]')!;
+  const buttons = section.querySelectorAll('button');
+  await act(async () => { (buttons[0] as HTMLButtonElement).click(); });
+  expect(section.querySelector('a')?.getAttribute('href')).toBe('webcal://www.glohaus.shop/api/calendar/subscription/private-fixture');
+  expect(fetcher.mock.calls[0][0]).toBe('/api/v1/professional/calendar-subscription');
+  await act(async () => { (buttons[1] as HTMLButtonElement).click(); });
+  expect(section.querySelector('a')).toBeNull();
+  expect(section.textContent).toContain('could not be confirmed');
+});

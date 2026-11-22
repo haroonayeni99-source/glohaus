@@ -389,3 +389,20 @@ it.each(["google", "outlook"] as const)("marks revoked %s access as reconnect-re
   vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 401 })));
   await expect(exportBooking(provider, token, { id: "11111111-1111-4111-8111-111111111111", starts_at: from, ends_at: to, status: "cancelled" }, "event-id")).rejects.toThrow("RECONNECT_REQUIRED");
 });
+
+it.each([['google', 'GOOGLE_CALENDAR'], ['outlook', 'MICROSOFT_CALENDAR']] as const)("allows only named %s calendar testers while public access stays off", (provider, prefix) => {
+  vi.stubEnv('BUSINESS_TOOLS_ENCRYPTION_KEY', 'ab'.repeat(32));
+  vi.stubEnv(`${prefix}_CLIENT_ID`, 'fixture');
+  vi.stubEnv(`${prefix}_CLIENT_SECRET`, 'fixture-secret');
+  vi.stubEnv(`${prefix}_ENABLED`, 'false');
+  vi.stubEnv(`${prefix}_TEST_PROFESSIONAL_IDS`, ' permitted-pro , other-pro ');
+  expect(providerReady(provider)).toBe(false);
+  expect(providerReady(provider, 'ordinary-pro')).toBe(false);
+  expect(providerReady(provider, 'permitted')).toBe(false);
+  expect(providerReady(provider, 'permitted-pro')).toBe(true);
+  const url = new URL(beginOAuth(provider, 'fixture-owner', 'permitted-pro', true).url);
+  expect(url.searchParams.get('scope')).toBe(provider === 'google' ? 'https://www.googleapis.com/auth/calendar.events' : 'offline_access Calendars.ReadWrite');
+  expect(url.searchParams.get('redirect_uri')).toBe(`https://www.glohaus.shop/api/v1/professional/connections/${provider}/callback`);
+  vi.stubEnv(`${prefix}_CLIENT_SECRET`, '');
+  expect(providerReady(provider, 'permitted-pro')).toBe(false);
+});

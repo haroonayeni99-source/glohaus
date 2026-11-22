@@ -61,6 +61,42 @@ export default function PrivacyPage() {
         </p>
       </section>
       <section>
+        <h2>Connected calendars and social portfolios</h2>
+        <p>
+          Professionals can choose to connect their own Google or Microsoft calendar.
+          GLOHAUS uses event identifiers, times and availability status to block busy
+          slots. It does not request calendar event titles, descriptions or attendees
+          for availability imports. If booking export is selected, GLOHAUS creates
+          private appointments containing times and the title “GLOHAUS appointment”,
+          then updates or cancels those events when the booking changes here.
+          Calendar changes do not edit GLOHAUS bookings.
+        </p>
+        <p>
+          Connection credentials are encrypted on the server. Disconnecting removes
+          stored connection credentials and imported busy times; events already
+          exported to your calendar may remain there. GLOHAUS uses connected calendar
+          data for availability and the booking export you select, rather than
+          advertising or public display.
+        </p>
+        <p>
+          Connecting an eligible Instagram professional account or TikTok account
+          lets GLOHAUS retrieve eligible media identifiers, links, captions, dates
+          and previews for your portfolio. New imports remain private drafts until
+          you choose to publish them. Published work identifies its source.
+          Disconnecting hides linked imported work. Instagram also provides
+          deauthorisation and data-deletion notifications to GLOHAUS.
+        </p>
+        <p>
+          Where booking subscriptions are enabled, a private calendar link shares
+          appointment times and cancellation status with the calendar application
+          you choose. It contains no customer names, contact details, treatment names
+          or notes. Anyone with the link can read those times. You can replace or
+          revoke it in Calendar connections; previously downloaded calendar data
+          may remain on your device. Subscriptions update one way from GLOHAUS,
+          at the refresh interval chosen by your calendar application.
+        </p>
+      </section>
+      <section>
         <h2>Customer journey planning</h2>
         <p>
           Where the planner is enabled, GLOHAUS saves the selected transport

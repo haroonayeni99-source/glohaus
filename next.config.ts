@@ -50,6 +50,12 @@ const config: NextConfig = {
           },
         ],
       },
+      {
+        // Subscription paths contain a private bearer credential. This scoped
+        // rule must follow the general referrer policy above.
+        source: "/api/calendar/subscription/:path*",
+        headers: [{ key: "Referrer-Policy", value: "no-referrer" }],
+      },
     ];
   },
 };

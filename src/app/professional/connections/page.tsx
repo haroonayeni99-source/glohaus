@@ -6,6 +6,7 @@ import { AccessMessage } from "@/components/access-message";
 import { BusinessConnections } from "@/components/business-connections";
 import { businessTools } from "@/modules/business-tools/repository";
 import { providerReady } from "@/modules/business-tools/oauth";
+import { subscriptionReady } from "@/modules/business-tools/subscription";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Connected calendars & social media · GLOHAUS PRO",
@@ -37,8 +38,8 @@ export default async function Connections({
       ).rows,
   );
   const ready = {
-    google: providerReady("google"),
-    outlook: providerReady("outlook"),
+    google: providerReady("google", a.professionalId!),
+    outlook: providerReady("outlook", a.professionalId!),
     ics: providerReady("ics"),
     instagram: providerReady("instagram", a.professionalId!),
     tiktok: providerReady("tiktok", a.professionalId!),
@@ -59,6 +60,7 @@ export default async function Connections({
           {...JSON.parse(JSON.stringify(data))}
           services={services}
           ready={ready}
+          subscriptionEnabled={subscriptionReady()}
           callback={(await searchParams).connection}
         />
       </main>

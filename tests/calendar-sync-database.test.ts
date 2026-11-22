@@ -155,6 +155,16 @@ afterEach(async () => {
 });
 afterAll(() => db.close());
 describe("real calendar sync transactions with a simulated external feed", () => {
+  it.each(["google", "outlook"] as const)("does not contact disabled %s providers or erase existing busy times", async provider => {
+    const c = await as(authId, sql => storeConnection(sql, pro, provider, "Disabled calendar", { accessToken: "fixture-only", expiresAt: Date.now() + 3600000 }));
+    await as(authId, sql => sql.query("INSERT INTO beauty.external_calendar_busy(connection_id,professional_id,event_key,starts_at,ends_at) VALUES($1,$2,'existing',$3,$4)", [c.id, pro, startsAt, endsAt]));
+    expect(await syncProfessional(authId, pro, c.id)).toEqual({ synced: 0, failed: 0 });
+    const result = await db.query("SELECT event_key FROM beauty.external_calendar_busy WHERE connection_id=$1", [c.id]);
+    expect(result.rows).toEqual([{ event_key: "existing" }]);
+    const state = await db.query("SELECT lease_until,successes FROM beauty.business_connections WHERE id=$1", [c.id]);
+    expect(state.rows[0]).toEqual({ lease_until: null, successes: 0 });
+  });
+
   it("imports busy times atomically, stores encrypted credentials and blocks an overlapping booking", async () => {
     const c = await connect();
     expect(await syncProfessional(authId, pro, c.id)).toEqual({
